@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransportSeva | India's Trusted Transport &amp; Logistics Platform</title>
+<meta name="description" content="TransportSeva connects shippers, carriers and drivers on a single platform. Book, track and manage your shipments in real-time with complete transparency.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/lang-switch.css">
+<style>
+  /* ============ THEME TOKENS ============ */
+  :root{
+    --color-primary: #F45B00;
+    --color-primary-dark: #D64E00;
+    --color-primary-light: #FF7A28;
+    --color-secondary: #222222;
+    --color-bg: #FFFFFF;
+    --color-accent: #FFE9DC;
+    --color-muted-bg: #FBFAF9;
+    --color-border: #ECEAE7;
+    --color-text: #222222;
+    --color-text-muted: #6B6B6B;
+    --color-text-soft: #8A8A8A;
+    --color-success: #1D9A5B;
+    --color-white: #FFFFFF;
+
+    --font-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 18px;
+    --radius-pill: 999px;
+
+    --shadow-sm: 0 2px 8px rgba(34,34,34,0.05);
+    --shadow-md: 0 8px 24px rgba(34,34,34,0.08);
+    --shadow-lg: 0 20px 50px rgba(244,91,0,0.16);
+
+    --container-w: 1240px;
+    --section-pad: 96px;
+  }
+
+  *,*::before,*::after{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    font-family: var(--font-base);
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+  img,svg{ display:block; max-width:100%; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ margin:0; padding:0; list-style:none; }
+  button{ font-family: inherit; cursor:pointer; }
+  h1,h2,h3,h4,p{ margin:0; }
+  .container{ max-width: var(--container-w); margin:0 auto; padding:0 24px; }
+
+  .icon{ width:22px; height:22px; stroke: currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+
+  /* eyebrow label */
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color: var(--color-primary);
+    margin-bottom:12px;
+  }
+  .section-head{ text-align:center; max-width:640px; margin:0 auto 56px; }
+  .section-head h2{ font-size:36px; font-weight:800; letter-spacing:-0.02em; color:var(--color-secondary); margin-bottom:12px; }
+  .section-head p{ color: var(--color-text-muted); font-size:16px; }
+
+  /* buttons */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:14px 26px; border-radius: var(--radius-pill);
+    font-weight:600; font-size:15px; border:2px solid transparent;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{ background: var(--color-primary); color:#fff; box-shadow: 0 10px 24px rgba(244,91,0,.28); }
+  .btn-primary:hover{ background: var(--color-primary-dark); transform: translateY(-2px); }
+  .btn-outline{ background:#fff; color: var(--color-secondary); border-color:#E4E1DC; }
+  .btn-outline:hover{ border-color: var(--color-primary); color: var(--color-primary); transform: translateY(-2px); }
+  .btn-outline-light{ background:transparent; color:#fff; border-color: rgba(255,255,255,.6); }
+  .btn-outline-light:hover{ background:#fff; color: var(--color-primary); }
+  .btn-white{ background:#fff; color: var(--color-primary); }
+  .btn-white:hover{ transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .btn-sm{ padding:11px 20px; font-size:14px; }
+
+  /* ============ HEADER ============ */
+  header{
+    position: sticky; top:0; z-index:100;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .nav-wrap{ display:flex; align-items:center; justify-content:space-between; height:80px; }
+  .logo{ display:flex; align-items:center; gap:10px; }
+  .logo-img{ height:34px; width:auto; }
+
+  .nav-links{ display:flex; align-items:center; gap:34px; }
+  .nav-links a{ font-size:15px; font-weight:500; color: var(--color-secondary); display:flex; align-items:center; gap:4px; position:relative; padding:6px 0; }
+  .nav-links a.active{ color: var(--color-primary); }
+  .nav-links a.active::after{
+    content:''; position:absolute; left:0; right:0; bottom:-4px; height:2px; background: var(--color-primary); border-radius:2px;
+  }
+  .nav-links a .icon{ width:15px; height:15px; }
+
+  .nav-actions{ display:flex; align-items:center; gap:12px; }
+  .nav-actions .btn{ padding:11px 22px; font-size:14px; }
+  .menu-toggle{ display:none; background:none; border:none; padding:8px; }
+  .menu-toggle .icon{ width:26px; height:26px; }
+
+  /* ============ HERO ============ */
+  .hero{
+    position:relative; overflow:hidden;
+    padding: 64px 0 40px;
+    background: linear-gradient(180deg, #FFFDFB 0%, #FFF7F1 100%);
+  }
+  .hero-grid{ position:relative; z-index:1; display:grid; grid-template-columns: 1fr 1fr; gap:40px; align-items:center; }
+  .hero-copy h1{ font-size:52px; line-height:1.08; font-weight:800; letter-spacing:-0.02em; color: var(--color-secondary); margin-bottom:20px; }
+  .hero-copy h1 .accent{ color: var(--color-primary); position:relative; display:inline-block; }
+  .hero-copy h1 .accent svg{ position:absolute; left:0; bottom:-10px; width:100%; height:10px; }
+  .hero-copy p{ font-size:17px; color: var(--color-text-muted); max-width:480px; margin-bottom:30px; }
+  .hero-cta{ display:flex; gap:14px; margin-bottom:34px; flex-wrap:wrap; }
+  .hero-apps p{ font-size:13px; color: var(--color-text-soft); margin-bottom:10px; font-weight:600; }
+  .store-row{ display:flex; gap:12px; }
+  .store-btn{
+    display:flex; align-items:center; gap:8px;
+    background: var(--color-secondary); color:#fff;
+    padding:9px 16px; border-radius:10px; font-size:12px;
+  }
+  .store-btn .store-txt b{ display:block; font-size:14px; font-weight:700; line-height:1.1; }
+  .store-btn .icon{ width:20px; height:20px; }
+
+  .hero-visual{ position:relative; z-index:1; }
+  .hero-truck-frame{ position:relative; }
+  .hero-truck-img{ width:100%; height:auto; }
+
+  /* stats bar */
+  .stats-bar{
+    background:#fff; border:1px solid var(--color-border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    display:grid; grid-template-columns: repeat(5,1fr);
+    margin-top:20px; position:relative; z-index:2;
+  }
+  .stat-item{
+    display:flex; align-items:center; gap:12px; padding:26px 20px;
+    border-right:1px solid var(--color-border);
+  }
+  .stat-item:last-child{ border-right:none; }
+  .stat-icon{
+    width:44px; height:44px; border-radius:12px; background: var(--color-accent);
+    display:flex; align-items:center; justify-content:center; color: var(--color-primary); flex-shrink:0;
+  }
+  .stat-num{ font-size:20px; font-weight:800; color: var(--color-secondary); line-height:1.2; }
+  .stat-label{ font-size:12.5px; color: var(--color-text-muted); }
+
+  /* ============ SERVICES ============ */
+  .services{ padding: var(--section-pad) 0; }
+  .services-grid{ display:grid; grid-template-columns: repeat(4,1fr); gap:20px; }
+  .service-card{
+    background:#fff; border:1px solid var(--color-border); border-radius: var(--radius-lg);
+    padding:26px 22px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .service-card:hover{ transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: transparent; }
+  .service-icon{
+    width:52px; height:52px; border-radius: var(--radius-sm); background: var(--color-accent);
+    display:flex; align-items:center; justify-content:center; color: var(--color-primary); margin-bottom:16px;
+  }
+  .service-card h3{ font-size:16.5px; font-weight:700; margin-bottom:8px; color: var(--color-secondary); }
+  .service-card p{ font-size:13.5px; color: var(--color-text-muted); }
+
+  /* ============ WHY CHOOSE US ============ */
+  .why{
+    background: var(--color-accent);
+    border-radius: 28px;
+    margin: 0 24px;
+    padding: 64px 48px;
+  }
+  .why-inner{ max-width: calc(var(--container-w) - 48px); margin:0 auto; display:grid; grid-template-columns: 1fr 1.1fr; gap:50px; align-items:center; }
+  .why-copy h2{ font-size:32px; font-weight:800; color: var(--color-secondary); margin-bottom:26px; letter-spacing:-0.02em; }
+  .why-copy h2 span{ color: var(--color-primary); }
+  .why-list{ display:grid; grid-template-columns: 1fr 1fr; gap:16px 24px; }
+  .why-list li{ display:flex; align-items:center; gap:10px; font-size:14.5px; font-weight:600; color: var(--color-secondary); }
+  .why-list .check{
+    width:20px; height:20px; border-radius:50%; background: var(--color-primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .why-list .check .icon{ width:12px; height:12px; stroke-width:3; }
+
+  .phone-showcase{ position:relative; display:flex; justify-content:center; align-items:center; min-height:420px; }
+  .phone{
+    width:230px; height:460px; background: var(--color-secondary); border-radius:36px; padding:10px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.25); position:relative; z-index:2;
+  }
+  .phone-screen{ width:100%; height:100%; background:#fff; border-radius:26px; overflow:hidden; position:relative; }
+  .phone-status{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px 8px; font-size:11px; font-weight:700; color:var(--color-secondary); }
+  .phone-title{ display:flex; align-items:center; gap:6px; padding:0 16px 10px; font-size:13px; font-weight:700; color:var(--color-secondary); }
+  .phone-map{ margin:0 12px; height:250px; border-radius:16px; background: linear-gradient(160deg,#FFE9DC 0%, #FFF3EA 60%, #fff 100%); position:relative; overflow:hidden; }
+  .phone-map svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .phone-card{
+    margin:14px 12px; background: var(--color-accent); border-radius:14px; padding:12px; display:flex; align-items:center; gap:10px;
+  }
+  .phone-card .pin-badge{ width:34px; height:34px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; color:var(--color-primary); }
+  .phone-card .route-text{ font-size:11px; font-weight:700; color:var(--color-secondary); }
+  .phone-card .route-sub{ font-size:10px; color:var(--color-text-muted); }
+
+  .status-card{
+    position:absolute; right:-40px; top:14px; width:190px; background:#fff; border-radius:16px;
+    box-shadow: var(--shadow-lg); padding:16px; z-index:3;
+  }
+  .status-card h4{ font-size:12px; font-weight:700; color:var(--color-text-soft); text-transform:uppercase; letter-spacing:.04em; margin-bottom:12px; }
+  .status-row{ display:flex; align-items:flex-start; gap:8px; position:relative; padding-bottom:14px; }
+  .status-row:last-child{ padding-bottom:0; }
+  .status-row::before{
+    content:''; position:absolute; left:7px; top:16px; bottom:-2px; width:1.5px; background:#E4E1DC;
+  }
+  .status-row:last-child::before{ display:none; }
+  .status-dot{ width:15px; height:15px; border-radius:50%; border:2px solid #C9C6C1; flex-shrink:0; background:#fff; margin-top:1px; }
+  .status-row.done .status-dot{ background: var(--color-success); border-color: var(--color-success); }
+  .status-row.active .status-dot{ background: var(--color-primary); border-color: var(--color-primary); }
+  .status-text b{ display:block; font-size:11.5px; font-weight:700; color: var(--color-secondary); }
+  .status-row.active .status-text b{ color: var(--color-primary); }
+  .status-text span{ font-size:10px; color: var(--color-text-soft); }
+
+  /* ============ HOW IT WORKS ============ */
+  .how{ padding: var(--section-pad) 0; }
+  .how-track{ position:relative; display:grid; grid-template-columns: repeat(8,1fr); gap:8px; }
+  .how-track::before{
+    content:''; position:absolute; top:19px; left:6%; right:6%; height:2px;
+    background: repeating-linear-gradient(90deg, #F0B48A 0, #F0B48A 8px, transparent 8px, transparent 16px);
+  }
+  .how-step{ text-align:center; position:relative; }
+  .how-num{
+    width:40px; height:40px; border-radius:50%; background: var(--color-primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;
+    margin:0 auto 16px; position:relative; z-index:1; box-shadow: 0 6px 14px rgba(244,91,0,.3);
+  }
+  .how-step h4{ font-size:14.5px; font-weight:700; color: var(--color-secondary); margin-bottom:6px; }
+  .how-step p{ font-size:12.5px; color: var(--color-text-muted); }
+
+  /* ============ MOBILE APP ============ */
+  .mobile-app{ padding: var(--section-pad) 0; }
+  .mobile-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:60px; align-items:center; }
+  .mobile-visual{ position:relative; display:flex; justify-content:center; }
+  .mobile-app-img{ width:100%; max-width:400px; height:auto; }
+  .mobile-copy .checklist{ margin:22px 0 30px; }
+  .mobile-copy .checklist li{ display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; color: var(--color-secondary); margin-bottom:12px; }
+  .mobile-copy .checklist .icon{ width:18px; height:18px; color: var(--color-primary); stroke-width:3; flex-shrink:0; }
+  .mobile-copy h2{ font-size:32px; font-weight:800; color: var(--color-secondary); letter-spacing:-0.02em; }
+  .app-download-row{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .qr-box{ display:flex; align-items:center; gap:10px; }
+  .qr-box .qr{ width:56px; height:56px; border:1px solid var(--color-border); border-radius:8px; padding:5px; }
+  .qr-box span{ font-size:12px; font-weight:600; color: var(--color-text-muted); max-width:80px; }
+
+  /* ============ TESTIMONIALS ============ */
+  .testimonials{ padding: var(--section-pad) 0; background: var(--color-muted-bg); }
+  .testi-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:22px; }
+  .testi-card{ background:#fff; border-radius: var(--radius-lg); padding:28px; box-shadow: var(--shadow-sm); border:1px solid var(--color-border); }
+  .quote-mark{ color: var(--color-accent); font-size:44px; font-weight:900; line-height:1; margin-bottom:6px; font-family: Georgia, serif; }
+  .testi-card p{ font-size:14px; color: var(--color-text-muted); margin-bottom:18px; }
+  .stars{ display:flex; gap:2px; color:#FFB020; margin-bottom:16px; }
+  .stars .icon{ width:15px; height:15px; fill: currentColor; stroke:none; }
+  .testi-person{ display:flex; align-items:center; gap:12px; }
+  .avatar{ width:44px; height:44px; border-radius:50%; object-fit:cover; background: var(--color-accent); }
+  .testi-person b{ display:block; font-size:14px; color: var(--color-secondary); }
+  .testi-person span{ font-size:12px; color: var(--color-text-soft); }
+
+  /* ============ PARTNERS ============ */
+  .partners{ padding: 70px 0; text-align:center; }
+  .partners-row{ display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; margin-top:20px; }
+  .partner-logo{ font-weight:800; font-size:17px; color:#B9B6B1; letter-spacing:-0.01em; display:flex; align-items:center; gap:6px; }
+
+  /* ============ CTA ============ */
+  .cta{
+    background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    border-radius: 28px; margin: 0 24px 100px;
+    padding: 48px 56px; display:flex; align-items:center; justify-content:space-between; gap:30px; flex-wrap:wrap;
+    color:#fff; position:relative; overflow:hidden;
+  }
+  .cta h2{ font-size:28px; font-weight:800; margin-bottom:6px; }
+  .cta p{ font-size:14.5px; opacity:.92; }
+  .cta-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+
+  /* ============ FOOTER ============ */
+  footer{ background: var(--color-secondary); color:#C9C7C4; padding: 60px 0 24px; }
+  .footer-grid{ display:grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1.3fr; gap:32px; margin-bottom:40px; }
+  .footer-logo{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .footer-logo-img{ height:30px; width:auto; }
+  .footer-brand p{ font-size:13.5px; color:#9C9A97; max-width:230px; margin-bottom:20px; }
+  .social-row{ display:flex; gap:10px; }
+  .social-row a{
+    width:34px; height:34px; border-radius:50%; border:1px solid #3D3D3D;
+    display:flex; align-items:center; justify-content:center; color:#C9C7C4; transition: background .2s, border-color .2s;
+  }
+  .social-row a:hover{ background: var(--color-primary); border-color: var(--color-primary); color:#fff; }
+  .social-row .icon{ width:15px; height:15px; }
+  .footer-col h4{ color:#fff; font-size:14.5px; font-weight:700; margin-bottom:16px; }
+  .footer-col li{ margin-bottom:10px; }
+  .footer-col a{ font-size:13.5px; color:#9C9A97; }
+  .footer-col a:hover{ color: var(--color-primary); }
+  .footer-contact li{ display:flex; align-items:flex-start; gap:8px; font-size:13.5px; color:#9C9A97; margin-bottom:12px; }
+  .footer-contact .icon{ width:15px; height:15px; color: var(--color-primary); margin-top:2px; flex-shrink:0; }
+  .newsletter-row{ display:flex; margin-top:6px; border-radius:10px; overflow:hidden; border:1px solid #3D3D3D; }
+  .newsletter-row input{ flex:1; border:none; background:#2C2C2C; color:#fff; padding:11px 12px; font-size:13px; font-family:inherit; outline:none; }
+  .newsletter-row button{ background: var(--color-primary); border:none; color:#fff; padding:0 16px; font-weight:700; }
+  .footer-bottom{ border-top:1px solid #333; padding-top:22px; display:flex; justify-content:space-between; font-size:12.5px; color:#8A8886; flex-wrap:wrap; gap:10px; }
+  .footer-bottom a{ color:#8A8886; margin-left:16px; }
+  .footer-bottom a:hover{ color:#fff; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1080px){
+    .nav-links{ display:none; }
+    .menu-toggle{ display:block; }
+    .hero-grid{ grid-template-columns:1fr; }
+    .hero-copy p{ max-width:100%; }
+    .hero-visual{ order:-1; max-width:480px; margin:0 auto; }
+    .stats-bar{ grid-template-columns: repeat(3,1fr); }
+    .stat-item:nth-child(3){ border-right:none; }
+    .services-grid{ grid-template-columns: repeat(2,1fr); }
+    .why-inner{ grid-template-columns:1fr; }
+    .mobile-grid{ grid-template-columns:1fr; }
+    .mobile-visual{ order:-1; }
+    .testi-grid{ grid-template-columns:1fr; }
+    .footer-grid{ grid-template-columns: 1fr 1fr; }
+    .how-track{ grid-template-columns: repeat(4,1fr); row-gap:36px; }
+    .how-track::before{ display:none; }
+  }
+  @media (max-width: 640px){
+    :root{ --section-pad: 64px; }
+    .hero-copy h1{ font-size:36px; }
+    .hero-cta{ flex-direction:column; align-items:stretch; }
+    .stats-bar{ grid-template-columns: repeat(2,1fr); }
+    .stat-item:nth-child(2n){ border-right:none; }
+    .services-grid{ grid-template-columns: 1fr; }
+    .why{ margin:0 12px; padding:40px 22px; }
+    .why-list{ grid-template-columns:1fr; }
+    .status-card{ position:static; width:100%; margin-top:16px; }
+    .phone-showcase{ flex-direction:column; }
+    .how-track{ grid-template-columns: repeat(2,1fr); }
+    .cta{ flex-direction:column; text-align:center; margin:0 12px 60px; padding:36px 24px; }
+    .footer-grid{ grid-template-columns:1fr; }
+    .footer-bottom{ flex-direction:column; text-align:center; }
+    .footer-bottom a{ margin:0 8px; }
+    .partners-row{ justify-content:center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ICON SPRITE ============ -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-truck" viewBox="0 0 24 24"><path d="M1 3h13v13H1z"/><path d="M14 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2"/><circle cx="17.5" cy="18.5" r="2"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v9l9 5 9-5V8"/><path d="M12 13v9"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 010 18a14 14 0 010-18z"/></symbol>
+    <symbol id="i-truck2" viewBox="0 0 24 24"><path d="M2 4h11v11H2z"/><path d="M13 8h4l3 3v4h-7V8z"/><circle cx="6" cy="19" r="1.8"/><circle cx="17.5" cy="19" r="1.8"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.4 7-12a7 7 0 10-14 0c0 5.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.6 7.2.9-5.3 5 1.4 7.2L12 18.3 5.6 21.7 7 14.5l-5.3-5 7.2-.9L12 2z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/><circle cx="17" cy="9" r="3"/><path d="M21 21c0-3-1.8-5.5-4.5-6.5"/></symbol>
+    <symbol id="i-percent" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5l5 5M9.7 9.5a.2.2 0 100 .4.2.2 0 000-.4zM14.3 14.1a.2.2 0 100 .4.2.2 0 000-.4z"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 3L3 5v16l6-2 6 2 6-2V3l-6 2-6-2z"/><path d="M9 3v16M15 5v16"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.7 19.7 0 01-8.6-3.1 19.4 19.4 0 01-6-6A19.7 19.7 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .3 2 .7 3a2 2 0 01-.4 2.1L8 10.3a16 16 0 006 6l1.5-1.4a2 2 0 012.1-.4c1 .4 2 .6 3 .7a2 2 0 011.7 2.1z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M3 3l18 9-18 9V3z"/></symbol>
+    <symbol id="i-apple" viewBox="0 0 24 24"><path d="M16.5 2c.1 1.3-.4 2.5-1.1 3.4-.8.9-2 1.6-3.1 1.5-.2-1.2.4-2.5 1.1-3.3.8-.9 2.1-1.6 3.1-1.6zM20.6 17.4c-.4 1-.9 1.9-1.6 2.8-1 1.3-1.9 2.6-3.5 2.7-1.5.1-2-.9-3.7-.9-1.7 0-2.3.9-3.7.9-1.5.1-2.6-1.4-3.6-2.7-2-2.8-3.5-7.9-1.5-11.3 1-1.7 2.8-2.8 4.7-2.8 1.5 0 2.7.9 3.6.9.9 0 2.5-1.1 4.1-1 .7 0 2.6.3 3.9 2.1-3.4 2-2.8 6.7.3 8.3z"/></symbol>
+    <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M14 9V7a1 1 0 011-1h2V3h-3a4 4 0 00-4 4v2H8v3h2v9h3v-9h2.5L16 9h-2z"/></symbol>
+    <symbol id="i-twitter" viewBox="0 0 24 24"><path d="M22 5.3c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.3-.8.5-1.7.8-2.6 1a4 4 0 00-6.9 3.7A11.5 11.5 0 013.2 4.2a4 4 0 001.3 5.4c-.7 0-1.3-.2-1.8-.5v.1c0 2 1.4 3.6 3.2 4a4 4 0 01-1.8.1 4 4 0 003.7 2.8A8 8 0 012 17.5a11.3 11.3 0 006.3 1.9c7.5 0 11.6-6.2 11.6-11.6v-.5c.8-.6 1.5-1.3 2.1-2z"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></symbol>
+    <symbol id="i-linkedin" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 10v7M7 7v.01M11 17v-4.5a2.5 2.5 0 015 0V17M11 10v7"/></symbol>
+    <symbol id="i-youtube" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l6 3-6 3V9z"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2M14 19h2M19 19h2"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="container nav-wrap">
+    <a href="index.html" class="logo">
+      <img src="images/logo.png" alt="TransportSeva" class="logo-img">
+    </a>
+    <nav class="nav-links">
+      <a href="#home" class="active" data-i18n="nav.home">Home</a>
+      <a href="#services" data-i18n="nav.services">Services</a>
+      <a href="#solutions"><span data-i18n="nav.solutions">Solutions</span> <svg class="icon" style="width:14px;height:14px"><use href="#i-chevron"/></svg></a>
+      <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+      <a href="about.html" data-i18n="nav.about">About Us</a>
+      <a href="help-center.html"><span data-i18n="nav.resources">Resources</span> <svg class="icon" style="width:14px;height:14px"><use href="#i-chevron"/></svg></a>
+      <a href="contact.html" data-i18n="nav.contact">Contact Us</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="lang-switch" id="langSwitch" type="button" aria-label="Change language">
+        <span class="lang-opt active" data-lang="en">EN</span><span class="lang-sep">|</span><span class="lang-opt" data-lang="hi">हिंदी</span>
+      </button>
+      <a href="login.html" class="btn btn-outline" data-i18n="nav.login">Log In</a>
+      <a href="signup.html" class="btn btn-primary" data-i18n="nav.signup">Sign Up</a>
+      <button class="menu-toggle" aria-label="Open menu"><svg class="icon"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow" style="background:var(--color-accent); padding:8px 16px; border-radius:999px;" data-i18n="hero.badge">India's Trusted Transport &amp; Logistics Platform</span>
+        <h1><span data-i18n="hero.title1">Move Every Load</span><br><span data-i18n="hero.title2">With</span> <span class="accent" data-i18n="hero.accent">Confidence</span></h1>
+        <p data-i18n="hero.desc">TransportSeva connects shippers, carriers and drivers on a single platform. Book, track and manage your shipments in real-time with complete transparency.</p>
+        <div class="hero-cta">
+          <a href="#book" class="btn btn-primary" data-i18n="hero.bookBtn">Book Your Shipment</a>
+          <a href="#track" class="btn btn-outline"><svg class="icon" style="width:17px;height:17px"><use href="#i-pin"/></svg><span data-i18n="hero.trackBtn">Track Your Shipment</span></a>
+        </div>
+        <div class="hero-apps">
+          <p data-i18n="hero.downloadApp">Download our app</p>
+          <div class="store-row">
+            <a href="#" class="store-btn"><svg class="icon" style="width:18px;height:18px"><use href="#i-play"/></svg><span class="store-txt"><span data-i18n="app.getItOn">GET IT ON</span><b data-i18n="app.googlePlay">Google Play</b></span></a>
+            <a href="#" class="store-btn"><svg class="icon" style="width:18px;height:18px"><use href="#i-apple"/></svg><span class="store-txt"><span data-i18n="app.downloadOnThe">Download on the</span><b data-i18n="app.appStore">App Store</b></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-truck-frame">
+          <img src="images/hero-truck.png" alt="TransportSeva truck on the road" class="hero-truck-img">
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item"><span class="stat-icon"><svg class="icon"><use href="#i-users"/></svg></span><div><div class="stat-num">10,000+</div><div class="stat-label" data-i18n="stats.happyCustomers">Happy Customers</div></div></div>
+      <div class="stat-item"><span class="stat-icon"><svg class="icon"><use href="#i-truck"/></svg></span><div><div class="stat-num">50,000+</div><div class="stat-label" data-i18n="stats.shipmentsDelivered">Shipments Delivered</div></div></div>
+      <div class="stat-item"><span class="stat-icon"><svg class="icon"><use href="#i-users"/></svg></span><div><div class="stat-num">500+</div><div class="stat-label" data-i18n="stats.transportPartners">Transport Partners</div></div></div>
+      <div class="stat-item"><span class="stat-icon"><svg class="icon"><use href="#i-map"/></svg></span><div><div class="stat-num">20+</div><div class="stat-label" data-i18n="stats.statesCovered">States Covered</div></div></div>
+      <div class="stat-item"><span class="stat-icon"><svg class="icon"><use href="#i-percent"/></svg></span><div><div class="stat-num">99.5%</div><div class="stat-label" data-i18n="stats.onTimeDelivery">On-time Delivery</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="services.eyebrow">Our Services</span>
+      <h2 data-i18n="services.title">Complete Logistics Solutions</h2>
+      <p data-i18n="services.desc">End-to-end transport and logistics services tailored for your business needs.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-truck"/></svg></span><h3 data-i18n="services.fullTruckLoad.title">Full Truck Load</h3><p data-i18n="services.fullTruckLoad.desc">Dedicated trucks for large shipments across India.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-box"/></svg></span><h3 data-i18n="services.partLoad.title">Part Load</h3><p data-i18n="services.partLoad.desc">Cost-effective solutions for smaller shipments and shared loads.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-send"/></svg></span><h3 data-i18n="services.parcelDelivery.title">Parcel Delivery</h3><p data-i18n="services.parcelDelivery.desc">Fast and reliable parcel delivery across India.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-home"/></svg></span><h3 data-i18n="services.warehousing.title">Warehousing</h3><p data-i18n="services.warehousing.desc">Secure storage and inventory management solutions.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-globe"/></svg></span><h3 data-i18n="services.freightForwarding.title">Freight Forwarding</h3><p data-i18n="services.freightForwarding.desc">International and domestic freight forwarding solutions.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-truck2"/></svg></span><h3 data-i18n="services.fleetManagement.title">Fleet Management</h3><p data-i18n="services.fleetManagement.desc">Manage your fleet, drivers and operations seamlessly.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-pin"/></svg></span><h3 data-i18n="services.gpsTracking.title">GPS Tracking</h3><p data-i18n="services.gpsTracking.desc">Real-time tracking with live updates and alerts.</p></div>
+      <div class="service-card"><span class="service-icon"><svg class="icon"><use href="#i-shield"/></svg></span><h3 data-i18n="services.insurance.title">Insurance &amp; Safety</h3><p data-i18n="services.insurance.desc">Comprehensive insurance coverage for your shipments.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY CHOOSE US ============ -->
+<section class="why" id="solutions">
+  <div class="why-inner">
+    <div class="why-copy">
+      <span class="eyebrow" data-i18n="why.eyebrow">Why Choose Us</span>
+      <h2><span data-i18n="why.title">Why Thousands Trust</span> <span>TransportSeva</span></h2>
+      <ul class="why-list">
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item1">Live GPS Tracking</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item2">Digital POD</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item3">Verified Transporters</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item4">Online Payments</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item5">Lowest Freight Rates</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item6">GST Invoices</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item7">AI Route Optimization</span></li>
+        <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span><span data-i18n="why.item8">24x7 Support</span></li>
+      </ul>
+    </div>
+
+    <div class="phone-showcase">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-status"><span>19:41</span><span>●●● 100%</span></div>
+          <div class="phone-title"><svg class="icon" style="width:14px;height:14px"><use href="#i-arrow-right" style="transform:scaleX(-1)"/></svg><span data-i18n="phone.liveTracking">Live Tracking</span></div>
+          <div class="phone-map">
+            <svg viewBox="0 0 210 250">
+              <path d="M20 220 C 60 150, 90 120, 130 90 S 180 40, 190 20" stroke="#F45B00" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <circle cx="20" cy="220" r="5" fill="#222222"/>
+              <circle cx="190" cy="20" r="6" fill="#F45B00"/>
+              <g transform="translate(112,95)">
+                <rect x="-14" y="-8" width="28" height="16" rx="3" fill="#F45B00"/>
+                <circle cx="-8" cy="9" r="4" fill="#222222"/>
+                <circle cx="8" cy="9" r="4" fill="#222222"/>
+              </g>
+            </svg>
+          </div>
+          <div class="phone-card">
+            <span class="pin-badge"><svg class="icon" style="width:16px;height:16px"><use href="#i-pin"/></svg></span>
+            <div>
+              <div class="route-text">DL01AB1234</div>
+              <div class="route-sub" data-i18n="phone.routeSub">Delhi → Mumbai · ETA: 31 May, 06:00 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <h4 data-i18n="status.title">Shipment Status</h4>
+        <div class="status-row done"><span class="status-dot"></span><span class="status-text"><b data-i18n="status.booked">Booked</b><span>29 May, 10:30 AM</span></span></div>
+        <div class="status-row done"><span class="status-dot"></span><span class="status-text"><b data-i18n="status.pickedUp">Picked Up</b><span>29 May, 02:45 PM</span></span></div>
+        <div class="status-row active"><span class="status-dot"></span><span class="status-text"><b data-i18n="status.inTransit">In Transit</b><span>30 May, 11:20 AM</span></span></div>
+        <div class="status-row"><span class="status-dot"></span><span class="status-text"><b data-i18n="status.outForDelivery">Out for Delivery</b><span>31 May, 09:30 AM</span></span></div>
+        <div class="status-row"><span class="status-dot"></span><span class="status-text"><b data-i18n="status.delivered">Delivered</b><span>31 May, 06:00 PM</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="how">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="how.eyebrow">How It Works</span>
+      <h2><span data-i18n="how.title1">How</span> TransportSeva <span data-i18n="how.title2">Works</span></h2>
+    </div>
+    <div class="how-track">
+      <div class="how-step"><span class="how-num">1</span><h4 data-i18n="how.step1.title">Register</h4><p data-i18n="how.step1.desc">Create your free account</p></div>
+      <div class="how-step"><span class="how-num">2</span><h4 data-i18n="how.step2.title">Search Vehicle</h4><p data-i18n="how.step2.desc">Find the best vehicle for your load</p></div>
+      <div class="how-step"><span class="how-num">3</span><h4 data-i18n="how.step3.title">Book Shipment</h4><p data-i18n="how.step3.desc">Enter details and confirm booking</p></div>
+      <div class="how-step"><span class="how-num">4</span><h4 data-i18n="how.step4.title">Driver Pickup</h4><p data-i18n="how.step4.desc">Driver reaches pickup location</p></div>
+      <div class="how-step"><span class="how-num">5</span><h4 data-i18n="how.step5.title">Live Tracking</h4><p data-i18n="how.step5.desc">Track your shipment in real-time</p></div>
+      <div class="how-step"><span class="how-num">6</span><h4 data-i18n="how.step6.title">Delivery</h4><p data-i18n="how.step6.desc">Shipment delivered safely</p></div>
+      <div class="how-step"><span class="how-num">7</span><h4 data-i18n="how.step7.title">Digital POD</h4><p data-i18n="how.step7.desc">Get digital proof of delivery</p></div>
+      <div class="how-step"><span class="how-num">8</span><h4 data-i18n="how.step8.title">Payment</h4><p data-i18n="how.step8.desc">Payment released securely</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOBILE APP ============ -->
+<section class="mobile-app" id="resources">
+  <div class="container mobile-grid">
+    <div class="mobile-visual">
+      <img src="images/app-truck.png" alt="TransportSeva mobile app with truck" class="mobile-app-img">
+    </div>
+    <div class="mobile-copy">
+      <span class="eyebrow" data-i18n="mobile.eyebrow">Mobile App</span>
+      <h2 data-i18n="mobile.title">Manage Shipments On The Go</h2>
+      <ul class="checklist">
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="mobile.item1">Book and manage shipments anytime, anywhere</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="mobile.item2">Real-time tracking and status updates</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="mobile.item3">Instant notifications and alerts</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="mobile.item4">Digital documents and invoices</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="mobile.item5">Multiple payment options</span></li>
+      </ul>
+      <div class="app-download-row">
+        <div class="store-row">
+          <a href="#" class="store-btn"><svg class="icon" style="width:18px;height:18px"><use href="#i-play"/></svg><span class="store-txt">GET IT ON<b>Google Play</b></span></a>
+          <a href="#" class="store-btn"><svg class="icon" style="width:18px;height:18px"><use href="#i-apple"/></svg><span class="store-txt">Download on the<b>App Store</b></span></a>
+        </div>
+        <div class="qr-box">
+          <svg class="qr" viewBox="0 0 24 24" fill="#222222" stroke="none"><use href="#i-scan"/></svg>
+          <span data-i18n="app.scanToDownload">Scan to Download App</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow" data-i18n="testi.eyebrow">Trusted By Thousands</span>
+      <h2 data-i18n="testi.title">What Our Customers Say</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="quote-mark">“</div>
+        <div class="stars"><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg></div>
+        <p data-i18n="testi1.text">TransportSeva has simplified our logistics operations. Real-time tracking and transparent pricing help us deliver better to our customers.</p>
+        <div class="testi-person">
+          <div class="avatar"></div>
+          <div><b>Rakesh Sharma</b><span data-i18n="testi1.role">Logistics Manager, ABC Pvt. Ltd.</span></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="quote-mark">“</div>
+        <div class="stars"><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg></div>
+        <p data-i18n="testi2.text">Excellent platform for transporters. We get good loads regularly and payments are always on time.</p>
+        <div class="testi-person">
+          <div class="avatar"></div>
+          <div><b>Vikram Singh</b><span data-i18n="testi2.role">Fleet Owner</span></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="quote-mark">“</div>
+        <div class="stars"><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg><svg class="icon"><use href="#i-star"/></svg></div>
+        <p data-i18n="testi3.text">The best part is the live tracking and digital POD. It gives us complete visibility and peace of mind.</p>
+        <div class="testi-person">
+          <div class="avatar"></div>
+          <div><b>Neha Verma</b><span data-i18n="testi3.role">Supply Chain Head, XYZ Corp.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERS ============ -->
+<section class="partners">
+  <div class="container">
+    <span class="eyebrow" data-i18n="partners.eyebrow">Our Partners</span>
+    <div class="partners-row">
+      <span class="partner-logo">TATA MOTORS</span>
+      <span class="partner-logo">ASHOK LEYLAND</span>
+      <span class="partner-logo">mahindra</span>
+      <span class="partner-logo">Castrol</span>
+      <span class="partner-logo">FASTag</span>
+      <span class="partner-logo">ICICI Lombard</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta" id="contact">
+  <div>
+    <h2 data-i18n="cta.title">Ready to Move Your Business Forward?</h2>
+    <p data-i18n="cta.desc">Join thousands of businesses using TransportSeva to simplify their logistics and grow faster.</p>
+  </div>
+  <div class="cta-actions">
+    <a href="#book" class="btn btn-white" data-i18n="cta.bookBtn">Book a Shipment</a>
+    <a href="#partner" class="btn btn-outline-light" data-i18n="cta.partnerBtn">Become a Partner</a>
+    <a href="#download" class="btn btn-outline-light" data-i18n="cta.downloadBtn">Download App</a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer id="about">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="footer-logo"><img src="images/logo-white.png" alt="TransportSeva" class="footer-logo-img"></a>
+        <p data-i18n="footer.tagline">Your trusted partner for all your transport and logistics needs across India.</p>
+        <div class="social-row">
+          <a href="#"><svg class="icon"><use href="#i-facebook"/></svg></a>
+          <a href="#"><svg class="icon"><use href="#i-twitter"/></svg></a>
+          <a href="#"><svg class="icon"><use href="#i-instagram"/></svg></a>
+          <a href="#"><svg class="icon"><use href="#i-linkedin"/></svg></a>
+          <a href="#"><svg class="icon"><use href="#i-youtube"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.servicesTitle">Services</h4>
+        <ul>
+          <li><a href="#services" data-i18n="services.fullTruckLoad.title">Full Truck Load</a></li>
+          <li><a href="#services" data-i18n="services.partLoad.title">Part Load</a></li>
+          <li><a href="#services" data-i18n="services.parcelDelivery.title">Parcel Delivery</a></li>
+          <li><a href="#services" data-i18n="services.warehousing.title">Warehousing</a></li>
+          <li><a href="#services" data-i18n="services.freightForwarding.title">Freight Forwarding</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.companyTitle">Company</h4>
+        <ul>
+          <li><a href="about.html" data-i18n="footer.aboutUs">About Us</a></li>
+          <li><a href="careers.html" data-i18n="footer.careers">Careers</a></li>
+          <li><a href="blog.html" data-i18n="footer.blogMedia">Blog &amp; Media</a></li>
+          <li><a href="privacy-policy.html" data-i18n="footer.privacyPolicy">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.resourcesTitle">Resources</h4>
+        <ul>
+          <li><a href="help-center.html" data-i18n="footer.helpCenter">Help Center</a></li>
+          <li><a href="help-center.html#track" data-i18n="footer.trackShipment">Track Shipment</a></li>
+          <li><a href="help-center.html#rate" data-i18n="footer.rateCalculator">Rate Calculator</a></li>
+          <li><a href="help-center.html#toll" data-i18n="footer.tollTaxInfo">Toll &amp; Tax Info</a></li>
+          <li><a href="help-center.html#api" data-i18n="footer.apiDocs">API Documentation</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.contactTitle">Contact Us</h4>
+        <ul class="footer-contact">
+          <li><svg class="icon"><use href="#i-phone"/></svg>+91 12345 67890</li>
+          <li><svg class="icon"><use href="#i-mail"/></svg>support@transportseva.com</li>
+          <li><svg class="icon"><use href="#i-pin"/></svg><span data-i18n="footer.address">123 Logistics Park, Sector 62, Noida, Uttar Pradesh, 201309</span></li>
+        </ul>
+        <h4 style="margin-top:20px" data-i18n="footer.newsletterTitle">Newsletter</h4>
+        <p style="font-size:12.5px;color:#9C9A97;margin-bottom:0" data-i18n="footer.newsletterDesc">Subscribe to get updates and offers</p>
+        <form class="newsletter-row" onsubmit="event.preventDefault(); this.reset(); this.querySelector('button').textContent='Subscribed ✓';">
+          <input type="email" placeholder="Enter your email" data-i18n-placeholder="footer.emailPlaceholder" required>
+          <button type="submit" data-i18n="footer.subscribeBtn">Subscribe</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copyright">© 2026 TransportSeva. All rights reserved.</span>
+      <span>
+        <a href="privacy-policy.html" data-i18n="footer.privacyPolicy">Privacy Policy</a>
+        <a href="terms-conditions.html" data-i18n="footer.terms">Terms &amp; Conditions</a>
+        <a href="refund-policy.html" data-i18n="footer.refundPolicy">Refund Policy</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // mobile menu toggle
+  const menuToggle = document.querySelector('.menu-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  menuToggle && menuToggle.addEventListener('click', () => {
+    const open = navLinks.style.display === 'flex';
+    navLinks.style.cssText = open ? '' : 'display:flex; flex-direction:column; position:absolute; top:80px; left:0; right:0; background:#fff; padding:20px 24px; gap:18px; box-shadow:0 12px 24px rgba(0,0,0,.08); border-bottom:1px solid #ECEAE7;';
+  });
+</script>
+<script src="js/i18n.js"></script>
+</body>
+</html>

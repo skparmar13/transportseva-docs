@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up | TransportSeva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/lang-switch.css">
+</head>
+<body>
+
+<!-- ============ ICON SPRITE ============ -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24"><path d="M1 3h13v13H1z"/><path d="M14 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2"/><circle cx="17.5" cy="18.5" r="2"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.7 19.7 0 01-8.6-3.1 19.4 19.4 0 01-6-6A19.7 19.7 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .3 2 .7 3a2 2 0 01-.4 2.1L8 10.3a16 16 0 006 6l1.5-1.4a2 2 0 012.1-.4c1 .4 2 .6 3 .7a2 2 0 011.7 2.1z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/><circle cx="17" cy="9" r="3"/><path d="M21 21c0-3-1.8-5.5-4.5-6.5"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v9l9 5 9-5V8"/><path d="M12 13v9"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ SIMPLE HEADER ============ -->
+<header class="simple-header">
+  <div class="container nav-wrap">
+    <a href="index.html" class="logo">
+      <img src="images/logo.png" alt="TransportSeva" class="logo-img">
+    </a>
+    <div class="nav-actions" style="display:flex; align-items:center; gap:16px;">
+      <button class="lang-switch" id="langSwitch" type="button" aria-label="Change language">
+        <span class="lang-opt active" data-lang="en">EN</span><span class="lang-sep">|</span><span class="lang-opt" data-lang="hi">हिंदी</span>
+      </button>
+      <a href="index.html" class="btn btn-outline" style="padding:10px 20px;">
+        <svg class="icon" style="width:16px;height:16px"><use href="#i-arrow-left"/></svg>
+        <span data-i18n="auth.backHome">Back to Home</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ AUTH SHELL ============ -->
+<section class="auth-shell">
+
+  <!-- Left visual panel -->
+  <div class="auth-visual">
+    <div class="brand">
+      <img src="images/logo-white.png" alt="TransportSeva" style="height:34px;">
+    </div>
+    <div class="headline">
+      <h2><span data-i18n="signup.visualTitle1">One platform for</span><br><span data-i18n="signup.visualTitle2">every logistics need.</span></h2>
+      <p data-i18n="signup.visualDesc">Whether you ship, drive or manage a fleet — TransportSeva gives you the tools to work faster and smarter.</p>
+      <img src="images/app-truck.png" alt="TransportSeva App" class="truck-img" style="max-width:340px;">
+    </div>
+    <div class="stat-strip">
+      <div><b>2.5M+</b><span data-i18n="login.statShipments">Shipments Delivered</span></div>
+      <div><b>15,000+</b><span data-i18n="login.statPartners">Transport Partners</span></div>
+      <div><b>500+</b><span data-i18n="login.statCities">Cities Covered</span></div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="auth-form-side">
+    <div class="auth-form-card">
+      <span class="eyebrow-tag" data-i18n="signup.eyebrow">Get Started</span>
+      <h1 data-i18n="signup.title">Create your account</h1>
+      <p class="sub" data-i18n="signup.sub">Choose your role to get a workspace built for you.</p>
+
+      <div class="role-grid">
+        <div class="role-card active" data-role="customer">
+          <div class="role-icon"><svg class="icon" style="width:22px;height:22px"><use href="#i-user"/></svg></div>
+          <span data-i18n="signup.roleCustomer">Customer</span>
+        </div>
+        <div class="role-card" data-role="driver">
+          <div class="role-icon"><svg class="icon" style="width:22px;height:22px"><use href="#i-truck"/></svg></div>
+          <span data-i18n="signup.roleDriver">Driver</span>
+        </div>
+        <div class="role-card" data-role="transporter">
+          <div class="role-icon"><svg class="icon" style="width:22px;height:22px"><use href="#i-building"/></svg></div>
+          <span data-i18n="signup.roleTransporter">Transporter</span>
+        </div>
+      </div>
+
+      <form>
+        <div class="field">
+          <label data-i18n="signup.nameLabel">Full Name</label>
+          <div class="input-wrap">
+            <svg class="icon"><use href="#i-user"/></svg>
+            <input type="text" class="input" placeholder="Enter your full name" data-i18n-placeholder="signup.namePlaceholder">
+          </div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="signup.mobileLabel">Mobile Number</label>
+          <div class="phone-input-wrap">
+            <div class="phone-code">+91</div>
+            <div class="input-wrap" style="flex:1;">
+              <svg class="icon"><use href="#i-phone"/></svg>
+              <input type="tel" class="input" maxlength="10" placeholder="Enter 10-digit mobile number" data-i18n-placeholder="signup.mobilePlaceholder">
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="signup.emailLabel">Email Address (optional)</label>
+          <div class="input-wrap">
+            <svg class="icon"><use href="#i-mail"/></svg>
+            <input type="email" class="input" placeholder="Enter your email" data-i18n-placeholder="signup.emailPlaceholder">
+          </div>
+        </div>
+
+        <div class="field" id="companyField" style="display:none;">
+          <label data-i18n="signup.companyLabel">Company / Fleet Name</label>
+          <div class="input-wrap">
+            <svg class="icon"><use href="#i-building"/></svg>
+            <input type="text" class="input" placeholder="Enter company or fleet name" data-i18n-placeholder="signup.companyPlaceholder">
+          </div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="signup.passwordLabel">Create Password</label>
+          <div class="input-wrap">
+            <svg class="icon"><use href="#i-lock"/></svg>
+            <input type="password" class="input" placeholder="Create a password" data-i18n-placeholder="signup.passwordPlaceholder">
+          </div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="signup.confirmPasswordLabel">Confirm Password</label>
+          <div class="input-wrap">
+            <svg class="icon"><use href="#i-lock"/></svg>
+            <input type="password" class="input" placeholder="Re-enter password" data-i18n-placeholder="signup.confirmPasswordPlaceholder">
+          </div>
+        </div>
+
+        <label class="checkbox-row" style="margin-bottom:22px;">
+          <input type="checkbox" checked>
+          <span data-i18n="signup.termsText">I agree to the <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a></span>
+        </label>
+
+        <a href="login.html" class="btn btn-primary btn-block">
+          <span data-i18n="signup.createBtn">Create Account</span>
+          <svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-right"/></svg>
+        </a>
+      </form>
+
+      <div class="link-row">
+        <span data-i18n="signup.haveAccount">Already have an account?</span>
+        <a href="login.html" data-i18n="signup.loginLink">Log in</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="js/i18n.js"></script>
+<script>
+  document.querySelectorAll('.role-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      document.querySelectorAll('.role-card').forEach(function(c){ c.classList.remove('active'); });
+      card.classList.add('active');
+      var companyField = document.getElementById('companyField');
+      companyField.style.display = (card.getAttribute('data-role') === 'transporter') ? 'block' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

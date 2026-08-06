@@ -1,0 +1,9 @@
+/* Language switcher — shared across all TransportSeva pages */
+.lang-switch{
+  display:flex; align-items:center; gap:6px;
+  background:#fff; border:1.5px solid #ECEAE7; border-radius:999px;
+  padding:8px 14px; font-size:13px; font-weight:700; color:#8A8A8A;
+}
+.lang-switch .lang-opt{ padding:2px 2px; transition:color .15s ease; }
+.lang-switch .lang-opt.active{ color:#F45B00; }
+.lang-switch .lang-sep{ color:#D9D6D2; font-weight:400; }
