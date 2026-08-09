@@ -1,0 +1,44 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Notifications</h1>
+    <p class="desc">Recent alerts across bookings, payments, trips and documents.</p>
+  </div>
+  <button type="button" class="btn btn-outline" [disabled]="comms.unreadCount() === 0" (click)="markAllRead()">Mark All as Read</button>
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="filter() === 'all'" (click)="setFilter('all')">All</button>
+    <button type="button" class="tab-btn" [class.active]="filter() === 'unread'" (click)="setFilter('unread')">
+      Unread @if (comms.unreadCount() > 0) { <span class="side-badge">{{ comms.unreadCount() }}</span> }
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  @if (visibleNotifications().length) {
+    <div class="notif-list">
+      @for (n of visibleNotifications(); track n.id) {
+        <div class="notif-row" [class.unread]="!n.read">
+          <div class="notif-icon"><app-icon [name]="categoryIcon[n.category]" [size]="18" /></div>
+          <div class="notif-body">
+            <div class="notif-top">
+              <b>{{ n.title }}</b>
+              <span class="status-pill status-pending">{{ n.category }}</span>
+            </div>
+            <p>{{ n.message }}</p>
+            <span class="notif-time">{{ n.timestamp }}</span>
+          </div>
+          @if (!n.read) {
+            <button type="button" class="btn btn-outline btn-sm" (click)="markRead(n.id)">Mark as Read</button>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
+      <app-icon name="i-bell" [size]="32" />
+      <p style="margin-top:12px;">No notifications to show.</p>
+    </div>
+  }
+</div>

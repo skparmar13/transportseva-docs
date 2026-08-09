@@ -1,0 +1,54 @@
+﻿
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use 'styles/tokens' as tokens;
+@use 'styles/brand-vars';
+@use 'styles/base';
+@use 'styles/auth';
+@use 'styles/public';
+
+html {
+  // TransportSeva brand palette expressed as M3 tokens so every Material
+  // component (buttons, chips, tabs, dialogs...) inherits the brand look
+  // instead of the default Angular blue/azure palette.
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: tokens.$ts-primary-palette,
+      tertiary: tokens.$ts-tertiary-palette,
+    ),
+    typography: (
+      brand-family: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      plain-family: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    ),
+    density: 0,
+  ));
+
+  // Fine-tune system tokens that mat.theme() cannot express directly so the
+  // Material layer matches the existing HTML prototype pixel-for-pixel.
+  --mat-sys-primary: #{tokens.$color-primary};
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-secondary: #{tokens.$color-secondary};
+  --mat-sys-surface: #{tokens.$color-bg};
+  --mat-sys-on-surface: #{tokens.$color-text};
+  --mat-sys-corner-medium: #{tokens.$radius-md};
+  --mat-sys-corner-large: #{tokens.$radius-lg};
+  --mat-sys-corner-full: #{tokens.$radius-pill};
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--color-muted-bg);
+  color: var(--color-text);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: var(--font-base); }
+
+

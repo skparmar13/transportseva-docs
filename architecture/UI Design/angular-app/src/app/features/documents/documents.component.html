@@ -1,0 +1,146 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Documents</h1>
+    <p class="desc">Vehicle, driver and trip proof-of-delivery documents in one place.</p>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-doc" /></div></div>
+    <div class="kpi-value">{{ totalDocsCount() }}</div>
+    <div class="kpi-label">Total Documents</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-check" /></div></div>
+    <div class="kpi-value">{{ validCount() }}</div>
+    <div class="kpi-label">Valid</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-clock" /></div></div>
+    <div class="kpi-value">{{ expiringSoonCount() }}</div>
+    <div class="kpi-label">Expiring Soon</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-flag" /></div></div>
+    <div class="kpi-value">{{ expiredCount() }}</div>
+    <div class="kpi-label">Expired</div>
+  </div>
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'vehicle'" (click)="setTab('vehicle')">Vehicle Documents</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'driver'" (click)="setTab('driver')">Driver Documents</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'pod'" (click)="setTab('pod')">POD Documents</button>
+  </div>
+</div>
+
+@if (activeTab() === 'vehicle') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Document Type</th>
+          <th>Document Number</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (doc of vehicleDocs(); track doc.ownerRef + doc.type) {
+          <tr>
+            <td><b>{{ doc.ownerRef }}</b></td>
+            <td>{{ doc.type }}</td>
+            <td>{{ doc.documentNumber }}</td>
+            <td>{{ doc.expiryDate }}</td>
+            <td><span class="status-pill" [class]="statusClass[doc.status]">{{ doc.status }}</span></td>
+            <td>
+              <button type="button" class="btn btn-outline btn-sm">
+                <app-icon name="i-upload" [size]="16" />
+                <span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Re-upload' }}</span>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'driver') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Driver</th>
+          <th>Document Type</th>
+          <th>Document Number</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (doc of driverDocs(); track doc.ownerRef + doc.type) {
+          <tr>
+            <td><b>{{ doc.ownerRef }}</b></td>
+            <td>{{ doc.type }}</td>
+            <td>{{ doc.documentNumber }}</td>
+            <td>{{ doc.expiryDate }}</td>
+            <td><span class="status-pill" [class]="statusClass[doc.status]">{{ doc.status }}</span></td>
+            <td>
+              <button type="button" class="btn btn-outline btn-sm">
+                <app-icon name="i-upload" [size]="16" />
+                <span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Re-upload' }}</span>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'pod') {
+  <div class="card">
+    @if (podDocs().length) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Trip</th>
+            <th>Route</th>
+            <th>POD Number</th>
+            <th>Received By</th>
+            <th>Uploaded On</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (doc of podDocs(); track doc.tripId) {
+            <tr>
+              <td><b>{{ doc.tripId }}</b></td>
+              <td>{{ doc.route }}</td>
+              <td>{{ doc.podNumber }}</td>
+              <td>{{ doc.receivedBy }}</td>
+              <td>{{ doc.uploadedAt }}</td>
+              <td>
+                <button type="button" class="btn btn-outline btn-sm">
+                  <app-icon name="i-download" [size]="16" />
+                  <span>View</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
+        <app-icon name="i-doc" [size]="32" />
+        <p style="margin-top:12px;">No POD documents uploaded yet.</p>
+      </div>
+    }
+  </div>
+}

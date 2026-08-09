@@ -1,0 +1,175 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Payments</h1>
+    <p class="desc">Freight payments, platform commission, GST invoices and payouts.</p>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-invoice" /></div></div>
+    <div class="kpi-value">₹{{ payments.totalFreightDue().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">Freight Payments Due</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-percent" /></div></div>
+    <div class="kpi-value">₹{{ payments.totalCommissionEarned().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">Commission Earned</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-doc" /></div></div>
+    <div class="kpi-value">₹{{ payments.totalGstCollected().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">GST Collected</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-credit-card" /></div></div>
+    <div class="kpi-value">₹{{ payments.totalPayoutsProcessed().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">Payouts Processed</div>
+  </div>
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'freight'" (click)="setTab('freight')">Freight Payments</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'commission'" (click)="setTab('commission')">Commission</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'gst'" (click)="setTab('gst')">GST Invoices</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'payouts'" (click)="setTab('payouts')">Payouts</button>
+  </div>
+</div>
+
+@if (activeTab() === 'freight') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Invoice Ref</th>
+          <th>Route</th>
+          <th>Counterparty</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of payments.freightPayments(); track p.id) {
+          <tr>
+            <td><b>{{ p.invoiceRef }}</b></td>
+            <td>{{ p.route }}</td>
+            <td>{{ p.counterpartyName }}</td>
+            <td>{{ p.amount }}</td>
+            <td>{{ p.dueDate }}</td>
+            <td><span class="status-pill" [class]="paymentStatusClass[p.status]">{{ p.status }}</span></td>
+            <td>
+              @if (p.status !== 'Paid') {
+                <button type="button" class="btn btn-outline btn-sm" (click)="markPaid(p.id)">Mark Paid</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'commission') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Trip</th>
+          <th>Route</th>
+          <th>Freight Amount</th>
+          <th>Rate</th>
+          <th>Commission</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of payments.commissions(); track c.id) {
+          <tr>
+            <td><b>{{ c.tripId | uppercase }}</b></td>
+            <td>{{ c.route }}</td>
+            <td>{{ c.freightAmount }}</td>
+            <td>{{ c.commissionRate }}</td>
+            <td>{{ c.commissionAmount }}</td>
+            <td>{{ c.date }}</td>
+            <td><span class="status-pill" [class]="paymentStatusClass[c.status]">{{ c.status }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'gst') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Date</th>
+          <th>Billed To</th>
+          <th>Taxable Amount</th>
+          <th>GST</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of payments.gstInvoices(); track g.id) {
+          <tr>
+            <td><b>{{ g.invoiceNumber }}</b></td>
+            <td>{{ g.date }}</td>
+            <td>{{ g.billedTo }}</td>
+            <td>{{ g.taxableAmount }}</td>
+            <td>{{ g.gstAmount }}</td>
+            <td>{{ g.totalAmount }}</td>
+            <td><span class="status-pill" [class]="gstStatusClass[g.status]">{{ g.status }}</span></td>
+            <td style="display:flex;gap:6px;">
+              <button type="button" class="btn btn-outline btn-sm" title="Download">
+                <app-icon name="i-download" [size]="16" />
+              </button>
+              @if (g.status === 'Unpaid') {
+                <button type="button" class="btn btn-outline btn-sm" (click)="markGstPaid(g.id)">Mark Paid</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'payouts') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Payout Ref</th>
+          <th>Payee</th>
+          <th>Role</th>
+          <th>Bank Account</th>
+          <th>Amount</th>
+          <th>Initiated On</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (po of payments.payouts(); track po.id) {
+          <tr>
+            <td><b>{{ po.payoutRef }}</b></td>
+            <td>{{ po.payeeName }}</td>
+            <td>{{ po.payeeRole }}</td>
+            <td>{{ po.bankAccountMasked }}</td>
+            <td>{{ po.amount }}</td>
+            <td>{{ po.initiatedOn }}</td>
+            <td><span class="status-pill" [class]="payoutStatusClass[po.status]">{{ po.status }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

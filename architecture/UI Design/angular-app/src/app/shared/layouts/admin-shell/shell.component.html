@@ -1,0 +1,86 @@
+<div class="admin-shell">
+  <aside class="sidebar">
+    <a [routerLink]="[portal().basePath, 'dashboard']" class="side-logo">
+      <img src="images/logo-white.png" alt="TransportSeva">
+    </a>
+    <div class="sidebar-role-tag">{{ portal().roleTag | uppercase }}</div>
+    <nav class="sidebar-nav">
+      @for (section of portal().nav; track section.title ?? $index) {
+        @if (section.title) {
+          <div class="side-section-title">{{ section.title }}</div>
+        }
+        @for (item of section.items; track item.path) {
+          <a
+            [routerLink]="[portal().basePath, item.path]"
+            routerLinkActive="active"
+            class="side-link"
+          >
+            <app-icon [name]="item.icon" />
+            <span>{{ item.label }}</span>
+            @if (item.badge) {
+              <span class="side-badge">{{ item.badge }}</span>
+            }
+          </a>
+        }
+      }
+    </nav>
+  </aside>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <div class="topbar-search">
+        <app-icon name="i-search" [size]="18" />
+        <input type="text" placeholder="Search..." />
+      </div>
+      <div class="topbar-actions">
+        <button class="lang-switch" type="button" aria-label="Change language">
+          <span class="lang-opt active">EN</span><span class="lang-sep">|</span><span class="lang-opt">हिंदी</span>
+        </button>
+        <button class="icon-btn" type="button" aria-label="Notifications" (click)="toggleBellDropdown()">
+          <app-icon name="i-bell" [size]="20" />
+          @if (comms.unreadCount() > 0) {
+            <span class="badge-dot"></span>
+          }
+        </button>
+        @if (showBellDropdown()) {
+          <div class="notif-dropdown">
+            <div class="notif-dropdown-head">
+              <h4>Notifications</h4>
+              @if (comms.unreadCount() > 0) {
+                <button type="button" (click)="comms.markAllNotificationsRead()">Mark All as Read</button>
+              }
+            </div>
+            @if (comms.recentNotifications().length) {
+              @for (n of comms.recentNotifications(); track n.id) {
+                <div class="notif-dropdown-item" [class.unread]="!n.read" (click)="markRead(n.id)">
+                  <div class="notif-icon"><app-icon [name]="categoryIcon[n.category]" [size]="14" /></div>
+                  <div>
+                    <b>{{ n.title }}</b>
+                    <p>{{ n.message }}</p>
+                    <span class="notif-time">{{ n.timestamp }}</span>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="notif-dropdown-empty">No notifications yet.</div>
+            }
+            <div class="notif-dropdown-foot">
+              <a (click)="viewAllNotifications()">View All Notifications</a>
+            </div>
+          </div>
+        }
+        <div class="admin-user">
+          <div class="avatar">{{ user().avatarInitials }}</div>
+          <div>
+            <div class="name">{{ user().name }}</div>
+            <div class="role" style="cursor:pointer;">Log Out</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <router-outlet />
+    </div>
+  </div>
+</div>

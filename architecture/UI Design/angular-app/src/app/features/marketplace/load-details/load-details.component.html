@@ -1,0 +1,280 @@
+@if (load(); as l) {
+  <div class="page-toolbar">
+    <div>
+      <a [routerLink]="[session.portal().basePath, 'load-board']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Loads</a>
+      <h1 style="margin-top:6px;">{{ l.loadId }} — {{ l.pickupCity }} → {{ l.dropCity }}</h1>
+    </div>
+    <span class="status-pill" [class]="l.status === 'Booked' ? 'status-delivered' : l.status === 'Applications Received' ? 'status-transit' : 'status-pending'">{{ l.status }}</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card">
+        <div class="card-body">
+          <div class="load-meta-grid" style="grid-template-columns:repeat(3,1fr);">
+            <div>Material: <strong>{{ l.material }}</strong></div>
+            <div>Weight: <strong>{{ l.weightTons }} tons</strong></div>
+            <div>Vehicle Required: <strong>{{ l.vehicleType }}</strong></div>
+            <div>Pickup Date: <strong>{{ l.pickupDate }}</strong></div>
+            <div>Budget: <strong>{{ l.budget }}</strong></div>
+            <div>Applications: <strong>{{ l.applicationsCount }}</strong></div>
+          </div>
+          @if (l.notes) {
+            <p style="margin-top:14px;color:var(--color-text-muted);font-size:13.5px;">{{ l.notes }}</p>
+          }
+          <div style="margin-top:14px;font-size:12.5px;color:var(--color-text-soft);">
+            Posted by {{ l.postedByName }}{{ l.onBehalfOfCustomer ? ' on behalf of ' + l.onBehalfOfCustomer : '' }} · {{ l.postedAgo }}
+          </div>
+        </div>
+      </div>
+
+      @if (isOwner()) {
+        <!-- Owner view: applications received, each with a structured negotiation thread -->
+        <div class="card">
+          <div class="card-head"><h3>Applications Received ({{ applications().length }})</h3></div>
+          @if (applications().length) {
+            <div style="display:flex;flex-direction:column;gap:14px;padding:16px 22px;">
+              @for (app of applications(); track app.id) {
+                <div style="border:1px solid var(--color-border);border-radius:12px;padding:16px;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+                    <div>
+                      <b>{{ app.applicantName }}</b>
+                      <div style="font-size:12.5px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · Available {{ app.availability }} · Current offer {{ app.quotedAmount }} · {{ app.appliedAgo }}</div>
+                      @if (app.message) {
+                        <p style="margin-top:6px;font-size:13px;color:var(--color-text);">"{{ app.message }}"</p>
+                      }
+                    </div>
+                    <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ app.status }}</span>
+                  </div>
+                  <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                    @if (app.status === 'Pending' || app.status === 'Negotiating') {
+                      <button type="button" class="btn btn-outline btn-sm" (click)="openNegotiation(app.id)">
+                        <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? 'Hide Offers' : 'View Offers' }}</span>
+                      </button>
+                      <button type="button" class="btn btn-outline btn-sm" (click)="askReject(app.id, app.applicantName)">Reject</button>
+                      <button type="button" class="btn btn-primary btn-sm" (click)="askAccept(app.id, app.applicantName)">Accept {{ app.quotedAmount }}</button>
+                    } @else if (app.status === 'Accepted') {
+                      <button type="button" class="btn btn-outline btn-sm" (click)="openChat(app.id)">
+                        <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? 'Hide Chat' : 'Chat' }}</span>
+                      </button>
+                    }
+                  </div>
+
+                  @if (negotiatingApplicationId() === app.id) {
+                    <div class="chat-thread" style="margin-top:14px;">
+                      @for (offer of marketplace.getOffersForApplication(app.id)(); track offer.id) {
+                        <div class="chat-bubble" [class.mine]="offer.by === 'owner'" [class.theirs]="offer.by !== 'owner'">
+                          <div><strong>{{ offer.amount }}</strong>@if (offer.message) { <span> — {{ offer.message }}</span> }</div>
+                          <div class="chat-meta">{{ offer.byName }} · {{ offer.timestamp }}</div>
+                        </div>
+                      }
+                      <div class="field" style="margin-top:10px;">
+                        <label>Counter-Offer Amount (₹)</label>
+                        <input type="text" class="input" placeholder="e.g. ₹17,500" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
+                      </div>
+                      <div class="field">
+                        <label>Message (optional)</label>
+                        <input type="text" class="input" placeholder="e.g. Can meet at this rate if pickup is today." [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
+                      </div>
+                      <button type="button" class="btn btn-outline btn-sm" (click)="sendCounterOffer(app.id)">
+                        <app-icon name="i-send" [size]="15" /><span>Send Counter-Offer</span>
+                      </button>
+                    </div>
+                  }
+
+                  @if (activeChatApplicationId() === app.id && app.status === 'Accepted') {
+                    <div class="chat-thread" style="margin-top:14px;">
+                      @for (msg of activeChatMessages(); track msg.id) {
+                        <div class="chat-bubble" [class.mine]="msg.sender === 'owner'" [class.theirs]="msg.sender !== 'owner'">
+                          <div>{{ msg.text }}</div>
+                          <div class="chat-meta">{{ msg.senderName }} · {{ msg.timestamp }}</div>
+                        </div>
+                      }
+                      <div class="chat-input-row">
+                        <input type="text" class="input" placeholder="Type a message…" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
+                        <button type="button" class="btn btn-primary btn-sm" (click)="sendChat(app.id)">
+                          <app-icon name="i-send" [size]="15" />
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <app-icon name="i-box" />
+              <h3>No applications yet</h3>
+              <p>Transporters and truck owners will appear here once they apply.</p>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Applicant view -->
+        @if (myApplication(); as app) {
+          <div class="card">
+            <div class="card-head"><h3>Your Application</h3></div>
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+                <div>
+                  <div style="font-size:13px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · Available {{ app.availability }} · Current offer {{ app.quotedAmount }}</div>
+                  @if (app.message) {
+                    <p style="margin-top:6px;font-size:13px;">"{{ app.message }}"</p>
+                  }
+                </div>
+                <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ app.status }}</span>
+              </div>
+
+              @if (app.status === 'Pending' || app.status === 'Negotiating') {
+                <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openNegotiation(app.id)">
+                  <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? 'Hide Offers' : 'View Negotiation' }}</span>
+                </button>
+              } @else if (app.status === 'Accepted') {
+                <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openChat(app.id)">
+                  <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? 'Hide Chat' : 'Chat with Owner' }}</span>
+                </button>
+              }
+
+              @if (negotiatingApplicationId() === app.id) {
+                <div class="chat-thread" style="margin-top:14px;">
+                  @for (offer of marketplace.getOffersForApplication(app.id)(); track offer.id) {
+                    <div class="chat-bubble" [class.mine]="offer.by === 'applicant'" [class.theirs]="offer.by !== 'applicant'">
+                      <div><strong>{{ offer.amount }}</strong>@if (offer.message) { <span> — {{ offer.message }}</span> }</div>
+                      <div class="chat-meta">{{ offer.byName }} · {{ offer.timestamp }}</div>
+                    </div>
+                  }
+                  <div class="field" style="margin-top:10px;">
+                    <label>Counter-Offer Amount (₹)</label>
+                    <input type="text" class="input" placeholder="e.g. ₹17,500" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
+                  </div>
+                  <div class="field">
+                    <label>Message (optional)</label>
+                    <input type="text" class="input" placeholder="Optional note" [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
+                  </div>
+                  <button type="button" class="btn btn-outline btn-sm" (click)="sendCounterOffer(app.id)">
+                    <app-icon name="i-send" [size]="15" /><span>Send Counter-Offer</span>
+                  </button>
+                </div>
+              }
+
+              @if (activeChatApplicationId() === app.id && app.status === 'Accepted') {
+                <div class="chat-thread" style="margin-top:14px;">
+                  @for (msg of activeChatMessages(); track msg.id) {
+                    <div class="chat-bubble" [class.mine]="msg.sender === 'applicant'" [class.theirs]="msg.sender !== 'applicant'">
+                      <div>{{ msg.text }}</div>
+                      <div class="chat-meta">{{ msg.senderName }} · {{ msg.timestamp }}</div>
+                    </div>
+                  }
+                  <div class="chat-input-row">
+                    <input type="text" class="input" placeholder="Type a message…" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
+                    <button type="button" class="btn btn-primary btn-sm" (click)="sendChat(app.id)">
+                      <app-icon name="i-send" [size]="15" />
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="card">
+            <div class="card-body" style="text-align:center;padding:36px 22px;">
+              <p style="color:var(--color-text-muted);margin-bottom:16px;">Interested in this load? Apply with your vehicle details and proposed freight — contact details stay private until a booking is confirmed.</p>
+              <button type="button" class="btn btn-primary" (click)="openApply()">
+                <app-icon name="i-plus" [size]="18" /><span>Apply for this Load</span>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      @if (booking(); as b) {
+        <div class="card">
+          <div class="card-head"><h3>Booking Timeline</h3></div>
+          <div class="card-body">
+            <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:14px;">{{ b.bookingId }} · {{ b.counterpartyName }} ({{ b.vehicleRegNumber }}) · {{ b.amount }}</div>
+            <div class="timeline">
+              @for (event of b.timeline; track event.stage) {
+                <div class="timeline-item" [class.done]="event.completed">
+                  <div class="timeline-dot"></div>
+                  <div>
+                    <span class="timeline-title">{{ event.stage }}</span>
+                    @if (event.timestamp) {
+                      <div class="timeline-time">{{ event.timestamp }}</div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <button type="button" class="btn btn-outline btn-block" style="margin-top:14px;" (click)="viewBooking()">Manage Booking</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (showApplyModal()) {
+    <app-modal title="Apply for this Load" (close)="showApplyModal.set(false)">
+      <div class="field">
+        <label>Vehicle Registration Number</label>
+        <div class="input-wrap">
+          <app-icon name="i-truck" [size]="18" />
+          <input type="text" class="input" placeholder="e.g. RJ14GA1234" [ngModel]="vehicleRegNumber()" (ngModelChange)="vehicleRegNumber.set($event)" name="vehicleRegNumber" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Vehicle Type</label>
+        <select class="input" style="padding-left:14px;" [ngModel]="vehicleType()" (ngModelChange)="vehicleType.set($event)" name="vehicleType">
+          @for (type of vehicleTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Vehicle Availability</label>
+        <div class="input-wrap">
+          <app-icon name="i-clock" [size]="18" />
+          <input type="text" class="input" placeholder="e.g. Within 3 hours / Today" [ngModel]="availability()" (ngModelChange)="availability.set($event)" name="availability" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Your Proposed Freight (₹)</label>
+        <div class="input-wrap">
+          <app-icon name="i-wallet" [size]="18" />
+          <input type="text" class="input" placeholder="e.g. ₹18,000" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Message (optional)</label>
+        <textarea class="input" style="padding:12px 14px;min-height:70px;resize:vertical;" placeholder="Availability, special notes, etc." [ngModel]="applyMessage()" (ngModelChange)="applyMessage.set($event)" name="applyMessage"></textarea>
+      </div>
+      <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+        <button type="button" class="btn btn-outline" (click)="showApplyModal.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="applying()" (click)="submitApplication()">{{ applying() ? 'Submitting…' : 'Submit Application' }}</button>
+      </div>
+    </app-modal>
+  }
+
+  @if (confirmAction(); as action) {
+    <app-modal [title]="action.type === 'accept' ? 'Accept Application' : 'Reject Application'" (close)="confirmAction.set(null)">
+      <p>
+        @if (action.type === 'accept') {
+          Accept <b>{{ action.applicantName }}</b>'s offer? This creates a booking awaiting the mutual Booking Security Deposit from both sides, and automatically rejects other pending applications on this load.
+        } @else {
+          Reject <b>{{ action.applicantName }}</b>'s application? This action cannot be undone.
+        }
+      </p>
+      <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+        <button type="button" class="btn btn-outline" (click)="confirmAction.set(null)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="confirmActionRun()">Confirm</button>
+      </div>
+    </app-modal>
+  }
+} @else {
+  <div class="empty-state">
+    <app-icon name="i-box" />
+    <h3>Load not found</h3>
+    <p>This load may have been removed or the link is incorrect.</p>
+  </div>
+}

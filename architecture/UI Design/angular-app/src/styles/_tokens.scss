@@ -1,0 +1,33 @@
+// ============================================================
+// TransportSeva brand tokens (Sass) — mirrors css/theme.css
+// from the HTML prototype at ../Website/css/theme.css so the
+// Angular app renders pixel-identical to the approved design.
+// ============================================================
+@use '@angular/material' as mat;
+
+$color-primary: #F45B00;
+$color-primary-dark: #D64E00;
+$color-primary-light: #FF7A28;
+$color-secondary: #222222;
+$color-bg: #FFFFFF;
+$color-accent: #FFE9DC;
+$color-muted-bg: #FBFAF9;
+$color-border: #ECEAE7;
+$color-text: #222222;
+$color-text-muted: #6B6B6B;
+$color-text-soft: #8A8A8A;
+$color-success: #1D9A5B;
+$color-danger: #E0403A;
+
+$radius-sm: 10px;
+$radius-md: 16px;
+$radius-lg: 18px;
+$radius-pill: 999px;
+
+// Closest built-in Material 3 palettes to the brand orange/blue accents.
+// mat.theme() needs a full tonal palette map; we start from the built-in
+// $orange-palette (closest hue to #F45B00) and then hard-override the
+// generated --mat-sys-* tokens in styles.scss with the exact brand hex
+// values so components stay pixel-accurate to the HTML prototype.
+$ts-primary-palette: mat.$orange-palette;
+$ts-tertiary-palette: mat.$blue-palette;

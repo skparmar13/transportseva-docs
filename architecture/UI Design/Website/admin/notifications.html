@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="../css/theme.css">
 <link rel="stylesheet" href="../css/lang-switch.css">
 <link rel="stylesheet" href="../css/app-shell.css">
+  <link rel="stylesheet" href="../css/notifications.css">
 </head>
 <body class="app-body">
 
@@ -82,6 +83,7 @@
       <a href="transporters.html" class="side-link"><svg class="icon"><use href="#i-building"/></svg><span data-i18n="admin.sidebar.transporters">Transporter Management</span></a>
       <a href="drivers.html" class="side-link"><svg class="icon"><use href="#i-truck"/></svg><span data-i18n="admin.sidebar.drivers">Driver Management</span></a>
       <a href="vehicles.html" class="side-link"><svg class="icon"><use href="#i-car"/></svg><span data-i18n="admin.sidebar.vehicles">Vehicle &amp; Fleet Management</span></a>
+      <a href="devices.html" class="side-link"><svg class="icon"><use href="#i-api"/></svg><span data-i18n="admin.sidebar.devices">Device Inventory</span></a>
       <div class="side-section-title" data-i18n="admin.sidebar.bookings">Operations</div>
       <a href="bookings.html" class="side-link"><svg class="icon"><use href="#i-box"/></svg><span data-i18n="admin.sidebar.bookings">Booking Management</span></a>
       <a href="routes.html" class="side-link"><svg class="icon"><use href="#i-route"/></svg><span data-i18n="admin.sidebar.routes">Route Management</span></a>
@@ -127,6 +129,18 @@
       <h1 data-i18n="admin.sidebar.notifications">Notification Management</h1>
       <p class="desc" data-i18n="admin.notifications.desc">Send platform-wide announcements and manage notification history.</p>
 
+      <div class="card" style="margin-bottom:24px;">
+        <div class="notif-page-toolbar" style="padding:18px 20px 0;">
+          <h3 data-i18n="notif.page.title" style="margin:0;">Notifications</h3>
+          <button type="button" class="btn btn-outline" id="notifMarkAllBtn" data-i18n="notif.markAllRead">Mark all as read</button>
+        </div>
+        <div class="notif-page-tabs" style="margin:14px 20px;">
+          <button type="button" class="notif-page-tab active" id="notifTabAll" data-i18n="notif.tab.all">All</button>
+          <button type="button" class="notif-page-tab" id="notifTabUnread" data-i18n="notif.tab.unread">Unread</button>
+        </div>
+        <div class="notif-page-list" id="notifPageList"></div>
+      </div>
+
       <div class="content-grid">
     <div class="card">
       <div class="card-head"><h3 data-i18n="admin.notifications.broadcastTitle">Send Broadcast Notification</h3></div>
@@ -167,5 +181,6 @@
 </div>
 
 <script src="../js/i18n.js"></script>
+  <script src="../js/notifications.js"></script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+<app-auth-shell
+  backLink="/auth/login"
+  backLabel="Back to Log In"
+  eyebrow="One Account, Many Roles"
+  title="Choose a workspace"
+  sub="Your account is linked to multiple TransportSeva workspaces. Select one to continue."
+  visualHeadingLine1="Switch workspaces"
+  visualHeadingLine2="in a single click."
+  visualDescription="Manage your shipper, transporter and fleet workspaces from one unified TransportSeva login."
+>
+  <div class="workspace-grid">
+    @for (workspace of workspaces(); track workspace.id) {
+      <div class="workspace-card" (click)="selectWorkspace(workspace)">
+        <div class="workspace-icon"><app-icon [name]="workspace.icon" [size]="22" /></div>
+        <div>
+          <div class="workspace-name">{{ workspace.name }}</div>
+          <div class="workspace-role">{{ workspace.roleTag }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="link-row">
+    <a href="javascript:void(0)">+ Add another business workspace</a>
+  </div>
+</app-auth-shell>

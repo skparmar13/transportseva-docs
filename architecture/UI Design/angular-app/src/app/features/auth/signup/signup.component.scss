@@ -1,0 +1,25 @@
+/* Uses global auth classes from src/styles/_auth.scss */
+
+.plan-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  background: var(--color-primary-light, #fff4ed);
+  border: 1px solid var(--color-border, #eee);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+
+  b {
+    color: var(--color-text);
+  }
+
+  a {
+    margin-left: auto;
+    color: var(--color-primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}

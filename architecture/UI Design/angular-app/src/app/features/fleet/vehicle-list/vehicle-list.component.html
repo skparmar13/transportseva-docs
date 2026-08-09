@@ -1,0 +1,127 @@
+<div class="page-toolbar">
+  <div>
+    <h1>{{ session.role() === 'truck-owner' ? 'My Vehicles' : 'Fleet & Drivers' }}</h1>
+    <p class="desc">Manage your vehicles, GPS devices, documents, maintenance and fuel.</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="openAdd()">
+    <app-icon name="i-plus" [size]="18" />
+    <span>Add Vehicle</span>
+  </button>
+</div>
+
+@if (showFleetTabs()) {
+  <div class="tab-row" style="max-width:360px;">
+    <button type="button" class="tab-btn active">Vehicles</button>
+    <button type="button" class="tab-btn" [routerLink]="[session.portal().basePath, 'fleet', 'drivers']">Drivers</button>
+  </div>
+}
+
+<div class="page-toolbar">
+  <div class="toolbar-filters">
+    <div class="filter-search">
+      <app-icon name="i-search" [size]="16" />
+      <input type="text" placeholder="Search by reg. number, make or model..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    </div>
+    <select class="filter-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+      <option value="">All Status</option>
+      <option value="On Trip">On Trip</option>
+      <option value="Idle">Idle</option>
+      <option value="Maintenance">Maintenance</option>
+      <option value="Offline">Offline</option>
+    </select>
+  </div>
+  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ filteredVehicles().length }} vehicles</span>
+</div>
+
+<div class="card">
+  @if (filteredVehicles().length) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Reg. Number</th>
+          <th>Vehicle</th>
+          <th>Driver</th>
+          <th>GPS Device</th>
+          <th>Status</th>
+          <th>Location</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (vehicle of filteredVehicles(); track vehicle.id) {
+          <tr>
+            <td><b>{{ vehicle.regNumber }}</b></td>
+            <td>{{ vehicle.make }} {{ vehicle.model }} <span style="color:var(--color-text-soft);">({{ vehicle.vehicleType }})</span></td>
+            <td>{{ vehicle.driver || '—' }}</td>
+            <td>
+              @if (vehicle.deviceImei) {
+                <span class="status-pill status-delivered">{{ vehicle.deviceImei }}</span>
+              } @else {
+                <span style="color:var(--color-text-soft);font-size:12.5px;">Not assigned</span>
+              }
+            </td>
+            <td><span class="status-pill" [class]="statusClass[vehicle.status]">{{ vehicle.status }}</span></td>
+            <td>{{ vehicle.location }}</td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewVehicle(vehicle.id)">View</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
+      <app-icon name="i-car" [size]="32" />
+      <p style="margin-top:12px;">No vehicles found.</p>
+      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAdd()">Add Your First Vehicle</button>
+    </div>
+  }
+</div>
+
+@if (showAddModal()) {
+  <app-modal title="Add Vehicle" (close)="closeAdd()">
+    <div class="field">
+      <label>Vehicle Registration Number</label>
+      <div class="input-wrap">
+        <app-icon name="i-truck" [size]="18" />
+        <input type="text" class="input" placeholder="e.g. RJ14GA1234" [ngModel]="regNumber()" (ngModelChange)="regNumber.set($event)" name="regNumber" />
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="field">
+        <label>Make</label>
+        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Tata" [ngModel]="make()" (ngModelChange)="make.set($event)" name="make" />
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Signa 4225.TK" [ngModel]="model()" (ngModelChange)="model.set($event)" name="model" />
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="field">
+        <label>Vehicle Type</label>
+        <select class="input" style="padding-left:14px;" [ngModel]="vehicleType()" (ngModelChange)="vehicleType.set($event)" name="vehicleType">
+          @for (type of vehicleTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label>Year of Make</label>
+        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. 2022" [ngModel]="yearOfMake()" (ngModelChange)="yearOfMake.set($event)" name="yearOfMake" />
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="field">
+        <label>Capacity (tons)</label>
+        <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 25" [ngModel]="capacityTons()" (ngModelChange)="capacityTons.set($event)" name="capacityTons" />
+      </div>
+      <div class="field">
+        <label>Assign Driver (optional)</label>
+        <input type="text" class="input" style="padding-left:14px;" placeholder="Driver name" [ngModel]="driver()" (ngModelChange)="driver.set($event)" name="driver" />
+      </div>
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeAdd()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ saving() ? 'Saving…' : 'Add Vehicle' }}</button>
+    </div>
+  </app-modal>
+}

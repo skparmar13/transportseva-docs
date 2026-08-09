@@ -1,0 +1,63 @@
+<app-auth-shell
+  backLink="/"
+  eyebrow="Welcome Back"
+  title="Log in to your account"
+  sub="Access your bookings, track shipments and manage your logistics in one place."
+>
+  <form (ngSubmit)="submit()">
+    <div class="field">
+      <label>Email or Mobile Number</label>
+      <div class="input-wrap">
+        <app-icon name="i-user" [size]="18" />
+        <input
+          type="text"
+          class="input"
+          placeholder="Enter email or mobile number"
+          name="identifier"
+          [ngModel]="identifier()"
+          (ngModelChange)="identifier.set($event)"
+          required
+        >
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <div class="input-wrap input-suffix-wrap">
+        <app-icon name="i-lock" [size]="18" />
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          class="input"
+          placeholder="Enter your password"
+          name="password"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+          required
+        >
+        <button type="button" class="input-suffix-btn" (click)="togglePassword()">
+          {{ showPassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin:18px 0 24px;">
+      <label class="checkbox-row" style="margin:0;">
+        <input type="checkbox" [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)" name="rememberMe">
+        <span>Remember me</span>
+      </label>
+      <a routerLink="/auth/forgot-password" style="color:var(--color-primary); font-weight:700; font-size:13.5px;">Forgot Password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+      <span>{{ submitting() ? 'Logging in…' : 'Log In' }}</span>
+      @if (!submitting()) {
+        <app-icon name="i-arrow-right" [size]="18" />
+      }
+    </button>
+  </form>
+
+  <div class="link-row">
+    <span>New to TransportSeva?</span>
+    <a routerLink="/auth/signup">Create an account</a>
+  </div>
+</app-auth-shell>

@@ -1,0 +1,78 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Trips</h1>
+    <p class="desc">Track every trip from dispatch to delivery — timeline, route progress and proof of delivery.</p>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-calendar" /></div></div>
+    <div class="kpi-value">{{ kpis().planned }}</div>
+    <div class="kpi-label">Planned Trips</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-route" /></div></div>
+    <div class="kpi-value">{{ kpis().active }}</div>
+    <div class="kpi-label">Active Trips</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-check" /></div></div>
+    <div class="kpi-value">{{ kpis().completed }}</div>
+    <div class="kpi-label">Completed Trips</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-doc" /></div></div>
+    <div class="kpi-value">{{ kpis().pendingPod }}</div>
+    <div class="kpi-label">POD Pending</div>
+  </div>
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'planned'" (click)="setTab('planned')">Planned</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'active'" (click)="setTab('active')">Active</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'completed'" (click)="setTab('completed')">Completed</button>
+  </div>
+  <div class="filter-search" style="max-width:280px;">
+    <app-icon name="i-search" [size]="16" />
+    <input type="text" placeholder="Search trip, route, vehicle..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
+  </div>
+</div>
+
+<div class="card">
+  @if (filteredTrips().length) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Trip ID</th>
+          <th>Route</th>
+          <th>Vehicle / Driver</th>
+          <th>Customer</th>
+          <th>Start Date</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trip of filteredTrips(); track trip.id) {
+          <tr>
+            <td><b>{{ trip.tripId }}</b></td>
+            <td>{{ trip.pickupCity }} → {{ trip.dropCity }}<div style="font-size:12px;color:var(--color-text-soft);">{{ trip.material }}</div></td>
+            <td>{{ trip.vehicleRegNumber }}<div style="font-size:12px;color:var(--color-text-soft);">{{ trip.driverName }}</div></td>
+            <td>{{ trip.customerName }}</td>
+            <td>{{ trip.startDate }}</td>
+            <td><span class="status-pill" [class]="statusClass[trip.status]">{{ trip.status }}</span></td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewTrip(trip.id)">View</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
+      <app-icon name="i-route" [size]="32" />
+      <p style="margin-top:12px;">No trips found for this filter.</p>
+    </div>
+  }
+</div>

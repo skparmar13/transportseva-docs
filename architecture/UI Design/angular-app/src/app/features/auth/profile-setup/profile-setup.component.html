@@ -1,0 +1,59 @@
+<app-auth-shell
+  backLink="/auth/login"
+  backLabel="Back"
+  eyebrow="Almost There"
+  title="Set up your profile"
+  sub="A few more details help us personalize your TransportSeva workspace. You can always update these later from Settings."
+  visualHeadingLine1="Your workspace,"
+  visualHeadingLine2="tailored to you."
+  visualDescription="Complete your profile to unlock the full TransportSeva experience — bookings, tracking and more."
+>
+  <form (ngSubmit)="submit()">
+    <div class="field">
+      <label>Designation / Job Title</label>
+      <div class="input-wrap">
+        <app-icon name="i-user" [size]="18" />
+        <input type="text" class="input" placeholder="e.g. Logistics Manager" name="designation" [ngModel]="designation()" (ngModelChange)="designation.set($event)">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Address</label>
+      <div class="input-wrap">
+        <app-icon name="i-map" [size]="18" />
+        <input type="text" class="input" placeholder="Street address" name="address" [ngModel]="address()" (ngModelChange)="address.set($event)">
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div class="field">
+        <label>City</label>
+        <input type="text" class="input" placeholder="City" name="city" [ngModel]="city()" (ngModelChange)="city.set($event)">
+      </div>
+      <div class="field">
+        <label>Pincode</label>
+        <input type="text" class="input" placeholder="Pincode" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)">
+      </div>
+    </div>
+
+    <label class="checkbox-row" style="margin-bottom:10px;">
+      <input type="checkbox" [ngModel]="notifyEmail()" (ngModelChange)="notifyEmail.set($event)" name="notifyEmail">
+      <span>Send me booking updates by email</span>
+    </label>
+    <label class="checkbox-row" style="margin-bottom:22px;">
+      <input type="checkbox" [ngModel]="notifySms()" (ngModelChange)="notifySms.set($event)" name="notifySms">
+      <span>Send me booking updates by SMS</span>
+    </label>
+
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+      <span>{{ submitting() ? 'Saving…' : 'Finish Setup' }}</span>
+      @if (!submitting()) {
+        <app-icon name="i-arrow-right" [size]="18" />
+      }
+    </button>
+  </form>
+
+  <div class="link-row">
+    <a href="javascript:void(0)" (click)="skip()">Skip for now</a>
+  </div>
+</app-auth-shell>

@@ -1,0 +1,111 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Wallet</h1>
+    <p class="desc">Manage your balance, booking deposits, refunds and settlements in one place.</p>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button type="button" class="btn btn-outline" (click)="openWithdraw()">
+      <app-icon name="i-download" [size]="18" />
+      <span>Withdraw</span>
+    </button>
+    <button type="button" class="btn btn-primary" (click)="openAddMoney()">
+      <app-icon name="i-plus" [size]="18" />
+      <span>Add Money</span>
+    </button>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-wallet" /></div></div>
+    <div class="kpi-value">₹{{ wallet.availableBalance().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">Available Balance</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-lock" /></div></div>
+    <div class="kpi-value">₹{{ wallet.onHoldAmount().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">On Hold (Booking Deposits)</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-trending-up" /></div></div>
+    <div class="kpi-value">₹{{ wallet.totalCredited().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">Total Credited</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-credit-card" /></div></div>
+    <div class="kpi-value">₹{{ wallet.totalDebited().toLocaleString('en-IN') }}</div>
+    <div class="kpi-label">Total Debited</div>
+  </div>
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'transactions'" (click)="setTab('transactions')">All Transactions</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'deposits'" (click)="setTab('deposits')">Booking Deposits</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'refunds'" (click)="setTab('refunds')">Refunds</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'settlements'" (click)="setTab('settlements')">Settlements</button>
+  </div>
+</div>
+
+<div class="card">
+  @if (filteredTransactions().length) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Txn ID</th>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (txn of filteredTransactions(); track txn.id) {
+          <tr>
+            <td><b>{{ txn.txnId }}</b></td>
+            <td>{{ txn.date }}</td>
+            <td><span class="status-pill" [class]="categoryClass[txn.category]">{{ txn.category }}</span></td>
+            <td>{{ txn.description }}</td>
+            <td [style.color]="txn.type === 'Credit' ? 'var(--color-success, #16a34a)' : 'var(--color-danger, #dc2626)'">
+              {{ txn.type === 'Credit' ? '+' : '−' }} {{ txn.amount }}
+            </td>
+            <td>{{ txn.status }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
+      <app-icon name="i-wallet" [size]="32" />
+      <p style="margin-top:12px;">No transactions in this category yet.</p>
+    </div>
+  }
+</div>
+
+@if (showAddMoney()) {
+  <app-modal title="Add Money" (close)="closeAddMoney()">
+    <div class="field">
+      <label>Amount (₹)</label>
+      <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 5000" [ngModel]="addAmount()" (ngModelChange)="addAmount.set($event)" name="addAmount" />
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeAddMoney()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="savingAdd() || !addAmount()" (click)="submitAddMoney()">{{ savingAdd() ? 'Processing…' : 'Add Money' }}</button>
+    </div>
+  </app-modal>
+}
+
+@if (showWithdraw()) {
+  <app-modal title="Withdraw to Bank" (close)="closeWithdraw()">
+    <div class="field">
+      <label>Amount (₹)</label>
+      <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 5000" [ngModel]="withdrawAmount()" (ngModelChange)="withdrawAmount.set($event)" name="withdrawAmount" />
+    </div>
+    <p style="font-size:12.5px;color:var(--color-text-soft);">Available balance: ₹{{ wallet.availableBalance().toLocaleString('en-IN') }}</p>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeWithdraw()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="savingWithdraw() || !withdrawAmount() || withdrawAmount()! > wallet.availableBalance()" (click)="submitWithdraw()">{{ savingWithdraw() ? 'Processing…' : 'Withdraw' }}</button>
+    </div>
+  </app-modal>
+}

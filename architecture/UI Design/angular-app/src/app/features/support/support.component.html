@@ -1,0 +1,138 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Support</h1>
+    <p class="desc">Raise and track support tickets, or reach us over a call.</p>
+  </div>
+  @if (view() === 'tickets') {
+    <button type="button" class="btn btn-primary" (click)="openNewTicket()">
+      <app-icon name="i-plus" [size]="18" />
+      <span>New Ticket</span>
+    </button>
+  }
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="view() === 'tickets'" (click)="setView('tickets')">Tickets</button>
+    <button type="button" class="tab-btn" [class.active]="view() === 'calls'" (click)="setView('calls')">Voice Calls</button>
+  </div>
+</div>
+
+@if (view() === 'tickets') {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ticket #</th>
+          <th>Subject</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Updated On</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of comms.tickets(); track t.id) {
+          <tr>
+            <td><b>{{ t.ticketNumber }}</b></td>
+            <td>{{ t.subject }}</td>
+            <td>{{ t.category }}</td>
+            <td><span class="status-pill" [class]="priorityClass[t.priority]">{{ t.priority }}</span></td>
+            <td><span class="status-pill" [class]="statusClass[t.status]">{{ t.status }}</span></td>
+            <td>{{ t.updatedOn }}</td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="openTicket(t.id)">View</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (view() === 'calls') {
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:56px 22px;color:var(--color-text-muted);">
+      <app-icon name="i-headphones" [size]="36" />
+      <h3 style="margin-top:14px;color:var(--color-secondary);">Voice Support — Coming Soon</h3>
+      <p style="margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto;">
+        Talk to our support team directly from the app. This is a placeholder for the upcoming in-app calling
+        feature; for now please reach us at <b>1800-123-4567</b> or raise a ticket.
+      </p>
+      <button type="button" class="btn btn-outline" style="margin-top:18px;" disabled>
+        <app-icon name="i-phone" [size]="16" />
+        <span>Call Support</span>
+      </button>
+    </div>
+  </div>
+}
+
+@if (selectedTicket(); as ticket) {
+  <app-modal [title]="ticket.ticketNumber + ' — ' + ticket.subject" [large]="true" [showFooter]="false" (close)="closeTicket()">
+    <div style="display:flex;gap:10px;margin-bottom:18px;">
+      <span class="status-pill" [class]="priorityClass[ticket.priority]">{{ ticket.priority }} Priority</span>
+      <span class="status-pill" [class]="statusClass[ticket.status]">{{ ticket.status }}</span>
+      <span class="status-pill status-pending">{{ ticket.category }}</span>
+    </div>
+
+    <div class="timeline">
+      @for (m of ticket.messages; track m.id) {
+        <div class="timeline-item done">
+          <div class="timeline-dot"><app-icon [name]="m.authorType === 'You' ? 'i-user' : 'i-headset'" [size]="14" /></div>
+          <div>
+            <div class="timeline-title">{{ m.author }} <span style="font-weight:400;color:var(--color-text-soft);">({{ m.authorType }})</span></div>
+            <p style="font-size:13.5px;color:var(--color-text-muted);margin:4px 0;">{{ m.message }}</p>
+            <div class="timeline-time">{{ m.timestamp }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (ticket.status !== 'Closed') {
+      <div class="field" style="margin-top:18px;">
+        <label>Add Reply</label>
+        <textarea class="input" style="min-height:80px;padding:12px 14px;" placeholder="Type your message..." [ngModel]="replyText()" (ngModelChange)="replyText.set($event)" name="reply"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button type="button" class="btn btn-primary" [disabled]="!replyText().trim()" (click)="sendReply()">
+          <app-icon name="i-send" [size]="16" />
+          <span>Send</span>
+        </button>
+      </div>
+    }
+  </app-modal>
+}
+
+@if (showNewTicket()) {
+  <app-modal title="New Support Ticket" (close)="closeNewTicket()">
+    <div class="field">
+      <label>Subject</label>
+      <input type="text" class="input" style="padding-left:14px;" placeholder="Briefly describe your issue" [ngModel]="newSubject()" (ngModelChange)="newSubject.set($event)" name="subject" />
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select class="input" style="padding-left:14px;" [ngModel]="newCategory()" (ngModelChange)="newCategory.set($event)" name="category">
+        @for (c of ticketCategories; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Priority</label>
+      <select class="input" style="padding-left:14px;" [ngModel]="newPriority()" (ngModelChange)="newPriority.set($event)" name="priority">
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Message</label>
+      <textarea class="input" style="min-height:90px;padding:12px 14px;" placeholder="Describe your issue in detail" [ngModel]="newMessage()" (ngModelChange)="newMessage.set($event)" name="message"></textarea>
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeNewTicket()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="savingTicket() || !newSubject().trim() || !newMessage().trim()" (click)="submitNewTicket()">
+        {{ savingTicket() ? 'Submitting…' : 'Submit Ticket' }}
+      </button>
+    </div>
+  </app-modal>
+}

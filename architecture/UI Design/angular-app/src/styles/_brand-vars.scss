@@ -1,0 +1,35 @@
+/* ============================================================
+   TransportSeva brand tokens (CSS custom properties)
+   Verbatim port of ../Website/css/theme.css :root block, so
+   plain CSS in shared components can keep using var(--color-*)
+   exactly like the HTML prototype.
+   ============================================================ */
+:root {
+  --color-primary: #F45B00;
+  --color-primary-dark: #D64E00;
+  --color-primary-light: #FF7A28;
+  --color-secondary: #222222;
+  --color-bg: #FFFFFF;
+  --color-accent: #FFE9DC;
+  --color-muted-bg: #FBFAF9;
+  --color-border: #ECEAE7;
+  --color-text: #222222;
+  --color-text-muted: #6B6B6B;
+  --color-text-soft: #8A8A8A;
+  --color-success: #1D9A5B;
+  --color-danger: #E0403A;
+  --color-white: #FFFFFF;
+
+  --font-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 2px 8px rgba(34,34,34,0.05);
+  --shadow-md: 0 8px 24px rgba(34,34,34,0.08);
+  --shadow-lg: 0 20px 50px rgba(244,91,0,0.16);
+
+  --container-w: 1240px;
+}

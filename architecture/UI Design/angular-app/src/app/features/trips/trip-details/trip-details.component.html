@@ -1,0 +1,144 @@
+@if (trip(); as t) {
+  <div class="page-toolbar">
+    <div>
+      <a [routerLink]="listPath()" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Trips</a>
+      <h1 style="margin-top:6px;">{{ t.tripId }}</h1>
+      <p class="desc">{{ t.pickupCity }} → {{ t.dropCity }} · {{ t.material }} · {{ t.vehicleRegNumber }} · {{ t.driverName }}</p>
+    </div>
+    <span class="status-pill" [class]="statusClass[t.status]" style="font-size:13px;padding:6px 14px;">{{ t.status }}</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-user" /></div></div>
+      <div class="kpi-value" style="font-size:18px;">{{ t.customerName }}</div>
+      <div class="kpi-label">Customer</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-route" /></div></div>
+      <div class="kpi-value">{{ t.distanceKm }} km</div>
+      <div class="kpi-label">Distance</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-clock" /></div></div>
+      <div class="kpi-value" style="font-size:16px;">{{ t.eta }}</div>
+      <div class="kpi-label">{{ t.status === 'Planned' || t.status === 'In Transit' ? 'ETA' : 'Delivered On' }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-wallet" /></div></div>
+      <div class="kpi-value">{{ t.amount }}</div>
+      <div class="kpi-label">Freight Amount</div>
+    </div>
+  </div>
+
+  <div class="tab-row" style="max-width:420px;">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">Timeline</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'route'" (click)="setTab('route')">Route</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'pod'" (click)="setTab('pod')">POD</button>
+  </div>
+
+  @switch (activeTab()) {
+    @case ('timeline') {
+      <div class="card">
+        <div class="card-head"><h3>Trip Timeline</h3></div>
+        <div class="card-body">
+          <div class="timeline">
+            @for (event of t.timeline; track event.stage) {
+              <div class="timeline-item" [class.done]="event.completed">
+                <div class="timeline-dot"></div>
+                <div>
+                  <span class="timeline-title">{{ event.stage }}</span>
+                  @if (event.timestamp) {
+                    <div class="timeline-time">{{ event.timestamp }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @case ('route') {
+      <div class="card">
+        <div class="card-head"><h3>Route &amp; Stops</h3></div>
+        <div class="card-body">
+          <div class="timeline">
+            @for (stop of t.route; track stop.name) {
+              <div class="timeline-item" [class.done]="stop.completed">
+                <div class="timeline-dot"></div>
+                <div>
+                  <span class="timeline-title">{{ stop.name }} <span class="status-pill" style="margin-left:6px;font-size:11px;">{{ stop.type }}</span></span>
+                  <div class="timeline-time">
+                    @if (stop.actualTime) {
+                      Arrived {{ stop.actualTime }}
+                    } @else {
+                      ETA {{ stop.eta }}
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @case ('pod') {
+      @if (t.pod.uploaded) {
+        <div class="card">
+          <div class="card-head"><h3>Proof of Delivery</h3></div>
+          <div class="card-body">
+            <div class="load-meta-grid" style="grid-template-columns:repeat(2,1fr);">
+              <div>POD Number: <strong>{{ t.pod.podNumber }}</strong></div>
+              <div>Received By: <strong>{{ t.pod.receivedByName }}</strong></div>
+              <div>Uploaded On: <strong>{{ t.pod.uploadedAt }}</strong></div>
+              <div>Document: <strong>{{ t.pod.fileName }}</strong></div>
+            </div>
+            @if (t.pod.remarks) {
+              <p style="margin-top:14px;font-size:13.5px;color:var(--color-text-muted);">"{{ t.pod.remarks }}"</p>
+            }
+          </div>
+        </div>
+      } @else if (t.status === 'Delivered') {
+        <div class="card">
+          <div class="card-head"><h3>Upload Proof of Delivery</h3></div>
+          <div class="card-body">
+            <div class="field">
+              <label>POD Number</label>
+              <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. POD-88214" [ngModel]="podNumber()" (ngModelChange)="podNumber.set($event)" name="podNumber" />
+            </div>
+            <div class="field">
+              <label>Received By</label>
+              <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Warehouse Incharge" [ngModel]="receivedByName()" (ngModelChange)="receivedByName.set($event)" name="receivedByName" />
+            </div>
+            <div class="field">
+              <label>Remarks (optional)</label>
+              <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Goods received in good condition" [ngModel]="remarks()" (ngModelChange)="remarks.set($event)" name="remarks" />
+            </div>
+            <div class="field">
+              <label>Signed POD Copy</label>
+              <div class="input" style="padding-left:14px;display:flex;align-items:center;gap:8px;color:var(--color-text-soft);">
+                <app-icon name="i-upload" [size]="16" />
+                <span>Choose file (prototype — no upload wired)</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" [disabled]="saving() || !podNumber() || !receivedByName()" (click)="submitPod()">{{ saving() ? 'Saving…' : 'Upload POD' }}</button>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <app-icon name="i-doc" [size]="32" />
+          <h3>POD Not Available Yet</h3>
+          <p>Proof of delivery can be uploaded once the trip reaches "Delivered" status.</p>
+        </div>
+      }
+    }
+  }
+} @else {
+  <div class="empty-state">
+    <app-icon name="i-route" [size]="32" />
+    <h3>Trip Not Found</h3>
+    <p>This trip does not exist or has been removed.</p>
+  </div>
+}

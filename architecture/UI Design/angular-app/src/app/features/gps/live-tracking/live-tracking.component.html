@@ -1,0 +1,206 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Live Tracking</h1>
+    <p class="desc">Real-time AIS-140 vehicle positions, trip replay and geofence monitoring.</p>
+  </div>
+  <button type="button" class="btn btn-outline" (click)="toggleAlerts()">
+    <app-icon name="i-bell" [size]="18" />
+    <span>Alerts{{ unacknowledgedCount() > 0 ? ' (' + unacknowledgedCount() + ')' : '' }}</span>
+  </button>
+</div>
+
+@if (showAlerts()) {
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head">
+      <h3>Recent Alerts</h3>
+      <a (click)="acknowledgeAll()">Mark All as Read</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+      @if (alerts().length) {
+        <table class="data-table">
+          <thead>
+            <tr><th>Vehicle</th><th>Type</th><th>Message</th><th>Timestamp</th><th>Severity</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (alert of alerts(); track alert.id) {
+              <tr>
+                <td><b>{{ alert.vehicleRegNumber }}</b></td>
+                <td>{{ alert.type }}</td>
+                <td>{{ alert.message }}</td>
+                <td>{{ alert.timestamp }}</td>
+                <td>
+                  <span class="status-pill" [class]="alert.severity === 'Critical' ? 'status-cancelled' : alert.severity === 'Warning' ? 'status-pending' : 'status-transit'">{{ alert.severity }}</span>
+                </td>
+                <td>
+                  @if (alert.acknowledged) {
+                    <span style="font-size:12px;color:var(--color-text-soft);">Acknowledged</span>
+                  } @else {
+                    <button type="button" class="btn btn-outline btn-sm" (click)="acknowledge(alert.id)">Mark as Read</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div style="text-align:center;padding:32px;color:var(--color-text-muted);">No alerts.</div>
+      }
+    </div>
+  </div>
+}
+
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start;">
+  <div class="card">
+    <div class="card-head"><h3>Live Map</h3></div>
+    <div class="card-body">
+      <div style="position:relative;height:360px;border-radius:12px;background:var(--color-muted-bg);overflow:hidden;background-image:linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px);background-size:32px 32px;">
+        @for (v of liveVehicles(); track v.regNumber) {
+          <button
+            type="button"
+            (click)="selectVehicle(v.regNumber)"
+            [style.top.%]="v.topPct"
+            [style.left.%]="v.leftPct"
+            style="position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:0;"
+          >
+            <span style="width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid var(--color-primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);">
+              <app-icon name="i-truck" [size]="18" />
+            </span>
+            <span style="font-size:10.5px;font-weight:700;background:#fff;padding:1px 6px;border-radius:6px;margin-top:2px;box-shadow:var(--shadow-sm);">{{ v.regNumber }}</span>
+          </button>
+        }
+        @if (!liveVehicles().length) {
+          <div class="empty-state" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <app-icon name="i-map" />
+            <h3>No vehicles being tracked</h3>
+            <p>Assign an AIS-140 device to a vehicle to see it here.</p>
+          </div>
+        }
+      </div>
+      <p style="font-size:12px;color:var(--color-text-soft);margin-top:10px;">Map placeholder — production build will render live AIS-140 positions on an interactive map.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Tracked Vehicles</h3></div>
+    <div class="card-body" style="padding:0;">
+      @if (liveVehicles().length) {
+        <table class="data-table">
+          <thead>
+            <tr><th>Vehicle</th><th>Speed</th><th>Location</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (v of liveVehicles(); track v.regNumber) {
+              <tr [style.background]="selectedReg() === v.regNumber ? 'var(--color-muted-bg)' : null">
+                <td><b>{{ v.regNumber }}</b><div style="font-size:11.5px;color:var(--color-text-soft);">{{ v.driver || 'No driver assigned' }}</div></td>
+                <td>{{ v.speedKmph }} km/h</td>
+                <td>{{ v.location }}</td>
+                <td><span class="status-pill" [class]="statusDotClass[v.status]">{{ v.status }}</span></td>
+                <td><button type="button" class="btn btn-outline btn-sm" (click)="selectVehicle(v.regNumber)">View</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div style="text-align:center;padding:32px;color:var(--color-text-muted);">No tracked vehicles yet.</div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (selectedVehicle(); as v) {
+  <div class="modal-backdrop" (click)="closeDrawer()">
+    <div (click)="$event.stopPropagation()" style="position:absolute;top:0;right:0;bottom:0;width:420px;max-width:92vw;background:#fff;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;">
+      <div class="modal-head">
+        <h3>{{ v.regNumber }}</h3>
+        <button type="button" class="modal-close" (click)="closeDrawer()" aria-label="Close">
+          <app-icon name="i-plus" [size]="16" className="icon-rotate-45" />
+        </button>
+      </div>
+      <div style="padding:0 22px;">
+        <p class="desc" style="margin:0 0 14px;">{{ v.driver || 'No driver assigned' }} · {{ v.speedKmph }} km/h · {{ v.heading }}</p>
+        <div class="tab-row">
+          <button type="button" class="tab-btn" [class.active]="drawerTab() === 'replay'" (click)="setDrawerTab('replay')">Trip Replay</button>
+          <button type="button" class="tab-btn" [class.active]="drawerTab() === 'geofence'" (click)="setDrawerTab('geofence')">Geofence</button>
+        </div>
+      </div>
+
+      <div style="padding:20px 22px;overflow-y:auto;flex:1;">
+        @switch (drawerTab()) {
+          @case ('replay') {
+            @if (tripReplay().length) {
+              <div class="timeline">
+                @for (point of tripReplay(); track point.time) {
+                  <div class="timeline-item done">
+                    <div class="timeline-dot"><app-icon name="i-pin" [size]="14" /></div>
+                    <div>
+                      <div class="timeline-title">{{ point.location }} · {{ point.speedKmph }} km/h</div>
+                      <div class="timeline-time">{{ point.time }}</div>
+                      @if (point.event) {
+                        <p style="font-size:12.5px;color:var(--color-text-muted);margin-top:2px;">{{ point.event }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state">
+                <app-icon name="i-route" />
+                <h3>No replay data</h3>
+                <p>This vehicle has no recorded waypoints yet.</p>
+              </div>
+            }
+          }
+
+          @case ('geofence') {
+            <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+              <button type="button" class="btn btn-primary btn-sm" (click)="openAddGeofence()">
+                <app-icon name="i-plus" [size]="16" />
+                <span>Add Geofence</span>
+              </button>
+            </div>
+            @if (vehicleGeofences().length) {
+              @for (zone of vehicleGeofences(); track zone.id) {
+                <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <b>{{ zone.name }}</b>
+                    <div style="font-size:12px;color:var(--color-text-muted);margin-top:2px;">{{ zone.type }} · {{ zone.centerLabel }}@if (zone.radiusKm) { · {{ zone.radiusKm }} km radius }</div>
+                  </div>
+                  <span class="status-pill" [class]="zone.status === 'Active' ? 'status-delivered' : 'status-pending'">{{ zone.status }}</span>
+                </div>
+              }
+            } @else {
+              <div class="empty-state">
+                <app-icon name="i-target" />
+                <h3>No geofence zones</h3>
+                <p>Add a geofence to get alerted when this vehicle enters or exits a zone.</p>
+              </div>
+            }
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (showAddGeofence()) {
+  <app-modal title="Add Geofence Zone" (close)="closeAddGeofence()">
+    <div class="field">
+      <label>Zone Name</label>
+      <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Jaipur Yard" [ngModel]="geofenceName()" (ngModelChange)="geofenceName.set($event)" name="geofenceName" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="field">
+        <label>Center Location</label>
+        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Jaipur Transport Nagar" [ngModel]="geofenceCenter()" (ngModelChange)="geofenceCenter.set($event)" name="geofenceCenter" />
+      </div>
+      <div class="field">
+        <label>Radius (km)</label>
+        <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 2" [ngModel]="geofenceRadius()" (ngModelChange)="geofenceRadius.set($event)" name="geofenceRadius" />
+      </div>
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeAddGeofence()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitGeofence()">{{ saving() ? 'Saving…' : 'Add Geofence' }}</button>
+    </div>
+  </app-modal>
+}

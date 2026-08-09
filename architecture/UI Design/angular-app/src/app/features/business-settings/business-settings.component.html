@@ -1,0 +1,379 @@
+<div class="page-toolbar">
+  <div>
+    <h1>Business Settings</h1>
+    <p class="desc">Company profile, branches, users, roles and billing.</p>
+  </div>
+</div>
+
+<div class="page-toolbar">
+  <div class="tab-row">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'company'" (click)="setTab('company')">Company Profile</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'branches'" (click)="setTab('branches')">Branches</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'users'" (click)="setTab('users')">Users</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'roles'" (click)="setTab('roles')">Roles & Permissions</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'billing'" (click)="setTab('billing')">Billing</button>
+  </div>
+</div>
+
+@if (activeTab() === 'company') {
+  <div class="card">
+    <div class="card-head">
+      <span>Company Profile</span>
+      @if (!editingCompany()) {
+        <a (click)="startEditCompany()">Edit</a>
+      }
+    </div>
+    <div class="card-body">
+      @if (!editingCompany()) {
+        <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px;">
+          <div class="avatar" style="width:56px;height:56px;font-size:18px;background:var(--color-accent);color:var(--color-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">
+            {{ settings.company().logoInitials }}
+          </div>
+          <div>
+            <div style="font-size:17px;font-weight:800;color:var(--color-secondary);">{{ settings.company().companyName }}</div>
+            <div style="font-size:13px;color:var(--color-text-soft);">{{ settings.company().businessType }}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;font-size:13.5px;">
+          <div><span style="color:var(--color-text-soft);">GST Number</span><br /><b>{{ settings.company().gstNumber }}</b></div>
+          <div><span style="color:var(--color-text-soft);">PAN Number</span><br /><b>{{ settings.company().panNumber }}</b></div>
+          <div><span style="color:var(--color-text-soft);">Email</span><br /><b>{{ settings.company().email }}</b></div>
+          <div><span style="color:var(--color-text-soft);">Phone</span><br /><b>{{ settings.company().phone }}</b></div>
+          <div style="grid-column:span 2;"><span style="color:var(--color-text-soft);">Registered Address</span><br /><b>{{ settings.company().address }}, {{ settings.company().city }}, {{ settings.company().state }} - {{ settings.company().pincode }}</b></div>
+        </div>
+      } @else {
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+          <div class="field">
+            <label>Company Name</label>
+            <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().companyName" (ngModelChange)="updateDraft('companyName', $event)" name="companyName" />
+          </div>
+          <div class="field">
+            <label>Business Type</label>
+            <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().businessType" (ngModelChange)="updateDraft('businessType', $event)" name="businessType" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" class="input" style="padding-left:14px;" [ngModel]="companyDraft().email" (ngModelChange)="updateDraft('email', $event)" name="email" />
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().phone" (ngModelChange)="updateDraft('phone', $event)" name="phone" />
+          </div>
+          <div class="field" style="grid-column:span 2;">
+            <label>Registered Address</label>
+            <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().address" (ngModelChange)="updateDraft('address', $event)" name="address" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+          <button type="button" class="btn btn-outline" (click)="cancelEditCompany()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="saveCompany()">Save Changes</button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'branches') {
+  <div class="page-toolbar">
+    <div></div>
+    <button type="button" class="btn btn-primary" (click)="openAddBranch()">
+      <app-icon name="i-plus" [size]="18" />
+      <span>Add Branch</span>
+    </button>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Branch</th>
+          <th>City</th>
+          <th>Address</th>
+          <th>Contact Person</th>
+          <th>Phone</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of settings.branches(); track b.id) {
+          <tr>
+            <td><b>{{ b.name }}</b></td>
+            <td>{{ b.city }}</td>
+            <td>{{ b.address }}</td>
+            <td>{{ b.contactPerson }}</td>
+            <td>{{ b.phone }}</td>
+            <td>@if (b.isHeadOffice) { <span class="status-pill status-delivered">Head Office</span> }</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'users') {
+  <div class="page-toolbar">
+    <div></div>
+    <button type="button" class="btn btn-primary" (click)="openInviteStaff()">
+      <app-icon name="i-plus" [size]="18" />
+      <span>Invite User</span>
+    </button>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Branch</th>
+          <th>Status</th>
+          <th>Last Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of settings.staff(); track u.id) {
+          <tr>
+            <td><b>{{ u.name }}</b></td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.roleName }}</td>
+            <td>{{ u.branch }}</td>
+            <td><span class="status-pill" [class]="staffStatusClass[u.status]">{{ u.status }}</span></td>
+            <td>{{ u.lastActive }}</td>
+            <td>
+              @if (u.roleName !== 'Owner / Admin') {
+                <button type="button" class="btn btn-outline btn-sm" (click)="toggleStaffStatus(u.id)">
+                  {{ u.status === 'Suspended' ? 'Reactivate' : 'Suspend' }}
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'roles') {
+  <div class="kpi-grid">
+    @for (r of settings.roles(); track r.id) {
+      <div class="kpi-card">
+        <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-shield" /></div></div>
+        <div class="kpi-value" style="font-size:16px;">{{ r.name }}</div>
+        <div class="kpi-label">{{ r.usersCount }} user(s) · {{ r.description }}</div>
+      </div>
+    }
+  </div>
+  <div class="card">
+    <div class="card-head"><span>Permission Matrix</span></div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Permission</th>
+          @for (r of settings.roles(); track r.id) {
+            <th>{{ r.name }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of settings.permissions; track p.key) {
+          <tr>
+            <td>{{ p.label }}</td>
+            @for (r of settings.roles(); track r.id) {
+              <td>
+                @if (r.permissionKeys.includes(p.key)) {
+                  <app-icon name="i-check" [size]="16" style="color:var(--color-success);" />
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (activeTab() === 'billing') {
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-tag" /></div></div>
+      <div class="kpi-value" style="font-size:16px;">{{ settings.currentPlanName() }}</div>
+      <div class="kpi-label">Current Plan</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-invoice" /></div></div>
+      <div class="kpi-value">{{ settings.amountDue() }}</div>
+      <div class="kpi-label">Amount Due</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-body">
+      <h3 style="font-size:15px;margin-bottom:4px;">Plans</h3>
+      <p class="desc" style="margin-bottom:18px;">Starter is free forever — TransportSeva earns commission only on successful bookings. Upgrade to Professional for GPS tracking, live visibility and fleet tools.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        @for (plan of plans; track plan.tier) {
+          <div
+            style="border-radius:12px;padding:20px;display:flex;flex-direction:column;position:relative;"
+            [style.border]="plan.tier === settings.currentPlanTier() ? '1.5px solid var(--color-primary)' : '1px solid var(--color-border)'"
+            [style.background]="plan.tier === settings.currentPlanTier() ? 'rgba(244,91,0,.04)' : '#fff'"
+          >
+            @if (plan.tier === settings.currentPlanTier()) {
+              <span class="status-pill status-delivered" style="position:absolute;top:-10px;right:16px;">Current Plan</span>
+            } @else if (plan.highlighted) {
+              <span class="status-pill status-transit" style="position:absolute;top:-10px;right:16px;">Most Popular</span>
+            }
+            <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">{{ plan.name.replace('TransportSeva ', '') }}</div>
+            <div style="font-size:12.5px;color:var(--color-text-muted);margin-bottom:12px;min-height:32px;">{{ plan.tagline }}</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px;">
+              <span style="font-size:24px;font-weight:800;">{{ plan.price }}</span>
+              @if (plan.tier === 'professional') { <span style="font-size:12.5px;color:var(--color-text-soft);">/ month</span> }
+            </div>
+            <div style="font-size:11.5px;color:var(--color-text-soft);margin-bottom:14px;">{{ plan.priceNote }}</div>
+
+            @if (plan.inheritsFrom) {
+              <div style="font-size:12px;font-weight:600;color:var(--color-primary);margin-bottom:6px;">Everything in {{ plan.inheritsFrom === 'starter' ? 'Starter' : 'Professional' }}, plus:</div>
+            }
+            <ul style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;flex:1;">
+              @for (f of plan.features.slice(0, 6); track f) {
+                <li style="list-style:none;display:flex;gap:8px;font-size:12.5px;color:var(--color-text-muted);">
+                  <app-icon name="i-check" [size]="14" style="color:var(--color-primary);flex-shrink:0;margin-top:1px;" /><span>{{ f }}</span>
+                </li>
+              }
+              @if (plan.features.length > 6) {
+                <li style="list-style:none;font-size:12px;color:var(--color-text-soft);padding-left:22px;">+ {{ plan.features.length - 6 }} more</li>
+              }
+            </ul>
+
+            @if (plan.tier === settings.currentPlanTier()) {
+              <button type="button" class="btn btn-outline btn-sm" disabled>Current Plan</button>
+            } @else if (plan.tier === 'enterprise') {
+              <a routerLink="/contact" class="btn btn-outline btn-sm" style="text-align:center;">Talk to Sales</a>
+            } @else {
+              <button type="button" class="btn btn-sm" [class.btn-primary]="plan.highlighted" [class.btn-outline]="!plan.highlighted" (click)="requestPlanChange(plan.tier)">
+                {{ plan.tier === 'starter' ? 'Downgrade to Starter' : plan.ctaLabel }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Plan</th>
+          <th>Period</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (inv of settings.invoices(); track inv.id) {
+          <tr>
+            <td><b>{{ inv.invoiceNumber }}</b></td>
+            <td>{{ inv.planName }}</td>
+            <td>{{ inv.period }}</td>
+            <td>{{ inv.amount }}</td>
+            <td>{{ inv.dueDate }}</td>
+            <td><span class="status-pill" [class]="billingStatusClass[inv.status]">{{ inv.status }}</span></td>
+            <td style="display:flex;gap:6px;">
+              <button type="button" class="btn btn-outline btn-sm" title="Download">
+                <app-icon name="i-download" [size]="16" />
+              </button>
+              @if (inv.status !== 'Paid') {
+                <button type="button" class="btn btn-outline btn-sm" (click)="markInvoicePaid(inv.id)">Mark Paid</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (changingToPlan(); as tier) {
+  <app-modal title="Change Subscription Plan" (close)="changingToPlan.set(null)">
+    <p style="font-size:13.5px;color:var(--color-text-muted);margin-bottom:14px;">
+      @if (tier === 'starter') {
+        Downgrade to <b>Starter</b>? You'll lose access to AIS-140 GPS, live tracking, trip replay and geofencing at the end of the current billing period. Booking commission continues to apply.
+      } @else {
+        Upgrade to <b>Professional</b> for ₹2,499/month? This unlocks unlimited vehicles &amp; drivers, AIS-140 GPS integration, live tracking, trip replay, geofencing and advanced reports immediately.
+      }
+    </p>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="changingToPlan.set(null)">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="confirmPlanChange()">{{ tier === 'starter' ? 'Confirm Downgrade' : 'Confirm Upgrade' }}</button>
+    </div>
+  </app-modal>
+}
+
+@if (showAddBranch()) {
+  <app-modal title="Add Branch" (close)="closeAddBranch()">
+    <div class="field">
+      <label>Branch Name</label>
+      <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Surat Branch" [ngModel]="branchName()" (ngModelChange)="branchName.set($event)" name="branchName" />
+    </div>
+    <div class="field">
+      <label>City</label>
+      <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Surat" [ngModel]="branchCity()" (ngModelChange)="branchCity.set($event)" name="branchCity" />
+    </div>
+    <div class="field">
+      <label>Address</label>
+      <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchAddress()" (ngModelChange)="branchAddress.set($event)" name="branchAddress" />
+    </div>
+    <div class="field">
+      <label>Contact Person</label>
+      <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchContact()" (ngModelChange)="branchContact.set($event)" name="branchContact" />
+    </div>
+    <div class="field">
+      <label>Phone</label>
+      <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchPhone()" (ngModelChange)="branchPhone.set($event)" name="branchPhone" />
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeAddBranch()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="savingBranch() || !branchName().trim() || !branchCity().trim()" (click)="submitAddBranch()">
+        {{ savingBranch() ? 'Adding…' : 'Add Branch' }}
+      </button>
+    </div>
+  </app-modal>
+}
+
+@if (showInviteStaff()) {
+  <app-modal title="Invite User" (close)="closeInviteStaff()">
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" class="input" style="padding-left:14px;" [ngModel]="staffName()" (ngModelChange)="staffName.set($event)" name="staffName" />
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" class="input" style="padding-left:14px;" [ngModel]="staffEmail()" (ngModelChange)="staffEmail.set($event)" name="staffEmail" />
+    </div>
+    <div class="field">
+      <label>Role</label>
+      <select class="input" style="padding-left:14px;" [ngModel]="staffRole()" (ngModelChange)="staffRole.set($event)" name="staffRole">
+        @for (r of settings.roles(); track r.id) {
+          <option [value]="r.name">{{ r.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Branch</label>
+      <select class="input" style="padding-left:14px;" [ngModel]="staffBranch()" (ngModelChange)="staffBranch.set($event)" name="staffBranch">
+        @for (b of settings.branches(); track b.id) {
+          <option [value]="b.name">{{ b.name }}</option>
+        }
+      </select>
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="closeInviteStaff()">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="savingStaff() || !staffName().trim() || !staffEmail().trim()" (click)="submitInviteStaff()">
+        {{ savingStaff() ? 'Sending Invite…' : 'Send Invite' }}
+      </button>
+    </div>
+  </app-modal>
+}

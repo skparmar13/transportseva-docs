@@ -1,0 +1,82 @@
+<h1>{{ isOwnerMode() ? 'Applications Received' : 'My Applications' }}</h1>
+<p class="desc">
+  @if (isOwnerMode()) {
+    Review and respond to applications received on your posted loads.
+  } @else {
+    Track the status of loads you've applied for.
+  }
+</p>
+
+<div class="card">
+  @if (isOwnerMode()) {
+    @if (receivedApplications().length) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Load</th>
+            <th>Applicant</th>
+            <th>Vehicle</th>
+            <th>Quoted</th>
+            <th>Applied</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of receivedApplications(); track row.app.id) {
+            <tr>
+              <td><b>{{ row.load?.loadId }}</b><div style="font-size:12px;color:var(--color-text-muted);">{{ row.load?.pickupCity }} → {{ row.load?.dropCity }}</div></td>
+              <td>{{ row.app.applicantName }}</td>
+              <td>{{ row.app.vehicleRegNumber }} · {{ row.app.vehicleType }}</td>
+              <td>{{ row.app.quotedAmount }}</td>
+              <td>{{ row.app.appliedAgo }}</td>
+              <td><span class="status-pill" [class]="statusClass[row.app.status]">{{ row.app.status }}</span></td>
+              <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(row.app.loadId)">View Load</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <div class="empty-state">
+        <app-icon name="i-users" />
+        <h3>No applications received yet</h3>
+        <p>Applications from transporters and truck owners will appear here.</p>
+      </div>
+    }
+  } @else {
+    @if (myApplications().length) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Load</th>
+            <th>Route</th>
+            <th>Vehicle</th>
+            <th>Quoted</th>
+            <th>Applied</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of myApplications(); track row.app.id) {
+            <tr>
+              <td><b>{{ row.load?.loadId }}</b></td>
+              <td>{{ row.load?.pickupCity }} → {{ row.load?.dropCity }}</td>
+              <td>{{ row.app.vehicleRegNumber }} · {{ row.app.vehicleType }}</td>
+              <td>{{ row.app.quotedAmount }}</td>
+              <td>{{ row.app.appliedAgo }}</td>
+              <td><span class="status-pill" [class]="statusClass[row.app.status]">{{ row.app.status }}</span></td>
+              <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(row.app.loadId)">View Load</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <div class="empty-state">
+        <app-icon name="i-box" />
+        <h3>You haven't applied for any loads yet</h3>
+        <p>Browse the Load Board to find loads matching your vehicle.</p>
+      </div>
+    }
+  }
+</div>

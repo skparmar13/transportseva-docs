@@ -1,0 +1,35 @@
+<app-auth-shell
+  backLink="/auth/signup"
+  backLabel="Back"
+  eyebrow="Verify Your Identity"
+  title="Enter Verification Code"
+  [sub]="'We sent a 6-digit code to ' + (identifier() || 'your registered contact') + '.'"
+>
+  <form (ngSubmit)="verify()">
+    <div class="field">
+      <label>Enter 6-digit OTP</label>
+      <div class="otp-row">
+        @for (digit of digits(); track $index) {
+          <input
+            #otpInput
+            class="otp-box"
+            maxlength="1"
+            inputmode="numeric"
+            [ngModel]="digit"
+            (ngModelChange)="onDigitInput($index, $event)"
+            [name]="'otp' + $index"
+          >
+        }
+      </div>
+      <p class="hint">Didn't receive it? <a href="javascript:void(0)" (click)="resend()" style="color:var(--color-primary); font-weight:700;">Resend OTP</a></p>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="verifying()">
+      {{ verifying() ? 'Verifying…' : 'Verify OTP' }}
+    </button>
+  </form>
+
+  <div class="link-row">
+    <a routerLink="/auth/login">Back to Log In</a>
+  </div>
+</app-auth-shell>

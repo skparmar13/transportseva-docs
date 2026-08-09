@@ -1,0 +1,192 @@
+/* ============================================================
+   TransportSeva public-facing auth pages.
+   Ported verbatim from ../Website/css/theme.css (the classes not
+   already covered by _base.scss's admin-shell port): simple header,
+   form fields, OTP boxes, role-select cards, split auth layout, etc.
+   Keeps Login/Signup/OTP/Forgot Password/Business Registration/
+   Workspace Selection/Profile Setup pixel-consistent with the HTML
+   prototype.
+   ============================================================ */
+.container { max-width: var(--container-w); margin: 0 auto; padding: 0 24px; }
+
+/* ---------- Language switcher (shared across all pages) ---------- */
+.lang-switch {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff; border: 1.5px solid var(--color-border); border-radius: 999px;
+  padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--color-text-soft);
+}
+.lang-switch .lang-opt { padding: 2px 2px; transition: color .15s ease; }
+.lang-switch .lang-opt.active { color: var(--color-primary); }
+.lang-switch .lang-sep { color: #D9D6D2; font-weight: 400; }
+
+/* ---------- Header (simple, used on auth pages) ---------- */
+.simple-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,.94); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border);
+}
+.simple-header .nav-wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-img { height: 32px; width: auto; }
+
+/* ---------- Form elements ---------- */
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 13.5px; font-weight: 700; color: var(--color-secondary); margin-bottom: 8px; }
+.field .hint { font-size: 12px; color: var(--color-text-soft); margin-top: 6px; }
+.input-wrap { position: relative; display: flex; align-items: center; }
+.input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--color-text-soft); }
+.input, select.input {
+  width: 100%; padding: 13px 16px; font-size: 14.5px; color: var(--color-text);
+  background: #fff; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+  outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input-wrap .input { padding-left: 42px; }
+.input:focus, select.input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 4px rgba(244,91,0,.10); }
+.input::placeholder { color: #B7B4AF; }
+.input-suffix-wrap { position: relative; }
+.input-suffix-btn {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--color-primary); font-weight: 700; font-size: 13px; padding: 6px 10px;
+}
+.phone-input-wrap { display: flex; gap: 8px; }
+.phone-code {
+  flex-shrink: 0; width: 78px; display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-weight: 700; font-size: 14px; color: var(--color-secondary);
+  background: #fff;
+}
+
+/* OTP boxes */
+.otp-row { display: flex; gap: 10px; }
+.otp-box {
+  width: 52px; height: 56px; text-align: center; font-size: 22px; font-weight: 800;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.otp-box:focus { border-color: var(--color-primary); box-shadow: 0 0 0 4px rgba(244,91,0,.10); }
+
+.checkbox-row { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--color-text-muted); }
+.checkbox-row input { margin-top: 3px; accent-color: var(--color-primary); width: 16px; height: 16px; flex-shrink: 0; }
+.checkbox-row a { color: var(--color-primary); font-weight: 600; }
+
+.divider-row { display: flex; align-items: center; gap: 14px; color: var(--color-text-soft); font-size: 12.5px; margin: 22px 0; }
+.divider-row::before, .divider-row::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
+
+.link-row { text-align: center; font-size: 14px; color: var(--color-text-muted); margin-top: 22px; }
+.link-row a { color: var(--color-primary); font-weight: 700; }
+
+/* Tabs (login method switch) */
+.tab-row {
+  display: flex; background: var(--color-muted-bg); border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill); padding: 5px; margin-bottom: 26px;
+}
+.tab-btn {
+  flex: 1; text-align: center; padding: 10px 12px; border-radius: var(--radius-pill);
+  background: transparent; border: none; font-weight: 700; font-size: 13.5px; color: var(--color-text-muted);
+  transition: background .15s ease, color .15s ease;
+}
+.tab-btn.active { background: #fff; color: var(--color-primary); box-shadow: var(--shadow-sm); }
+
+/* Role select cards (signup) */
+.role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 22px; }
+.role-card {
+  position: relative;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-md); padding: 16px 14px;
+  text-align: center; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease;
+  background: #fff;
+}
+.role-card:hover { transform: translateY(-2px); }
+.role-card.active { border-color: var(--color-primary); background: var(--color-accent); }
+.role-card .role-icon {
+  width: 44px; height: 44px; border-radius: 12px; background: var(--color-accent); color: var(--color-primary);
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
+}
+.role-card.active .role-icon { background: var(--color-primary); color: #fff; }
+.role-card span.role-label { display: block; font-size: 13.5px; font-weight: 700; color: var(--color-secondary); }
+
+/* Info icon + tooltip so users know exactly who each role is for before creating an account */
+.role-info-wrap { position: absolute; top: 10px; right: 10px; }
+.role-info-btn {
+  width: 18px; height: 18px; border-radius: 50%; border: none; padding: 0;
+  background: var(--color-muted-bg); color: var(--color-text-soft);
+  display: flex; align-items: center; justify-content: center; cursor: help;
+}
+.role-info-btn .icon { width: 12px; height: 12px; }
+.role-info-wrap:hover .role-info-btn,
+.role-info-wrap:focus-within .role-info-btn { background: var(--color-primary); color: #fff; }
+.role-tooltip {
+  position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%) translateY(4px);
+  width: 208px; background: #222; color: #fff; text-align: left;
+  font-size: 12px; font-weight: 500; line-height: 1.45; padding: 10px 12px; border-radius: 10px;
+  box-shadow: var(--shadow-md); opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease; z-index: 30;
+}
+.role-tooltip .role-tooltip-examples { display: block; margin-top: 6px; color: rgba(255,255,255,.65); font-size: 11px; }
+.role-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #222;
+}
+.role-info-wrap:hover .role-tooltip,
+.role-info-wrap:focus-within .role-tooltip {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(-50%) translateY(0);
+}
+
+/* Steps (forgot password / business registration wizard) */
+.steps-row { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; }
+.step-dot {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--color-muted-bg); border: 1.5px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--color-text-soft);
+  flex-shrink: 0;
+}
+.step-dot.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.step-dot.done { background: var(--color-success); border-color: var(--color-success); color: #fff; }
+.step-line { flex: 1; height: 2px; background: var(--color-border); }
+.step-line.done { background: var(--color-success); }
+
+/* Auth split screen layout */
+.auth-shell { min-height: calc(100vh - 76px); display: grid; grid-template-columns: 1.05fr 1fr; }
+.auth-visual {
+  position: relative; background: linear-gradient(160deg,#2A1204 0%, #F45B00 55%, #FF8A3D 100%);
+  display: flex; flex-direction: column; justify-content: space-between; padding: 56px; color: #fff; overflow: hidden;
+}
+.auth-visual::before {
+  content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.12), transparent 45%);
+}
+.auth-visual .brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; }
+.auth-visual .brand img { height: 34px; }
+.auth-visual .headline { position: relative; z-index: 1; max-width: 420px; }
+.auth-visual .headline h2 { font-size: 32px; font-weight: 800; line-height: 1.25; margin-bottom: 14px; }
+.auth-visual .headline p { font-size: 15px; opacity: .92; }
+.auth-visual .truck-img { position: relative; z-index: 1; max-width: 420px; margin-top: 20px; filter: drop-shadow(0 20px 30px rgba(0,0,0,.25)); }
+.auth-visual .stat-strip { position: relative; z-index: 1; display: flex; gap: 28px; }
+.auth-visual .stat-strip div b { display: block; font-size: 22px; font-weight: 800; }
+.auth-visual .stat-strip div span { font-size: 12px; opacity: .85; }
+
+.auth-form-side { display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+.auth-form-card { width: 100%; max-width: 420px; }
+.auth-form-card.wide { max-width: 620px; }
+.auth-form-card .eyebrow-tag { color: var(--color-primary); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; display: block; }
+.auth-form-card h1 { font-size: 28px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+.auth-form-card .sub { color: var(--color-text-muted); font-size: 14.5px; margin-bottom: 30px; }
+
+.auth-footer-note { text-align: center; padding: 22px 0; font-size: 12.5px; color: var(--color-text-soft); }
+
+/* Workspace selection cards */
+.workspace-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.workspace-card {
+  display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+  padding: 16px; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; background: #fff;
+}
+.workspace-card:hover { transform: translateY(-2px); border-color: var(--color-primary); }
+.workspace-card .workspace-icon {
+  width: 46px; height: 46px; border-radius: 12px; background: var(--color-accent); color: var(--color-primary);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.workspace-card .workspace-name { font-size: 14.5px; font-weight: 700; color: var(--color-secondary); }
+.workspace-card .workspace-role { font-size: 12px; color: var(--color-text-soft); }
+
+@media (max-width: 960px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+  .role-grid { grid-template-columns: repeat(2, 1fr); }
+  .workspace-grid { grid-template-columns: 1fr; }
+}

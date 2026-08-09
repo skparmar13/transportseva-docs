@@ -1,0 +1,116 @@
+﻿<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow">Pricing</span>
+    <h1>Simple, Transparent Pricing</h1>
+    <p>Start for free and pay commission only when you get a booking. Upgrade when you're ready to scale with GPS tracking, live visibility and advanced fleet tools.</p>
+    <div class="breadcrumb"><a routerLink="/">Home</a><span class="sep">/</span><span class="current">Pricing</span></div>
+  </div>
+</section>
+
+<section class="pg-section">
+  <div class="container">
+    <div class="pricing-grid">
+      @for (plan of plans(); track plan.tier) {
+        <div class="pricing-card" [class.highlighted]="plan.highlighted">
+          @if (plan.highlighted) {
+            <span class="pricing-badge">Most Popular</span>
+          }
+          <h3>{{ plan.name }}</h3>
+          <p class="pricing-tagline">{{ plan.tagline }}</p>
+
+          <div class="pricing-price">
+            <span class="amount">{{ plan.price }}</span>
+            @if (plan.tier === 'professional') {
+              <span class="period">/ month</span>
+            }
+          </div>
+          <div class="pricing-note">{{ plan.priceNote }}</div>
+
+          <div class="pricing-suitable">
+            @for (s of plan.suitableFor; track s) {
+              <span>{{ s }}</span>
+            }
+          </div>
+
+          @if (plan.inheritsFrom) {
+            <div class="pricing-inherit">Everything in {{ plan.inheritsFrom === 'starter' ? 'Starter' : 'Professional' }}, plus:</div>
+          }
+          <ul class="pricing-features">
+            @for (f of plan.features; track f) {
+              <li><app-icon name="i-check" class="icon" [size]="16" /><span>{{ f }}</span></li>
+            }
+          </ul>
+
+          @if (plan.limits.length) {
+            <div class="pricing-limits">
+              <h5>Plan Limits</h5>
+              <ul>
+                @for (l of plan.limits; track l) {
+                  <li>{{ l }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <a [routerLink]="plan.tier === 'enterprise' ? '/contact' : '/auth/signup'" [queryParams]="plan.tier === 'enterprise' ? null : { plan: plan.tier }" class="btn" [class.btn-primary]="plan.highlighted" [class.btn-outline]="!plan.highlighted">{{ plan.ctaLabel }}</a>
+        </div>
+      }
+    </div>
+
+    <p class="pricing-commission-note">
+      <app-icon name="i-info" [size]="14" /> TransportSeva earns a small commission only on successful bookings made through the marketplace — on every plan, including Starter. There's no cost to sign up, post loads or apply for loads.
+    </p>
+  </div>
+</section>
+
+<section class="pg-section muted">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">How We Earn</span>
+      <h2>Built on Aligned Incentives, Not Just Subscriptions</h2>
+      <p>TransportSeva doesn't rely only on subscription fees — our revenue comes in layers, so the platform stays affordable for every stakeholder.</p>
+    </div>
+    <div class="earning-grid">
+      @for (layer of earningLayers(); track layer.title) {
+        <div class="earning-card">
+          <div class="icon-box"><app-icon [name]="layer.icon" /></div>
+          <h4>{{ layer.title }}</h4>
+          <p>{{ layer.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="pg-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">FAQs</span>
+      <h2>Pricing Questions, Answered</h2>
+      <p>Still unsure which plan is right for you? Reach out and our team will help you choose.</p>
+    </div>
+    <div class="faq-list">
+      @for (faq of faqs(); track faq.question) {
+        <details class="faq-item" [attr.open]="faq.open ? true : null">
+          <summary><span>{{ faq.question }}</span><span class="faq-plus"><app-icon name="i-plus" [size]="13" /></span></summary>
+          <div class="faq-answer">{{ faq.answer }}</div>
+        </details>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="pg-section tight">
+  <div class="container">
+    <div class="cta">
+      <div>
+        <h2>Ready to Move Your Business Forward?</h2>
+        <p>Join thousands of businesses using TransportSeva to simplify their logistics and grow faster.</p>
+      </div>
+      <div class="cta-actions">
+        <a routerLink="/auth/signup" [queryParams]="{ plan: 'starter' }" class="btn btn-white">Get Started Free</a>
+        <a routerLink="/contact" class="btn btn-outline-light">Talk to Sales</a>
+      </div>
+    </div>
+  </div>
+</section>

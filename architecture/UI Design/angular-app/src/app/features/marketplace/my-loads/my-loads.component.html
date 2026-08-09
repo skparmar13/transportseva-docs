@@ -1,0 +1,51 @@
+<div class="page-toolbar">
+  <div>
+    <h1>My Loads</h1>
+    <p class="desc">Loads you've posted to the marketplace.</p>
+  </div>
+  <button type="button" class="btn btn-primary" (click)="postLoad()">
+    <app-icon name="i-plus" [size]="18" />
+    <span>Post a Load</span>
+  </button>
+</div>
+
+<div class="card">
+  @if (loads().length) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Load ID</th>
+          <th>Route</th>
+          <th>Material</th>
+          <th>Vehicle Type</th>
+          <th>Pickup Date</th>
+          <th>Budget</th>
+          <th>Applications</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (load of loads(); track load.id) {
+          <tr>
+            <td><b>{{ load.loadId }}</b></td>
+            <td>{{ load.pickupCity }} → {{ load.dropCity }}</td>
+            <td>{{ load.material }}</td>
+            <td>{{ load.vehicleType }}</td>
+            <td>{{ load.pickupDate }}</td>
+            <td>{{ load.budget }}</td>
+            <td>{{ load.applicationsCount }}</td>
+            <td><span class="status-pill" [class]="statusClass[load.status]">{{ load.status }}</span></td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(load.id)">View</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
+      <app-icon name="i-box" [size]="32" />
+      <p style="margin-top:12px;">You haven't posted any loads yet.</p>
+      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="postLoad()">Post Your First Load</button>
+    </div>
+  }
+</div>

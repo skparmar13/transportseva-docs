@@ -1,0 +1,139 @@
+@if (driver(); as d) {
+  <div class="page-toolbar">
+    <div>
+      <a [routerLink]="listPath()" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Drivers</a>
+      <h1 style="margin-top:6px;">{{ d.name }}</h1>
+      <p class="desc">{{ d.phone }} · {{ d.experienceYears }} yrs experience · ⭐ {{ d.rating || '—' }} · {{ d.totalTrips }} trips</p>
+    </div>
+    <span class="status-pill" [class]="statusClass[d.status]" style="font-size:13px;padding:6px 14px;">{{ d.status }}</span>
+  </div>
+
+  <div class="tab-row" style="max-width:520px;">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'profile'" (click)="setTab('profile')">Profile</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">Documents</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'assignment'" (click)="setTab('assignment')">Vehicle Assignment</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">Timeline</button>
+  </div>
+
+  @switch (activeTab()) {
+    @case ('profile') {
+      <div class="card">
+        <div class="card-body">
+          <div class="load-meta-grid" style="grid-template-columns:repeat(3,1fr);">
+            <div>Phone: <strong>{{ d.phone }}</strong></div>
+            <div>License No.: <strong>{{ d.licenseNumber }}</strong></div>
+            <div>License Expiry: <strong>{{ d.licenseExpiry }}</strong></div>
+            <div>Experience: <strong>{{ d.experienceYears }} years</strong></div>
+            <div>Total Trips: <strong>{{ d.totalTrips }}</strong></div>
+            <div>Rating: <strong>⭐ {{ d.rating || '—' }}</strong></div>
+            <div>Joined On: <strong>{{ d.joinedOn }}</strong></div>
+            <div>Assigned Vehicle: <strong>{{ d.assignedVehicleRegNumber || 'Not assigned' }}</strong></div>
+            <div>Address: <strong>{{ d.address }}</strong></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @case ('documents') {
+      <div class="card">
+        <div class="card-head"><h3>Driver Documents</h3></div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Number</th>
+              <th>Expiry</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (doc of d.documents; track doc.type) {
+              <tr>
+                <td><b>{{ doc.type }}</b></td>
+                <td>{{ doc.documentNumber || '—' }}</td>
+                <td>{{ doc.expiryDate || '—' }}</td>
+                <td><span class="status-pill" [class]="docStatusClass[doc.status]">{{ doc.status }}</span></td>
+                <td><button type="button" class="btn btn-outline btn-sm"><app-icon name="i-upload" [size]="14" /><span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Update' }}</span></button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @case ('assignment') {
+      <div class="card">
+        <div class="card-head"><h3>Vehicle Assignment</h3></div>
+        <div class="card-body">
+          @if (d.assignedVehicleRegNumber) {
+            <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--color-border);border-radius:12px;padding:16px;">
+              <div>
+                <b>{{ d.assignedVehicleRegNumber }}</b>
+                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:2px;">Currently driving this vehicle</div>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <span class="status-pill status-delivered">Assigned</span>
+                <button type="button" class="btn btn-outline btn-sm" (click)="unassign()">Unassign</button>
+              </div>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <app-icon name="i-car" />
+              <h3>No vehicle assigned</h3>
+              <p>Assign a vehicle from your fleet so this driver can start trips.</p>
+              <button type="button" class="btn btn-primary" style="margin-top:12px;" [disabled]="!assignableVehicles().length" (click)="openAssign()">Assign Vehicle</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @case ('timeline') {
+      <div class="card">
+        <div class="card-head"><h3>Driver Timeline</h3></div>
+        <div class="card-body">
+          <div class="timeline">
+            @for (event of d.timeline; track event.id) {
+              <div class="timeline-item done">
+                <div class="timeline-dot"></div>
+                <div>
+                  <span class="timeline-title">{{ event.title }}</span>
+                  <div class="timeline-time">{{ event.date }}</div>
+                  <p style="margin-top:4px;color:var(--color-text-muted);font-size:13px;">{{ event.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  @if (showAssignModal()) {
+    <app-modal title="Assign Vehicle" (close)="showAssignModal.set(false)">
+      @if (assignableVehicles().length) {
+        <div class="field">
+          <label>Select a vehicle</label>
+          <select class="input" style="padding-left:14px;" [ngModel]="selectedRegNumber()" (ngModelChange)="selectedRegNumber.set($event)" name="selectedRegNumber">
+            @for (vehicle of assignableVehicles(); track vehicle.id) {
+              <option [value]="vehicle.regNumber">{{ vehicle.regNumber }} — {{ vehicle.make }} {{ vehicle.model }}</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <p style="color:var(--color-text-muted);">No unassigned vehicles available right now. Add a vehicle first.</p>
+      }
+      <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+        <button type="button" class="btn btn-outline" (click)="showAssignModal.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!assignableVehicles().length" (click)="confirmAssign()">Assign Vehicle</button>
+      </div>
+    </app-modal>
+  }
+} @else {
+  <div class="empty-state">
+    <app-icon name="i-user" />
+    <h3>Driver not found</h3>
+    <p>This driver may have been removed or the link is incorrect.</p>
+  </div>
+}

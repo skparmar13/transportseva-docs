@@ -1,0 +1,49 @@
+<header class="simple-header">
+  <div class="container nav-wrap">
+    <a routerLink="/" class="logo">
+      <img src="images/logo.png" alt="TransportSeva" class="logo-img">
+    </a>
+    <div class="nav-actions" style="display:flex; align-items:center; gap:16px;">
+      <button class="lang-switch" type="button" aria-label="Change language">
+        <span class="lang-opt active">EN</span><span class="lang-sep">|</span><span class="lang-opt">हिंदी</span>
+      </button>
+      <a [routerLink]="backLink" class="btn btn-outline" style="padding:10px 20px;">
+        <app-icon name="i-arrow-left" [size]="16" />
+        <span>{{ backLabel }}</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="auth-shell">
+  <div class="auth-visual">
+    <div class="headline">
+      <h2>{{ visualHeadingLine1 }}<br>{{ visualHeadingLine2 }}</h2>
+      <p>{{ visualDescription }}</p>
+      <img [src]="visualImage" alt="TransportSeva" class="truck-img">
+    </div>
+    @if (showStats) {
+      <div class="stat-strip">
+        <div><b>2.5M+</b><span>Shipments Delivered</span></div>
+        <div><b>15,000+</b><span>Transport Partners</span></div>
+        <div><b>500+</b><span>Cities Covered</span></div>
+      </div>
+    }
+  </div>
+
+  <div class="auth-form-side">
+    <div class="auth-form-card" [class.wide]="wide">
+      @if (eyebrow) {
+        <span class="eyebrow-tag">{{ eyebrow }}</span>
+      }
+      @if (title) {
+        <h1>{{ title }}</h1>
+      }
+      @if (sub) {
+        <p class="sub">{{ sub }}</p>
+      }
+
+      <ng-content />
+    </div>
+  </div>
+</section>

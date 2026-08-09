@@ -1,0 +1,107 @@
+<h1>Post a Load</h1>
+<p class="desc">Publish a shipment to the marketplace so transporters and truck owners can apply.</p>
+
+@if (submitted()) {
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:48px 22px;">
+      <div class="kpi-icon" style="width:56px;height:56px;margin:0 auto 18px;">
+        <app-icon name="i-check" [size]="28" />
+      </div>
+      <h3 style="font-size:19px;margin-bottom:8px;">Load {{ postedLoadId() }} posted successfully</h3>
+      <p style="color:var(--color-text-muted);margin-bottom:24px;">Transporters and truck owners can now view and apply for this load.</p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button type="button" class="btn btn-outline" (click)="postAnother()">Post Another Load</button>
+        <button type="button" class="btn btn-primary" (click)="goToMyLoads()">View My Loads</button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="card" style="max-width:720px;">
+    <div class="card-body">
+      <form (ngSubmit)="submit()">
+        @if (isTransporter()) {
+          <div class="field">
+            <label>Post on behalf of (optional)</label>
+            <div class="input-wrap">
+              <app-icon name="i-user" [size]="18" />
+              <input type="text" class="input" placeholder="Offline customer name, e.g. Shree Balaji Traders" [ngModel]="onBehalfOfCustomer()" (ngModelChange)="onBehalfOfCustomer.set($event)" name="onBehalfOfCustomer" />
+            </div>
+            <div class="hint">Leave blank to post this load for your own transport business.</div>
+          </div>
+        }
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="field">
+            <label>Pickup City</label>
+            <div class="input-wrap">
+              <app-icon name="i-pin" [size]="18" />
+              <input type="text" class="input" placeholder="e.g. Delhi" required [ngModel]="pickupCity()" (ngModelChange)="pickupCity.set($event)" name="pickupCity" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Drop City</label>
+            <div class="input-wrap">
+              <app-icon name="i-pin" [size]="18" />
+              <input type="text" class="input" placeholder="e.g. Mumbai" required [ngModel]="dropCity()" (ngModelChange)="dropCity.set($event)" name="dropCity" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Material / Goods Description</label>
+          <div class="input-wrap">
+            <app-icon name="i-box" [size]="18" />
+            <input type="text" class="input" placeholder="e.g. Steel Coils" required [ngModel]="material()" (ngModelChange)="material.set($event)" name="material" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="field">
+            <label>Weight (in tons)</label>
+            <div class="input-wrap">
+              <app-icon name="i-box" [size]="18" />
+              <input type="number" class="input" placeholder="e.g. 18" [ngModel]="weightTons()" (ngModelChange)="weightTons.set($event)" name="weightTons" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Vehicle Type Required</label>
+            <select class="input" style="padding-left:14px;" [ngModel]="vehicleType()" (ngModelChange)="vehicleType.set($event)" name="vehicleType">
+              @for (type of vehicleTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="field">
+            <label>Pickup Date</label>
+            <div class="input-wrap">
+              <app-icon name="i-calendar" [size]="18" />
+              <input type="date" class="input" [ngModel]="pickupDate()" (ngModelChange)="pickupDate.set($event)" name="pickupDate" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Budget (₹)</label>
+            <div class="input-wrap">
+              <app-icon name="i-wallet" [size]="18" />
+              <input type="text" class="input" placeholder="e.g. ₹18,500" required [ngModel]="budget()" (ngModelChange)="budget.set($event)" name="budget" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Additional Notes (optional)</label>
+          <textarea class="input" style="padding:12px 14px;min-height:80px;resize:vertical;" placeholder="Loading dock timing, packaging requirements, etc." [ngModel]="notes()" (ngModelChange)="notes.set($event)" name="notes"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+          <span>{{ submitting() ? 'Posting…' : 'Post Load to Marketplace' }}</span>
+          @if (!submitting()) {
+            <app-icon name="i-arrow-right" [size]="18" />
+          }
+        </button>
+      </form>
+    </div>
+  </div>
+}
