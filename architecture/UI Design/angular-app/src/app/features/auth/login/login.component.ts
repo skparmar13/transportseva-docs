@@ -5,11 +5,12 @@ import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shel
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { SessionService } from '../../../core/services/session.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink, AuthShellComponent, IconComponent],
+  imports: [FormsModule, RouterLink, AuthShellComponent, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',

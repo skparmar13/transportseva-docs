@@ -1,19 +1,19 @@
 @if (vehicle(); as v) {
   <div class="page-toolbar">
     <div>
-      <a [routerLink]="[session.portal().basePath, listPath()]" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Vehicles</a>
+      <a [routerLink]="[session.portal().basePath, listPath()]" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">{{ 'vehicleDetails.back' | t }}</a>
       <h1 style="margin-top:6px;">{{ v.regNumber }}</h1>
-      <p class="desc">{{ v.make }} {{ v.model }} ({{ v.yearOfMake }}) · {{ v.vehicleType }} · {{ v.capacityTons }} tons</p>
+      <p class="desc">{{ 'vehicleDetails.subtitle' | t:{ make: v.make, model: v.model, year: v.yearOfMake, type: v.vehicleType, tons: v.capacityTons } }}</p>
     </div>
-    <span class="status-pill" [class]="statusClass[v.status]" style="font-size:13px;padding:6px 14px;">{{ v.status }}</span>
+    <span class="status-pill" [class]="statusClass[v.status]" style="font-size:13px;padding:6px 14px;">{{ statusKey[v.status] | t }}</span>
   </div>
 
   <div class="tab-row" style="max-width:600px;">
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">Overview</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'device'" (click)="setTab('device')">GPS Device</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">Documents</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'maintenance'" (click)="setTab('maintenance')">Maintenance</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'fuel'" (click)="setTab('fuel')">Fuel</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">{{ 'vehicleDetails.tab.overview' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'device'" (click)="setTab('device')">{{ 'vehicleDetails.tab.device' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">{{ 'vehicleDetails.tab.documents' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'maintenance'" (click)="setTab('maintenance')">{{ 'vehicleDetails.tab.maintenance' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'fuel'" (click)="setTab('fuel')">{{ 'vehicleDetails.tab.fuel' | t }}</button>
   </div>
 
   @switch (activeTab()) {
@@ -21,17 +21,17 @@
       <div class="card">
         <div class="card-body">
           <div class="load-meta-grid" style="grid-template-columns:repeat(3,1fr);">
-            <div>Driver: <strong>{{ v.driver || 'Not assigned' }}</strong></div>
-            <div>Live Location: <strong>{{ v.location }}</strong></div>
-            <div>GPS Device: <strong>{{ v.deviceImei || 'Not assigned' }}</strong></div>
-            <div>Capacity: <strong>{{ v.capacityTons }} tons</strong></div>
-            <div>Added On: <strong>{{ v.addedOn }}</strong></div>
-            <div>Vehicle Type: <strong>{{ v.vehicleType }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.driver' | t }}: <strong>{{ v.driver || ('common.notAssigned' | t) }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.liveLocation' | t }}: <strong>{{ v.location }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.gpsDevice' | t }}: <strong>{{ v.deviceImei || ('common.notAssigned' | t) }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.capacity' | t }}: <strong>{{ v.capacityTons }} {{ 'vehicleDetails.tonsUnit' | t }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.addedOn' | t }}: <strong>{{ v.addedOn }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.vehicleType' | t }}: <strong>{{ v.vehicleType }}</strong></div>
           </div>
           <div class="empty-state" style="margin-top:20px;">
             <app-icon name="i-map" />
-            <h3>Live Map Placeholder</h3>
-            <p>Real-time AIS-140 location will render here once GPS integration goes live in Module 6.</p>
+            <h3>{{ 'vehicleDetails.liveMap.title' | t }}</h3>
+            <p>{{ 'vehicleDetails.liveMap.desc' | t }}</p>
           </div>
         </div>
       </div>
@@ -39,25 +39,25 @@
 
     @case ('device') {
       <div class="card">
-        <div class="card-head"><h3>AIS-140 Device Assignment</h3></div>
+        <div class="card-head"><h3>{{ 'vehicleDetails.device.title' | t }}</h3></div>
         <div class="card-body">
           @if (v.deviceImei) {
             <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--color-border);border-radius:12px;padding:16px;">
               <div>
                 <b>{{ v.deviceImei }}</b>
-                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:2px;">Installed on this vehicle</div>
+                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:2px;">{{ 'vehicleDetails.device.installedOn' | t }}</div>
               </div>
               <div style="display:flex;gap:10px;">
-                <span class="status-pill status-delivered">Installed</span>
-                <button type="button" class="btn btn-outline btn-sm" (click)="unassign()">Unassign</button>
+                <span class="status-pill status-delivered">{{ 'status.device.installed' | t }}</span>
+                <button type="button" class="btn btn-outline btn-sm" (click)="unassign()">{{ 'vehicleDetails.device.unassign' | t }}</button>
               </div>
             </div>
           } @else {
             <div class="empty-state">
               <app-icon name="i-api" />
-              <h3>No GPS device assigned</h3>
-              <p>Assign an available AIS-140 device from inventory to enable live tracking.</p>
-              <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAssign()">Assign Device</button>
+              <h3>{{ 'vehicleDetails.device.empty.title' | t }}</h3>
+              <p>{{ 'vehicleDetails.device.empty.desc' | t }}</p>
+              <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAssign()">{{ 'vehicleDetails.device.assignBtn' | t }}</button>
             </div>
           }
         </div>
@@ -66,14 +66,14 @@
 
     @case ('documents') {
       <div class="card">
-        <div class="card-head"><h3>Vehicle Documents</h3></div>
+        <div class="card-head"><h3>{{ 'vehicleDetails.documents.title' | t }}</h3></div>
         <table class="data-table">
           <thead>
             <tr>
-              <th>Document</th>
-              <th>Number</th>
-              <th>Expiry</th>
-              <th>Status</th>
+              <th>{{ 'vehicleDetails.documents.col.document' | t }}</th>
+              <th>{{ 'vehicleDetails.documents.col.number' | t }}</th>
+              <th>{{ 'vehicleDetails.documents.col.expiry' | t }}</th>
+              <th>{{ 'common.status' | t }}</th>
               <th></th>
             </tr>
           </thead>
@@ -81,10 +81,10 @@
             @for (doc of v.documents; track doc.type) {
               <tr>
                 <td><b>{{ doc.type }}</b></td>
-                <td>{{ doc.documentNumber || '—' }}</td>
-                <td>{{ doc.expiryDate || '—' }}</td>
-                <td><span class="status-pill" [class]="docStatusClass[doc.status]">{{ doc.status }}</span></td>
-                <td><button type="button" class="btn btn-outline btn-sm"><app-icon name="i-upload" [size]="14" /><span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Update' }}</span></button></td>
+                <td>{{ doc.documentNumber || ('common.dash' | t) }}</td>
+                <td>{{ doc.expiryDate || ('common.dash' | t) }}</td>
+                <td><span class="status-pill" [class]="docStatusClass[doc.status]">{{ docStatusKey[doc.status] | t }}</span></td>
+                <td><button type="button" class="btn btn-outline btn-sm"><app-icon name="i-upload" [size]="14" /><span>{{ (doc.status === 'Not Uploaded' ? 'common.upload' : 'common.update') | t }}</span></button></td>
               </tr>
             }
           </tbody>
@@ -95,20 +95,20 @@
     @case ('maintenance') {
       <div class="card">
         <div class="card-head">
-          <h3>Maintenance Log</h3>
+          <h3>{{ 'vehicleDetails.maintenance.title' | t }}</h3>
           <button type="button" class="btn btn-primary btn-sm" (click)="openAddMaintenance()">
-            <app-icon name="i-plus" [size]="15" /><span>Log Service</span>
+            <app-icon name="i-plus" [size]="15" /><span>{{ 'vehicleDetails.maintenance.logBtn' | t }}</span>
           </button>
         </div>
         @if (v.maintenance.length) {
           <table class="data-table">
             <thead>
               <tr>
-                <th>Service</th>
-                <th>Date</th>
-                <th>Odometer</th>
-                <th>Cost</th>
-                <th>Workshop</th>
+                <th>{{ 'vehicleDetails.maintenance.col.service' | t }}</th>
+                <th>{{ 'vehicleDetails.maintenance.col.date' | t }}</th>
+                <th>{{ 'vehicleDetails.maintenance.col.odometer' | t }}</th>
+                <th>{{ 'vehicleDetails.maintenance.col.cost' | t }}</th>
+                <th>{{ 'vehicleDetails.maintenance.col.workshop' | t }}</th>
               </tr>
             </thead>
             <tbody>
@@ -126,8 +126,8 @@
         } @else {
           <div class="empty-state">
             <app-icon name="i-settings" />
-            <h3>No maintenance records yet</h3>
-            <p>Log a service to keep track of this vehicle's maintenance history.</p>
+            <h3>{{ 'vehicleDetails.maintenance.empty.title' | t }}</h3>
+            <p>{{ 'vehicleDetails.maintenance.empty.desc' | t }}</p>
           </div>
         }
       </div>
@@ -136,27 +136,27 @@
     @case ('fuel') {
       <div class="card">
         <div class="card-head">
-          <h3>Fuel Log</h3>
+          <h3>{{ 'vehicleDetails.fuel.title' | t }}</h3>
           <button type="button" class="btn btn-primary btn-sm" (click)="openAddFuel()">
-            <app-icon name="i-plus" [size]="15" /><span>Log Fuel</span>
+            <app-icon name="i-plus" [size]="15" /><span>{{ 'vehicleDetails.fuel.logBtn' | t }}</span>
           </button>
         </div>
         @if (v.fuelLogs.length) {
           <table class="data-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Liters</th>
-                <th>Cost</th>
-                <th>Odometer</th>
-                <th>Fuel Station</th>
+                <th>{{ 'vehicleDetails.fuel.col.date' | t }}</th>
+                <th>{{ 'vehicleDetails.fuel.col.liters' | t }}</th>
+                <th>{{ 'vehicleDetails.fuel.col.cost' | t }}</th>
+                <th>{{ 'vehicleDetails.fuel.col.odometer' | t }}</th>
+                <th>{{ 'vehicleDetails.fuel.col.station' | t }}</th>
               </tr>
             </thead>
             <tbody>
               @for (log of v.fuelLogs; track log.id) {
                 <tr>
                   <td>{{ log.date }}</td>
-                  <td>{{ log.liters }} L</td>
+                  <td>{{ log.liters }} {{ 'vehicleDetails.fuel.litersUnit' | t }}</td>
                   <td>{{ log.cost }}</td>
                   <td>{{ log.odometer }}</td>
                   <td>{{ log.fuelStation }}</td>
@@ -167,8 +167,8 @@
         } @else {
           <div class="empty-state">
             <app-icon name="i-truck" />
-            <h3>No fuel logs yet</h3>
-            <p>Log fuel fill-ups to track mileage and running cost.</p>
+            <h3>{{ 'vehicleDetails.fuel.empty.title' | t }}</h3>
+            <p>{{ 'vehicleDetails.fuel.empty.desc' | t }}</p>
           </div>
         }
       </div>
@@ -176,10 +176,10 @@
   }
 
   @if (showAssignModal()) {
-    <app-modal title="Assign AIS-140 Device" (close)="showAssignModal.set(false)">
+    <app-modal [title]="'vehicleDetails.modal.assign.title' | t" (close)="showAssignModal.set(false)">
       @if (availableDevices().length) {
         <div class="field">
-          <label>Select an available device</label>
+          <label>{{ 'vehicleDetails.modal.assign.label' | t }}</label>
           <select class="input" style="padding-left:14px;" [ngModel]="selectedImei()" (ngModelChange)="selectedImei.set($event)" name="selectedImei">
             @for (device of availableDevices(); track device.imei) {
               <option [value]="device.imei">{{ device.imei }}</option>
@@ -187,88 +187,88 @@
           </select>
         </div>
       } @else {
-        <p style="color:var(--color-text-muted);">No available devices in inventory right now. Visit Device Inventory to add more devices.</p>
+        <p style="color:var(--color-text-muted);">{{ 'vehicleDetails.modal.assign.none' | t }}</p>
       }
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-        <button type="button" class="btn btn-outline" (click)="showAssignModal.set(false)">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="!availableDevices().length" (click)="confirmAssign()">Assign Device</button>
+        <button type="button" class="btn btn-outline" (click)="showAssignModal.set(false)">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!availableDevices().length" (click)="confirmAssign()">{{ 'vehicleDetails.device.assignBtn' | t }}</button>
       </div>
     </app-modal>
   }
 
   @if (showMaintenanceModal()) {
-    <app-modal title="Log Maintenance Service" (close)="closeMaintenance()">
+    <app-modal [title]="'vehicleDetails.modal.maintenance.title' | t" (close)="closeMaintenance()">
       <div class="field">
-        <label>Service Type</label>
-        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Full Service" [ngModel]="serviceType()" (ngModelChange)="serviceType.set($event)" name="serviceType" />
+        <label>{{ 'vehicleDetails.modal.maintenance.serviceType' | t }}</label>
+        <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.serviceTypePh' | t" [ngModel]="serviceType()" (ngModelChange)="serviceType.set($event)" name="serviceType" />
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
-          <label>Date</label>
+          <label>{{ 'vehicleDetails.modal.maintenance.date' | t }}</label>
           <input type="date" class="input" style="padding-left:14px;" [ngModel]="serviceDate()" (ngModelChange)="serviceDate.set($event)" name="serviceDate" />
         </div>
         <div class="field">
-          <label>Odometer</label>
-          <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. 1,42,300 km" [ngModel]="odometer()" (ngModelChange)="odometer.set($event)" name="odometer" />
+          <label>{{ 'vehicleDetails.modal.maintenance.odometer' | t }}</label>
+          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.odometerPh' | t" [ngModel]="odometer()" (ngModelChange)="odometer.set($event)" name="odometer" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
-          <label>Cost (₹)</label>
-          <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. ₹8,200" [ngModel]="cost()" (ngModelChange)="cost.set($event)" name="cost" />
+          <label>{{ 'vehicleDetails.modal.maintenance.cost' | t }}</label>
+          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.costPh' | t" [ngModel]="cost()" (ngModelChange)="cost.set($event)" name="cost" />
         </div>
         <div class="field">
-          <label>Workshop</label>
-          <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Tata Motors Service" [ngModel]="workshop()" (ngModelChange)="workshop.set($event)" name="workshop" />
+          <label>{{ 'vehicleDetails.modal.maintenance.workshop' | t }}</label>
+          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.workshopPh' | t" [ngModel]="workshop()" (ngModelChange)="workshop.set($event)" name="workshop" />
         </div>
       </div>
       <div class="field">
-        <label>Notes (optional)</label>
+        <label>{{ 'vehicleDetails.modal.maintenance.notes' | t }}</label>
         <textarea class="input" style="padding:12px 14px;min-height:70px;resize:vertical;" [ngModel]="notes()" (ngModelChange)="notes.set($event)" name="notes"></textarea>
       </div>
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-        <button type="button" class="btn btn-outline" (click)="closeMaintenance()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="submitMaintenance()">Save Record</button>
+        <button type="button" class="btn btn-outline" (click)="closeMaintenance()">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="btn btn-primary" (click)="submitMaintenance()">{{ 'vehicleDetails.modal.maintenance.save' | t }}</button>
       </div>
     </app-modal>
   }
 
   @if (showFuelModal()) {
-    <app-modal title="Log Fuel Fill-up" (close)="closeFuel()">
+    <app-modal [title]="'vehicleDetails.modal.fuel.title' | t" (close)="closeFuel()">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
-          <label>Date</label>
+          <label>{{ 'vehicleDetails.modal.fuel.date' | t }}</label>
           <input type="date" class="input" style="padding-left:14px;" [ngModel]="fuelDate()" (ngModelChange)="fuelDate.set($event)" name="fuelDate" />
         </div>
         <div class="field">
-          <label>Liters</label>
-          <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 220" [ngModel]="liters()" (ngModelChange)="liters.set($event)" name="liters" />
+          <label>{{ 'vehicleDetails.modal.fuel.liters' | t }}</label>
+          <input type="number" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.litersPh' | t" [ngModel]="liters()" (ngModelChange)="liters.set($event)" name="liters" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
-          <label>Cost (₹)</label>
-          <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. ₹21,340" [ngModel]="fuelCost()" (ngModelChange)="fuelCost.set($event)" name="fuelCost" />
+          <label>{{ 'vehicleDetails.modal.fuel.cost' | t }}</label>
+          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.costPh' | t" [ngModel]="fuelCost()" (ngModelChange)="fuelCost.set($event)" name="fuelCost" />
         </div>
         <div class="field">
-          <label>Odometer</label>
-          <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. 1,52,880 km" [ngModel]="fuelOdometer()" (ngModelChange)="fuelOdometer.set($event)" name="fuelOdometer" />
+          <label>{{ 'vehicleDetails.modal.fuel.odometer' | t }}</label>
+          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.odometerPh' | t" [ngModel]="fuelOdometer()" (ngModelChange)="fuelOdometer.set($event)" name="fuelOdometer" />
         </div>
       </div>
       <div class="field">
-        <label>Fuel Station</label>
-        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. IOCL, Ahmedabad Bypass" [ngModel]="fuelStation()" (ngModelChange)="fuelStation.set($event)" name="fuelStation" />
+        <label>{{ 'vehicleDetails.modal.fuel.station' | t }}</label>
+        <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.stationPh' | t" [ngModel]="fuelStation()" (ngModelChange)="fuelStation.set($event)" name="fuelStation" />
       </div>
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-        <button type="button" class="btn btn-outline" (click)="closeFuel()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="submitFuel()">Save Log</button>
+        <button type="button" class="btn btn-outline" (click)="closeFuel()">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="btn btn-primary" (click)="submitFuel()">{{ 'vehicleDetails.modal.fuel.save' | t }}</button>
       </div>
     </app-modal>
   }
 } @else {
   <div class="empty-state">
     <app-icon name="i-car" />
-    <h3>Vehicle not found</h3>
-    <p>This vehicle may have been removed or the link is incorrect.</p>
+    <h3>{{ 'vehicleDetails.notFound.title' | t }}</h3>
+    <p>{{ 'vehicleDetails.notFound.desc' | t }}</p>
   </div>
 }

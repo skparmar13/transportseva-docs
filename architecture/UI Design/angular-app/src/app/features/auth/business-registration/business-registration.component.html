@@ -1,45 +1,45 @@
 <app-auth-shell
   backLink="/auth/otp-verification"
-  backLabel="Back"
-  eyebrow="Business Details"
-  title="Register your business"
-  sub="Tell us about your transport business so we can set up the right workspace and documents for you."
-  visualHeadingLine1="Grow your fleet"
-  visualHeadingLine2="business, digitally."
-  visualDescription="From GST invoicing to AIS-140 tracking — TransportSeva gives transport businesses everything in one workspace."
+  [backLabel]="'businessReg.back' | t"
+  [eyebrow]="'businessReg.eyebrow' | t"
+  [title]="'businessReg.title' | t"
+  [sub]="'businessReg.sub' | t"
+  [visualHeadingLine1]="'businessReg.visual.title1' | t"
+  [visualHeadingLine2]="'businessReg.visual.title2' | t"
+  [visualDescription]="'businessReg.visual.description' | t"
   visualImage="images/app-truck.png"
   [wide]="true"
 >
   <form (ngSubmit)="submit()">
     <div class="field">
-      <label>Business Type</label>
+      <label>{{ 'businessReg.businessType' | t }}</label>
       <div class="role-grid" style="grid-template-columns: repeat(3, 1fr);">
         @for (type of businessTypes; track type.value) {
           <div class="role-card" [class.active]="businessType() === type.value" (click)="businessType.set(type.value)" style="padding:12px 8px;">
-            <span style="font-size:12px;">{{ type.label }}</span>
+            <span style="font-size:12px;">{{ type.labelKey | t }}</span>
           </div>
         }
       </div>
     </div>
 
     <div class="field">
-      <label>Company / Fleet Name</label>
+      <label>{{ 'businessReg.companyLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-building" [size]="18" />
-        <input type="text" class="input" placeholder="Enter registered business name" name="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)" required>
+        <input type="text" class="input" [placeholder]="'businessReg.companyPlaceholder' | t" name="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)" required>
       </div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
       <div class="field">
-        <label>GST Number</label>
+        <label>{{ 'businessReg.gstLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-doc" [size]="18" />
           <input type="text" class="input" placeholder="22AAAAA0000A1Z5" name="gstNumber" [ngModel]="gstNumber()" (ngModelChange)="gstNumber.set($event)">
         </div>
       </div>
       <div class="field">
-        <label>PAN Number</label>
+        <label>{{ 'businessReg.panLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-doc" [size]="18" />
           <input type="text" class="input" placeholder="AAAAA0000A" name="panNumber" [ngModel]="panNumber()" (ngModelChange)="panNumber.set($event)">
@@ -48,38 +48,38 @@
     </div>
 
     <div class="field">
-      <label>Fleet Size (approx. number of vehicles)</label>
+      <label>{{ 'businessReg.fleetSizeLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-truck" [size]="18" />
-        <input type="number" class="input" placeholder="e.g. 25" name="fleetSize" [ngModel]="fleetSize()" (ngModelChange)="fleetSize.set($event)">
+        <input type="number" class="input" [placeholder]="'businessReg.fleetSizePlaceholder' | t" name="fleetSize" [ngModel]="fleetSize()" (ngModelChange)="fleetSize.set($event)">
       </div>
     </div>
 
     <div class="field">
-      <label>Registered Address</label>
+      <label>{{ 'businessReg.addressLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-map" [size]="18" />
-        <input type="text" class="input" placeholder="Street address" name="address" [ngModel]="address()" (ngModelChange)="address.set($event)">
+        <input type="text" class="input" [placeholder]="'businessReg.addressPlaceholder' | t" name="address" [ngModel]="address()" (ngModelChange)="address.set($event)">
       </div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
       <div class="field">
-        <label>City</label>
-        <input type="text" class="input" placeholder="City" name="city" [ngModel]="city()" (ngModelChange)="city.set($event)">
+        <label>{{ 'businessReg.cityLabel' | t }}</label>
+        <input type="text" class="input" [placeholder]="'businessReg.cityLabel' | t" name="city" [ngModel]="city()" (ngModelChange)="city.set($event)">
       </div>
       <div class="field">
-        <label>State</label>
-        <input type="text" class="input" placeholder="State" name="state" [ngModel]="state()" (ngModelChange)="state.set($event)">
+        <label>{{ 'businessReg.stateLabel' | t }}</label>
+        <input type="text" class="input" [placeholder]="'businessReg.stateLabel' | t" name="state" [ngModel]="state()" (ngModelChange)="state.set($event)">
       </div>
       <div class="field">
-        <label>Pincode</label>
-        <input type="text" class="input" placeholder="Pincode" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)">
+        <label>{{ 'businessReg.pincodeLabel' | t }}</label>
+        <input type="text" class="input" [placeholder]="'businessReg.pincodeLabel' | t" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)">
       </div>
     </div>
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
-      <span>{{ submitting() ? 'Saving…' : 'Continue' }}</span>
+      <span>{{ (submitting() ? 'businessReg.saving' : 'common.continue') | t }}</span>
       @if (!submitting()) {
         <app-icon name="i-arrow-right" [size]="18" />
       }

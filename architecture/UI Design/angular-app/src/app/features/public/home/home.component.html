@@ -2,18 +2,18 @@
   <div class="container">
     <div class="hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow hero-badge">India's Trusted Transport &amp; Logistics Platform</span>
-        <h1>Move Every Load<br>With <span class="accent">Confidence</span></h1>
-        <p>TransportSeva connects shippers, carriers and drivers on a single platform. Book, track and manage your shipments in real-time with complete transparency.</p>
+        <span class="eyebrow hero-badge">{{ 'hero.badge' | t }}</span>
+        <h1>{{ 'hero.title1' | t }}<br>{{ 'hero.title2' | t }} <span class="accent">{{ 'hero.accent' | t }}</span></h1>
+        <p>{{ 'hero.desc' | t }}</p>
         <div class="hero-cta">
-          <a routerLink="/auth/signup" class="btn btn-primary">Book Your Shipment</a>
-          <a routerLink="/help-center" fragment="track" class="btn btn-outline"><app-icon name="i-pin" [size]="17" /><span>Track Your Shipment</span></a>
+          <a routerLink="/auth/signup" class="btn btn-primary">{{ 'hero.bookBtn' | t }}</a>
+          <a routerLink="/help-center" fragment="track" class="btn btn-outline"><app-icon name="i-pin" [size]="17" /><span>{{ 'hero.trackBtn' | t }}</span></a>
         </div>
         <div class="hero-apps">
-          <p>Download our app</p>
+          <p>{{ 'hero.downloadApp' | t }}</p>
           <div class="store-row">
-            <a href="#" class="store-btn"><app-icon name="i-play" [size]="18" /><span class="store-txt"><span>GET IT ON</span><b>Google Play</b></span></a>
-            <a href="#" class="store-btn"><app-icon name="i-apple" [size]="18" /><span class="store-txt"><span>Download on the</span><b>App Store</b></span></a>
+            <a href="#" class="store-btn"><app-icon name="i-play" [size]="18" /><span class="store-txt"><span>{{ 'app.getItOn' | t }}</span><b>{{ 'app.googlePlay' | t }}</b></span></a>
+            <a href="#" class="store-btn"><app-icon name="i-apple" [size]="18" /><span class="store-txt"><span>{{ 'app.downloadOnThe' | t }}</span><b>{{ 'app.appStore' | t }}</b></span></a>
           </div>
         </div>
       </div>
@@ -22,18 +22,18 @@
       </div>
     </div>
     <div class="stats-bar">
-      @for (stat of stats(); track stat.label) {
-        <div class="stat-item"><span class="stat-icon"><app-icon [name]="stat.icon" /></span><div><div class="stat-num">{{ stat.value }}</div><div class="stat-label">{{ stat.label }}</div></div></div>
+      @for (stat of stats(); track stat.labelKey) {
+        <div class="stat-item"><span class="stat-icon"><app-icon [name]="stat.icon" /></span><div><div class="stat-num">{{ stat.value }}</div><div class="stat-label">{{ stat.labelKey | t }}</div></div></div>
       }
     </div>
   </div>
 </section>
 <section class="services" id="services">
   <div class="container">
-    <div class="section-head"><span class="eyebrow">Our Services</span><h2>Complete Logistics Solutions</h2><p>End-to-end transport and logistics services tailored for your business needs.</p></div>
+    <div class="section-head"><span class="eyebrow">{{ 'services.eyebrow' | t }}</span><h2>{{ 'services.title' | t }}</h2><p>{{ 'services.desc' | t }}</p></div>
     <div class="services-grid">
-      @for (service of services(); track service.title) {
-        <div class="service-card"><span class="service-icon"><app-icon [name]="service.icon" /></span><h3>{{ service.title }}</h3><p>{{ service.desc }}</p></div>
+      @for (service of services(); track service.titleKey) {
+        <div class="service-card"><span class="service-icon"><app-icon [name]="service.icon" /></span><h3>{{ service.titleKey | t }}</h3><p>{{ service.descKey | t }}</p></div>
       }
     </div>
   </div>
@@ -41,22 +41,22 @@
 <section class="why" id="solutions">
   <div class="why-inner">
     <div class="why-copy">
-      <span class="eyebrow">Why Choose Us</span>
-      <h2>Why Thousands Trust <span>TransportSeva</span></h2>
+      <span class="eyebrow">{{ 'why.eyebrow' | t }}</span>
+      <h2>{{ 'why.title' | t }} <span>{{ 'common.appName' | t }}</span></h2>
       <ul class="why-list">
         @for (item of whyItems(); track item) {
-          <li><span class="check"><app-icon name="i-check" [size]="12" /></span><span>{{ item }}</span></li>
+          <li><span class="check"><app-icon name="i-check" [size]="12" /></span><span>{{ item | t }}</span></li>
         }
       </ul>
     </div>
     <div class="phone-showcase">
-      <div class="phone"><div class="phone-screen"><div class="phone-status"><span>19:41</span><span>●●● 100%</span></div><div class="phone-title"><app-icon name="i-arrow-left" [size]="14" /><span>Live Tracking</span></div><div class="phone-map"><svg viewBox="0 0 210 250"><path d="M20 220 C 60 150, 90 120, 130 90 S 180 40, 190 20" stroke="#F45B00" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="220" r="5" fill="#222222"/><circle cx="190" cy="20" r="6" fill="#F45B00"/><g transform="translate(112,95)"><rect x="-14" y="-8" width="28" height="16" rx="3" fill="#F45B00"/><circle cx="-8" cy="9" r="4" fill="#222222"/><circle cx="8" cy="9" r="4" fill="#222222"/></g></svg></div><div class="phone-card"><span class="pin-badge"><app-icon name="i-pin" [size]="16" /></span><div><div class="route-text">DL01AB1234</div><div class="route-sub">Delhi → Mumbai · ETA: 31 May, 06:00 PM</div></div></div></div></div>
-      <div class="status-card"><h4>Shipment Status</h4><div class="status-row done"><span class="status-dot"></span><span class="status-text"><b>Booked</b><span>29 May, 10:30 AM</span></span></div><div class="status-row done"><span class="status-dot"></span><span class="status-text"><b>Picked Up</b><span>29 May, 02:45 PM</span></span></div><div class="status-row active"><span class="status-dot"></span><span class="status-text"><b>In Transit</b><span>30 May, 11:20 AM</span></span></div><div class="status-row"><span class="status-dot"></span><span class="status-text"><b>Out for Delivery</b><span>31 May, 09:30 AM</span></span></div><div class="status-row"><span class="status-dot"></span><span class="status-text"><b>Delivered</b><span>31 May, 06:00 PM</span></span></div></div>
+      <div class="phone"><div class="phone-screen"><div class="phone-status"><span>19:41</span><span>●●● 100%</span></div><div class="phone-title"><app-icon name="i-arrow-left" [size]="14" /><span>{{ 'phone.liveTracking' | t }}</span></div><div class="phone-map"><svg viewBox="0 0 210 250"><path d="M20 220 C 60 150, 90 120, 130 90 S 180 40, 190 20" stroke="#F45B00" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="220" r="5" fill="#222222"/><circle cx="190" cy="20" r="6" fill="#F45B00"/><g transform="translate(112,95)"><rect x="-14" y="-8" width="28" height="16" rx="3" fill="#F45B00"/><circle cx="-8" cy="9" r="4" fill="#222222"/><circle cx="8" cy="9" r="4" fill="#222222"/></g></svg></div><div class="phone-card"><span class="pin-badge"><app-icon name="i-pin" [size]="16" /></span><div><div class="route-text">DL01AB1234</div><div class="route-sub">{{ 'phone.routeSub' | t }}</div></div></div></div></div>
+      <div class="status-card"><h4>{{ 'status.title' | t }}</h4><div class="status-row done"><span class="status-dot"></span><span class="status-text"><b>{{ 'status.booked' | t }}</b><span>29 May, 10:30 AM</span></span></div><div class="status-row done"><span class="status-dot"></span><span class="status-text"><b>{{ 'status.pickedUp' | t }}</b><span>29 May, 02:45 PM</span></span></div><div class="status-row active"><span class="status-dot"></span><span class="status-text"><b>{{ 'status.inTransit' | t }}</b><span>30 May, 11:20 AM</span></span></div><div class="status-row"><span class="status-dot"></span><span class="status-text"><b>{{ 'status.outForDelivery' | t }}</b><span>31 May, 09:30 AM</span></span></div><div class="status-row"><span class="status-dot"></span><span class="status-text"><b>{{ 'status.delivered' | t }}</b><span>31 May, 06:00 PM</span></span></div></div>
     </div>
   </div>
 </section>
-<section class="how"><div class="container"><div class="section-head"><span class="eyebrow">How It Works</span><h2>How TransportSeva Works</h2></div><div class="how-track">@for (step of steps(); track step.number) {<div class="how-step"><span class="how-num">{{ step.number }}</span><h4>{{ step.title }}</h4><p>{{ step.desc }}</p></div>}</div></div></section>
-<section class="mobile-app" id="resources"><div class="container mobile-grid"><div class="mobile-visual"><img src="images/app-truck.png" alt="TransportSeva mobile app with truck" class="mobile-app-img"></div><div class="mobile-copy"><span class="eyebrow">Mobile App</span><h2>Manage Shipments On The Go</h2><ul class="checklist">@for (item of mobileItems(); track item) {<li><app-icon name="i-check" [size]="18" /><span>{{ item }}</span></li>}</ul><div class="app-download-row"><div class="store-row"><a href="#" class="store-btn"><app-icon name="i-play" [size]="18" /><span class="store-txt">GET IT ON<b>Google Play</b></span></a><a href="#" class="store-btn"><app-icon name="i-apple" [size]="18" /><span class="store-txt">Download on the<b>App Store</b></span></a></div><div class="qr-box"><app-icon name="i-scan" [size]="56" /><span>Scan to Download App</span></div></div></div></div></section>
-<section class="testimonials"><div class="container"><div class="section-head"><span class="eyebrow">Trusted By Thousands</span><h2>What Our Customers Say</h2></div><div class="testi-grid">@for (item of testimonials(); track item.name) {<div class="testi-card"><div class="quote-mark">“</div><div class="stars"><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /></div><p>{{ item.text }}</p><div class="testi-person"><div class="avatar"></div><div><b>{{ item.name }}</b><span>{{ item.role }}</span></div></div></div>}</div></div></section>
-<section class="partners"><div class="container"><span class="eyebrow">Our Partners</span><div class="partners-row">@for (partner of partners(); track partner) {<span class="partner-logo">{{ partner }}</span>}</div></div></section>
-<section class="cta" id="contact"><div><h2>Ready to Move Your Business Forward?</h2><p>Join thousands of businesses using TransportSeva to simplify their logistics and grow faster.</p></div><div class="cta-actions"><a routerLink="/auth/signup" class="btn btn-white">Book a Shipment</a><a routerLink="/contact" class="btn btn-outline-light">Become a Partner</a><a routerLink="/help-center" class="btn btn-outline-light">Download App</a></div></section>
+<section class="how"><div class="container"><div class="section-head"><span class="eyebrow">{{ 'how.eyebrow' | t }}</span><h2>{{ 'how.title1' | t }} {{ 'common.appName' | t }} {{ 'how.title2' | t }}</h2></div><div class="how-track">@for (step of steps(); track step.number) {<div class="how-step"><span class="how-num">{{ step.number }}</span><h4>{{ step.titleKey | t }}</h4><p>{{ step.descKey | t }}</p></div>}</div></div></section>
+<section class="mobile-app" id="resources"><div class="container mobile-grid"><div class="mobile-visual"><img src="images/app-truck.png" alt="TransportSeva mobile app with truck" class="mobile-app-img"></div><div class="mobile-copy"><span class="eyebrow">{{ 'mobile.eyebrow' | t }}</span><h2>{{ 'mobile.title' | t }}</h2><ul class="checklist">@for (item of mobileItems(); track item) {<li><app-icon name="i-check" [size]="18" /><span>{{ item | t }}</span></li>}</ul><div class="app-download-row"><div class="store-row"><a href="#" class="store-btn"><app-icon name="i-play" [size]="18" /><span class="store-txt">{{ 'app.getItOn' | t }}<b>{{ 'app.googlePlay' | t }}</b></span></a><a href="#" class="store-btn"><app-icon name="i-apple" [size]="18" /><span class="store-txt">{{ 'app.downloadOnThe' | t }}<b>{{ 'app.appStore' | t }}</b></span></a></div><div class="qr-box"><app-icon name="i-scan" [size]="56" /><span>{{ 'app.scanToDownload' | t }}</span></div></div></div></div></section>
+<section class="testimonials"><div class="container"><div class="section-head"><span class="eyebrow">{{ 'testi.eyebrow' | t }}</span><h2>{{ 'testi.title' | t }}</h2></div><div class="testi-grid">@for (item of testimonials(); track item.name) {<div class="testi-card"><div class="quote-mark">“</div><div class="stars"><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /><app-icon name="i-star" [size]="15" /></div><p>{{ item.textKey | t }}</p><div class="testi-person"><div class="avatar"></div><div><b>{{ item.name }}</b><span>{{ item.roleKey | t }}</span></div></div></div>}</div></div></section>
+<section class="partners"><div class="container"><span class="eyebrow">{{ 'partners.eyebrow' | t }}</span><div class="partners-row">@for (partner of partners(); track partner) {<span class="partner-logo">{{ partner }}</span>}</div></div></section>
+<section class="cta" id="contact"><div><h2>{{ 'cta.title' | t }}</h2><p>{{ 'cta.desc' | t }}</p></div><div class="cta-actions"><a routerLink="/auth/signup" class="btn btn-white">{{ 'cta.bookBtn' | t }}</a><a routerLink="/contact" class="btn btn-outline-light">{{ 'cta.partnerBtn' | t }}</a><a routerLink="/help-center" class="btn btn-outline-light">{{ 'cta.downloadBtn' | t }}</a></div></section>

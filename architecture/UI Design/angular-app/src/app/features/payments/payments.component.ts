@@ -27,8 +27,8 @@ const PAYOUT_STATUS_CLASS: Record<PayoutStatus, string> = {
  * Payments — Module 9. Freight Payments (invoices owed/received),
  * Commission (platform's cut per trip), GST Invoices, and Payouts
  * (settlements paid out to truck owners/transporters/drivers).
- * Distinct from Wallet (Module 8): this is the finance/billing view,
- * not the running balance ledger.
+ * Provider-facing payment operations: freight payments, commission,
+ * invoices and payouts. Stored-value wallet behavior is intentionally excluded.
  */
 @Component({
   selector: 'app-payments',

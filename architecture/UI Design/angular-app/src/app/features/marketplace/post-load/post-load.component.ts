@@ -5,6 +5,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { VehicleType } from '../../../core/models/marketplace.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -17,7 +18,7 @@ const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft
 @Component({
   selector: 'app-post-load',
   standalone: true,
-  imports: [IconComponent, FormsModule],
+  imports: [IconComponent, FormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './post-load.component.html',
 })

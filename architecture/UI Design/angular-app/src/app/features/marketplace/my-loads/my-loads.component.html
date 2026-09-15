@@ -1,11 +1,11 @@
 <div class="page-toolbar">
   <div>
-    <h1>My Loads</h1>
-    <p class="desc">Loads you've posted to the marketplace.</p>
+    <h1>{{ 'myLoads.title' | t }}</h1>
+    <p class="desc">{{ 'myLoads.desc' | t }}</p>
   </div>
   <button type="button" class="btn btn-primary" (click)="postLoad()">
     <app-icon name="i-plus" [size]="18" />
-    <span>Post a Load</span>
+    <span>{{ 'myLoads.postLoad' | t }}</span>
   </button>
 </div>
 
@@ -14,14 +14,14 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Load ID</th>
-          <th>Route</th>
-          <th>Material</th>
-          <th>Vehicle Type</th>
-          <th>Pickup Date</th>
-          <th>Budget</th>
-          <th>Applications</th>
-          <th>Status</th>
+          <th>{{ 'myLoads.col.loadId' | t }}</th>
+          <th>{{ 'myLoads.col.route' | t }}</th>
+          <th>{{ 'myLoads.col.material' | t }}</th>
+          <th>{{ 'myLoads.col.vehicleType' | t }}</th>
+          <th>{{ 'myLoads.col.pickupDate' | t }}</th>
+          <th>{{ 'myLoads.col.budget' | t }}</th>
+          <th>{{ 'myLoads.col.applications' | t }}</th>
+          <th>{{ 'common.status' | t }}</th>
           <th></th>
         </tr>
       </thead>
@@ -35,8 +35,8 @@
             <td>{{ load.pickupDate }}</td>
             <td>{{ load.budget }}</td>
             <td>{{ load.applicationsCount }}</td>
-            <td><span class="status-pill" [class]="statusClass[load.status]">{{ load.status }}</span></td>
-            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(load.id)">View</button></td>
+            <td><span class="status-pill" [class]="statusClass[load.status]">{{ statusKey(load.status) | t }}</span></td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(load.id)">{{ 'myLoads.view' | t }}</button></td>
           </tr>
         }
       </tbody>
@@ -44,8 +44,8 @@
   } @else {
     <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
       <app-icon name="i-box" [size]="32" />
-      <p style="margin-top:12px;">You haven't posted any loads yet.</p>
-      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="postLoad()">Post Your First Load</button>
+      <p style="margin-top:12px;">{{ 'myLoads.empty.desc' | t }}</p>
+      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="postLoad()">{{ 'myLoads.empty.cta' | t }}</button>
     </div>
   }
 </div>

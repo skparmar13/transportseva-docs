@@ -1,20 +1,20 @@
-<h1>Load Board</h1>
-<p class="desc">Browse open loads from shippers and transporters, and apply with your vehicle.</p>
+<h1>{{ 'loadBoard.title' | t }}</h1>
+<p class="desc">{{ 'loadBoard.desc' | t }}</p>
 
 <div class="page-toolbar">
   <div class="toolbar-filters">
     <div class="filter-search">
       <app-icon name="i-search" [size]="16" />
-      <input type="text" placeholder="Search by city or material..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      <input type="text" [placeholder]="'loadBoard.search.placeholder' | t" [ngModel]="search()" (ngModelChange)="search.set($event)" />
     </div>
     <select class="filter-select" [ngModel]="vehicleFilter()" (ngModelChange)="vehicleFilter.set($event)">
-      <option value="">All Vehicle Types</option>
+      <option value="">{{ 'loadBoard.filter.allTypes' | t }}</option>
       @for (type of vehicleTypes; track type) {
         <option [value]="type">{{ type }}</option>
       }
     </select>
   </div>
-  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ filteredLoads().length }} loads available</span>
+  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ 'loadBoard.available' | t:{ count: filteredLoads().length } }}</span>
 </div>
 
 @if (filteredLoads().length) {
@@ -23,24 +23,24 @@
       <div class="load-card">
         <div class="load-card-head">
           <span class="load-card-id">{{ load.loadId }}</span>
-          <span class="status-pill" [class]="load.status === 'Open' ? 'status-pending' : 'status-progress'">{{ load.status }}</span>
+          <span class="status-pill" [class]="load.status === 'Open' ? 'status-pending' : 'status-progress'">{{ statusKey(load.status) | t }}</span>
         </div>
         <div class="load-route">
           <app-icon name="i-map" [size]="16" />
           <span>{{ load.pickupCity }} → {{ load.dropCity }}</span>
         </div>
         <div class="load-meta-grid">
-          <div>Material: <strong>{{ load.material }}</strong></div>
-          <div>Weight: <strong>{{ load.weightTons }} tons</strong></div>
-          <div>Vehicle: <strong>{{ load.vehicleType }}</strong></div>
-          <div>Pickup: <strong>{{ load.pickupDate }}</strong></div>
+          <div>{{ 'loadBoard.card.material' | t }} <strong>{{ load.material }}</strong></div>
+          <div>{{ 'loadBoard.card.weight' | t }} <strong>{{ 'loadBoard.card.weightTons' | t:{ value: load.weightTons } }}</strong></div>
+          <div>{{ 'loadBoard.card.vehicle' | t }} <strong>{{ load.vehicleType }}</strong></div>
+          <div>{{ 'loadBoard.card.pickup' | t }} <strong>{{ load.pickupDate }}</strong></div>
         </div>
         <div style="font-size:12px;color:var(--color-text-soft);">
-          Posted by {{ load.postedByName }}{{ load.onBehalfOfCustomer ? ' on behalf of ' + load.onBehalfOfCustomer : '' }} · {{ load.postedAgo }}
+          {{ 'loadBoard.card.postedBy' | t }} {{ load.postedByName }}{{ load.onBehalfOfCustomer ? ' ' + ('loadBoard.card.onBehalfOf' | t) + ' ' + load.onBehalfOfCustomer : '' }} · {{ load.postedAgo }}
         </div>
         <div class="load-card-foot">
           <span class="load-budget">{{ load.budget }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="viewLoad(load.id)">View &amp; Apply</button>
+          <button type="button" class="btn btn-primary btn-sm" (click)="viewLoad(load.id)">{{ 'loadBoard.card.viewApply' | t }}</button>
         </div>
       </div>
     }
@@ -48,7 +48,7 @@
 } @else {
   <div class="empty-state">
     <app-icon name="i-box" />
-    <h3>No loads match your filters</h3>
-    <p>Try clearing the search or vehicle type filter.</p>
+    <h3>{{ 'loadBoard.empty.title' | t }}</h3>
+    <p>{{ 'loadBoard.empty.desc' | t }}</p>
   </div>
 }

@@ -1,9 +1,9 @@
-﻿<section class="page-banner">
+<section class="page-banner">
   <div class="container">
-    <span class="eyebrow">Pricing</span>
-    <h1>Simple, Transparent Pricing</h1>
-    <p>Start for free and pay commission only when you get a booking. Upgrade when you're ready to scale with GPS tracking, live visibility and advanced fleet tools.</p>
-    <div class="breadcrumb"><a routerLink="/">Home</a><span class="sep">/</span><span class="current">Pricing</span></div>
+    <span class="eyebrow">{{ 'pricing.eyebrow' | t }}</span>
+    <h1>{{ 'pricing.title' | t }}</h1>
+    <p>{{ 'pricing.desc' | t }}</p>
+    <div class="breadcrumb"><a routerLink="/">{{ 'breadcrumb.home' | t }}</a><span class="sep">/</span><span class="current">{{ 'pricing.breadcrumb' | t }}</span></div>
   </div>
 </section>
 
@@ -13,52 +13,52 @@
       @for (plan of plans(); track plan.tier) {
         <div class="pricing-card" [class.highlighted]="plan.highlighted">
           @if (plan.highlighted) {
-            <span class="pricing-badge">Most Popular</span>
+            <span class="pricing-badge">{{ 'pricing.mostPopular' | t }}</span>
           }
-          <h3>{{ plan.name }}</h3>
-          <p class="pricing-tagline">{{ plan.tagline }}</p>
+          <h3>{{ plan.nameKey | t }}</h3>
+          <p class="pricing-tagline">{{ plan.taglineKey | t }}</p>
 
           <div class="pricing-price">
-            <span class="amount">{{ plan.price }}</span>
-            @if (plan.tier === 'professional') {
-              <span class="period">/ month</span>
+            <span class="amount">{{ plan.priceKey ? (plan.priceKey | t) : plan.price }}</span>
+            @if (plan.showPeriod) {
+              <span class="period">{{ 'pricing.perMonth' | t }}</span>
             }
           </div>
-          <div class="pricing-note">{{ plan.priceNote }}</div>
+          <div class="pricing-note">{{ plan.priceNoteKey | t }}</div>
 
           <div class="pricing-suitable">
-            @for (s of plan.suitableFor; track s) {
-              <span>{{ s }}</span>
+            @for (s of plan.suitableKeys; track s) {
+              <span>{{ s.startsWith('pricing.') ? (s | t) : s }}</span>
             }
           </div>
 
           @if (plan.inheritsFrom) {
-            <div class="pricing-inherit">Everything in {{ plan.inheritsFrom === 'starter' ? 'Starter' : 'Professional' }}, plus:</div>
+            <div class="pricing-inherit">{{ 'pricing.everythingIn' | t : { plan: (inheritsFromKey(plan.inheritsFrom) | t) } }}</div>
           }
           <ul class="pricing-features">
-            @for (f of plan.features; track f) {
-              <li><app-icon name="i-check" class="icon" [size]="16" /><span>{{ f }}</span></li>
+            @for (f of plan.featureKeys; track f) {
+              <li><app-icon name="i-check" class="icon" [size]="16" /><span>{{ f | t }}</span></li>
             }
           </ul>
 
-          @if (plan.limits.length) {
+          @if (plan.limitKeys.length) {
             <div class="pricing-limits">
-              <h5>Plan Limits</h5>
+              <h5>{{ 'pricing.planLimits' | t }}</h5>
               <ul>
-                @for (l of plan.limits; track l) {
-                  <li>{{ l }}</li>
+                @for (l of plan.limitKeys; track l) {
+                  <li>{{ l | t }}</li>
                 }
               </ul>
             </div>
           }
 
-          <a [routerLink]="plan.tier === 'enterprise' ? '/contact' : '/auth/signup'" [queryParams]="plan.tier === 'enterprise' ? null : { plan: plan.tier }" class="btn" [class.btn-primary]="plan.highlighted" [class.btn-outline]="!plan.highlighted">{{ plan.ctaLabel }}</a>
+          <a [routerLink]="plan.tier === 'enterprise' ? '/contact' : '/auth/signup'" [queryParams]="plan.tier === 'enterprise' ? null : { plan: plan.tier }" class="btn" [class.btn-primary]="plan.highlighted" [class.btn-outline]="!plan.highlighted">{{ plan.ctaKey | t }}</a>
         </div>
       }
     </div>
 
     <p class="pricing-commission-note">
-      <app-icon name="i-info" [size]="14" /> TransportSeva earns a small commission only on successful bookings made through the marketplace — on every plan, including Starter. There's no cost to sign up, post loads or apply for loads.
+      <app-icon name="i-info" [size]="14" /> {{ 'pricing.commissionNote' | t }}
     </p>
   </div>
 </section>
@@ -66,16 +66,16 @@
 <section class="pg-section muted">
   <div class="container">
     <div class="section-head">
-      <span class="eyebrow">How We Earn</span>
-      <h2>Built on Aligned Incentives, Not Just Subscriptions</h2>
-      <p>TransportSeva doesn't rely only on subscription fees — our revenue comes in layers, so the platform stays affordable for every stakeholder.</p>
+      <span class="eyebrow">{{ 'pricing.earning.eyebrow' | t }}</span>
+      <h2>{{ 'pricing.earning.title' | t }}</h2>
+      <p>{{ 'pricing.earning.desc' | t }}</p>
     </div>
     <div class="earning-grid">
-      @for (layer of earningLayers(); track layer.title) {
+      @for (layer of earningLayers(); track layer.titleKey) {
         <div class="earning-card">
           <div class="icon-box"><app-icon [name]="layer.icon" /></div>
-          <h4>{{ layer.title }}</h4>
-          <p>{{ layer.desc }}</p>
+          <h4>{{ layer.titleKey | t }}</h4>
+          <p>{{ layer.descKey | t }}</p>
         </div>
       }
     </div>
@@ -85,15 +85,15 @@
 <section class="pg-section">
   <div class="container">
     <div class="section-head">
-      <span class="eyebrow">FAQs</span>
-      <h2>Pricing Questions, Answered</h2>
-      <p>Still unsure which plan is right for you? Reach out and our team will help you choose.</p>
+      <span class="eyebrow">{{ 'pricing.faq.eyebrow' | t }}</span>
+      <h2>{{ 'pricing.faq.title' | t }}</h2>
+      <p>{{ 'pricing.faq.desc' | t }}</p>
     </div>
     <div class="faq-list">
-      @for (faq of faqs(); track faq.question) {
+      @for (faq of faqs(); track faq.qKey) {
         <details class="faq-item" [attr.open]="faq.open ? true : null">
-          <summary><span>{{ faq.question }}</span><span class="faq-plus"><app-icon name="i-plus" [size]="13" /></span></summary>
-          <div class="faq-answer">{{ faq.answer }}</div>
+          <summary><span>{{ faq.qKey | t }}</span><span class="faq-plus"><app-icon name="i-plus" [size]="13" /></span></summary>
+          <div class="faq-answer">{{ faq.aKey | t }}</div>
         </details>
       }
     </div>
@@ -104,12 +104,12 @@
   <div class="container">
     <div class="cta">
       <div>
-        <h2>Ready to Move Your Business Forward?</h2>
-        <p>Join thousands of businesses using TransportSeva to simplify their logistics and grow faster.</p>
+        <h2>{{ 'cta.title' | t }}</h2>
+        <p>{{ 'cta.desc' | t }}</p>
       </div>
       <div class="cta-actions">
-        <a routerLink="/auth/signup" [queryParams]="{ plan: 'starter' }" class="btn btn-white">Get Started Free</a>
-        <a routerLink="/contact" class="btn btn-outline-light">Talk to Sales</a>
+        <a routerLink="/auth/signup" [queryParams]="{ plan: 'starter' }" class="btn btn-white">{{ 'cta.getStartedFree' | t }}</a>
+        <a routerLink="/contact" class="btn btn-outline-light">{{ 'cta.talkToSales' | t }}</a>
       </div>
     </div>
   </div>

@@ -1,18 +1,18 @@
 <app-auth-shell
   backLink="/"
-  eyebrow="Welcome Back"
-  title="Log in to your account"
-  sub="Access your bookings, track shipments and manage your logistics in one place."
+  [eyebrow]="'auth.login.eyebrow' | t"
+  [title]="'login.title' | t"
+  [sub]="'login.sub' | t"
 >
   <form (ngSubmit)="submit()">
     <div class="field">
-      <label>Email or Mobile Number</label>
+      <label>{{ 'login.identifierLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-user" [size]="18" />
         <input
           type="text"
           class="input"
-          placeholder="Enter email or mobile number"
+          [placeholder]="'login.identifierPlaceholder' | t"
           name="identifier"
           [ngModel]="identifier()"
           (ngModelChange)="identifier.set($event)"
@@ -22,20 +22,20 @@
     </div>
 
     <div class="field">
-      <label>Password</label>
+      <label>{{ 'auth.password' | t }}</label>
       <div class="input-wrap input-suffix-wrap">
         <app-icon name="i-lock" [size]="18" />
         <input
           [type]="showPassword() ? 'text' : 'password'"
           class="input"
-          placeholder="Enter your password"
+          [placeholder]="'login.passwordPlaceholder' | t"
           name="password"
           [ngModel]="password()"
           (ngModelChange)="password.set($event)"
           required
         >
         <button type="button" class="input-suffix-btn" (click)="togglePassword()">
-          {{ showPassword() ? 'Hide' : 'Show' }}
+          {{ (showPassword() ? 'login.hide' : 'login.show') | t }}
         </button>
       </div>
     </div>
@@ -43,13 +43,13 @@
     <div style="display:flex; align-items:center; justify-content:space-between; margin:18px 0 24px;">
       <label class="checkbox-row" style="margin:0;">
         <input type="checkbox" [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)" name="rememberMe">
-        <span>Remember me</span>
+        <span>{{ 'auth.rememberMe' | t }}</span>
       </label>
-      <a routerLink="/auth/forgot-password" style="color:var(--color-primary); font-weight:700; font-size:13.5px;">Forgot Password?</a>
+      <a routerLink="/auth/forgot-password" style="color:var(--color-primary); font-weight:700; font-size:13.5px;">{{ 'auth.forgotPasswordLink' | t }}</a>
     </div>
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
-      <span>{{ submitting() ? 'Logging in…' : 'Log In' }}</span>
+      <span>{{ (submitting() ? 'login.submitting' : 'login.submit') | t }}</span>
       @if (!submitting()) {
         <app-icon name="i-arrow-right" [size]="18" />
       }
@@ -57,7 +57,7 @@
   </form>
 
   <div class="link-row">
-    <span>New to TransportSeva?</span>
-    <a routerLink="/auth/signup">Create an account</a>
+    <span>{{ 'login.newToApp' | t }}</span>
+    <a routerLink="/auth/signup">{{ 'login.createAccount' | t }}</a>
   </div>
 </app-auth-shell>

@@ -1,111 +1,51 @@
 <div class="page-toolbar">
   <div>
-    <h1>Wallet</h1>
-    <p class="desc">Manage your balance, booking deposits, refunds and settlements in one place.</p>
-  </div>
-  <div style="display:flex;gap:10px;">
-    <button type="button" class="btn btn-outline" (click)="openWithdraw()">
-      <app-icon name="i-download" [size]="18" />
-      <span>Withdraw</span>
-    </button>
-    <button type="button" class="btn btn-primary" (click)="openAddMoney()">
-      <app-icon name="i-plus" [size]="18" />
-      <span>Add Money</span>
-    </button>
+    <h1>Payment Ledger</h1>
+    <p class="desc">Track booking tokens, refunds, settlements and TransportSeva commission. Money movement is handled by the regulated payment provider.</p>
   </div>
 </div>
 
 <div class="kpi-grid">
-  <div class="kpi-card">
-    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-wallet" /></div></div>
-    <div class="kpi-value">₹{{ wallet.availableBalance().toLocaleString('en-IN') }}</div>
-    <div class="kpi-label">Available Balance</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-lock" /></div></div>
-    <div class="kpi-value">₹{{ wallet.onHoldAmount().toLocaleString('en-IN') }}</div>
-    <div class="kpi-label">On Hold (Booking Deposits)</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-trending-up" /></div></div>
-    <div class="kpi-value">₹{{ wallet.totalCredited().toLocaleString('en-IN') }}</div>
-    <div class="kpi-label">Total Credited</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-credit-card" /></div></div>
-    <div class="kpi-value">₹{{ wallet.totalDebited().toLocaleString('en-IN') }}</div>
-    <div class="kpi-label">Total Debited</div>
-  </div>
+  <p style="grid-column:1/-1;margin:0;color:var(--color-text-muted);font-size:12px;">Ledger totals refresh as booking, refund, settlement, commission and offline payment records are created.</p>
+  <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon"><app-icon name="i-lock" /></div></div><div class="kpi-value">₹1,000</div><div class="kpi-label">Booking Tokens Held</div></div>
+  <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon"><app-icon name="i-credit-card" /></div></div><div class="kpi-value">₹22,300</div><div class="kpi-label">Settlements Recorded</div></div>
+  <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon"><app-icon name="i-clock" /></div></div><div class="kpi-value">₹1,000</div><div class="kpi-label">Refunds Processing</div></div>
+  <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon"><app-icon name="i-percent" /></div></div><div class="kpi-value">₹300</div><div class="kpi-label">Commission Recorded</div></div>
 </div>
+<p style="font-size:12px;color:var(--color-text-muted);margin:10px 0 0;">{{ recordCount() }} ledger records currently tracked.</p>
 
 <div class="page-toolbar">
   <div class="tab-row">
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'transactions'" (click)="setTab('transactions')">All Transactions</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'deposits'" (click)="setTab('deposits')">Booking Deposits</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All Records</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'tokens'" (click)="setTab('tokens')">Booking Tokens</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'payments'" (click)="setTab('payments')">Payments</button>
     <button type="button" class="tab-btn" [class.active]="activeTab() === 'refunds'" (click)="setTab('refunds')">Refunds</button>
     <button type="button" class="tab-btn" [class.active]="activeTab() === 'settlements'" (click)="setTab('settlements')">Settlements</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'commission'" (click)="setTab('commission')">Commission</button>
   </div>
 </div>
 
 <div class="card">
-  @if (filteredTransactions().length) {
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Txn ID</th>
-          <th>Date</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Amount</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (txn of filteredTransactions(); track txn.id) {
-          <tr>
-            <td><b>{{ txn.txnId }}</b></td>
-            <td>{{ txn.date }}</td>
-            <td><span class="status-pill" [class]="categoryClass[txn.category]">{{ txn.category }}</span></td>
-            <td>{{ txn.description }}</td>
-            <td [style.color]="txn.type === 'Credit' ? 'var(--color-success, #16a34a)' : 'var(--color-danger, #dc2626)'">
-              {{ txn.type === 'Credit' ? '+' : '−' }} {{ txn.amount }}
-            </td>
-            <td>{{ txn.status }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  } @else {
-    <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
-      <app-icon name="i-wallet" [size]="32" />
-      <p style="margin-top:12px;">No transactions in this category yet.</p>
+  @if (filteredEntries().length) {
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="sr-only">Payment ledger records</caption>
+        <thead><tr><th scope="col">Reference</th><th scope="col">Booking</th><th scope="col">Date</th><th scope="col">Type</th><th scope="col">Direction</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Description</th><th scope="col">Action</th></tr></thead>
+        <tbody>
+          @for (entry of filteredEntries(); track entry.id) {
+            <tr>
+              <td><b>{{ entry.reference }}</b></td><td>{{ entry.bookingId }}</td><td>{{ entry.date }}</td>
+              <td><span class="status-pill" [class]="typeClass[entry.type]">{{ entry.type }}</span></td>
+              <td>{{ entry.direction }}</td><td>{{ entry.amount }}</td>
+              <td><span class="status-pill" [class]="entry.status === 'Completed' ? 'status-delivered' : entry.status === 'Failed' ? 'status-cancelled' : 'status-pending'" [attr.aria-label]="'Payment status: ' + entry.status">{{ entry.status }}</span></td>
+              <td>{{ entry.description }}</td>
+              <td>@if (entry.type === 'Refund' && entry.status === 'Processing') { <button type="button" class="btn btn-outline btn-sm" (click)="completeRefund(entry.id)">Mark completed</button> } @else { — }</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
+  } @else {
+    <div class="empty-state" role="status"><app-icon name="i-invoice" [size]="32" /><p>No financial records in this category yet.</p></div>
   }
 </div>
-
-@if (showAddMoney()) {
-  <app-modal title="Add Money" (close)="closeAddMoney()">
-    <div class="field">
-      <label>Amount (₹)</label>
-      <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 5000" [ngModel]="addAmount()" (ngModelChange)="addAmount.set($event)" name="addAmount" />
-    </div>
-    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeAddMoney()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="savingAdd() || !addAmount()" (click)="submitAddMoney()">{{ savingAdd() ? 'Processing…' : 'Add Money' }}</button>
-    </div>
-  </app-modal>
-}
-
-@if (showWithdraw()) {
-  <app-modal title="Withdraw to Bank" (close)="closeWithdraw()">
-    <div class="field">
-      <label>Amount (₹)</label>
-      <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 5000" [ngModel]="withdrawAmount()" (ngModelChange)="withdrawAmount.set($event)" name="withdrawAmount" />
-    </div>
-    <p style="font-size:12.5px;color:var(--color-text-soft);">Available balance: ₹{{ wallet.availableBalance().toLocaleString('en-IN') }}</p>
-    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeWithdraw()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="savingWithdraw() || !withdrawAmount() || withdrawAmount()! > wallet.availableBalance()" (click)="submitWithdraw()">{{ savingWithdraw() ? 'Processing…' : 'Withdraw' }}</button>
-    </div>
-  </app-modal>
-}

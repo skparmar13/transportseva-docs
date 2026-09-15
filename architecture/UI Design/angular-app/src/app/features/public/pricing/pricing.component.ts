@@ -1,43 +1,116 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { SUBSCRIPTION_PLANS } from '../../../core/data/subscription-plans';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { SeoService } from '../../../core/seo/seo.service';
+import { SUBSCRIPTION_PLANS, type PlanTier } from '../../../core/data/subscription-plans';
+
+interface DisplayPlan {
+  tier: PlanTier;
+  nameKey: string;
+  taglineKey: string;
+  price: string;
+  priceKey?: string;
+  priceNoteKey: string;
+  suitableKeys: string[];
+  featureKeys: string[];
+  limitKeys: string[];
+  inheritsFrom?: PlanTier;
+  highlighted?: boolean;
+  ctaKey: string;
+  showPeriod: boolean;
+}
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pricing.component.html',
   styleUrl: './pricing.component.scss',
 })
-export class PricingComponent {
-  protected readonly plans = signal(SUBSCRIPTION_PLANS);
+export class PricingComponent implements OnInit {
+  private readonly seo = inject(SeoService);
 
-  /** "How You Actually Earn" — TransportSeva's layered revenue model, shown as a trust/transparency section. */
+  ngOnInit(): void {
+    this.seo.update({
+      title: 'TransportSeva Pricing | Free Starter, Pro & Enterprise Plans',
+      description:
+        'Start free and pay commission only when you get a booking. Upgrade to Professional for GPS tracking and fleet tools, or contact us for Enterprise pricing.',
+      url: '/pricing',
+    });
+  }
+
+  protected readonly plans = signal<DisplayPlan[]>([
+    {
+      tier: 'starter',
+      nameKey: 'pricing.plan.starter.name',
+      taglineKey: 'pricing.plan.starter.tagline',
+      price: '₹0',
+      priceNoteKey: 'pricing.plan.starter.priceNote',
+      suitableKeys: [
+        'pricing.suitable.shippers',
+        'pricing.suitable.transporters',
+        'pricing.suitable.truckOwners',
+        'pricing.suitable.fleetOwners',
+      ],
+      featureKeys: Array.from({ length: 12 }, (_, i) => `pricing.feat.starter.${i + 1}`),
+      limitKeys: Array.from({ length: 7 }, (_, i) => `pricing.limit.starter.${i + 1}`),
+      ctaKey: 'pricing.plan.starter.cta',
+      showPeriod: false,
+    },
+    {
+      tier: 'professional',
+      nameKey: 'pricing.plan.professional.name',
+      taglineKey: 'pricing.plan.professional.tagline',
+      price: '₹2,499',
+      priceNoteKey: 'pricing.plan.professional.priceNote',
+      suitableKeys: [
+        'pricing.suitable.growingFleetOwners',
+        'pricing.suitable.transportCompanies',
+        'pricing.suitable.mediumBusinesses',
+      ],
+      featureKeys: Array.from({ length: 14 }, (_, i) => `pricing.feat.pro.${i + 1}`),
+      limitKeys: [],
+      inheritsFrom: 'starter',
+      highlighted: true,
+      ctaKey: 'pricing.plan.professional.cta',
+      showPeriod: true,
+    },
+    {
+      tier: 'enterprise',
+      nameKey: 'pricing.plan.enterprise.name',
+      taglineKey: 'pricing.plan.enterprise.tagline',
+      price: 'Custom',
+      priceKey: 'pricing.plan.enterprise.price',
+      priceNoteKey: 'pricing.plan.enterprise.priceNote',
+      suitableKeys: ['Tata Steel', 'Ultratech', 'JK Cement', 'Amazon', 'Delhivery'],
+      featureKeys: Array.from({ length: 11 }, (_, i) => `pricing.feat.ent.${i + 1}`),
+      limitKeys: [],
+      inheritsFrom: 'professional',
+      ctaKey: 'pricing.plan.enterprise.cta',
+      showPeriod: false,
+    },
+  ]);
+
+  /** Kept only so any external consumer of SUBSCRIPTION_PLANS stays type-referenced. */
+  protected readonly _rawPlans = SUBSCRIPTION_PLANS;
+
   protected readonly earningLayers = signal([
-    {
-      icon: 'i-percent',
-      title: 'Marketplace',
-      desc: 'Booking commission, featured loads and featured applicants — this is where the free Starter plan pays for itself.',
-    },
-    {
-      icon: 'i-map',
-      title: 'Operations',
-      desc: 'GPS subscription, fleet management, driver management and advanced reports — unlocked on Professional and above.',
-    },
-    {
-      icon: 'i-wallet',
-      title: 'Financial',
-      desc: 'Wallet, escrow, settlements, insurance, FASTag, fuel cards and financing — coming soon across all plans.',
-    },
+    { icon: 'i-percent', titleKey: 'pricing.earning.marketplace.title', descKey: 'pricing.earning.marketplace.desc' },
+    { icon: 'i-map', titleKey: 'pricing.earning.operations.title', descKey: 'pricing.earning.operations.desc' },
+    { icon: 'i-wallet', titleKey: 'pricing.earning.financial.title', descKey: 'pricing.earning.financial.desc' },
   ]);
 
   protected readonly faqs = signal([
-    { question: 'Is the Starter plan really free forever?', answer: 'Yes. There is no time limit and no card is required. TransportSeva earns a small commission only when your booking succeeds — so we only make money when you do.', open: true },
-    { question: 'Why is GPS tracking not included in Starter?', answer: 'AIS-140 GPS integration, live tracking, trip replay and geofencing require dedicated device connectivity and infrastructure, so they are part of the Professional plan and above. Starter still supports manual trip status updates.', open: false },
-    { question: 'Can I upgrade or downgrade anytime?', answer: 'Yes. You can move between Starter and Professional anytime from Business Settings → Billing. Enterprise plans are set up with our sales team based on your scale and requirements.', open: false },
-    { question: 'Is the Professional price per company or per vehicle?', answer: 'Professional is billed per branch, not per vehicle or driver — so you can add unlimited vehicles and drivers under one branch without extra cost.', open: false },
-    { question: 'What does Enterprise pricing include?', answer: 'Enterprise is volume-based and tailored to organizations with multiple branches or business units — it includes a dedicated account manager, SLAs, custom/ERP integrations, SSO and advanced analytics.', open: false },
+    { qKey: 'pricing.faq.q1', aKey: 'pricing.faq.a1', open: true },
+    { qKey: 'pricing.faq.q2', aKey: 'pricing.faq.a2', open: false },
+    { qKey: 'pricing.faq.q3', aKey: 'pricing.faq.a3', open: false },
+    { qKey: 'pricing.faq.q4', aKey: 'pricing.faq.a4', open: false },
+    { qKey: 'pricing.faq.q5', aKey: 'pricing.faq.a5', open: false },
   ]);
+
+  protected inheritsFromKey(tier: PlanTier | undefined): string {
+    return tier === 'starter' ? 'pricing.planName.starter' : 'pricing.planName.professional';
+  }
 }

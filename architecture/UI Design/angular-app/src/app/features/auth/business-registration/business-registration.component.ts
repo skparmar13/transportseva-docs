@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-business-registration',
   standalone: true,
-  imports: [FormsModule, AuthShellComponent, IconComponent],
+  imports: [FormsModule, AuthShellComponent, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-registration.component.html',
   styleUrl: './business-registration.component.scss',
@@ -29,9 +30,9 @@ export class BusinessRegistrationComponent implements OnInit {
   protected readonly submitting = signal(false);
 
   protected readonly businessTypes = [
-    { value: 'transporter' as const, label: 'Transporter (own + hired fleet)' },
-    { value: 'truck-owner' as const, label: 'Truck Owner (own fleet only)' },
-    { value: 'company' as const, label: 'Company / Enterprise Shipper' },
+    { value: 'transporter' as const, labelKey: 'businessReg.type.transporter' },
+    { value: 'truck-owner' as const, labelKey: 'businessReg.type.truckOwner' },
+    { value: 'company' as const, labelKey: 'businessReg.type.company' },
   ];
 
   ngOnInit(): void {

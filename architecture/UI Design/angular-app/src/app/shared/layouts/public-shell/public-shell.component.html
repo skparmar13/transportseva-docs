@@ -6,21 +6,21 @@
       </a>
 
       <nav class="nav-links" [class.is-open]="mobileMenuOpen()">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">Home</a>
-        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">About Us</a>
-        <a routerLink="/" fragment="services" (click)="closeMobileMenu()">Services</a>
-        <a routerLink="/pricing" routerLinkActive="active" (click)="closeMobileMenu()">Pricing</a>
-        <a routerLink="/blog" routerLinkActive="active" (click)="closeMobileMenu()">Blog &amp; Media</a>
-        <a routerLink="/careers" routerLinkActive="active" (click)="closeMobileMenu()">Careers</a>
-        <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()">Contact Us</a>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()">{{ 'nav.home' | t }}</a>
+        <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.about' | t }}</a>
+        <a routerLink="/" fragment="services" (click)="closeMobileMenu()">{{ 'nav.services' | t }}</a>
+        <a routerLink="/pricing" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.pricing' | t }}</a>
+        <a routerLink="/blog" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.blog' | t }} &amp; Media</a>
+        <a routerLink="/careers" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.careers' | t }}</a>
+        <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.contact' | t }}</a>
       </nav>
 
       <div class="nav-actions">
-        <button class="lang-switch" type="button" aria-label="Change language">
-          <span class="lang-opt active">EN</span><span class="lang-sep">|</span><span class="lang-opt">हिंदी</span>
+        <button class="lang-switch" type="button" aria-label="Change language" (click)="language.toggle()">
+          <span class="lang-opt" [class.active]="language.lang() === 'en'">EN</span><span class="lang-sep">|</span><span class="lang-opt" [class.active]="language.lang() === 'hi'">हिंदी</span>
         </button>
-        <a routerLink="/auth/login" class="btn btn-outline" (click)="closeMobileMenu()">Log In</a>
-        <a routerLink="/auth/signup" class="btn btn-primary" (click)="closeMobileMenu()">Sign Up</a>
+        <a routerLink="/auth/login" class="btn btn-outline" (click)="closeMobileMenu()">{{ 'nav.login' | t }}</a>
+        <a routerLink="/auth/signup" class="btn btn-primary" (click)="closeMobileMenu()">{{ 'nav.signup' | t }}</a>
         <button type="button" class="menu-toggle" aria-label="Open menu" [attr.aria-expanded]="mobileMenuOpen()" (click)="toggleMobileMenu()">
           <app-icon name="i-menu" [size]="26" />
         </button>
@@ -41,40 +41,40 @@
           </a>
           <p>Your trusted partner for all your transport and logistics needs across India.</p>
           <div class="social-row">
-            <a href="#" aria-label="Facebook"><app-icon name="i-facebook" [size]="15" /></a>
-            <a href="#" aria-label="Twitter"><app-icon name="i-twitter" [size]="15" /></a>
-            <a href="#" aria-label="Instagram"><app-icon name="i-instagram" [size]="15" /></a>
-            <a href="#" aria-label="LinkedIn"><app-icon name="i-linkedin" [size]="15" /></a>
-            <a href="#" aria-label="YouTube"><app-icon name="i-youtube" [size]="15" /></a>
+            <span class="social-placeholder" role="img" aria-label="Facebook"><app-icon name="i-facebook" [size]="15" /></span>
+            <span class="social-placeholder" role="img" aria-label="Twitter"><app-icon name="i-twitter" [size]="15" /></span>
+            <span class="social-placeholder" role="img" aria-label="Instagram"><app-icon name="i-instagram" [size]="15" /></span>
+            <span class="social-placeholder" role="img" aria-label="LinkedIn"><app-icon name="i-linkedin" [size]="15" /></span>
+            <span class="social-placeholder" role="img" aria-label="YouTube"><app-icon name="i-youtube" [size]="15" /></span>
           </div>
         </div>
 
         <div class="footer-col">
-          <h4>Services</h4>
+          <h4>{{ 'services.title' | t }}</h4>
           <ul>
-            <li><a routerLink="/" fragment="services">Full Truck Load</a></li>
-            <li><a routerLink="/" fragment="services">Part Load</a></li>
-            <li><a routerLink="/" fragment="services">Parcel Delivery</a></li>
-            <li><a routerLink="/" fragment="services">Warehousing</a></li>
-            <li><a routerLink="/" fragment="services">Freight Forwarding</a></li>
+            <li><a routerLink="/" fragment="services">{{ 'services.fullTruckLoad.title' | t }}</a></li>
+            <li><a routerLink="/" fragment="services">{{ 'services.partLoad.title' | t }}</a></li>
+            <li><a routerLink="/" fragment="services">{{ 'services.parcelDelivery.title' | t }}</a></li>
+            <li><a routerLink="/" fragment="services">{{ 'services.warehousing.title' | t }}</a></li>
+            <li><a routerLink="/" fragment="services">{{ 'services.freightForwarding.title' | t }}</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h4>Company</h4>
+          <h4>{{ 'footer.company' | t }}</h4>
           <ul>
-            <li><a routerLink="/about">About Us</a></li>
-            <li><a routerLink="/pricing">Pricing</a></li>
-            <li><a routerLink="/careers">Careers</a></li>
-            <li><a routerLink="/blog">Blog &amp; Media</a></li>
-            <li><a routerLink="/privacy-policy">Privacy Policy</a></li>
+            <li><a routerLink="/about">{{ 'nav.about' | t }}</a></li>
+            <li><a routerLink="/pricing">{{ 'nav.pricing' | t }}</a></li>
+            <li><a routerLink="/careers">{{ 'nav.careers' | t }}</a></li>
+            <li><a routerLink="/blog">{{ 'nav.blog' | t }} &amp; Media</a></li>
+            <li><a routerLink="/privacy-policy">{{ 'footer.privacyPolicy' | t }}</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h4>Resources</h4>
+          <h4>{{ 'nav.resources' | t }}</h4>
           <ul>
-            <li><a routerLink="/help-center">Help Center</a></li>
+            <li><a routerLink="/help-center">{{ 'nav.helpCenter' | t }}</a></li>
             <li><a routerLink="/help-center" fragment="track">Track Shipment</a></li>
             <li><a routerLink="/help-center" fragment="rate">Rate Calculator</a></li>
             <li><a routerLink="/help-center" fragment="toll">Toll &amp; Tax Info</a></li>
@@ -83,7 +83,7 @@
         </div>
 
         <div class="footer-col">
-          <h4>Contact Us</h4>
+          <h4>{{ 'nav.contact' | t }}</h4>
           <ul class="footer-contact">
             <li><app-icon name="i-phone" [size]="15" />+91 12345 67890</li>
             <li><app-icon name="i-mail" [size]="15" />support@transportseva.com</li>
@@ -106,11 +106,11 @@
       </div>
 
       <div class="footer-bottom">
-        <span>© 2026 TransportSeva. All rights reserved.</span>
+        <span>© 2026 {{ 'common.appName' | t }}. {{ 'footer.rightsReserved' | t }}</span>
         <span>
-          <a routerLink="/privacy-policy">Privacy Policy</a>
-          <a routerLink="/terms-conditions">Terms &amp; Conditions</a>
-          <a routerLink="/refund-policy">Refund Policy</a>
+          <a routerLink="/privacy-policy">{{ 'footer.privacyPolicy' | t }}</a>
+          <a routerLink="/terms-conditions">{{ 'footer.termsConditions' | t }}</a>
+          <a routerLink="/refund-policy">{{ 'footer.refundPolicy' | t }}</a>
         </span>
       </div>
     </div>

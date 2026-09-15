@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { PortalRole } from '../models/nav.model';
 import {
   BookingStage,
@@ -10,6 +10,7 @@ import {
   SettlementMilestone,
   VehicleType,
 } from '../models/marketplace.model';
+import { PaymentMockService } from './payment-mock.service';
 
 let idCounter = 100;
 const nextId = (prefix: string) => `${prefix}-${++idCounter}`;
@@ -163,6 +164,7 @@ const INITIAL_BOOKINGS: MarketplaceBooking[] = [
  */
 @Injectable({ providedIn: 'root' })
 export class MarketplaceMockService {
+  private readonly payments = inject(PaymentMockService);
   private readonly loadsState = signal<Load[]>(INITIAL_LOADS);
   private readonly applicationsState = signal<LoadApplication[]>(INITIAL_APPLICATIONS);
   private readonly offersState = signal<NegotiationOffer[]>(INITIAL_OFFERS);
@@ -279,7 +281,7 @@ export class MarketplaceMockService {
     );
   }
 
-  /** Accept the latest negotiated amount — creates the booking in "Awaiting Deposit". */
+  /** Accept the latest negotiated amount — creates the booking awaiting token payment. */
   acceptApplication(applicationId: string): MarketplaceBooking | undefined {
     const application = this.applicationsState().find((a) => a.id === applicationId);
     if (!application) return undefined;
@@ -330,8 +332,10 @@ export class MarketplaceMockService {
     );
   }
 
-  /** Simulated deposit payment (via the fake payment modal). Advances to "Confirmed" once both sides have paid. */
+  /** Simulated regulated-provider token payment. Advances once required commitments are received. */
   payDeposit(bookingId: string, side: 'owner' | 'counterparty'): void {
+    const booking = this.bookingsState().find((b) => b.id === bookingId);
+    const party = side === 'owner' ? booking?.ownerDeposit.partyName : booking?.counterpartyDeposit.partyName;
     this.bookingsState.update((bookings) =>
       bookings.map((b) => {
         if (b.id !== bookingId) return b;
@@ -349,6 +353,61 @@ export class MarketplaceMockService {
         return updated;
       }),
     );
+    if (booking) {
+      this.payments.recordLedgerEntry({
+        reference: nextId('PAY'),
+        bookingId: booking.bookingId,
+        date: 'Just now',
+        type: 'Booking Token',
+        direction: 'Receivable',
+        amount: side === 'owner' ? booking.ownerDeposit.amount : booking.counterpartyDeposit.amount,
+        status: 'Completed',
+        description: `Booking token received from ${party ?? 'booking party'} through payment provider`,
+      });
+    }
+  }
+
+  /** Transporter rejection before dispatch cancels the booking and records refunds for any paid token. */
+  rejectBooking(bookingId: string): void {
+    const booking = this.bookingsState().find((b) => b.id === bookingId);
+    if (!booking || !['Awaiting Deposit', 'Confirmed'].includes(booking.status)) return;
+    this.bookingsState.update((bookings) => bookings.map((b) =>
+      b.id === bookingId ? { ...b, status: 'Cancelled', escrowStatus: 'Released' } : b,
+    ));
+    const paid = [booking.ownerDeposit, booking.counterpartyDeposit].filter((d) => d.status === 'Paid');
+    for (const deposit of paid) {
+      this.payments.recordLedgerEntry({
+        reference: nextId('REF'), bookingId: booking.bookingId, date: 'Just now', type: 'Refund',
+        direction: 'Refund', amount: deposit.amount, status: 'Processing',
+        description: `Booking token refund initiated for ${deposit.partyName} after transporter rejection`,
+      });
+    }
+  }
+
+  /** Load owner cancellation before dispatch; paid booking tokens become refund records. */
+  cancelBooking(bookingId: string): void {
+    const booking = this.bookingsState().find((b) => b.id === bookingId);
+    if (!booking || !['Awaiting Deposit', 'Confirmed'].includes(booking.status)) return;
+    this.bookingsState.update((bookings) => bookings.map((b) =>
+      b.id === bookingId ? { ...b, status: 'Cancelled', escrowStatus: 'Released' } : b,
+    ));
+    const paid = [booking.ownerDeposit, booking.counterpartyDeposit].filter((d) => d.status === 'Paid');
+    for (const deposit of paid) {
+      this.payments.recordLedgerEntry({
+        reference: nextId('REF'), bookingId: booking.bookingId, date: 'Just now', type: 'Refund',
+        direction: 'Refund', amount: deposit.amount, status: 'Processing',
+        description: `Booking token refund initiated after customer cancellation for ${deposit.partyName}`,
+      });
+    }
+  }
+
+  /** Opens a support dispute without changing the commercial booking state. */
+  raiseDispute(bookingId: string, reason: string, raisedBy: string): void {
+    if (!reason.trim()) return;
+    this.bookingsState.update((bookings) => bookings.map((b) => b.id === bookingId && !b.dispute
+      ? { ...b, dispute: { reference: nextId('DSP'), reason: reason.trim(), raisedBy, status: 'Open' as const, raisedAt: 'Just now' } }
+      : b,
+    ));
   }
 
   assignVehicle(bookingId: string, input: { mode: 'Own Fleet' | 'Subcontracted'; vehicleRegNumber: string; subcontractedTo?: string }): void {
@@ -432,13 +491,16 @@ export class MarketplaceMockService {
    * freight, and releases both Booking Security Deposits from escrow.
    */
   settleBooking(bookingId: string, commissionPercent = 5): void {
+    const booking = this.bookingsState().find((b) => b.id === bookingId);
+    if (!booking || booking.status === 'Completed' || booking.status === 'Cancelled') return;
+    const freightNum = parseAmount(booking.amount);
+    const commissionNum = Math.round((freightNum * commissionPercent) / 100);
+    const alreadyReleased = booking.settlementPlan.filter((m) => m.status === 'Released').reduce((sum, m) => sum + parseAmount(m.amount), 0);
+    const finalPayout = Math.max(freightNum - alreadyReleased - commissionNum, 0);
+    const payoutNum = alreadyReleased + finalPayout;
     this.bookingsState.update((bookings) =>
       bookings.map((b) => {
         if (b.id !== bookingId) return b;
-        const freightNum = parseAmount(b.amount);
-        const commissionNum = Math.round((freightNum * commissionPercent) / 100);
-        const alreadyReleased = b.settlementPlan.filter((m) => m.status === 'Released').reduce((sum, m) => sum + parseAmount(m.amount), 0);
-        const finalPayout = Math.max(freightNum - alreadyReleased - commissionNum, 0);
         const settlementPlan = b.settlementPlan.map((m) =>
           m.status === 'Pending' ? { ...m, amount: formatAmount(finalPayout), status: 'Released' as const, releasedAt: 'Just now' } : m,
         );
@@ -459,6 +521,16 @@ export class MarketplaceMockService {
         };
       }),
     );
+    this.payments.recordLedgerEntry({
+      reference: nextId('SET'), bookingId: booking.bookingId, date: 'Just now', type: 'Settlement',
+      direction: 'Payable', amount: formatAmount(payoutNum), status: 'Completed',
+      description: `Freight settlement released after ${commissionPercent}% TransportSeva commission`,
+    });
+    this.payments.recordLedgerEntry({
+      reference: nextId('COM'), bookingId: booking.bookingId, date: 'Just now', type: 'Commission',
+      direction: 'Receivable', amount: formatAmount(commissionNum), status: 'Completed',
+      description: `TransportSeva commission assessed at ${commissionPercent}% of freight`,
+    });
   }
 
   /** Freeform chat — only meaningful once the application is Accepted (booking exists), i.e. after negotiation closes. */

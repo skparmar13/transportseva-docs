@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 /**
  * Load Board — the open marketplace where Transporters and Truck
@@ -14,7 +15,7 @@ import { SessionService } from '../../../core/services/session.service';
 @Component({
   selector: 'app-load-board',
   standalone: true,
-  imports: [IconComponent, FormsModule],
+  imports: [IconComponent, FormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './load-board.component.html',
 })
@@ -45,6 +46,10 @@ export class LoadBoardComponent {
   });
 
   protected readonly vehicleTypes = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
+
+  protected statusKey(s: string): string {
+    return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
 
   protected viewLoad(loadId: string): void {
     this.router.navigate([this.session.portal().basePath, 'load-board', loadId]);

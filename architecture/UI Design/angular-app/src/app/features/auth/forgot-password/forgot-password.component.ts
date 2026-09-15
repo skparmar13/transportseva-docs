@@ -4,11 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [FormsModule, RouterLink, AuthShellComponent, IconComponent],
+  imports: [FormsModule, RouterLink, AuthShellComponent, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',

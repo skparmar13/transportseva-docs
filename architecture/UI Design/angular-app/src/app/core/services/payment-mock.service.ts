@@ -3,17 +3,25 @@ import {
   CommissionRecord,
   FreightPayment,
   GstInvoice,
+  LedgerEntry,
   Payout,
 } from '../models/payment.model';
 
 /**
- * Shared mock ledger for Module 9 — Payments. Mirrors the Module 8
- * Wallet pattern: one global dataset visible across portals, since
- * the prototype's goal is validating the interaction pattern rather
- * than per-role financial isolation.
+ * Shared mock financial records for V1. The provider handles money movement;
+ * TransportSeva records payment orders, refunds, settlements and commission.
  */
 @Injectable({ providedIn: 'root' })
 export class PaymentMockService {
+  private readonly processedWebhookIds = new Set<string>();
+  private readonly ledgerEntriesSignal = signal<LedgerEntry[]>([
+    { id: 'le1', reference: 'PAY-10001', bookingId: 'TS-48230', date: '9 Aug 2026, 10:15 AM', type: 'Booking Token', direction: 'Receivable', amount: '₹1,000', status: 'Completed', description: 'Customer booking token received through payment provider' },
+    { id: 'le2', reference: 'REF-10002', bookingId: 'TS-48198', date: '8 Aug 2026, 4:20 PM', type: 'Refund', direction: 'Refund', amount: '₹1,000', status: 'Processing', description: 'Booking token refund after transporter rejection' },
+    { id: 'le3', reference: 'SET-10003', bookingId: 'TS-48176', date: '7 Aug 2026, 6:40 PM', type: 'Settlement', direction: 'Payable', amount: '₹22,300', status: 'Completed', description: 'Final transporter settlement after POD approval' },
+    { id: 'le4', reference: 'COM-10004', bookingId: 'TS-48176', date: '7 Aug 2026, 6:40 PM', type: 'Commission', direction: 'Receivable', amount: '₹300', status: 'Completed', description: 'TransportSeva commission recorded against settlement' },
+  ]);
+
+  readonly ledgerEntries = this.ledgerEntriesSignal.asReadonly();
   private readonly freightPaymentsSignal = signal<FreightPayment[]>([
     {
       id: 'fp1',
@@ -169,6 +177,41 @@ export class PaymentMockService {
   readonly commissions = this.commissionsSignal.asReadonly();
   readonly gstInvoices = this.gstInvoicesSignal.asReadonly();
   readonly payouts = this.payoutsSignal.asReadonly();
+
+  recordLedgerEntry(entry: Omit<LedgerEntry, 'id'>): void {
+    if (this.ledgerEntriesSignal().some((existing) => existing.reference === entry.reference)) return;
+    this.ledgerEntriesSignal.update((entries) => [
+      { id: `le-${entries.length + 1}`, ...entry },
+      ...entries,
+    ]);
+  }
+
+  recordOfflinePayment(bookingId: string, amount: string, reference: string): void {
+    if (!/^\s*₹?\s*\d+(?:[,.]\d{1,2})?\s*$/.test(amount)) return;
+    this.recordLedgerEntry({
+      reference: reference.trim() || `COD-${Date.now()}`,
+      bookingId,
+      date: 'Just now',
+      type: 'Payment',
+      direction: 'Receivable',
+      amount: amount.trim(),
+      status: 'Completed',
+      description: 'Offline/COD balance recorded by portal operator',
+    });
+  }
+
+  markLedgerEntryCompleted(id: string): void {
+    this.ledgerEntriesSignal.update((entries) => entries.map((entry) =>
+      entry.id === id ? { ...entry, status: 'Completed' as const } : entry,
+    ));
+  }
+
+  processProviderWebhook(eventId: string, entry: Omit<LedgerEntry, 'id'>): boolean {
+    if (this.processedWebhookIds.has(eventId)) return false;
+    this.processedWebhookIds.add(eventId);
+    this.recordLedgerEntry(entry);
+    return true;
+  }
 
   readonly totalFreightDue = computed(() =>
     this.freightPaymentsSignal()

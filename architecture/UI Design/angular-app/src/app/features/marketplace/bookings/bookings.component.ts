@@ -5,6 +5,8 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 import { MarketplaceMockService, BOOKING_TIMELINE_STAGES } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { MarketplaceBooking, VehicleAssignmentMode } from '../../../core/models/marketplace.model';
+import { TranslatePipe } from '../../../core/i18n';
+import { PaymentMockService } from '../../../core/services/payment-mock.service';
 
 /**
  * Bookings — confirmed bookings with the full commercial lifecycle:
@@ -17,16 +19,27 @@ import { MarketplaceBooking, VehicleAssignmentMode } from '../../../core/models/
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule],
+  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookings.component.html',
 })
 export class BookingsComponent {
   private readonly marketplace = inject(MarketplaceMockService);
+  private readonly payments = inject(PaymentMockService);
   protected readonly session = inject(SessionService);
 
   protected readonly bookings = this.marketplace.bookings;
   protected readonly expandedId = signal<string | null>(null);
+  protected readonly disputingBooking = signal<string | null>(null);
+  protected readonly disputeReason = signal('');
+  protected readonly offlinePaymentFor = signal<MarketplaceBooking | null>(null);
+  protected readonly offlineAmount = signal('');
+  protected readonly offlineReference = signal('');
+  protected readonly offlineAmountValid = computed(() => /^\s*₹?\s*\d+(?:[,.]\d{1,2})?\s*$/.test(this.offlineAmount()));
+
+  protected statusKey(s: string): string {
+    return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
 
   protected mySide(booking: MarketplaceBooking): 'owner' | 'counterparty' | null {
     const role = this.session.role();
@@ -47,6 +60,7 @@ export class BookingsComponent {
   protected readonly cardExpiry = signal('');
   protected readonly cardCvv = signal('');
   protected readonly processingPayment = signal(false);
+  protected readonly paymentError = signal(false);
 
   protected openPayDeposit(booking: MarketplaceBooking): void {
     const side = this.mySide(booking);
@@ -58,13 +72,32 @@ export class BookingsComponent {
     this.cardNumber.set('');
     this.cardExpiry.set('');
     this.cardCvv.set('');
+    this.paymentError.set(false);
   }
 
   protected confirmPayDeposit(): void {
     const target = this.payingBooking();
     if (!target) return;
+    const paymentInputValid = this.payMethod() === 'upi'
+      ? /^[^\s@]+@[^\s@]+$/.test(this.upiId().trim())
+      : /^\d[\d\s]{11,18}$/.test(this.cardNumber().trim()) && /^\d{2}\/\d{2}$/.test(this.cardExpiry().trim()) && /^\d{3,4}$/.test(this.cardCvv().trim());
+    if (!paymentInputValid) {
+      this.paymentError.set(true);
+      return;
+    }
+    this.paymentError.set(false);
     this.processingPayment.set(true);
     setTimeout(() => {
+      // Prototype failure simulation: use a UPI ID containing "fail" or a card
+      // number beginning with 4000 to exercise the provider-error recovery path.
+      const simulatedFailure = this.payMethod() === 'upi'
+        ? this.upiId().toLowerCase().includes('fail')
+        : this.cardNumber().replace(/\s/g, '').startsWith('4000');
+      if (simulatedFailure) {
+        this.processingPayment.set(false);
+        this.paymentError.set(true);
+        return;
+      }
       this.marketplace.payDeposit(target.id, target.side);
       this.processingPayment.set(false);
       this.payingBooking.set(null);
@@ -156,5 +189,38 @@ export class BookingsComponent {
 
   protected settle(bookingId: string): void {
     this.marketplace.settleBooking(bookingId);
+  }
+
+  protected rejectBooking(bookingId: string): void {
+    this.marketplace.rejectBooking(bookingId);
+  }
+
+  protected cancelBooking(bookingId: string): void {
+    this.marketplace.cancelBooking(bookingId);
+  }
+
+  protected openDispute(bookingId: string): void {
+    this.disputingBooking.set(bookingId);
+    this.disputeReason.set('');
+  }
+
+  protected submitDispute(): void {
+    const bookingId = this.disputingBooking();
+    if (!bookingId || !this.disputeReason().trim()) return;
+    this.marketplace.raiseDispute(bookingId, this.disputeReason(), this.session.user()?.name ?? 'Portal user');
+    this.disputingBooking.set(null);
+  }
+
+  protected openOfflinePayment(booking: MarketplaceBooking): void {
+    this.offlinePaymentFor.set(booking);
+    this.offlineAmount.set(booking.settlement?.payoutAmount ?? '');
+    this.offlineReference.set('');
+  }
+
+  protected recordOfflinePayment(): void {
+    const booking = this.offlinePaymentFor();
+    if (!booking || !this.offlineAmount().trim()) return;
+    this.payments.recordOfflinePayment(booking.bookingId, this.offlineAmount(), this.offlineReference());
+    this.offlinePaymentFor.set(null);
   }
 }

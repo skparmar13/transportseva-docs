@@ -1,22 +1,35 @@
-﻿import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { SeoService } from '../../../core/seo/seo.service';
 
 @Component({
   selector: 'app-blog',
   standalone: true,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './blog.component.html',
   styleUrl: './blog.component.scss',
 })
-export class BlogComponent {
+export class BlogComponent implements OnInit {
+  private readonly seo = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seo.update({
+      title: 'TransportSeva Blog | Logistics, Freight & Technology Insights',
+      description:
+        'News, guides and stories on Indian road freight, GST invoicing, GPS tracking, AI route optimization and product updates from the TransportSeva team.',
+      url: '/blog',
+    });
+  }
+
   protected readonly posts = signal([
-    { tag: 'Industry', date: '12 Jan 2026', author: 'Neha Mehta', readTime: '6 min read', title: 'How AI is Transforming Freight Route Optimization in India', desc: 'Discover how machine learning models are helping transporters cut fuel costs and delivery times across major freight corridors.' },
-    { tag: 'Company News', date: '02 Jan 2026', author: 'Rajesh Kumar', readTime: '4 min read', title: 'TransportSeva Crosses 12 Lakh Shipments Milestone', desc: 'A look back at the journey from a small Noida-based startup to a pan-India logistics platform trusted by thousands.' },
-    { tag: 'Guides', date: '27 Dec 2025', author: 'Aman Verma', readTime: '8 min read', title: 'A Complete Guide to GST Invoicing for Transporters', desc: 'Everything fleet owners need to know about e-way bills, GST rates and digital invoicing for road freight.' },
-    { tag: 'Product', date: '18 Dec 2025', author: 'Sunita Pillai', readTime: '3 min read', title: 'Introducing Live Slot-based Booking for Full Truck Loads', desc: 'Book a dedicated truck for your exact pickup window with our new slot-based scheduling system.' },
-    { tag: 'Industry', date: '05 Dec 2025', author: 'Neha Mehta', readTime: '5 min read', title: 'Why Digital Proof of Delivery is a Game-Changer for SMEs', desc: 'How e-PODs reduce disputes, speed up payments and improve trust between shippers and transporters.' },
-    { tag: 'Guides', date: '22 Nov 2025', author: 'Rajesh Kumar', readTime: '6 min read', title: 'Choosing Between Full Truck Load and Part Load Shipping', desc: 'A practical comparison to help you pick the most cost-effective shipping method for your business.' },
+    { tagKey: 'blog.post1.tag', date: '12 Jan 2026', authorKey: 'blog.author.neha', readKey: 'blog.readTime.6', titleKey: 'blog.post1.title', descKey: 'blog.post1.desc' },
+    { tagKey: 'blog.post2.tag', date: '02 Jan 2026', authorKey: 'blog.author.rajesh', readKey: 'blog.readTime.4', titleKey: 'blog.post2.title', descKey: 'blog.post2.desc' },
+    { tagKey: 'blog.post3.tag', date: '27 Dec 2025', authorKey: 'blog.author.aman', readKey: 'blog.readTime.8', titleKey: 'blog.post3.title', descKey: 'blog.post3.desc' },
+    { tagKey: 'blog.post4.tag', date: '18 Dec 2025', authorKey: 'blog.author.sunita', readKey: 'blog.readTime.3', titleKey: 'blog.post4.title', descKey: 'blog.post4.desc' },
+    { tagKey: 'blog.post5.tag', date: '05 Dec 2025', authorKey: 'blog.author.neha', readKey: 'blog.readTime.5', titleKey: 'blog.post5.title', descKey: 'blog.post5.desc' },
+    { tagKey: 'blog.post6.tag', date: '22 Nov 2025', authorKey: 'blog.author.rajesh', readKey: 'blog.readTime.6', titleKey: 'blog.post6.title', descKey: 'blog.post6.desc' },
   ]);
 }

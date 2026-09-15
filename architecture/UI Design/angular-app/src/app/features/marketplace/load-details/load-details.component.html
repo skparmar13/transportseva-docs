@@ -1,10 +1,10 @@
 @if (load(); as l) {
   <div class="page-toolbar">
     <div>
-      <a [routerLink]="[session.portal().basePath, 'load-board']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Loads</a>
+      <a [routerLink]="[session.portal().basePath, 'load-board']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">{{ 'loadDetails.back' | t }}</a>
       <h1 style="margin-top:6px;">{{ l.loadId }} — {{ l.pickupCity }} → {{ l.dropCity }}</h1>
     </div>
-    <span class="status-pill" [class]="l.status === 'Booked' ? 'status-delivered' : l.status === 'Applications Received' ? 'status-transit' : 'status-pending'">{{ l.status }}</span>
+    <span class="status-pill" [class]="l.status === 'Booked' ? 'status-delivered' : l.status === 'Applications Received' ? 'status-transit' : 'status-pending'">{{ statusKey(l.status) | t }}</span>
   </div>
 
   <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
@@ -12,18 +12,18 @@
       <div class="card">
         <div class="card-body">
           <div class="load-meta-grid" style="grid-template-columns:repeat(3,1fr);">
-            <div>Material: <strong>{{ l.material }}</strong></div>
-            <div>Weight: <strong>{{ l.weightTons }} tons</strong></div>
-            <div>Vehicle Required: <strong>{{ l.vehicleType }}</strong></div>
-            <div>Pickup Date: <strong>{{ l.pickupDate }}</strong></div>
-            <div>Budget: <strong>{{ l.budget }}</strong></div>
-            <div>Applications: <strong>{{ l.applicationsCount }}</strong></div>
+            <div>{{ 'loadDetails.meta.material' | t }} <strong>{{ l.material }}</strong></div>
+            <div>{{ 'loadDetails.meta.weight' | t }} <strong>{{ 'loadDetails.meta.tons' | t:{ value: l.weightTons } }}</strong></div>
+            <div>{{ 'loadDetails.meta.vehicleRequired' | t }} <strong>{{ l.vehicleType }}</strong></div>
+            <div>{{ 'loadDetails.meta.pickupDate' | t }} <strong>{{ l.pickupDate }}</strong></div>
+            <div>{{ 'loadDetails.meta.budget' | t }} <strong>{{ l.budget }}</strong></div>
+            <div>{{ 'loadDetails.meta.applications' | t }} <strong>{{ l.applicationsCount }}</strong></div>
           </div>
           @if (l.notes) {
             <p style="margin-top:14px;color:var(--color-text-muted);font-size:13.5px;">{{ l.notes }}</p>
           }
           <div style="margin-top:14px;font-size:12.5px;color:var(--color-text-soft);">
-            Posted by {{ l.postedByName }}{{ l.onBehalfOfCustomer ? ' on behalf of ' + l.onBehalfOfCustomer : '' }} · {{ l.postedAgo }}
+            {{ 'loadDetails.postedBy' | t }} {{ l.postedByName }}{{ l.onBehalfOfCustomer ? ' ' + ('loadDetails.onBehalfOf' | t) + ' ' + l.onBehalfOfCustomer : '' }} · {{ l.postedAgo }}
           </div>
         </div>
       </div>
@@ -31,7 +31,7 @@
       @if (isOwner()) {
         <!-- Owner view: applications received, each with a structured negotiation thread -->
         <div class="card">
-          <div class="card-head"><h3>Applications Received ({{ applications().length }})</h3></div>
+          <div class="card-head"><h3>{{ 'loadDetails.applicationsReceivedCount' | t:{ count: applications().length } }}</h3></div>
           @if (applications().length) {
             <div style="display:flex;flex-direction:column;gap:14px;padding:16px 22px;">
               @for (app of applications(); track app.id) {
@@ -39,23 +39,23 @@
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
                     <div>
                       <b>{{ app.applicantName }}</b>
-                      <div style="font-size:12.5px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · Available {{ app.availability }} · Current offer {{ app.quotedAmount }} · {{ app.appliedAgo }}</div>
+                      <div style="font-size:12.5px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · {{ 'loadDetails.app.available' | t }} {{ app.availability }} · {{ 'loadDetails.app.currentOffer' | t }} {{ app.quotedAmount }} · {{ app.appliedAgo }}</div>
                       @if (app.message) {
                         <p style="margin-top:6px;font-size:13px;color:var(--color-text);">"{{ app.message }}"</p>
                       }
                     </div>
-                    <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ app.status }}</span>
+                    <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ statusKey(app.status) | t }}</span>
                   </div>
                   <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
                     @if (app.status === 'Pending' || app.status === 'Negotiating') {
                       <button type="button" class="btn btn-outline btn-sm" (click)="openNegotiation(app.id)">
-                        <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? 'Hide Offers' : 'View Offers' }}</span>
+                        <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? ('loadDetails.app.hideOffers' | t) : ('loadDetails.app.viewOffers' | t) }}</span>
                       </button>
-                      <button type="button" class="btn btn-outline btn-sm" (click)="askReject(app.id, app.applicantName)">Reject</button>
-                      <button type="button" class="btn btn-primary btn-sm" (click)="askAccept(app.id, app.applicantName)">Accept {{ app.quotedAmount }}</button>
+                      <button type="button" class="btn btn-outline btn-sm" (click)="askReject(app.id, app.applicantName)">{{ 'loadDetails.app.reject' | t }}</button>
+                      <button type="button" class="btn btn-primary btn-sm" (click)="askAccept(app.id, app.applicantName)">{{ 'loadDetails.app.accept' | t:{ amount: app.quotedAmount } }}</button>
                     } @else if (app.status === 'Accepted') {
                       <button type="button" class="btn btn-outline btn-sm" (click)="openChat(app.id)">
-                        <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? 'Hide Chat' : 'Chat' }}</span>
+                        <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? ('loadDetails.app.hideChat' | t) : ('loadDetails.app.chat' | t) }}</span>
                       </button>
                     }
                   </div>
@@ -69,15 +69,15 @@
                         </div>
                       }
                       <div class="field" style="margin-top:10px;">
-                        <label>Counter-Offer Amount (₹)</label>
-                        <input type="text" class="input" placeholder="e.g. ₹17,500" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
+                        <label>{{ 'loadDetails.counter.amountLabel' | t }}</label>
+                        <input type="text" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
                       </div>
                       <div class="field">
-                        <label>Message (optional)</label>
-                        <input type="text" class="input" placeholder="e.g. Can meet at this rate if pickup is today." [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
+                        <label>{{ 'loadDetails.counter.message' | t }}</label>
+                        <input type="text" class="input" [placeholder]="'loadDetails.counter.messagePlaceholder' | t" [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
                       </div>
                       <button type="button" class="btn btn-outline btn-sm" (click)="sendCounterOffer(app.id)">
-                        <app-icon name="i-send" [size]="15" /><span>Send Counter-Offer</span>
+                        <app-icon name="i-send" [size]="15" /><span>{{ 'loadDetails.counter.send' | t }}</span>
                       </button>
                     </div>
                   }
@@ -91,7 +91,7 @@
                         </div>
                       }
                       <div class="chat-input-row">
-                        <input type="text" class="input" placeholder="Type a message…" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
+                        <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
                         <button type="button" class="btn btn-primary btn-sm" (click)="sendChat(app.id)">
                           <app-icon name="i-send" [size]="15" />
                         </button>
@@ -104,8 +104,8 @@
           } @else {
             <div class="empty-state">
               <app-icon name="i-box" />
-              <h3>No applications yet</h3>
-              <p>Transporters and truck owners will appear here once they apply.</p>
+              <h3>{{ 'loadDetails.emptyApps.title' | t }}</h3>
+              <p>{{ 'loadDetails.emptyApps.desc' | t }}</p>
             </div>
           }
         </div>
@@ -113,25 +113,25 @@
         <!-- Applicant view -->
         @if (myApplication(); as app) {
           <div class="card">
-            <div class="card-head"><h3>Your Application</h3></div>
+            <div class="card-head"><h3>{{ 'loadDetails.yourApp.title' | t }}</h3></div>
             <div class="card-body">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
                 <div>
-                  <div style="font-size:13px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · Available {{ app.availability }} · Current offer {{ app.quotedAmount }}</div>
+                  <div style="font-size:13px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · {{ 'loadDetails.app.available' | t }} {{ app.availability }} · {{ 'loadDetails.app.currentOffer' | t }} {{ app.quotedAmount }}</div>
                   @if (app.message) {
                     <p style="margin-top:6px;font-size:13px;">"{{ app.message }}"</p>
                   }
                 </div>
-                <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ app.status }}</span>
+                <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ statusKey(app.status) | t }}</span>
               </div>
 
               @if (app.status === 'Pending' || app.status === 'Negotiating') {
                 <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openNegotiation(app.id)">
-                  <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? 'Hide Offers' : 'View Negotiation' }}</span>
+                  <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? ('loadDetails.app.hideOffers' | t) : ('loadDetails.yourApp.viewNegotiation' | t) }}</span>
                 </button>
               } @else if (app.status === 'Accepted') {
                 <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openChat(app.id)">
-                  <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? 'Hide Chat' : 'Chat with Owner' }}</span>
+                  <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? ('loadDetails.app.hideChat' | t) : ('loadDetails.yourApp.chatWithOwner' | t) }}</span>
                 </button>
               }
 
@@ -144,15 +144,15 @@
                     </div>
                   }
                   <div class="field" style="margin-top:10px;">
-                    <label>Counter-Offer Amount (₹)</label>
-                    <input type="text" class="input" placeholder="e.g. ₹17,500" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
+                    <label>{{ 'loadDetails.counter.amountLabel' | t }}</label>
+                    <input type="text" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
                   </div>
                   <div class="field">
-                    <label>Message (optional)</label>
-                    <input type="text" class="input" placeholder="Optional note" [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
+                    <label>{{ 'loadDetails.counter.message' | t }}</label>
+                    <input type="text" class="input" [placeholder]="'loadDetails.counter.messagePlaceholderShort' | t" [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
                   </div>
                   <button type="button" class="btn btn-outline btn-sm" (click)="sendCounterOffer(app.id)">
-                    <app-icon name="i-send" [size]="15" /><span>Send Counter-Offer</span>
+                    <app-icon name="i-send" [size]="15" /><span>{{ 'loadDetails.counter.send' | t }}</span>
                   </button>
                 </div>
               }
@@ -166,7 +166,7 @@
                     </div>
                   }
                   <div class="chat-input-row">
-                    <input type="text" class="input" placeholder="Type a message…" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
+                    <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
                     <button type="button" class="btn btn-primary btn-sm" (click)="sendChat(app.id)">
                       <app-icon name="i-send" [size]="15" />
                     </button>
@@ -178,9 +178,9 @@
         } @else {
           <div class="card">
             <div class="card-body" style="text-align:center;padding:36px 22px;">
-              <p style="color:var(--color-text-muted);margin-bottom:16px;">Interested in this load? Apply with your vehicle details and proposed freight — contact details stay private until a booking is confirmed.</p>
+              <p style="color:var(--color-text-muted);margin-bottom:16px;">{{ 'loadDetails.interest.body' | t }}</p>
               <button type="button" class="btn btn-primary" (click)="openApply()">
-                <app-icon name="i-plus" [size]="18" /><span>Apply for this Load</span>
+                <app-icon name="i-plus" [size]="18" /><span>{{ 'loadDetails.interest.apply' | t }}</span>
               </button>
             </div>
           </div>
@@ -191,7 +191,7 @@
     <div style="display:flex;flex-direction:column;gap:20px;">
       @if (booking(); as b) {
         <div class="card">
-          <div class="card-head"><h3>Booking Timeline</h3></div>
+          <div class="card-head"><h3>{{ 'loadDetails.booking.timeline' | t }}</h3></div>
           <div class="card-body">
             <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:14px;">{{ b.bookingId }} · {{ b.counterpartyName }} ({{ b.vehicleRegNumber }}) · {{ b.amount }}</div>
             <div class="timeline">
@@ -199,7 +199,7 @@
                 <div class="timeline-item" [class.done]="event.completed">
                   <div class="timeline-dot"></div>
                   <div>
-                    <span class="timeline-title">{{ event.stage }}</span>
+                    <span class="timeline-title">{{ statusKey(event.stage) | t }}</span>
                     @if (event.timestamp) {
                       <div class="timeline-time">{{ event.timestamp }}</div>
                     }
@@ -207,7 +207,7 @@
                 </div>
               }
             </div>
-            <button type="button" class="btn btn-outline btn-block" style="margin-top:14px;" (click)="viewBooking()">Manage Booking</button>
+            <button type="button" class="btn btn-outline btn-block" style="margin-top:14px;" (click)="viewBooking()">{{ 'loadDetails.booking.manage' | t }}</button>
           </div>
         </div>
       }
@@ -215,16 +215,16 @@
   </div>
 
   @if (showApplyModal()) {
-    <app-modal title="Apply for this Load" (close)="showApplyModal.set(false)">
+    <app-modal [title]="'loadDetails.apply.title' | t" (close)="showApplyModal.set(false)">
       <div class="field">
-        <label>Vehicle Registration Number</label>
+        <label>{{ 'loadDetails.apply.regLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-truck" [size]="18" />
-          <input type="text" class="input" placeholder="e.g. RJ14GA1234" [ngModel]="vehicleRegNumber()" (ngModelChange)="vehicleRegNumber.set($event)" name="vehicleRegNumber" />
+          <input type="text" class="input" [placeholder]="'loadDetails.apply.regPlaceholder' | t" [ngModel]="vehicleRegNumber()" (ngModelChange)="vehicleRegNumber.set($event)" name="vehicleRegNumber" />
         </div>
       </div>
       <div class="field">
-        <label>Vehicle Type</label>
+        <label>{{ 'loadDetails.apply.typeLabel' | t }}</label>
         <select class="input" style="padding-left:14px;" [ngModel]="vehicleType()" (ngModelChange)="vehicleType.set($event)" name="vehicleType">
           @for (type of vehicleTypes; track type) {
             <option [value]="type">{{ type }}</option>
@@ -232,49 +232,49 @@
         </select>
       </div>
       <div class="field">
-        <label>Vehicle Availability</label>
+        <label>{{ 'loadDetails.apply.availabilityLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-clock" [size]="18" />
-          <input type="text" class="input" placeholder="e.g. Within 3 hours / Today" [ngModel]="availability()" (ngModelChange)="availability.set($event)" name="availability" />
+          <input type="text" class="input" [placeholder]="'loadDetails.apply.availabilityPlaceholder' | t" [ngModel]="availability()" (ngModelChange)="availability.set($event)" name="availability" />
         </div>
       </div>
       <div class="field">
-        <label>Your Proposed Freight (₹)</label>
+        <label>{{ 'loadDetails.apply.freightLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-wallet" [size]="18" />
-          <input type="text" class="input" placeholder="e.g. ₹18,000" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
+          <input type="text" class="input" [placeholder]="'loadDetails.apply.freightPlaceholder' | t" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
         </div>
       </div>
       <div class="field">
-        <label>Message (optional)</label>
-        <textarea class="input" style="padding:12px 14px;min-height:70px;resize:vertical;" placeholder="Availability, special notes, etc." [ngModel]="applyMessage()" (ngModelChange)="applyMessage.set($event)" name="applyMessage"></textarea>
+        <label>{{ 'loadDetails.apply.messageLabel' | t }}</label>
+        <textarea class="input" style="padding:12px 14px;min-height:70px;resize:vertical;" [placeholder]="'loadDetails.apply.messagePlaceholder' | t" [ngModel]="applyMessage()" (ngModelChange)="applyMessage.set($event)" name="applyMessage"></textarea>
       </div>
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-        <button type="button" class="btn btn-outline" (click)="showApplyModal.set(false)">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="applying()" (click)="submitApplication()">{{ applying() ? 'Submitting…' : 'Submit Application' }}</button>
+        <button type="button" class="btn btn-outline" (click)="showApplyModal.set(false)">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="btn btn-primary" [disabled]="applying()" (click)="submitApplication()">{{ applying() ? ('loadDetails.apply.submitting' | t) : ('loadDetails.apply.submit' | t) }}</button>
       </div>
     </app-modal>
   }
 
   @if (confirmAction(); as action) {
-    <app-modal [title]="action.type === 'accept' ? 'Accept Application' : 'Reject Application'" (close)="confirmAction.set(null)">
+    <app-modal [title]="action.type === 'accept' ? ('loadDetails.confirm.accept.title' | t) : ('loadDetails.confirm.reject.title' | t)" (close)="confirmAction.set(null)">
       <p>
         @if (action.type === 'accept') {
-          Accept <b>{{ action.applicantName }}</b>'s offer? This creates a booking awaiting the mutual Booking Security Deposit from both sides, and automatically rejects other pending applications on this load.
+          {{ 'loadDetails.confirm.accept.before' | t }} <b>{{ action.applicantName }}</b>{{ 'loadDetails.confirm.accept.after' | t }}
         } @else {
-          Reject <b>{{ action.applicantName }}</b>'s application? This action cannot be undone.
+          {{ 'loadDetails.confirm.reject.before' | t }} <b>{{ action.applicantName }}</b>{{ 'loadDetails.confirm.reject.after' | t }}
         }
       </p>
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-        <button type="button" class="btn btn-outline" (click)="confirmAction.set(null)">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="confirmActionRun()">Confirm</button>
+        <button type="button" class="btn btn-outline" (click)="confirmAction.set(null)">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="btn btn-primary" (click)="confirmActionRun()">{{ 'loadDetails.confirm.confirm' | t }}</button>
       </div>
     </app-modal>
   }
 } @else {
   <div class="empty-state">
     <app-icon name="i-box" />
-    <h3>Load not found</h3>
-    <p>This load may have been removed or the link is incorrect.</p>
+    <h3>{{ 'loadDetails.notFound.title' | t }}</h3>
+    <p>{{ 'loadDetails.notFound.desc' | t }}</p>
   </div>
 }

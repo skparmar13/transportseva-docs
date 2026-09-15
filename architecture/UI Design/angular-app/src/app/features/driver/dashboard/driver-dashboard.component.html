@@ -1,5 +1,5 @@
-<h1>Welcome back, {{ session.user().name.split(' ')[0] }}</h1>
-<p class="desc">Here's a summary of your trips and earnings.</p>
+<h1>{{ 'driverDashboard.welcome' | t:{ name: session.user().name.split(' ')[0] } }}</h1>
+<p class="desc">{{ 'driverDashboard.subtitle' | t }}</p>
 
 <div class="kpi-grid">
   @for (kpi of kpis(); track kpi.label) {
@@ -17,17 +17,17 @@
 <div class="content-grid">
   <div class="card">
     <div class="card-head">
-      <h3>Assigned Trips</h3>
-      <a [routerLink]="['/driver', 'trips']">View All</a>
+      <h3>{{ 'driverDashboard.assignedTrips' | t }}</h3>
+      <a [routerLink]="['/driver', 'trips']">{{ 'common.viewAll' | t }}</a>
     </div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>Trip ID</th>
-          <th>Route</th>
-          <th>Vehicle</th>
-          <th>Status</th>
-          <th>ETA</th>
+          <th>{{ 'driverDashboard.col.tripId' | t }}</th>
+          <th>{{ 'driverDashboard.col.route' | t }}</th>
+          <th>{{ 'driverDashboard.col.vehicle' | t }}</th>
+          <th>{{ 'driverDashboard.col.status' | t }}</th>
+          <th>{{ 'driverDashboard.col.eta' | t }}</th>
         </tr>
       </thead>
       <tbody>
@@ -45,7 +45,7 @@
   </div>
 
   <div class="card">
-    <div class="card-head"><h3>Quick Actions</h3></div>
+    <div class="card-head"><h3>{{ 'dashboard.quickActions' | t }}</h3></div>
     <div class="qa-list">
       @for (action of quickActions(); track action.label) {
         <a class="qa-item" [routerLink]="['/driver', action.path]"><app-icon [name]="action.icon" /><span>{{ action.label }}</span></a>

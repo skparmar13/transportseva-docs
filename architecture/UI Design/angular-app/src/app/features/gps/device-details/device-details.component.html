@@ -1,47 +1,47 @@
 @if (device(); as d) {
   <div class="page-toolbar">
     <div>
-      <a [routerLink]="[session.portal().basePath, 'devices']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Device Inventory</a>
+      <a [routerLink]="[session.portal().basePath, 'devices']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">{{ 'deviceDetails.back' | t }}</a>
       <h1 style="margin-top:6px;">{{ d.imei }}</h1>
-      <p class="desc">{{ d.health?.oem ?? 'Unknown OEM' }} · SIM {{ d.health?.simNumber ?? '—' }} · Firmware {{ d.health?.firmwareVersion ?? '—' }}</p>
+      <p class="desc">{{ 'deviceDetails.subtitle' | t:{ oem: d.health?.oem ?? ('deviceDetails.unknownOem' | t), sim: d.health?.simNumber ?? ('common.dash' | t), firmware: d.health?.firmwareVersion ?? ('common.dash' | t) } }}</p>
     </div>
-    <span class="status-pill" [class]="statusClass[d.status]" style="font-size:13px;padding:6px 14px;">{{ d.status }}</span>
+    <span class="status-pill" [class]="statusClass[d.status]" style="font-size:13px;padding:6px 14px;">{{ statusKey[d.status] | t }}</span>
   </div>
 
   <div class="tab-row" style="max-width:520px;">
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">Overview</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'health'" (click)="setTab('health')">Device Health</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'connectivity'" (click)="setTab('connectivity')">Connectivity Test</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'alerts'" (click)="setTab('alerts')">Alerts</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">{{ 'deviceDetails.tab.overview' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'health'" (click)="setTab('health')">{{ 'deviceDetails.tab.health' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'connectivity'" (click)="setTab('connectivity')">{{ 'deviceDetails.tab.connectivity' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'alerts'" (click)="setTab('alerts')">{{ 'deviceDetails.tab.alerts' | t }}</button>
   </div>
 
   @switch (activeTab()) {
     @case ('overview') {
       <div class="card">
-        <div class="card-head"><h3>OEM Integration</h3></div>
+        <div class="card-head"><h3>{{ 'deviceDetails.overview.title' | t }}</h3></div>
         <div class="card-body">
           <div class="load-meta-grid" style="grid-template-columns:repeat(3,1fr);">
-            <div>OEM Partner: <strong>{{ d.health?.oem ?? '—' }}</strong></div>
-            <div>SIM Number: <strong>{{ d.health?.simNumber ?? '—' }}</strong></div>
-            <div>Firmware Version: <strong>{{ d.health?.firmwareVersion ?? '—' }}</strong></div>
-            <div>Installed On: <strong>{{ d.health?.installedOn ?? '—' }}</strong></div>
-            <div>Last Ping: <strong>{{ d.health?.lastPingAt ?? '—' }}</strong></div>
-            <div>Assigned Vehicle: <strong>{{ d.assignedVehicleRegNumber ?? 'Not assigned' }}</strong></div>
+            <div>{{ 'deviceDetails.meta.oem' | t }}: <strong>{{ d.health?.oem ?? ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.sim' | t }}: <strong>{{ d.health?.simNumber ?? ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.firmware' | t }}: <strong>{{ d.health?.firmwareVersion ?? ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.installedOn' | t }}: <strong>{{ d.health?.installedOn ?? ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.lastPing' | t }}: <strong>{{ d.health?.lastPingAt ?? ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.assignedVehicle' | t }}: <strong>{{ d.assignedVehicleRegNumber ?? ('common.notAssigned' | t) }}</strong></div>
           </div>
 
           @if (assignedVehicle(); as v) {
             <div style="margin-top:20px;border:1px solid var(--color-border);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
               <div>
                 <b>{{ v.regNumber }}</b>
-                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:2px;">{{ v.make }} {{ v.model }} · Driver: {{ v.driver || 'Not assigned' }}</div>
+                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:2px;">{{ v.make }} {{ v.model }} · {{ 'deviceDetails.driverLabel' | t }} {{ v.driver || ('common.notAssigned' | t) }}</div>
               </div>
               <span class="status-pill status-transit">{{ v.status }}</span>
             </div>
           } @else {
             <div class="empty-state" style="margin-top:20px;">
               <app-icon name="i-truck" />
-              <h3>Not assigned to any vehicle</h3>
-              <p>Assign this device from the vehicle's GPS Device tab to enable live tracking.</p>
+              <h3>{{ 'deviceDetails.notAssigned.title' | t }}</h3>
+              <p>{{ 'deviceDetails.notAssigned.desc' | t }}</p>
             </div>
           }
         </div>
@@ -50,22 +50,22 @@
 
     @case ('health') {
       <div class="card">
-        <div class="card-head"><h3>Device Health</h3></div>
+        <div class="card-head"><h3>{{ 'deviceDetails.health.title' | t }}</h3></div>
         <div class="card-body">
           @if (d.health; as h) {
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-              <span class="status-pill" [class]="healthClass[h.healthStatus]" style="font-size:13px;padding:6px 14px;">{{ h.healthStatus }}</span>
-              <span style="font-size:12.5px;color:var(--color-text-muted);">Last updated {{ h.lastPingAt }}</span>
+              <span class="status-pill" [class]="healthClass[h.healthStatus]" style="font-size:13px;padding:6px 14px;">{{ healthKey[h.healthStatus] | t }}</span>
+              <span style="font-size:12.5px;color:var(--color-text-muted);">{{ 'deviceDetails.health.lastUpdated' | t:{ ts: h.lastPingAt } }}</span>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:560px;">
               <div>
-                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>Battery</span><b>{{ h.batteryPercent }}%</b></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>{{ 'deviceDetails.health.battery' | t }}</span><b>{{ h.batteryPercent }}%</b></div>
                 <div style="height:8px;border-radius:99px;background:var(--color-muted-bg);overflow:hidden;">
                   <div style="height:100%;border-radius:99px;background:var(--color-primary);" [style.width.%]="h.batteryPercent"></div>
                 </div>
               </div>
               <div>
-                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>Signal Strength</span><b>{{ h.signalStrength }}%</b></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>{{ 'deviceDetails.health.signal' | t }}</span><b>{{ h.signalStrength }}%</b></div>
                 <div style="height:8px;border-radius:99px;background:var(--color-muted-bg);overflow:hidden;">
                   <div style="height:100%;border-radius:99px;background:var(--color-success);" [style.width.%]="h.signalStrength"></div>
                 </div>
@@ -74,8 +74,8 @@
           } @else {
             <div class="empty-state">
               <app-icon name="i-chart" />
-              <h3>No health data available</h3>
-              <p>This device has not reported health telemetry yet.</p>
+              <h3>{{ 'deviceDetails.health.empty.title' | t }}</h3>
+              <p>{{ 'deviceDetails.health.empty.desc' | t }}</p>
             </div>
           }
         </div>
@@ -85,33 +85,33 @@
     @case ('connectivity') {
       <div class="card">
         <div class="card-head">
-          <h3>Connectivity Test</h3>
+          <h3>{{ 'deviceDetails.connectivity.title' | t }}</h3>
           <button type="button" class="btn btn-primary btn-sm" [disabled]="testing()" (click)="runTest()">
             <app-icon name="i-scan" [size]="16" />
-            <span>{{ testing() ? 'Testing…' : 'Run Test' }}</span>
+            <span>{{ (testing() ? 'deviceDetails.connectivity.testing' : 'deviceDetails.connectivity.runTest') | t }}</span>
           </button>
         </div>
         <div class="card-body">
           @if (lastResult(); as r) {
             <div style="border:1px solid var(--color-border);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
               <div>
-                <span class="status-pill" [class]="r.result === 'Passed' ? 'status-delivered' : 'status-cancelled'">{{ r.result }}</span>
-                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:6px;">Latency {{ r.latencyMs }} ms · Signal {{ r.signalQuality }} · {{ r.timestamp }}</div>
+                <span class="status-pill" [class]="r.result === 'Passed' ? 'status-delivered' : 'status-cancelled'">{{ (r.result === 'Passed' ? 'status.testResult.passed' : 'status.testResult.failed') | t }}</span>
+                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:6px;">{{ 'deviceDetails.connectivity.summary' | t:{ latency: r.latencyMs, signal: r.signalQuality, ts: r.timestamp } }}</div>
               </div>
             </div>
           }
-          <h3 style="font-size:14px;margin-bottom:12px;">Test History</h3>
+          <h3 style="font-size:14px;margin-bottom:12px;">{{ 'deviceDetails.connectivity.history' | t }}</h3>
           @if (d.health?.testHistory?.length) {
             <table class="data-table">
               <thead>
-                <tr><th>Timestamp</th><th>Result</th><th>Latency</th><th>Signal Quality</th></tr>
+                <tr><th>{{ 'deviceDetails.connectivity.col.timestamp' | t }}</th><th>{{ 'deviceDetails.connectivity.col.result' | t }}</th><th>{{ 'deviceDetails.connectivity.col.latency' | t }}</th><th>{{ 'deviceDetails.connectivity.col.signal' | t }}</th></tr>
               </thead>
               <tbody>
                 @for (test of d.health!.testHistory; track test.timestamp) {
                   <tr>
                     <td>{{ test.timestamp }}</td>
-                    <td><span class="status-pill" [class]="test.result === 'Passed' ? 'status-delivered' : 'status-cancelled'">{{ test.result }}</span></td>
-                    <td>{{ test.latencyMs }} ms</td>
+                    <td><span class="status-pill" [class]="test.result === 'Passed' ? 'status-delivered' : 'status-cancelled'">{{ (test.result === 'Passed' ? 'status.testResult.passed' : 'status.testResult.failed') | t }}</span></td>
+                    <td>{{ test.latencyMs }} {{ 'deviceDetails.msUnit' | t }}</td>
                     <td>{{ test.signalQuality }}</td>
                   </tr>
                 }
@@ -120,8 +120,8 @@
           } @else {
             <div class="empty-state">
               <app-icon name="i-scan" />
-              <h3>No tests run yet</h3>
-              <p>Run a connectivity test to check this device's link to the AIS-140 server.</p>
+              <h3>{{ 'deviceDetails.connectivity.empty.title' | t }}</h3>
+              <p>{{ 'deviceDetails.connectivity.empty.desc' | t }}</p>
             </div>
           }
         </div>
@@ -130,12 +130,12 @@
 
     @case ('alerts') {
       <div class="card">
-        <div class="card-head"><h3>Device Alerts</h3></div>
+        <div class="card-head"><h3>{{ 'deviceDetails.alerts.title' | t }}</h3></div>
         <div class="card-body" style="padding:0;">
           @if (deviceAlerts().length) {
             <table class="data-table">
               <thead>
-                <tr><th>Type</th><th>Message</th><th>Timestamp</th><th>Severity</th><th></th></tr>
+                <tr><th>{{ 'deviceDetails.alerts.col.type' | t }}</th><th>{{ 'deviceDetails.alerts.col.message' | t }}</th><th>{{ 'deviceDetails.alerts.col.timestamp' | t }}</th><th>{{ 'deviceDetails.alerts.col.severity' | t }}</th><th></th></tr>
               </thead>
               <tbody>
                 @for (alert of deviceAlerts(); track alert.id) {
@@ -144,13 +144,13 @@
                     <td>{{ alert.message }}</td>
                     <td>{{ alert.timestamp }}</td>
                     <td>
-                      <span class="status-pill" [class]="alert.severity === 'Critical' ? 'status-cancelled' : alert.severity === 'Warning' ? 'status-pending' : 'status-transit'">{{ alert.severity }}</span>
+                      <span class="status-pill" [class]="alert.severity === 'Critical' ? 'status-cancelled' : alert.severity === 'Warning' ? 'status-pending' : 'status-transit'">{{ (alert.severity === 'Critical' ? 'status.severity.critical' : alert.severity === 'Warning' ? 'status.severity.warning' : 'status.severity.info') | t }}</span>
                     </td>
                     <td>
                       @if (alert.acknowledged) {
-                        <span style="font-size:12px;color:var(--color-text-soft);">Acknowledged</span>
+                        <span style="font-size:12px;color:var(--color-text-soft);">{{ 'common.acknowledged' | t }}</span>
                       } @else {
-                        <button type="button" class="btn btn-outline btn-sm" (click)="acknowledge(alert.id)">Mark as Read</button>
+                        <button type="button" class="btn btn-outline btn-sm" (click)="acknowledge(alert.id)">{{ 'common.markAsRead' | t }}</button>
                       }
                     </td>
                   </tr>
@@ -160,7 +160,7 @@
           } @else {
             <div style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
               <app-icon name="i-bell" [size]="32" />
-              <p style="margin-top:12px;">No alerts for this device.</p>
+              <p style="margin-top:12px;">{{ 'deviceDetails.alerts.empty' | t }}</p>
             </div>
           }
         </div>
@@ -170,6 +170,6 @@
 } @else {
   <div class="empty-state">
     <app-icon name="i-api" />
-    <h3>Device not found</h3>
+    <h3>{{ 'deviceDetails.notFound.title' | t }}</h3>
   </div>
 }

@@ -1,9 +1,18 @@
-/**
- * TransportSeva Payments — Module 9 domain model. Distinct from
- * Wallet (Module 8): Wallet is the running ledger/balance; Payments
- * is the commercial/finance view — freight payments owed, platform
- * commission, GST invoices and payouts to truck owners/drivers.
- */
+/** TransportSeva V1 financial records. No stored-value wallet is represented here. */
+export type LedgerEntryType = 'Booking Token' | 'Payment' | 'Refund' | 'Settlement' | 'Commission' | 'Payout';
+
+export interface LedgerEntry {
+  id: string;
+  reference: string;
+  bookingId: string;
+  date: string;
+  type: LedgerEntryType;
+  direction: 'Receivable' | 'Payable' | 'Refund';
+  amount: string;
+  status: 'Pending' | 'Processing' | 'Completed' | 'Failed';
+  description: string;
+}
+
 export type PaymentStatus = 'Paid' | 'Pending' | 'Overdue';
 
 export interface FreightPayment {

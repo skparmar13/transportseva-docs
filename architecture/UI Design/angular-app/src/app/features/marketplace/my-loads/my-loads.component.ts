@@ -4,6 +4,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { LoadStatus } from '../../../core/models/marketplace.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 const STATUS_CLASS: Record<LoadStatus, string> = {
   Open: 'status-pending',
@@ -18,7 +19,7 @@ const STATUS_CLASS: Record<LoadStatus, string> = {
 @Component({
   selector: 'app-my-loads',
   standalone: true,
-  imports: [IconComponent],
+  imports: [IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-loads.component.html',
 })
@@ -29,6 +30,10 @@ export class MyLoadsComponent {
 
   protected readonly loads = computed(() => this.marketplace.getLoadsPostedBy(this.session.role())());
   protected readonly statusClass = STATUS_CLASS;
+
+  protected statusKey(s: string): string {
+    return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
 
   protected viewLoad(loadId: string): void {
     this.router.navigate([this.session.portal().basePath, 'load-board', loadId]);

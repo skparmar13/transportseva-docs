@@ -72,7 +72,10 @@
 .divider-row::before, .divider-row::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
 
 .link-row { text-align: center; font-size: 14px; color: var(--color-text-muted); margin-top: 22px; }
-.link-row a { color: var(--color-primary); font-weight: 700; }
+.link-button { border: 0; padding: 0; background: transparent; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; }
+.link-button:disabled { color: var(--color-text-soft); cursor: not-allowed; }
+.link-row a, .link-row .link-button { color: var(--color-primary); font-weight: 700; }
+.link-row .link-button { border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer; }
 
 /* Tabs (login method switch) */
 .tab-row {
@@ -174,7 +177,7 @@
 .workspace-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .workspace-card {
   display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
-  padding: 16px; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; background: #fff;
+  width: 100%; text-align: left; font: inherit; padding: 16px; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; background: #fff;
 }
 .workspace-card:hover { transform: translateY(-2px); border-color: var(--color-primary); }
 .workspace-card .workspace-icon {
@@ -189,4 +192,8 @@
   .auth-visual { display: none; }
   .role-grid { grid-template-columns: repeat(2, 1fr); }
   .workspace-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .role-grid { grid-template-columns: 1fr; }
 }

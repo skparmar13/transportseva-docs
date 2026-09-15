@@ -6,6 +6,7 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { VehicleType } from '../../../core/models/marketplace.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -27,7 +28,7 @@ const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft
 @Component({
   selector: 'app-load-details',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './load-details.component.html',
 })
@@ -41,6 +42,10 @@ export class LoadDetailsComponent {
   protected readonly load = this.marketplace.getLoadById(this.loadId);
   protected readonly applications = this.marketplace.getApplicationsForLoad(this.loadId);
   protected readonly vehicleTypes = VEHICLE_TYPES;
+
+  protected statusKey(s: string): string {
+    return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
 
   protected readonly isOwner = computed(() => this.load()?.postedBy === this.session.role());
   protected readonly myApplication = computed(() =>

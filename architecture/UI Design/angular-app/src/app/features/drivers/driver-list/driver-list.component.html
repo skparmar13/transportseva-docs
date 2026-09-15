@@ -1,18 +1,18 @@
 <div class="page-toolbar">
   <div>
-    <h1>{{ session.role() === 'truck-owner' ? 'My Drivers' : 'Fleet & Drivers' }}</h1>
-    <p class="desc">Manage your drivers, licenses, vehicle assignments and trip history.</p>
+    <h1>{{ session.role() === 'truck-owner' ? ('driverList.title.myDrivers' | t) : ('driverList.title.fleetAndDrivers' | t) }}</h1>
+    <p class="desc">{{ 'driverList.desc' | t }}</p>
   </div>
   <button type="button" class="btn btn-primary" (click)="openAdd()">
     <app-icon name="i-plus" [size]="18" />
-    <span>Add Driver</span>
+    <span>{{ 'driverList.addDriver' | t }}</span>
   </button>
 </div>
 
 @if (showFleetTabs()) {
   <div class="tab-row" style="max-width:360px;">
-    <button type="button" class="tab-btn" [routerLink]="[session.portal().basePath, 'fleet']">Vehicles</button>
-    <button type="button" class="tab-btn active">Drivers</button>
+    <button type="button" class="tab-btn" [routerLink]="[session.portal().basePath, 'fleet']">{{ 'driverList.tabs.vehicles' | t }}</button>
+    <button type="button" class="tab-btn active">{{ 'driverList.tabs.drivers' | t }}</button>
   </div>
 }
 
@@ -20,17 +20,17 @@
   <div class="toolbar-filters">
     <div class="filter-search">
       <app-icon name="i-search" [size]="16" />
-      <input type="text" placeholder="Search by name, phone or vehicle..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      <input type="text" [placeholder]="'driverList.search.placeholder' | t" [ngModel]="search()" (ngModelChange)="search.set($event)" />
     </div>
     <select class="filter-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
-      <option value="">All Status</option>
-      <option value="Available">Available</option>
-      <option value="On Trip">On Trip</option>
-      <option value="Off Duty">Off Duty</option>
-      <option value="Suspended">Suspended</option>
+      <option value="">{{ 'driverList.filter.allStatus' | t }}</option>
+      <option value="Available">{{ 'status.available' | t }}</option>
+      <option value="On Trip">{{ 'status.onTrip' | t }}</option>
+      <option value="Off Duty">{{ 'status.offDuty' | t }}</option>
+      <option value="Suspended">{{ 'status.suspended' | t }}</option>
     </select>
   </div>
-  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ filteredDrivers().length }} drivers</span>
+  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ 'driverList.countLabel' | t:{ count: filteredDrivers().length } }}</span>
 </div>
 
 <div class="card">
@@ -38,12 +38,12 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Phone</th>
-          <th>License No.</th>
-          <th>Assigned Vehicle</th>
-          <th>Rating</th>
-          <th>Status</th>
+          <th>{{ 'driverList.col.name' | t }}</th>
+          <th>{{ 'driverList.col.phone' | t }}</th>
+          <th>{{ 'driverList.col.license' | t }}</th>
+          <th>{{ 'driverList.col.assignedVehicle' | t }}</th>
+          <th>{{ 'driverList.col.rating' | t }}</th>
+          <th>{{ 'common.status' | t }}</th>
           <th></th>
         </tr>
       </thead>
@@ -57,12 +57,12 @@
               @if (driver.assignedVehicleRegNumber) {
                 <span class="status-pill status-delivered">{{ driver.assignedVehicleRegNumber }}</span>
               } @else {
-                <span style="color:var(--color-text-soft);font-size:12.5px;">Not assigned</span>
+                <span style="color:var(--color-text-soft);font-size:12.5px;">{{ 'driverList.notAssigned' | t }}</span>
               }
             </td>
             <td>⭐ {{ driver.rating || '—' }}</td>
-            <td><span class="status-pill" [class]="statusClass[driver.status]">{{ driver.status }}</span></td>
-            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewDriver(driver.id)">View</button></td>
+            <td><span class="status-pill" [class]="statusClass[driver.status]">{{ statusKey(driver.status) | t }}</span></td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewDriver(driver.id)">{{ 'myLoads.view' | t }}</button></td>
           </tr>
         }
       </tbody>
@@ -70,51 +70,51 @@
   } @else {
     <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
       <app-icon name="i-user" [size]="32" />
-      <p style="margin-top:12px;">No drivers found.</p>
-      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAdd()">Add Your First Driver</button>
+      <p style="margin-top:12px;">{{ 'driverList.empty' | t }}</p>
+      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAdd()">{{ 'driverList.emptyCta' | t }}</button>
     </div>
   }
 </div>
 
 @if (showAddModal()) {
-  <app-modal title="Add Driver" (close)="closeAdd()">
+  <app-modal [title]="'driverList.modal.title' | t" (close)="closeAdd()">
     <div class="field">
-      <label>Full Name</label>
+      <label>{{ 'driverList.modal.fullName' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-user" [size]="18" />
-        <input type="text" class="input" placeholder="e.g. Ramesh Kumar" [ngModel]="name()" (ngModelChange)="name.set($event)" name="name" />
+        <input type="text" class="input" [placeholder]="'driverList.modal.fullNamePlaceholder' | t" [ngModel]="name()" (ngModelChange)="name.set($event)" name="name" />
       </div>
     </div>
     <div class="field">
-      <label>Phone Number</label>
+      <label>{{ 'driverList.modal.phone' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-phone" [size]="18" />
-        <input type="tel" class="input" placeholder="e.g. +91 98765 43210" [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" />
+        <input type="tel" class="input" [placeholder]="'driverList.modal.phonePlaceholder' | t" [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" />
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="field">
-        <label>Driving License Number</label>
-        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. RJ-0420210099234" [ngModel]="licenseNumber()" (ngModelChange)="licenseNumber.set($event)" name="licenseNumber" />
+        <label>{{ 'driverList.modal.license' | t }}</label>
+        <input type="text" class="input" style="padding-left:14px;" [placeholder]="'driverList.modal.licensePlaceholder' | t" [ngModel]="licenseNumber()" (ngModelChange)="licenseNumber.set($event)" name="licenseNumber" />
       </div>
       <div class="field">
-        <label>License Expiry</label>
+        <label>{{ 'driverList.modal.licenseExpiry' | t }}</label>
         <input type="date" class="input" style="padding-left:14px;" [ngModel]="licenseExpiry()" (ngModelChange)="licenseExpiry.set($event)" name="licenseExpiry" />
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="field">
-        <label>Experience (years)</label>
-        <input type="number" class="input" style="padding-left:14px;" placeholder="e.g. 6" [ngModel]="experienceYears()" (ngModelChange)="experienceYears.set($event)" name="experienceYears" />
+        <label>{{ 'driverList.modal.experience' | t }}</label>
+        <input type="number" class="input" style="padding-left:14px;" [placeholder]="'driverList.modal.experiencePlaceholder' | t" [ngModel]="experienceYears()" (ngModelChange)="experienceYears.set($event)" name="experienceYears" />
       </div>
       <div class="field">
-        <label>Address</label>
-        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Malviya Nagar, Jaipur" [ngModel]="address()" (ngModelChange)="address.set($event)" name="address" />
+        <label>{{ 'driverList.modal.address' | t }}</label>
+        <input type="text" class="input" style="padding-left:14px;" [placeholder]="'driverList.modal.addressPlaceholder' | t" [ngModel]="address()" (ngModelChange)="address.set($event)" name="address" />
       </div>
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeAdd()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ saving() ? 'Saving…' : 'Add Driver' }}</button>
+      <button type="button" class="btn btn-outline" (click)="closeAdd()">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ saving() ? ('driverList.modal.saving' | t) : ('driverList.modal.submit' | t) }}</button>
     </div>
   </app-modal>
 }

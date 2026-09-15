@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TranslatePipe } from '../../../core/i18n';
 import { DashboardMockService } from '../../../core/services/dashboard-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { LoadStatus } from '../../../core/models/dashboard.model';
@@ -17,7 +18,7 @@ const STATUS_CLASS: Record<LoadStatus, string> = {
 @Component({
   selector: 'app-shipper-dashboard',
   standalone: true,
-  imports: [IconComponent, RouterLink],
+  imports: [IconComponent, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shipper-dashboard.component.html',
 })

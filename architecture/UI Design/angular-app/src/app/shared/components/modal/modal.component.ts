@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { IconComponent } from '../icon/icon.component';
 
 /**
@@ -15,9 +15,9 @@ import { IconComponent } from '../icon/icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modal-backdrop" (click)="onBackdropClick($event)">
-      <div class="modal-panel" [class.modal-lg]="large">
+      <div #dialog class="modal-panel" [class.modal-lg]="large" role="dialog" aria-modal="true" [attr.aria-labelledby]="title ? 'modal-title' : null" tabindex="-1">
         <div class="modal-head">
-          <h3>{{ title }}</h3>
+          <h3 id="modal-title">{{ title }}</h3>
           <button type="button" class="modal-close" (click)="close.emit()" aria-label="Close">
             <app-icon name="i-plus" [size]="16" className="icon-rotate-45" />
           </button>
@@ -34,11 +34,21 @@ import { IconComponent } from '../icon/icon.component';
     </div>
   `,
 })
-export class ModalComponent {
+export class ModalComponent implements AfterViewInit {
+  @ViewChild('dialog') private readonly dialog?: ElementRef<HTMLElement>;
   @Input() title = '';
   @Input() large = false;
   @Input() showFooter = true;
   @Output() close = new EventEmitter<void>();
+
+  ngAfterViewInit(): void {
+    queueMicrotask(() => this.dialog?.nativeElement.focus());
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.close.emit();
+  }
 
   protected onBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {

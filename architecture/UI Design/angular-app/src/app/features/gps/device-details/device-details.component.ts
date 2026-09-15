@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TranslatePipe } from '../../../core/i18n';
 import { GpsMockService } from '../../../core/services/gps-mock.service';
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -16,11 +17,25 @@ const STATUS_CLASS: Record<DeviceStatus, string> = {
   Maintenance: 'status-pending',
 };
 
+const STATUS_KEY: Record<DeviceStatus, string> = {
+  Available: 'status.device.available',
+  Installed: 'status.device.installed',
+  Faulty: 'status.device.faulty',
+  Maintenance: 'status.device.maintenance',
+};
+
 const HEALTH_CLASS: Record<DeviceHealthStatus, string> = {
   Healthy: 'status-delivered',
   Warning: 'status-pending',
   Critical: 'status-cancelled',
   Offline: 'status-cancelled',
+};
+
+const HEALTH_KEY: Record<DeviceHealthStatus, string> = {
+  Healthy: 'status.deviceHealth.healthy',
+  Warning: 'status.deviceHealth.warning',
+  Critical: 'status.deviceHealth.critical',
+  Offline: 'status.deviceHealth.offline',
 };
 
 /**
@@ -32,7 +47,7 @@ const HEALTH_CLASS: Record<DeviceHealthStatus, string> = {
 @Component({
   selector: 'app-device-details',
   standalone: true,
-  imports: [IconComponent, RouterLink],
+  imports: [IconComponent, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './device-details.component.html',
 })
@@ -45,7 +60,9 @@ export class DeviceDetailsComponent {
   private readonly imei = this.route.snapshot.paramMap.get('id') ?? '';
   protected readonly device = this.gps.getDeviceByImei(this.imei);
   protected readonly statusClass = STATUS_CLASS;
+  protected readonly statusKey = STATUS_KEY;
   protected readonly healthClass = HEALTH_CLASS;
+  protected readonly healthKey = HEALTH_KEY;
 
   protected readonly assignedVehicle = computed(() => {
     const regNumber = this.device()?.assignedVehicleRegNumber;

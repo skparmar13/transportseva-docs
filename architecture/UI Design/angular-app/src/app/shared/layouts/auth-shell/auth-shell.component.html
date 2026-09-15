@@ -4,8 +4,8 @@
       <img src="images/logo.png" alt="TransportSeva" class="logo-img">
     </a>
     <div class="nav-actions" style="display:flex; align-items:center; gap:16px;">
-      <button class="lang-switch" type="button" aria-label="Change language">
-        <span class="lang-opt active">EN</span><span class="lang-sep">|</span><span class="lang-opt">हिंदी</span>
+      <button class="lang-switch" type="button" aria-label="Change language" (click)="language.toggle()">
+        <span class="lang-opt" [class.active]="language.lang() === 'en'">EN</span><span class="lang-sep">|</span><span class="lang-opt" [class.active]="language.lang() === 'hi'">हिंदी</span>
       </button>
       <a [routerLink]="backLink" class="btn btn-outline" style="padding:10px 20px;">
         <app-icon name="i-arrow-left" [size]="16" />
@@ -24,9 +24,9 @@
     </div>
     @if (showStats) {
       <div class="stat-strip">
-        <div><b>2.5M+</b><span>Shipments Delivered</span></div>
-        <div><b>15,000+</b><span>Transport Partners</span></div>
-        <div><b>500+</b><span>Cities Covered</span></div>
+        <div><b>2.5M+</b><span>{{ 'stats.shipmentsDelivered' | t }}</span></div>
+        <div><b>15,000+</b><span>{{ 'stats.transportPartners' | t }}</span></div>
+        <div><b>500+</b><span>{{ 'stats.statesCovered' | t }}</span></div>
       </div>
     }
   </div>

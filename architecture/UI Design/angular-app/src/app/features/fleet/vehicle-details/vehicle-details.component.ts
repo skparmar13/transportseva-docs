@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { TranslatePipe } from '../../../core/i18n';
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DocumentStatus, VehicleLiveStatus } from '../../../core/models/fleet.model';
@@ -16,11 +17,25 @@ const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
   Offline: 'status-cancelled',
 };
 
+const STATUS_KEY: Record<VehicleLiveStatus, string> = {
+  'On Trip': 'status.vehicleLive.onTrip',
+  Idle: 'status.vehicleLive.idle',
+  Maintenance: 'status.vehicleLive.maintenance',
+  Offline: 'status.vehicleLive.offline',
+};
+
 const DOC_STATUS_CLASS: Record<DocumentStatus, string> = {
   Valid: 'status-delivered',
   'Expiring Soon': 'status-transit',
   Expired: 'status-cancelled',
   'Not Uploaded': 'status-pending',
+};
+
+const DOC_STATUS_KEY: Record<DocumentStatus, string> = {
+  Valid: 'status.doc.valid',
+  'Expiring Soon': 'status.doc.expiringSoon',
+  Expired: 'status.doc.expired',
+  'Not Uploaded': 'status.doc.notUploaded',
 };
 
 /**
@@ -32,7 +47,7 @@ const DOC_STATUS_CLASS: Record<DocumentStatus, string> = {
 @Component({
   selector: 'app-vehicle-details',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './vehicle-details.component.html',
 })
@@ -45,7 +60,9 @@ export class VehicleDetailsComponent {
   protected readonly vehicle = this.fleet.getVehicleById(this.vehicleId);
   protected readonly availableDevices = this.fleet.availableDevices;
   protected readonly statusClass = STATUS_CLASS;
+  protected readonly statusKey = STATUS_KEY;
   protected readonly docStatusClass = DOC_STATUS_CLASS;
+  protected readonly docStatusKey = DOC_STATUS_KEY;
 
   protected readonly listPath = computed(() => (this.session.role() === 'truck-owner' ? 'vehicles' : 'fleet'));
 

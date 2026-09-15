@@ -480,6 +480,10 @@
     width: 34px; height: 34px; border-radius: 50%; border: 1px solid #3D3D3D;
     display: flex; align-items: center; justify-content: center; color: #C9C7C4; transition: background .2s, border-color .2s;
   }
+  .social-row .social-placeholder {
+    width: 34px; height: 34px; border-radius: 50%; border: 1px solid #3D3D3D;
+    display: flex; align-items: center; justify-content: center; color: #C9C7C4;
+  }
   .social-row a:hover { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
   .footer-col h4 { color: #fff; font-size: 14.5px; font-weight: 700; margin-bottom: 16px; }
   .footer-col li { margin-bottom: 10px; }

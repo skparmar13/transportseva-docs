@@ -1,26 +1,26 @@
 <div class="page-toolbar">
   <div>
-    <h1>Business Settings</h1>
-    <p class="desc">Company profile, branches, users, roles and billing.</p>
+    <h1>{{ 'businessSettings.title' | t }}</h1>
+    <p class="desc">{{ 'businessSettings.subtitle' | t }}</p>
   </div>
 </div>
 
 <div class="page-toolbar">
   <div class="tab-row">
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'company'" (click)="setTab('company')">Company Profile</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'branches'" (click)="setTab('branches')">Branches</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'users'" (click)="setTab('users')">Users</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'roles'" (click)="setTab('roles')">Roles & Permissions</button>
-    <button type="button" class="tab-btn" [class.active]="activeTab() === 'billing'" (click)="setTab('billing')">Billing</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'company'" (click)="setTab('company')">{{ 'businessSettings.tab.company' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'branches'" (click)="setTab('branches')">{{ 'businessSettings.tab.branches' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'users'" (click)="setTab('users')">{{ 'businessSettings.tab.users' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'roles'" (click)="setTab('roles')">{{ 'businessSettings.tab.roles' | t }}</button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'billing'" (click)="setTab('billing')">{{ 'businessSettings.tab.billing' | t }}</button>
   </div>
 </div>
 
 @if (activeTab() === 'company') {
   <div class="card">
     <div class="card-head">
-      <span>Company Profile</span>
+      <span>{{ 'businessSettings.company.title' | t }}</span>
       @if (!editingCompany()) {
-        <a (click)="startEditCompany()">Edit</a>
+        <a (click)="startEditCompany()">{{ 'common.edit' | t }}</a>
       }
     </div>
     <div class="card-body">
@@ -35,38 +35,38 @@
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;font-size:13.5px;">
-          <div><span style="color:var(--color-text-soft);">GST Number</span><br /><b>{{ settings.company().gstNumber }}</b></div>
-          <div><span style="color:var(--color-text-soft);">PAN Number</span><br /><b>{{ settings.company().panNumber }}</b></div>
-          <div><span style="color:var(--color-text-soft);">Email</span><br /><b>{{ settings.company().email }}</b></div>
-          <div><span style="color:var(--color-text-soft);">Phone</span><br /><b>{{ settings.company().phone }}</b></div>
-          <div style="grid-column:span 2;"><span style="color:var(--color-text-soft);">Registered Address</span><br /><b>{{ settings.company().address }}, {{ settings.company().city }}, {{ settings.company().state }} - {{ settings.company().pincode }}</b></div>
+          <div><span style="color:var(--color-text-soft);">{{ 'businessSettings.company.gstNumber' | t }}</span><br /><b>{{ settings.company().gstNumber }}</b></div>
+          <div><span style="color:var(--color-text-soft);">{{ 'businessSettings.company.panNumber' | t }}</span><br /><b>{{ settings.company().panNumber }}</b></div>
+          <div><span style="color:var(--color-text-soft);">{{ 'businessSettings.company.email' | t }}</span><br /><b>{{ settings.company().email }}</b></div>
+          <div><span style="color:var(--color-text-soft);">{{ 'businessSettings.company.phone' | t }}</span><br /><b>{{ settings.company().phone }}</b></div>
+          <div style="grid-column:span 2;"><span style="color:var(--color-text-soft);">{{ 'businessSettings.company.address' | t }}</span><br /><b>{{ settings.company().address }}, {{ settings.company().city }}, {{ settings.company().state }} - {{ settings.company().pincode }}</b></div>
         </div>
       } @else {
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
           <div class="field">
-            <label>Company Name</label>
+            <label>{{ 'businessSettings.company.name' | t }}</label>
             <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().companyName" (ngModelChange)="updateDraft('companyName', $event)" name="companyName" />
           </div>
           <div class="field">
-            <label>Business Type</label>
+            <label>{{ 'businessSettings.company.businessType' | t }}</label>
             <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().businessType" (ngModelChange)="updateDraft('businessType', $event)" name="businessType" />
           </div>
           <div class="field">
-            <label>Email</label>
+            <label>{{ 'businessSettings.company.email' | t }}</label>
             <input type="email" class="input" style="padding-left:14px;" [ngModel]="companyDraft().email" (ngModelChange)="updateDraft('email', $event)" name="email" />
           </div>
           <div class="field">
-            <label>Phone</label>
+            <label>{{ 'businessSettings.company.phone' | t }}</label>
             <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().phone" (ngModelChange)="updateDraft('phone', $event)" name="phone" />
           </div>
           <div class="field" style="grid-column:span 2;">
-            <label>Registered Address</label>
+            <label>{{ 'businessSettings.company.address' | t }}</label>
             <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().address" (ngModelChange)="updateDraft('address', $event)" name="address" />
           </div>
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
-          <button type="button" class="btn btn-outline" (click)="cancelEditCompany()">Cancel</button>
-          <button type="button" class="btn btn-primary" (click)="saveCompany()">Save Changes</button>
+          <button type="button" class="btn btn-outline" (click)="cancelEditCompany()">{{ 'common.cancel' | t }}</button>
+          <button type="button" class="btn btn-primary" (click)="saveCompany()">{{ 'common.saveChanges' | t }}</button>
         </div>
       }
     </div>
@@ -78,18 +78,18 @@
     <div></div>
     <button type="button" class="btn btn-primary" (click)="openAddBranch()">
       <app-icon name="i-plus" [size]="18" />
-      <span>Add Branch</span>
+      <span>{{ 'businessSettings.branches.add' | t }}</span>
     </button>
   </div>
   <div class="card">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Branch</th>
-          <th>City</th>
-          <th>Address</th>
-          <th>Contact Person</th>
-          <th>Phone</th>
+          <th>{{ 'businessSettings.branches.col.branch' | t }}</th>
+          <th>{{ 'businessSettings.branches.col.city' | t }}</th>
+          <th>{{ 'businessSettings.branches.col.address' | t }}</th>
+          <th>{{ 'businessSettings.branches.col.contact' | t }}</th>
+          <th>{{ 'businessSettings.branches.col.phone' | t }}</th>
           <th></th>
         </tr>
       </thead>
@@ -101,7 +101,7 @@
             <td>{{ b.address }}</td>
             <td>{{ b.contactPerson }}</td>
             <td>{{ b.phone }}</td>
-            <td>@if (b.isHeadOffice) { <span class="status-pill status-delivered">Head Office</span> }</td>
+            <td>@if (b.isHeadOffice) { <span class="status-pill status-delivered">{{ 'common.headOffice' | t }}</span> }</td>
           </tr>
         }
       </tbody>
@@ -114,19 +114,19 @@
     <div></div>
     <button type="button" class="btn btn-primary" (click)="openInviteStaff()">
       <app-icon name="i-plus" [size]="18" />
-      <span>Invite User</span>
+      <span>{{ 'businessSettings.users.invite' | t }}</span>
     </button>
   </div>
   <div class="card">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Branch</th>
-          <th>Status</th>
-          <th>Last Active</th>
+          <th>{{ 'businessSettings.users.col.name' | t }}</th>
+          <th>{{ 'businessSettings.users.col.email' | t }}</th>
+          <th>{{ 'businessSettings.users.col.role' | t }}</th>
+          <th>{{ 'businessSettings.users.col.branch' | t }}</th>
+          <th>{{ 'businessSettings.users.col.status' | t }}</th>
+          <th>{{ 'businessSettings.users.col.lastActive' | t }}</th>
           <th></th>
         </tr>
       </thead>
@@ -142,7 +142,7 @@
             <td>
               @if (u.roleName !== 'Owner / Admin') {
                 <button type="button" class="btn btn-outline btn-sm" (click)="toggleStaffStatus(u.id)">
-                  {{ u.status === 'Suspended' ? 'Reactivate' : 'Suspend' }}
+                  {{ (u.status === 'Suspended' ? 'common.reactivate' : 'common.suspend') | t }}
                 </button>
               }
             </td>
@@ -159,16 +159,16 @@
       <div class="kpi-card">
         <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-shield" /></div></div>
         <div class="kpi-value" style="font-size:16px;">{{ r.name }}</div>
-        <div class="kpi-label">{{ r.usersCount }} user(s) · {{ r.description }}</div>
+        <div class="kpi-label">{{ 'businessSettings.roles.userCount' | t:{ count: r.usersCount, desc: r.description } }}</div>
       </div>
     }
   </div>
   <div class="card">
-    <div class="card-head"><span>Permission Matrix</span></div>
+    <div class="card-head"><span>{{ 'businessSettings.roles.matrix' | t }}</span></div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>Permission</th>
+          <th>{{ 'businessSettings.roles.col.permission' | t }}</th>
           @for (r of settings.roles(); track r.id) {
             <th>{{ r.name }}</th>
           }
@@ -197,19 +197,19 @@
     <div class="kpi-card">
       <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-tag" /></div></div>
       <div class="kpi-value" style="font-size:16px;">{{ settings.currentPlanName() }}</div>
-      <div class="kpi-label">Current Plan</div>
+      <div class="kpi-label">{{ 'businessSettings.billing.currentPlan' | t }}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-invoice" /></div></div>
       <div class="kpi-value">{{ settings.amountDue() }}</div>
-      <div class="kpi-label">Amount Due</div>
+      <div class="kpi-label">{{ 'businessSettings.billing.amountDue' | t }}</div>
     </div>
   </div>
 
   <div class="card" style="margin-bottom:20px;">
     <div class="card-body">
-      <h3 style="font-size:15px;margin-bottom:4px;">Plans</h3>
-      <p class="desc" style="margin-bottom:18px;">Starter is free forever — TransportSeva earns commission only on successful bookings. Upgrade to Professional for GPS tracking, live visibility and fleet tools.</p>
+      <h3 style="font-size:15px;margin-bottom:4px;">{{ 'businessSettings.billing.plans' | t }}</h3>
+      <p class="desc" style="margin-bottom:18px;">{{ 'businessSettings.billing.plansDesc' | t }}</p>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
         @for (plan of plans; track plan.tier) {
           <div
@@ -218,20 +218,20 @@
             [style.background]="plan.tier === settings.currentPlanTier() ? 'rgba(244,91,0,.04)' : '#fff'"
           >
             @if (plan.tier === settings.currentPlanTier()) {
-              <span class="status-pill status-delivered" style="position:absolute;top:-10px;right:16px;">Current Plan</span>
+              <span class="status-pill status-delivered" style="position:absolute;top:-10px;right:16px;">{{ 'businessSettings.billing.currentPlanPill' | t }}</span>
             } @else if (plan.highlighted) {
-              <span class="status-pill status-transit" style="position:absolute;top:-10px;right:16px;">Most Popular</span>
+              <span class="status-pill status-transit" style="position:absolute;top:-10px;right:16px;">{{ 'businessSettings.billing.mostPopular' | t }}</span>
             }
             <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">{{ plan.name.replace('TransportSeva ', '') }}</div>
             <div style="font-size:12.5px;color:var(--color-text-muted);margin-bottom:12px;min-height:32px;">{{ plan.tagline }}</div>
             <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px;">
               <span style="font-size:24px;font-weight:800;">{{ plan.price }}</span>
-              @if (plan.tier === 'professional') { <span style="font-size:12.5px;color:var(--color-text-soft);">/ month</span> }
+              @if (plan.tier === 'professional') { <span style="font-size:12.5px;color:var(--color-text-soft);">{{ 'businessSettings.billing.perMonth' | t }}</span> }
             </div>
             <div style="font-size:11.5px;color:var(--color-text-soft);margin-bottom:14px;">{{ plan.priceNote }}</div>
 
             @if (plan.inheritsFrom) {
-              <div style="font-size:12px;font-weight:600;color:var(--color-primary);margin-bottom:6px;">Everything in {{ plan.inheritsFrom === 'starter' ? 'Starter' : 'Professional' }}, plus:</div>
+              <div style="font-size:12px;font-weight:600;color:var(--color-primary);margin-bottom:6px;">{{ (plan.inheritsFrom === 'starter' ? 'businessSettings.billing.everythingInStarter' : 'businessSettings.billing.everythingInProfessional') | t }}</div>
             }
             <ul style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;flex:1;">
               @for (f of plan.features.slice(0, 6); track f) {
@@ -240,17 +240,17 @@
                 </li>
               }
               @if (plan.features.length > 6) {
-                <li style="list-style:none;font-size:12px;color:var(--color-text-soft);padding-left:22px;">+ {{ plan.features.length - 6 }} more</li>
+                <li style="list-style:none;font-size:12px;color:var(--color-text-soft);padding-left:22px;">{{ 'businessSettings.billing.moreCount' | t:{ n: plan.features.length - 6 } }}</li>
               }
             </ul>
 
             @if (plan.tier === settings.currentPlanTier()) {
-              <button type="button" class="btn btn-outline btn-sm" disabled>Current Plan</button>
+              <button type="button" class="btn btn-outline btn-sm" disabled>{{ 'businessSettings.billing.currentPlanPill' | t }}</button>
             } @else if (plan.tier === 'enterprise') {
-              <a routerLink="/contact" class="btn btn-outline btn-sm" style="text-align:center;">Talk to Sales</a>
+              <a routerLink="/contact" class="btn btn-outline btn-sm" style="text-align:center;">{{ 'businessSettings.billing.talkToSales' | t }}</a>
             } @else {
               <button type="button" class="btn btn-sm" [class.btn-primary]="plan.highlighted" [class.btn-outline]="!plan.highlighted" (click)="requestPlanChange(plan.tier)">
-                {{ plan.tier === 'starter' ? 'Downgrade to Starter' : plan.ctaLabel }}
+                {{ plan.tier === 'starter' ? ('businessSettings.billing.downgradeStarter' | t) : plan.ctaLabel }}
               </button>
             }
           </div>
@@ -263,12 +263,12 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Invoice #</th>
-          <th>Plan</th>
-          <th>Period</th>
-          <th>Amount</th>
-          <th>Due Date</th>
-          <th>Status</th>
+          <th>{{ 'businessSettings.billing.col.invoiceNo' | t }}</th>
+          <th>{{ 'businessSettings.billing.col.plan' | t }}</th>
+          <th>{{ 'businessSettings.billing.col.period' | t }}</th>
+          <th>{{ 'businessSettings.billing.col.amount' | t }}</th>
+          <th>{{ 'businessSettings.billing.col.dueDate' | t }}</th>
+          <th>{{ 'businessSettings.billing.col.status' | t }}</th>
           <th></th>
         </tr>
       </thead>
@@ -282,11 +282,11 @@
             <td>{{ inv.dueDate }}</td>
             <td><span class="status-pill" [class]="billingStatusClass[inv.status]">{{ inv.status }}</span></td>
             <td style="display:flex;gap:6px;">
-              <button type="button" class="btn btn-outline btn-sm" title="Download">
+              <button type="button" class="btn btn-outline btn-sm" [title]="'common.download' | t">
                 <app-icon name="i-download" [size]="16" />
               </button>
               @if (inv.status !== 'Paid') {
-                <button type="button" class="btn btn-outline btn-sm" (click)="markInvoicePaid(inv.id)">Mark Paid</button>
+                <button type="button" class="btn btn-outline btn-sm" (click)="markInvoicePaid(inv.id)">{{ 'common.markPaid' | t }}</button>
               }
             </td>
           </tr>
@@ -297,64 +297,59 @@
 }
 
 @if (changingToPlan(); as tier) {
-  <app-modal title="Change Subscription Plan" (close)="changingToPlan.set(null)">
-    <p style="font-size:13.5px;color:var(--color-text-muted);margin-bottom:14px;">
-      @if (tier === 'starter') {
-        Downgrade to <b>Starter</b>? You'll lose access to AIS-140 GPS, live tracking, trip replay and geofencing at the end of the current billing period. Booking commission continues to apply.
-      } @else {
-        Upgrade to <b>Professional</b> for ₹2,499/month? This unlocks unlimited vehicles &amp; drivers, AIS-140 GPS integration, live tracking, trip replay, geofencing and advanced reports immediately.
-      }
-    </p>
+  <app-modal [title]="'businessSettings.billing.changePlanTitle' | t" (close)="changingToPlan.set(null)">
+    <p style="font-size:13.5px;color:var(--color-text-muted);margin-bottom:14px;"
+       [innerHTML]="(tier === 'starter' ? 'businessSettings.billing.downgradeHtml' : 'businessSettings.billing.upgradeHtml') | t"></p>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="changingToPlan.set(null)">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="confirmPlanChange()">{{ tier === 'starter' ? 'Confirm Downgrade' : 'Confirm Upgrade' }}</button>
+      <button type="button" class="btn btn-outline" (click)="changingToPlan.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" (click)="confirmPlanChange()">{{ (tier === 'starter' ? 'businessSettings.billing.confirmDowngrade' : 'businessSettings.billing.confirmUpgrade') | t }}</button>
     </div>
   </app-modal>
 }
 
 @if (showAddBranch()) {
-  <app-modal title="Add Branch" (close)="closeAddBranch()">
+  <app-modal [title]="'businessSettings.branches.modal.title' | t" (close)="closeAddBranch()">
     <div class="field">
-      <label>Branch Name</label>
-      <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Surat Branch" [ngModel]="branchName()" (ngModelChange)="branchName.set($event)" name="branchName" />
+      <label>{{ 'businessSettings.branches.modal.name' | t }}</label>
+      <input type="text" class="input" style="padding-left:14px;" [placeholder]="'businessSettings.branches.modal.namePh' | t" [ngModel]="branchName()" (ngModelChange)="branchName.set($event)" name="branchName" />
     </div>
     <div class="field">
-      <label>City</label>
-      <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. Surat" [ngModel]="branchCity()" (ngModelChange)="branchCity.set($event)" name="branchCity" />
+      <label>{{ 'businessSettings.branches.modal.city' | t }}</label>
+      <input type="text" class="input" style="padding-left:14px;" [placeholder]="'businessSettings.branches.modal.cityPh' | t" [ngModel]="branchCity()" (ngModelChange)="branchCity.set($event)" name="branchCity" />
     </div>
     <div class="field">
-      <label>Address</label>
+      <label>{{ 'businessSettings.branches.modal.address' | t }}</label>
       <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchAddress()" (ngModelChange)="branchAddress.set($event)" name="branchAddress" />
     </div>
     <div class="field">
-      <label>Contact Person</label>
+      <label>{{ 'businessSettings.branches.modal.contact' | t }}</label>
       <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchContact()" (ngModelChange)="branchContact.set($event)" name="branchContact" />
     </div>
     <div class="field">
-      <label>Phone</label>
+      <label>{{ 'businessSettings.branches.modal.phone' | t }}</label>
       <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchPhone()" (ngModelChange)="branchPhone.set($event)" name="branchPhone" />
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeAddBranch()">Cancel</button>
+      <button type="button" class="btn btn-outline" (click)="closeAddBranch()">{{ 'common.cancel' | t }}</button>
       <button type="button" class="btn btn-primary" [disabled]="savingBranch() || !branchName().trim() || !branchCity().trim()" (click)="submitAddBranch()">
-        {{ savingBranch() ? 'Adding…' : 'Add Branch' }}
+        {{ (savingBranch() ? 'businessSettings.branches.adding' : 'businessSettings.branches.add') | t }}
       </button>
     </div>
   </app-modal>
 }
 
 @if (showInviteStaff()) {
-  <app-modal title="Invite User" (close)="closeInviteStaff()">
+  <app-modal [title]="'businessSettings.users.modal.title' | t" (close)="closeInviteStaff()">
     <div class="field">
-      <label>Full Name</label>
+      <label>{{ 'businessSettings.users.modal.fullName' | t }}</label>
       <input type="text" class="input" style="padding-left:14px;" [ngModel]="staffName()" (ngModelChange)="staffName.set($event)" name="staffName" />
     </div>
     <div class="field">
-      <label>Email</label>
+      <label>{{ 'businessSettings.users.modal.email' | t }}</label>
       <input type="email" class="input" style="padding-left:14px;" [ngModel]="staffEmail()" (ngModelChange)="staffEmail.set($event)" name="staffEmail" />
     </div>
     <div class="field">
-      <label>Role</label>
+      <label>{{ 'businessSettings.users.modal.role' | t }}</label>
       <select class="input" style="padding-left:14px;" [ngModel]="staffRole()" (ngModelChange)="staffRole.set($event)" name="staffRole">
         @for (r of settings.roles(); track r.id) {
           <option [value]="r.name">{{ r.name }}</option>
@@ -362,7 +357,7 @@
       </select>
     </div>
     <div class="field">
-      <label>Branch</label>
+      <label>{{ 'businessSettings.users.modal.branch' | t }}</label>
       <select class="input" style="padding-left:14px;" [ngModel]="staffBranch()" (ngModelChange)="staffBranch.set($event)" name="staffBranch">
         @for (b of settings.branches(); track b.id) {
           <option [value]="b.name">{{ b.name }}</option>
@@ -370,9 +365,9 @@
       </select>
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeInviteStaff()">Cancel</button>
+      <button type="button" class="btn btn-outline" (click)="closeInviteStaff()">{{ 'common.cancel' | t }}</button>
       <button type="button" class="btn btn-primary" [disabled]="savingStaff() || !staffName().trim() || !staffEmail().trim()" (click)="submitInviteStaff()">
-        {{ savingStaff() ? 'Sending Invite…' : 'Send Invite' }}
+        {{ (savingStaff() ? 'businessSettings.users.modal.sending' : 'businessSettings.users.modal.send') | t }}
       </button>
     </div>
   </app-modal>

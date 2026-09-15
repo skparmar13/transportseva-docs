@@ -1,19 +1,17 @@
 <app-auth-shell
   backLink="/"
-  eyebrow="Get Started"
-  title="Create your account"
-  sub="Choose your role to get a workspace built for you."
-  visualHeadingLine1="One platform for"
-  visualHeadingLine2="every logistics need."
-  visualDescription="Whether you ship, drive or manage a fleet — TransportSeva gives you the tools to work faster and smarter."
+  [eyebrow]="'auth.signup.eyebrow' | t"
+  [title]="'signup.title' | t"
+  [sub]="'signup.sub' | t"
+  [visualHeadingLine1]="'signup.visual.title1' | t"
+  [visualHeadingLine2]="'signup.visual.title2' | t"
+  [visualDescription]="'signup.visual.description' | t"
   visualImage="images/app-truck.png"
 >
   <div class="plan-indicator">
     <app-icon name="i-tag" [size]="16" />
-    <span>
-      Signing up for the <b>{{ planTier() === 'professional' ? 'Professional' : 'Starter (Free)' }}</b> plan.
-    </span>
-    <a routerLink="/pricing">Change plan</a>
+    <span>{{ 'auth.signingUpFor' | t:{ plan: planLabel() } }}</span>
+    <a routerLink="/pricing">{{ 'auth.changePlan' | t }}</a>
   </div>
 
   <div class="role-grid">
@@ -24,81 +22,86 @@
         (click)="selectRole(option.role)"
       >
         <div class="role-info-wrap">
-          <button type="button" class="role-info-btn" [attr.aria-label]="'What is a ' + option.label + '?'" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="role-info-btn"
+            [attr.aria-label]="'signup.roleTooltipAriaLabel' | t:{ role: ('signup.role.' + roleKey(option.role) + '.label') | t }"
+            (click)="$event.stopPropagation()"
+          >
             <app-icon name="i-info" [size]="12" />
           </button>
           <div class="role-tooltip" role="tooltip">
-            {{ option.description }}
-            <span class="role-tooltip-examples">{{ option.examples }}</span>
+            {{ ('signup.role.' + roleKey(option.role) + '.description') | t }}
+            <span class="role-tooltip-examples">{{ ('signup.role.' + roleKey(option.role) + '.examples') | t }}</span>
           </div>
         </div>
         <div class="role-icon"><app-icon [name]="option.icon" [size]="22" /></div>
-        <span class="role-label">{{ option.label }}</span>
+        <span class="role-label">{{ ('signup.role.' + roleKey(option.role) + '.label') | t }}</span>
       </div>
     }
   </div>
 
   <form (ngSubmit)="submit()">
     <div class="field">
-      <label>Full Name</label>
+      <label>{{ 'auth.fullName' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-user" [size]="18" />
-        <input type="text" class="input" placeholder="Enter your full name" name="fullName" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" required>
+        <input type="text" class="input" [placeholder]="'signup.fullNamePlaceholder' | t" name="fullName" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" required>
       </div>
     </div>
 
     <div class="field">
-      <label>Mobile Number</label>
+      <label>{{ 'signup.mobileLabel' | t }}</label>
       <div class="phone-input-wrap">
         <div class="phone-code">+91</div>
         <div class="input-wrap" style="flex:1;">
           <app-icon name="i-phone" [size]="18" />
-          <input type="tel" class="input" maxlength="10" placeholder="Enter 10-digit mobile number" name="mobile" [ngModel]="mobile()" (ngModelChange)="mobile.set($event)" required>
+          <input type="tel" class="input" maxlength="10" [placeholder]="'signup.mobilePlaceholder' | t" name="mobile" [ngModel]="mobile()" (ngModelChange)="mobile.set($event)" required>
         </div>
       </div>
     </div>
 
     <div class="field">
-      <label>Email Address (optional)</label>
+      <label>{{ 'signup.emailLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-mail" [size]="18" />
-        <input type="email" class="input" placeholder="Enter your email" name="email" [ngModel]="email()" (ngModelChange)="email.set($event)">
+        <input type="email" class="input" [placeholder]="'signup.emailPlaceholder' | t" name="email" [ngModel]="email()" (ngModelChange)="email.set($event)">
       </div>
     </div>
 
     @if (requiresCompany()) {
       <div class="field">
-        <label>Company / Fleet Name</label>
+        <label>{{ 'signup.companyLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-building" [size]="18" />
-          <input type="text" class="input" placeholder="Enter company or fleet name" name="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)">
+          <input type="text" class="input" [placeholder]="'signup.companyPlaceholder' | t" name="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)">
         </div>
       </div>
     }
 
     <div class="field">
-      <label>Create Password</label>
+      <label>{{ 'signup.passwordLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-lock" [size]="18" />
-        <input type="password" class="input" placeholder="Create a password" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)" required>
+        <input type="password" class="input" [placeholder]="'signup.passwordPlaceholder' | t" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)" required>
       </div>
     </div>
 
     <div class="field">
-      <label>Confirm Password</label>
+      <label>{{ 'auth.confirmPassword' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-lock" [size]="18" />
-        <input type="password" class="input" placeholder="Re-enter password" name="confirmPassword" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" required>
+        <input type="password" class="input" [placeholder]="'signup.confirmPasswordPlaceholder' | t" name="confirmPassword" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" required>
       </div>
     </div>
 
     <label class="checkbox-row" style="margin-bottom:22px;">
       <input type="checkbox" [ngModel]="agreeTerms()" (ngModelChange)="agreeTerms.set($event)" name="agreeTerms">
-      <span>I agree to the <a routerLink="/terms-conditions">Terms &amp; Conditions</a> and <a routerLink="/privacy-policy">Privacy Policy</a></span>
+      <span>{{ 'signup.termsPrefix' | t }} <a routerLink="/terms-conditions">{{ 'signup.termsLink' | t }}</a> {{ 'signup.termsAnd' | t }} <a routerLink="/privacy-policy">{{ 'signup.privacyLink' | t }}</a></span>
     </label>
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
-      <span>{{ submitting() ? 'Creating account…' : 'Create Account' }}</span>
+      <span>{{ (submitting() ? 'signup.submitting' : 'signup.submit') | t }}</span>
       @if (!submitting()) {
         <app-icon name="i-arrow-right" [size]="18" />
       }
@@ -106,7 +109,7 @@
   </form>
 
   <div class="link-row">
-    <span>Already have an account?</span>
-    <a routerLink="/auth/login">Log in</a>
+    <span>{{ 'auth.alreadyHaveAccount' | t }}</span>
+    <a routerLink="/auth/login">{{ 'nav.login' | t }}</a>
   </div>
 </app-auth-shell>

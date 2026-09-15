@@ -6,6 +6,7 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
 import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DriverStatus } from '../../../core/models/driver.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 const STATUS_CLASS: Record<DriverStatus, string> = {
   'On Trip': 'status-transit',
@@ -18,7 +19,7 @@ const STATUS_CLASS: Record<DriverStatus, string> = {
 @Component({
   selector: 'app-driver-list',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './driver-list.component.html',
 })
@@ -28,6 +29,10 @@ export class DriverListComponent {
   private readonly router = inject(Router);
 
   protected readonly statusClass = STATUS_CLASS;
+
+  protected statusKey(s: string): string {
+    return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
 
   /** Transporter/Company share a single "Fleet & Drivers" nav item, so this page shows in-page tabs; Truck Owner has separate nav items already. */
   protected readonly showFleetTabs = computed(() => this.session.role() === 'transporter' || this.session.role() === 'company');

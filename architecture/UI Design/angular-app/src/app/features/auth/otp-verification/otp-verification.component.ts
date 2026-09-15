@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-otp-verification',
   standalone: true,
-  imports: [FormsModule, RouterLink, AuthShellComponent],
+  imports: [FormsModule, RouterLink, AuthShellComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './otp-verification.component.html',
   styleUrl: './otp-verification.component.scss',

@@ -4,6 +4,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ApplicationStatus } from '../../../core/models/marketplace.model';
+import { TranslatePipe } from '../../../core/i18n';
 
 const STATUS_CLASS: Record<ApplicationStatus, string> = {
   Pending: 'status-pending',
@@ -24,7 +25,7 @@ const STATUS_CLASS: Record<ApplicationStatus, string> = {
 @Component({
   selector: 'app-applications',
   standalone: true,
-  imports: [IconComponent],
+  imports: [IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './applications.component.html',
 })
@@ -34,6 +35,10 @@ export class ApplicationsComponent {
   private readonly router = inject(Router);
 
   protected readonly statusClass = STATUS_CLASS;
+
+  protected statusKey(s: string): string {
+    return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
 
   /** Loads owned by the current role — determines which mode to show. */
   private readonly myLoads = computed(() => this.marketplace.getLoadsPostedBy(this.session.role())());

@@ -1,5 +1,5 @@
-<h1>Welcome back, {{ session.user().name.split(' ')[0] }}</h1>
-<p class="desc">Here's a summary of your loads, applications and shipments.</p>
+<h1>{{ 'shipperDashboard.welcome' | t:{ name: session.user().name.split(' ')[0] } }}</h1>
+<p class="desc">{{ 'shipperDashboard.subtitle' | t }}</p>
 
 <div class="kpi-grid">
   @for (kpi of kpis(); track kpi.label) {
@@ -17,18 +17,18 @@
 <div class="content-grid">
   <div class="card">
     <div class="card-head">
-      <h3>Recent Loads</h3>
-      <a [routerLink]="['/shipper', 'my-loads']">View All</a>
+      <h3>{{ 'shipperDashboard.recentLoads' | t }}</h3>
+      <a [routerLink]="['/shipper', 'my-loads']">{{ 'common.viewAll' | t }}</a>
     </div>
     <table class="data-table">
       <thead>
         <tr>
-          <th>Load ID</th>
-          <th>Route</th>
-          <th>Material</th>
-          <th>Applications</th>
-          <th>Status</th>
-          <th>Amount</th>
+          <th>{{ 'shipperDashboard.col.loadId' | t }}</th>
+          <th>{{ 'shipperDashboard.col.route' | t }}</th>
+          <th>{{ 'shipperDashboard.col.material' | t }}</th>
+          <th>{{ 'shipperDashboard.col.applications' | t }}</th>
+          <th>{{ 'shipperDashboard.col.status' | t }}</th>
+          <th>{{ 'shipperDashboard.col.amount' | t }}</th>
         </tr>
       </thead>
       <tbody>
@@ -47,7 +47,7 @@
   </div>
 
   <div class="card">
-    <div class="card-head"><h3>Quick Actions</h3></div>
+    <div class="card-head"><h3>{{ 'dashboard.quickActions' | t }}</h3></div>
     <div class="qa-list">
       @for (action of quickActions(); track action.label) {
         <a class="qa-item" [routerLink]="['/shipper', action.path]"><app-icon [name]="action.icon" /><span>{{ action.label }}</span></a>

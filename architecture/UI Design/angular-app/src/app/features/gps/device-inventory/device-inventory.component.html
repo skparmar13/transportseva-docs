@@ -1,11 +1,11 @@
 <div class="page-toolbar">
   <div>
-    <h1>Device Inventory</h1>
-    <p class="desc">Manage AIS-140 GPS devices, OEM integration and assignment status across your fleet.</p>
+    <h1>{{ 'deviceInventory.title' | t }}</h1>
+    <p class="desc">{{ 'deviceInventory.desc' | t }}</p>
   </div>
   <button type="button" class="btn btn-primary" (click)="openAdd()">
     <app-icon name="i-plus" [size]="18" />
-    <span>Add Device</span>
+    <span>{{ 'deviceInventory.addBtn' | t }}</span>
   </button>
 </div>
 
@@ -13,22 +13,22 @@
   <div class="kpi-card">
     <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-api" /></div></div>
     <div class="kpi-value">{{ kpis().total }}</div>
-    <div class="kpi-label">Total Devices</div>
+    <div class="kpi-label">{{ 'deviceInventory.kpi.total' | t }}</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-truck" /></div></div>
     <div class="kpi-value">{{ kpis().installed }}</div>
-    <div class="kpi-label">Installed on Vehicles</div>
+    <div class="kpi-label">{{ 'deviceInventory.kpi.installed' | t }}</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-check" /></div></div>
     <div class="kpi-value">{{ kpis().available }}</div>
-    <div class="kpi-label">Available in Stock</div>
+    <div class="kpi-label">{{ 'deviceInventory.kpi.available' | t }}</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-flag" /></div></div>
     <div class="kpi-value">{{ kpis().faulty }}</div>
-    <div class="kpi-label">Needs Attention</div>
+    <div class="kpi-label">{{ 'deviceInventory.kpi.needsAttention' | t }}</div>
   </div>
 </div>
 
@@ -36,17 +36,17 @@
   <div class="toolbar-filters">
     <div class="filter-search">
       <app-icon name="i-search" [size]="16" />
-      <input type="text" placeholder="Search by IMEI, vehicle or OEM..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      <input type="text" [placeholder]="'deviceInventory.searchPh' | t" [ngModel]="search()" (ngModelChange)="search.set($event)" />
     </div>
     <select class="filter-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
-      <option value="">All Status</option>
-      <option value="Available">Available</option>
-      <option value="Installed">Installed</option>
-      <option value="Faulty">Faulty</option>
-      <option value="Maintenance">Maintenance</option>
+      <option value="">{{ 'deviceInventory.filter.allStatus' | t }}</option>
+      <option value="Available">{{ 'status.device.available' | t }}</option>
+      <option value="Installed">{{ 'status.device.installed' | t }}</option>
+      <option value="Faulty">{{ 'status.device.faulty' | t }}</option>
+      <option value="Maintenance">{{ 'status.device.maintenance' | t }}</option>
     </select>
   </div>
-  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ filteredDevices().length }} devices</span>
+  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ 'deviceInventory.countLabel' | t:{ count: filteredDevices().length } }}</span>
 </div>
 
 <div class="card">
@@ -54,12 +54,12 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>IMEI</th>
-          <th>OEM</th>
-          <th>Assigned Vehicle</th>
-          <th>Health</th>
-          <th>Last Ping</th>
-          <th>Status</th>
+          <th>{{ 'deviceInventory.col.imei' | t }}</th>
+          <th>{{ 'deviceInventory.col.oem' | t }}</th>
+          <th>{{ 'deviceInventory.col.assignedVehicle' | t }}</th>
+          <th>{{ 'deviceInventory.col.health' | t }}</th>
+          <th>{{ 'deviceInventory.col.lastPing' | t }}</th>
+          <th>{{ 'deviceInventory.col.status' | t }}</th>
           <th></th>
         </tr>
       </thead>
@@ -67,24 +67,24 @@
         @for (device of filteredDevices(); track device.imei) {
           <tr>
             <td><b>{{ device.imei }}</b></td>
-            <td>{{ device.health?.oem ?? '—' }}</td>
+            <td>{{ device.health?.oem ?? ('common.dash' | t) }}</td>
             <td>
               @if (device.assignedVehicleRegNumber) {
                 <span class="status-pill status-transit">{{ device.assignedVehicleRegNumber }}</span>
               } @else {
-                <span style="color:var(--color-text-soft);font-size:12.5px;">Unassigned</span>
+                <span style="color:var(--color-text-soft);font-size:12.5px;">{{ 'common.unassigned' | t }}</span>
               }
             </td>
             <td>
               @if (device.health) {
-                <span class="status-pill" [class]="healthClass[device.health.healthStatus]">{{ device.health.healthStatus }}</span>
+                <span class="status-pill" [class]="healthClass[device.health.healthStatus]">{{ healthKey[device.health.healthStatus] | t }}</span>
               } @else {
-                <span style="color:var(--color-text-soft);font-size:12.5px;">—</span>
+                <span style="color:var(--color-text-soft);font-size:12.5px;">{{ 'common.dash' | t }}</span>
               }
             </td>
-            <td>{{ device.health?.lastPingAt ?? '—' }}</td>
-            <td><span class="status-pill" [class]="statusClass[device.status]">{{ device.status }}</span></td>
-            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewDevice(device.imei)">View</button></td>
+            <td>{{ device.health?.lastPingAt ?? ('common.dash' | t) }}</td>
+            <td><span class="status-pill" [class]="statusClass[device.status]">{{ statusKey[device.status] | t }}</span></td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewDevice(device.imei)">{{ 'common.view' | t }}</button></td>
           </tr>
         }
       </tbody>
@@ -92,21 +92,21 @@
   } @else {
     <div class="card-body" style="text-align:center;padding:48px 22px;color:var(--color-text-muted);">
       <app-icon name="i-api" [size]="32" />
-      <p style="margin-top:12px;">No devices found.</p>
-      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAdd()">Add Your First Device</button>
+      <p style="margin-top:12px;">{{ 'deviceInventory.empty.text' | t }}</p>
+      <button type="button" class="btn btn-primary" style="margin-top:12px;" (click)="openAdd()">{{ 'deviceInventory.empty.addFirst' | t }}</button>
     </div>
   }
 </div>
 
 @if (showAddModal()) {
-  <app-modal title="Add Device" (close)="closeAdd()">
+  <app-modal [title]="'deviceInventory.modal.title' | t" (close)="closeAdd()">
     <div class="field">
-      <label>IMEI Number</label>
-      <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. 867654328" [ngModel]="imei()" (ngModelChange)="imei.set($event)" name="imei" />
+      <label>{{ 'deviceInventory.modal.imei' | t }}</label>
+      <input type="text" class="input" style="padding-left:14px;" [placeholder]="'deviceInventory.modal.imeiPh' | t" [ngModel]="imei()" (ngModelChange)="imei.set($event)" name="imei" />
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="field">
-        <label>OEM Partner</label>
+        <label>{{ 'deviceInventory.modal.oem' | t }}</label>
         <select class="input" style="padding-left:14px;" [ngModel]="oem()" (ngModelChange)="oem.set($event)" name="oem">
           @for (o of oemOptions; track o) {
             <option [value]="o">{{ o }}</option>
@@ -114,13 +114,13 @@
         </select>
       </div>
       <div class="field">
-        <label>SIM Number</label>
-        <input type="text" class="input" style="padding-left:14px;" placeholder="e.g. +91 98230 90018" [ngModel]="simNumber()" (ngModelChange)="simNumber.set($event)" name="simNumber" />
+        <label>{{ 'deviceInventory.modal.sim' | t }}</label>
+        <input type="text" class="input" style="padding-left:14px;" [placeholder]="'deviceInventory.modal.simPh' | t" [ngModel]="simNumber()" (ngModelChange)="simNumber.set($event)" name="simNumber" />
       </div>
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeAdd()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ saving() ? 'Saving…' : 'Add Device' }}</button>
+      <button type="button" class="btn btn-outline" (click)="closeAdd()">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ (saving() ? 'common.saving' : 'deviceInventory.addBtn') | t }}</button>
     </div>
   </app-modal>
 }

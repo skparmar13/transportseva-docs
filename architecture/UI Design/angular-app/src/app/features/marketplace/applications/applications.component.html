@@ -1,9 +1,9 @@
-<h1>{{ isOwnerMode() ? 'Applications Received' : 'My Applications' }}</h1>
+<h1>{{ isOwnerMode() ? ('applications.received.title' | t) : ('applications.mine.title' | t) }}</h1>
 <p class="desc">
   @if (isOwnerMode()) {
-    Review and respond to applications received on your posted loads.
+    {{ 'applications.received.desc' | t }}
   } @else {
-    Track the status of loads you've applied for.
+    {{ 'applications.mine.desc' | t }}
   }
 </p>
 
@@ -13,12 +13,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Load</th>
-            <th>Applicant</th>
-            <th>Vehicle</th>
-            <th>Quoted</th>
-            <th>Applied</th>
-            <th>Status</th>
+            <th>{{ 'applications.col.load' | t }}</th>
+            <th>{{ 'applications.col.applicant' | t }}</th>
+            <th>{{ 'applications.col.vehicle' | t }}</th>
+            <th>{{ 'applications.col.quoted' | t }}</th>
+            <th>{{ 'applications.col.applied' | t }}</th>
+            <th>{{ 'common.status' | t }}</th>
             <th></th>
           </tr>
         </thead>
@@ -30,8 +30,8 @@
               <td>{{ row.app.vehicleRegNumber }} · {{ row.app.vehicleType }}</td>
               <td>{{ row.app.quotedAmount }}</td>
               <td>{{ row.app.appliedAgo }}</td>
-              <td><span class="status-pill" [class]="statusClass[row.app.status]">{{ row.app.status }}</span></td>
-              <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(row.app.loadId)">View Load</button></td>
+              <td><span class="status-pill" [class]="statusClass[row.app.status]">{{ statusKey(row.app.status) | t }}</span></td>
+              <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(row.app.loadId)">{{ 'applications.viewLoad' | t }}</button></td>
             </tr>
           }
         </tbody>
@@ -39,8 +39,8 @@
     } @else {
       <div class="empty-state">
         <app-icon name="i-users" />
-        <h3>No applications received yet</h3>
-        <p>Applications from transporters and truck owners will appear here.</p>
+        <h3>{{ 'applications.emptyReceived.title' | t }}</h3>
+        <p>{{ 'applications.emptyReceived.desc' | t }}</p>
       </div>
     }
   } @else {
@@ -48,12 +48,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Load</th>
-            <th>Route</th>
-            <th>Vehicle</th>
-            <th>Quoted</th>
-            <th>Applied</th>
-            <th>Status</th>
+            <th>{{ 'applications.col.load' | t }}</th>
+            <th>{{ 'applications.col.route' | t }}</th>
+            <th>{{ 'applications.col.vehicle' | t }}</th>
+            <th>{{ 'applications.col.quoted' | t }}</th>
+            <th>{{ 'applications.col.applied' | t }}</th>
+            <th>{{ 'common.status' | t }}</th>
             <th></th>
           </tr>
         </thead>
@@ -65,8 +65,8 @@
               <td>{{ row.app.vehicleRegNumber }} · {{ row.app.vehicleType }}</td>
               <td>{{ row.app.quotedAmount }}</td>
               <td>{{ row.app.appliedAgo }}</td>
-              <td><span class="status-pill" [class]="statusClass[row.app.status]">{{ row.app.status }}</span></td>
-              <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(row.app.loadId)">View Load</button></td>
+              <td><span class="status-pill" [class]="statusClass[row.app.status]">{{ statusKey(row.app.status) | t }}</span></td>
+              <td><button type="button" class="btn btn-outline btn-sm" (click)="viewLoad(row.app.loadId)">{{ 'applications.viewLoad' | t }}</button></td>
             </tr>
           }
         </tbody>
@@ -74,8 +74,8 @@
     } @else {
       <div class="empty-state">
         <app-icon name="i-box" />
-        <h3>You haven't applied for any loads yet</h3>
-        <p>Browse the Load Board to find loads matching your vehicle.</p>
+        <h3>{{ 'applications.emptyMine.title' | t }}</h3>
+        <p>{{ 'applications.emptyMine.desc' | t }}</p>
       </div>
     }
   }

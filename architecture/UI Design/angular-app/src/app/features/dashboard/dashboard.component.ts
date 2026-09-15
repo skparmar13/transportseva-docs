@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { TranslatePipe } from '../../core/i18n';
 import { DashboardMockService } from '../../core/services/dashboard-mock.service';
 import { SessionService } from '../../core/services/session.service';
 import { BookingStatus } from '../../core/models/dashboard.model';
@@ -15,7 +16,7 @@ const STATUS_CLASS: Record<BookingStatus, string> = {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [IconComponent],
+  imports: [IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',

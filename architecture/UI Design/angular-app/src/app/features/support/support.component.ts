@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { TranslatePipe } from '../../core/i18n';
 import { CommunicationMockService } from '../../core/services/communication-mock.service';
 import { TicketPriority, TicketStatus } from '../../core/models/communication.model';
 
@@ -18,6 +19,26 @@ const PRIORITY_CLASS: Record<TicketPriority, string> = {
   High: 'status-cancelled',
 };
 
+const PRIORITY_KEY: Record<TicketPriority, string> = {
+  Low: 'support.priority.low',
+  Medium: 'support.priority.medium',
+  High: 'support.priority.high',
+};
+
+interface TicketCategoryOption {
+  value: string;
+  labelKey: string;
+}
+
+const TICKET_CATEGORIES: TicketCategoryOption[] = [
+  { value: 'GPS & Tracking', labelKey: 'support.category.gps' },
+  { value: 'Payments', labelKey: 'support.category.payments' },
+  { value: 'Account & Settings', labelKey: 'support.category.account' },
+  { value: 'Fleet & Vehicles', labelKey: 'support.category.fleet' },
+  { value: 'Marketplace', labelKey: 'support.category.marketplace' },
+  { value: 'Other', labelKey: 'support.category.other' },
+];
+
 /**
  * Support Tickets — Module 12. Ticket list with a detail thread view
  * (reply mock-only) plus a "New Ticket" creation modal. Voice Calls
@@ -26,7 +47,7 @@ const PRIORITY_CLASS: Record<TicketPriority, string> = {
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule],
+  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './support.component.html',
 })
@@ -35,6 +56,7 @@ export class SupportComponent {
 
   protected readonly statusClass = STATUS_CLASS;
   protected readonly priorityClass = PRIORITY_CLASS;
+  protected readonly priorityKey = PRIORITY_KEY;
 
   protected readonly view = signal<'tickets' | 'calls'>('tickets');
   protected setView(v: 'tickets' | 'calls'): void {
@@ -71,7 +93,7 @@ export class SupportComponent {
   protected readonly newMessage = signal('');
   protected readonly savingTicket = signal(false);
 
-  protected readonly ticketCategories = ['GPS & Tracking', 'Payments', 'Account & Settings', 'Fleet & Vehicles', 'Marketplace', 'Other'];
+  protected readonly ticketCategories = TICKET_CATEGORIES;
 
   protected openNewTicket(): void {
     this.showNewTicket.set(true);

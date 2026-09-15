@@ -101,7 +101,8 @@ export type BookingStage =
   | 'Loading Completed'
   | 'Trip Started'
   | 'Settlement Pending'
-  | 'Completed';
+  | 'Completed'
+  | 'Cancelled';
 
 export interface BookingTimelineEvent {
   stage: BookingStage;
@@ -192,4 +193,13 @@ export interface MarketplaceBooking {
   /** The freight Settlement Plan — Loading Advance, optional Mid-Trip Payment(s), Final Settlement. */
   settlementPlan: SettlementMilestone[];
   settlement?: BookingSettlement;
+  dispute?: BookingDispute;
+}
+
+export interface BookingDispute {
+  reference: string;
+  reason: string;
+  raisedBy: string;
+  status: 'Open' | 'Under Review' | 'Resolved';
+  raisedAt: string;
 }

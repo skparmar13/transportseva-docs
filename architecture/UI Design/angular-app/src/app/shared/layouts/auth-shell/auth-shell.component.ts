@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../components/icon/icon.component';
+import { LanguageService, TranslatePipe } from '../../../core/i18n';
 
 /**
  * Split-screen auth layout reused by Login / Signup / OTP /
@@ -12,12 +13,14 @@ import { IconComponent } from '../../components/icon/icon.component';
 @Component({
   selector: 'app-auth-shell',
   standalone: true,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './auth-shell.component.html',
   styleUrl: './auth-shell.component.scss',
 })
 export class AuthShellComponent {
+  protected readonly language = inject(LanguageService);
+
   @Input() backLink = '/';
   @Input() backLabel = 'Back to Home';
   @Input() eyebrow = '';

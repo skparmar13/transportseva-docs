@@ -1,103 +1,58 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { ModalComponent } from '../../shared/components/modal/modal.component';
-import { WalletMockService } from '../../core/services/wallet-mock.service';
-import { WalletTransactionCategory } from '../../core/models/wallet.model';
+import { PaymentMockService } from '../../core/services/payment-mock.service';
+import { LedgerEntryType } from '../../core/models/payment.model';
 
-type WalletTab = 'transactions' | 'deposits' | 'refunds' | 'settlements';
+type LedgerTab = 'all' | 'tokens' | 'payments' | 'refunds' | 'settlements' | 'commission';
 
-const CATEGORY_CLASS: Record<WalletTransactionCategory, string> = {
-  'Booking Deposit': 'status-pending',
-  'Freight Settlement': 'status-delivered',
+const TYPE_CLASS: Record<LedgerEntryType, string> = {
+  'Booking Token': 'status-pending',
+  Payment: 'status-transit',
   Refund: 'status-transit',
-  'Top-up': 'status-delivered',
-  Withdrawal: 'status-cancelled',
-  Commission: 'status-cancelled',
+  Settlement: 'status-delivered',
+  Commission: 'status-delivered',
+  Payout: 'status-delivered',
 };
 
 /**
- * Wallet — Module 8. Balance + on-hold amount, filterable
- * transaction ledger (All / Deposits / Refunds / Settlements), and
- * Add Money / Withdraw actions that mutate the shared wallet ledger.
+ * Financial ledger — V1 payment records without stored-value balances.
  */
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule],
+  imports: [IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './wallet.component.html',
 })
 export class WalletComponent {
-  protected readonly wallet = inject(WalletMockService);
+  protected readonly payments = inject(PaymentMockService);
 
-  protected readonly categoryClass = CATEGORY_CLASS;
-  protected readonly activeTab = signal<WalletTab>('transactions');
+  protected readonly typeClass = TYPE_CLASS;
+  protected readonly activeTab = signal<LedgerTab>('all');
+  protected readonly recordCount = computed(() => this.payments.ledgerEntries().length);
 
-  protected readonly filteredTransactions = computed(() => {
+  protected readonly filteredEntries = computed(() => {
     switch (this.activeTab()) {
-      case 'deposits':
-        return this.wallet.depositTransactions();
+      case 'tokens':
+        return this.payments.ledgerEntries().filter((e) => e.type === 'Booking Token');
       case 'refunds':
-        return this.wallet.refundTransactions();
+        return this.payments.ledgerEntries().filter((e) => e.type === 'Refund');
+      case 'payments':
+        return this.payments.ledgerEntries().filter((e) => e.type === 'Payment');
       case 'settlements':
-        return this.wallet.settlementTransactions();
+        return this.payments.ledgerEntries().filter((e) => e.type === 'Settlement');
+      case 'commission':
+        return this.payments.ledgerEntries().filter((e) => e.type === 'Commission');
       default:
-        return this.wallet.transactions();
+        return this.payments.ledgerEntries();
     }
   });
 
-  protected setTab(tab: WalletTab): void {
+  protected setTab(tab: LedgerTab): void {
     this.activeTab.set(tab);
   }
 
-  // Add Money modal
-  protected readonly showAddMoney = signal(false);
-  protected readonly addAmount = signal<number | null>(null);
-  protected readonly savingAdd = signal(false);
-
-  protected openAddMoney(): void {
-    this.showAddMoney.set(true);
-  }
-
-  protected closeAddMoney(): void {
-    this.showAddMoney.set(false);
-    this.addAmount.set(null);
-  }
-
-  protected submitAddMoney(): void {
-    const amount = this.addAmount();
-    if (!amount || amount <= 0) return;
-    this.savingAdd.set(true);
-    setTimeout(() => {
-      this.wallet.addMoney(amount);
-      this.savingAdd.set(false);
-      this.closeAddMoney();
-    }, 400);
-  }
-
-  // Withdraw modal
-  protected readonly showWithdraw = signal(false);
-  protected readonly withdrawAmount = signal<number | null>(null);
-  protected readonly savingWithdraw = signal(false);
-
-  protected openWithdraw(): void {
-    this.showWithdraw.set(true);
-  }
-
-  protected closeWithdraw(): void {
-    this.showWithdraw.set(false);
-    this.withdrawAmount.set(null);
-  }
-
-  protected submitWithdraw(): void {
-    const amount = this.withdrawAmount();
-    if (!amount || amount <= 0 || amount > this.wallet.availableBalance()) return;
-    this.savingWithdraw.set(true);
-    setTimeout(() => {
-      this.wallet.withdraw(amount);
-      this.savingWithdraw.set(false);
-      this.closeWithdraw();
-    }, 400);
+  protected completeRefund(id: string): void {
+    this.payments.markLedgerEntryCompleted(id);
   }
 }

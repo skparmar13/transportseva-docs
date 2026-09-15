@@ -14,7 +14,7 @@ const ALL_PERMISSIONS: Permission[] = [
   { key: 'bookings.manage', label: 'Manage Bookings' },
   { key: 'fleet.manage', label: 'Manage Fleet & Drivers' },
   { key: 'trips.view', label: 'View Trips' },
-  { key: 'wallet.manage', label: 'Manage Wallet' },
+  { key: 'ledger.view', label: 'View Payment Ledger' },
   { key: 'payments.manage', label: 'Manage Payments' },
   { key: 'reports.view', label: 'View Reports' },
   { key: 'documents.manage', label: 'Manage Documents' },
@@ -88,7 +88,7 @@ export class BusinessSettingsMockService {
     { id: 'r1', name: 'Owner / Admin', description: 'Full access to all modules and settings.', usersCount: 1, permissionKeys: ALL_PERMISSIONS.map((p) => p.key) },
     { id: 'r2', name: 'Branch Manager', description: 'Manage bookings, fleet and trips for their branch.', usersCount: 2, permissionKeys: ['bookings.manage', 'fleet.manage', 'trips.view', 'documents.manage', 'reports.view'] },
     { id: 'r3', name: 'Dispatcher', description: 'Create bookings and assign vehicles/drivers.', usersCount: 1, permissionKeys: ['bookings.manage', 'fleet.manage', 'trips.view'] },
-    { id: 'r4', name: 'Accountant', description: 'Manage wallet, payments and view financial reports.', usersCount: 1, permissionKeys: ['wallet.manage', 'payments.manage', 'reports.view'] },
+    { id: 'r4', name: 'Accountant', description: 'Manage payments, settlements and view financial reports.', usersCount: 1, permissionKeys: ['ledger.view', 'payments.manage', 'reports.view'] },
   ]);
   readonly roles = this._roles.asReadonly();
 

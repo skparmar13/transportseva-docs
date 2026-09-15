@@ -58,7 +58,7 @@ export class DashboardMockService {
       { icon: 'i-box', trend: '+4', value: '24', label: 'Total Loads Posted' },
       { icon: 'i-doc', trend: '+9', value: '11', label: 'New Applications' },
       { icon: 'i-truck', trend: '', value: '3', label: 'Loads In Transit' },
-      { icon: 'i-wallet', trend: '', value: '₹1,240', label: 'Wallet Balance' },
+      { icon: 'i-invoice', trend: '', value: '₹1,240', label: 'Payment Ledger Due' },
     ];
     return of(kpis).pipe(delay(150));
   }
@@ -78,7 +78,7 @@ export class DashboardMockService {
       { icon: 'i-plus', label: 'Post a Load', path: 'post-load' },
       { icon: 'i-map', label: 'Track Shipment', path: 'tracking' },
       { icon: 'i-headset', label: 'Raise a Ticket', path: 'support' },
-      { icon: 'i-wallet', label: 'Add Money to Wallet', path: 'payments' },
+      { icon: 'i-invoice', label: 'Review Payment Ledger', path: 'payments' },
     ];
     return of(actions).pipe(delay(150));
   }
@@ -110,7 +110,7 @@ export class DashboardMockService {
       { icon: 'i-search', label: 'Browse Load Board', path: 'load-board' },
       { icon: 'i-car', label: 'Add Vehicle', path: 'fleet' },
       { icon: 'i-user', label: 'Add Driver', path: 'fleet' },
-      { icon: 'i-wallet', label: 'Withdraw Earnings', path: 'payments' },
+      { icon: 'i-credit-card', label: 'Review Pending Settlement', path: 'payments' },
     ];
     return of(actions).pipe(delay(150));
   }
@@ -155,7 +155,7 @@ export class DashboardMockService {
     const kpis: KpiCard[] = [
       { icon: 'i-route', trend: '', value: '2', label: 'Assigned Trips' },
       { icon: 'i-check', trend: '+18', value: '164', label: 'Trips Completed' },
-      { icon: 'i-wallet', trend: '', value: '₹6,400', label: 'Wallet Balance' },
+      { icon: 'i-invoice', trend: '', value: '₹6,400', label: 'Pending Settlement' },
       { icon: 'i-star', trend: '', value: '4.8', label: 'Rating' },
     ];
     return of(kpis).pipe(delay(150));
@@ -173,7 +173,7 @@ export class DashboardMockService {
     const actions: QuickAction[] = [
       { icon: 'i-route', label: 'View Trip Details', path: 'trips' },
       { icon: 'i-doc', label: 'Upload POD', path: 'pod' },
-      { icon: 'i-wallet', label: 'View Wallet', path: 'wallet' },
+      { icon: 'i-invoice', label: 'View Payment Ledger', path: 'financials' },
       { icon: 'i-headset', label: 'Contact Support', path: 'profile' },
     ];
     return of(actions).pipe(delay(150));

@@ -1,26 +1,39 @@
-﻿import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { SeoService } from '../../../core/seo/seo.service';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss',
 })
-export class AboutComponent {
+export class AboutComponent implements OnInit {
+  private readonly seo = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seo.update({
+      title: 'About TransportSeva | Building India\'s Trusted Freight Network',
+      description:
+        'Learn how TransportSeva connects shippers, transporters and drivers across 28 states with live tracking, digital PODs and 24x7 support since 2019.',
+      url: '/about',
+    });
+  }
+
   protected readonly values = signal([
-    { icon: 'i-target', title: 'Mission Driven', desc: 'We exist to make freight movement transparent and reliable for every business, big or small.' },
-    { icon: 'i-shield', title: 'Trust & Safety', desc: 'Verified transporters, insured shipments and secure payments — always.' },
-    { icon: 'i-users', title: 'Customer First', desc: 'Every feature we build starts with a real problem faced by our customers.' },
-    { icon: 'i-trending-up', title: 'Constant Innovation', desc: 'AI-driven route optimization and smarter pricing, shipped every month.' },
+    { icon: 'i-target', titleKey: 'about.value1.title', descKey: 'about.value1.desc' },
+    { icon: 'i-shield', titleKey: 'about.value2.title', descKey: 'about.value2.desc' },
+    { icon: 'i-users', titleKey: 'about.value3.title', descKey: 'about.value3.desc' },
+    { icon: 'i-trending-up', titleKey: 'about.value4.title', descKey: 'about.value4.desc' },
   ]);
   protected readonly team = signal([
-    { initials: 'RK', name: 'Rajesh Kumar', role: 'Co-founder & CEO' },
-    { initials: 'SP', name: 'Sunita Pillai', role: 'Co-founder & COO' },
-    { initials: 'AV', name: 'Aman Verma', role: 'Chief Technology Officer' },
-    { initials: 'NM', name: 'Neha Mehta', role: 'Head of Customer Success' },
+    { initials: 'RK', name: 'Rajesh Kumar', roleKey: 'about.team.ceo' },
+    { initials: 'SP', name: 'Sunita Pillai', roleKey: 'about.team.coo' },
+    { initials: 'AV', name: 'Aman Verma', roleKey: 'about.team.cto' },
+    { initials: 'NM', name: 'Neha Mehta', roleKey: 'about.team.chead' },
   ]);
 }

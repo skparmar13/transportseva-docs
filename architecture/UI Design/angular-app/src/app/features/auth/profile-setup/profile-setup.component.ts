@@ -6,11 +6,12 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { BusinessSettingsMockService } from '../../../core/services/business-settings-mock.service';
+import { TranslatePipe } from '../../../core/i18n';
 
 @Component({
   selector: 'app-profile-setup',
   standalone: true,
-  imports: [FormsModule, AuthShellComponent, IconComponent],
+  imports: [FormsModule, AuthShellComponent, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-setup.component.html',
   styleUrl: './profile-setup.component.scss',

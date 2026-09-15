@@ -1,5 +1,5 @@
-<h1>Bookings</h1>
-<p class="desc">Confirmed bookings — mutual security deposit, vehicle &amp; driver assignment, and settlement.</p>
+<h1>{{ 'bookings.title' | t }}</h1>
+<p class="desc">{{ 'bookings.desc' | t }}</p>
 
 @if (bookings().length) {
   <div style="display:flex;flex-direction:column;gap:16px;">
@@ -13,8 +13,8 @@
               <div style="font-size:12.5px;color:var(--color-text-soft);margin-top:4px;">{{ booking.counterpartyName }} · {{ booking.vehicleRegNumber }} · {{ booking.amount }}</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
-              <span class="status-pill" [class]="booking.status === 'Completed' ? 'status-delivered' : booking.status === 'Awaiting Deposit' ? 'status-pending' : 'status-transit'">{{ booking.status }}</span>
-              <button type="button" class="btn btn-outline btn-sm" (click)="toggle(booking.id)">{{ expandedId() === booking.id ? 'Hide Details' : 'View Details' }}</button>
+              <span class="status-pill" [class]="booking.status === 'Completed' ? 'status-delivered' : booking.status === 'Cancelled' ? 'status-cancelled' : booking.status === 'Awaiting Deposit' ? 'status-pending' : 'status-transit'">{{ statusKey(booking.status) | t }}</span>
+              <button type="button" class="btn btn-outline btn-sm" (click)="toggle(booking.id)">{{ expandedId() === booking.id ? ('bookings.hideDetails' | t) : ('bookings.viewDetails' | t) }}</button>
             </div>
           </div>
 
@@ -25,7 +25,7 @@
                   <div class="timeline-item" [class.done]="event.completed">
                     <div class="timeline-dot"></div>
                     <div>
-                      <span class="timeline-title">{{ event.stage }}</span>
+                      <span class="timeline-title">{{ statusKey(event.stage) | t }}</span>
                       @if (event.timestamp) {
                         <div class="timeline-time">{{ event.timestamp }}</div>
                       }
@@ -37,36 +37,42 @@
               <div style="display:flex;flex-direction:column;gap:14px;">
                 <!-- Booking Security Deposit / Escrow -->
                 <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                  <div style="font-weight:600;font-size:13.5px;margin-bottom:10px;">Booking Security Deposit · Escrow {{ booking.escrowStatus }}</div>
+                  <div style="font-weight:600;font-size:13.5px;margin-bottom:10px;">{{ 'bookings.deposit.header' | t:{ status: booking.escrowStatus } }}</div>
                   <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--color-border);">
                     <span>{{ booking.ownerDeposit.partyName }} ({{ booking.ownerRole }})</span>
-                    <span class="status-pill" [class]="booking.ownerDeposit.status === 'Paid' ? 'status-delivered' : 'status-pending'">{{ booking.ownerDeposit.amount }} · {{ booking.ownerDeposit.status }}</span>
+                    <span class="status-pill" [class]="booking.ownerDeposit.status === 'Paid' ? 'status-delivered' : 'status-pending'">{{ booking.ownerDeposit.amount }} · {{ statusKey(booking.ownerDeposit.status) | t }}</span>
                   </div>
                   <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
                     <span>{{ booking.counterpartyDeposit.partyName }} ({{ booking.counterpartyRole }})</span>
-                    <span class="status-pill" [class]="booking.counterpartyDeposit.status === 'Paid' ? 'status-delivered' : 'status-pending'">{{ booking.counterpartyDeposit.amount }} · {{ booking.counterpartyDeposit.status }}</span>
+                    <span class="status-pill" [class]="booking.counterpartyDeposit.status === 'Paid' ? 'status-delivered' : 'status-pending'">{{ booking.counterpartyDeposit.amount }} · {{ statusKey(booking.counterpartyDeposit.status) | t }}</span>
                   </div>
 
                   @if (booking.status === 'Awaiting Deposit') {
                     @if (mySide(booking) === 'owner' && booking.ownerDeposit.status === 'Pending') {
-                      <button type="button" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" (click)="openPayDeposit(booking)">Pay Your Deposit ({{ booking.ownerDeposit.amount }})</button>
+                      <button type="button" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" (click)="openPayDeposit(booking)">{{ 'bookings.deposit.payYours' | t:{ amount: booking.ownerDeposit.amount } }}</button>
                     }
                     @if (mySide(booking) === 'counterparty' && booking.counterpartyDeposit.status === 'Pending') {
-                      <button type="button" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" (click)="openPayDeposit(booking)">Pay Your Deposit ({{ booking.counterpartyDeposit.amount }})</button>
+                      <button type="button" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" (click)="openPayDeposit(booking)">{{ 'bookings.deposit.payYours' | t:{ amount: booking.counterpartyDeposit.amount } }}</button>
                     }
+                  }
+                  @if (booking.status === 'Awaiting Deposit' && mySide(booking) === 'counterparty') {
+                    <button type="button" class="btn btn-outline btn-sm btn-block" style="margin-top:10px;" (click)="rejectBooking(booking.id)">{{ 'bookings.token.reject' | t }}</button>
+                  }
+                  @if ((booking.status === 'Awaiting Deposit' || booking.status === 'Confirmed') && mySide(booking) === 'owner') {
+                    <button type="button" class="btn btn-outline btn-sm btn-block" style="margin-top:10px;" (click)="cancelBooking(booking.id)">{{ 'bookings.token.cancel' | t }}</button>
                   }
                 </div>
 
                 <!-- Vehicle Assignment -->
                 @if (booking.status === 'Confirmed' || booking.vehicleAssignment) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">Vehicle Assignment</div>
+                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">{{ 'bookings.vehicleAssignment.title' | t }}</div>
                     @if (booking.vehicleAssignment; as va) {
-                      <div style="font-size:13px;color:var(--color-text-muted);">{{ va.mode }} · {{ va.vehicleRegNumber }}@if (va.subcontractedTo) { · Subcontracted to {{ va.subcontractedTo }} }</div>
+                      <div style="font-size:13px;color:var(--color-text-muted);">{{ va.mode }} · {{ va.vehicleRegNumber }}@if (va.subcontractedTo) { · {{ 'bookings.vehicleAssignment.subTo' | t:{ name: va.subcontractedTo } }} }</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm" (click)="openAssignVehicle(booking)">Assign Vehicle</button>
+                      <button type="button" class="btn btn-outline btn-sm" (click)="openAssignVehicle(booking)">{{ 'bookings.vehicleAssignment.assign' | t }}</button>
                     } @else {
-                      <div style="font-size:13px;color:var(--color-text-muted);">Awaiting vehicle assignment from {{ booking.counterpartyName }}.</div>
+                      <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.vehicleAssignment.awaiting' | t:{ name: booking.counterpartyName } }}</div>
                     }
                   </div>
                 }
@@ -74,13 +80,13 @@
                 <!-- Driver Assignment -->
                 @if (booking.status === 'Vehicle Assigned' || booking.driverAssignment) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">Driver Assignment</div>
+                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">{{ 'bookings.driverAssignment.title' | t }}</div>
                     @if (booking.driverAssignment; as da) {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ da.driverName }}@if (da.driverPhone) { · {{ da.driverPhone }} }</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm" (click)="openAssignDriver(booking)">Assign Driver</button>
+                      <button type="button" class="btn btn-outline btn-sm" (click)="openAssignDriver(booking)">{{ 'bookings.driverAssignment.assign' | t }}</button>
                     } @else {
-                      <div style="font-size:13px;color:var(--color-text-muted);">Awaiting driver assignment.</div>
+                      <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.driverAssignment.awaiting' | t }}</div>
                     }
                   </div>
                 }
@@ -88,13 +94,13 @@
                 <!-- Loading -->
                 @if (booking.status === 'Driver Assigned' || booking.status === 'Loading Completed') {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">Loading</div>
+                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">{{ 'bookings.loading.title' | t }}</div>
                     @if (booking.status === 'Loading Completed') {
-                      <div style="font-size:13px;color:var(--color-text-muted);">Loading confirmed. The Loading Advance can now be released below.</div>
+                      <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.loading.completedNote' | t }}</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm" (click)="markLoadingCompleted(booking.id)">Mark Loading Completed</button>
+                      <button type="button" class="btn btn-outline btn-sm" (click)="markLoadingCompleted(booking.id)">{{ 'bookings.loading.mark' | t }}</button>
                     } @else {
-                      <div style="font-size:13px;color:var(--color-text-muted);">Awaiting the truck to reach pickup and complete loading.</div>
+                      <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.loading.awaiting' | t }}</div>
                     }
                   </div>
                 }
@@ -103,9 +109,9 @@
                 @if (booking.settlementPlan.length && !booking.settlement) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                      <div style="font-weight:600;font-size:13.5px;">Settlement Plan</div>
+                      <div style="font-weight:600;font-size:13.5px;">{{ 'bookings.settlement.plan.title' | t }}</div>
                       @if (mySide(booking) === 'owner' && booking.status !== 'Completed') {
-                        <button type="button" class="btn btn-outline btn-sm" (click)="openAddMilestone(booking)">+ Mid-Trip Payment</button>
+                        <button type="button" class="btn btn-outline btn-sm" (click)="openAddMilestone(booking)">{{ 'bookings.settlement.addMidTrip' | t }}</button>
                       }
                     </div>
                     @for (m of booking.settlementPlan; track m.id) {
@@ -116,9 +122,9 @@
                         </div>
                         <div style="font-size:12px;color:var(--color-text-soft);margin-top:2px;">{{ m.trigger }}</div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-                          <span class="status-pill" [class]="m.status === 'Released' ? 'status-delivered' : 'status-pending'">{{ m.status }}@if (m.releasedAt) { · {{ m.releasedAt }} }</span>
+                          <span class="status-pill" [class]="m.status === 'Released' ? 'status-delivered' : 'status-pending'">{{ statusKey(m.status) | t }}@if (m.releasedAt) { · {{ m.releasedAt }} }</span>
                           @if (m.status === 'Pending' && mySide(booking) === 'owner' && canReleaseMilestone(booking, m.label)) {
-                            <button type="button" class="btn btn-primary btn-sm" (click)="releaseMilestone(booking.id, m.id)">Release</button>
+                            <button type="button" class="btn btn-primary btn-sm" (click)="releaseMilestone(booking.id, m.id)">{{ 'bookings.settlement.release' | t }}</button>
                           }
                         </div>
                       </div>
@@ -129,15 +135,15 @@
                 <!-- Trip -->
                 @if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty') {
                   <button type="button" class="btn btn-primary btn-sm" (click)="startTrip(booking.id)">
-                    <app-icon name="i-truck" [size]="15" /><span>Start Trip</span>
+                    <app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.trip.start' | t }}</span>
                   </button>
                 }
                 @if (booking.status === 'Trip Started') {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                    <div style="font-weight:600;font-size:13.5px;margin-bottom:6px;">Trip In Progress</div>
-                    <p style="font-size:13px;color:var(--color-text-muted);">AIS-140 GPS tracking, ETA and POD are handled in the Trips module for this booking.</p>
+                    <div style="font-weight:600;font-size:13.5px;margin-bottom:6px;">{{ 'bookings.trip.inProgress.title' | t }}</div>
+                    <p style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.trip.inProgress.desc' | t }}</p>
                     @if (mySide(booking) === 'owner') {
-                      <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px;" (click)="settle(booking.id)">Mark Delivered &amp; Settle</button>
+                      <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px;" (click)="settle(booking.id)">{{ 'bookings.trip.settle' | t }}</button>
                     }
                   </div>
                 }
@@ -145,12 +151,26 @@
                 <!-- Settlement -->
                 @if (booking.settlement; as s) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">Final Settlement</div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>Freight</span><strong>{{ s.freightAmount }}</strong></div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>Commission</span><strong>-{{ s.commission }}</strong></div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>Total Payout</span><strong>{{ s.payoutAmount }}</strong></div>
-                    <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">Both Booking Security Deposits released · Settled {{ s.settledAt }}</div>
+                    <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">{{ 'bookings.settlement.final.title' | t }}</div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>{{ 'bookings.settlement.freight' | t }}</span><strong>{{ s.freightAmount }}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>{{ 'bookings.settlement.commission' | t }}</span><strong>-{{ s.commission }}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>{{ 'bookings.settlement.totalPayout' | t }}</span><strong>{{ s.payoutAmount }}</strong></div>
+                    <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">{{ 'bookings.settlement.footer' | t:{ date: (s.settledAt || '') } }}</div>
+                    @if (mySide(booking) === 'owner') {
+                      <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" (click)="openOfflinePayment(booking)">{{ 'bookings.offline.record' | t }}</button>
+                    }
                   </div>
+                }
+                @if (booking.status !== 'Cancelled') {
+                  @if (booking.dispute; as dispute) {
+                    <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
+                      <div style="font-weight:600;font-size:13.5px;">{{ 'bookings.dispute.title' | t }} · {{ dispute.reference }}</div>
+                      <div style="font-size:13px;color:var(--color-text-muted);margin-top:6px;">{{ dispute.reason }}</div>
+                      <span class="status-pill status-pending" style="margin-top:8px;display:inline-block;">{{ 'bookings.dispute.open' | t }}</span>
+                    </div>
+                  } @else {
+                    <button type="button" class="btn btn-outline btn-sm" (click)="openDispute(booking.id)">{{ 'bookings.dispute.raise' | t }}</button>
+                  }
                 }
               </div>
             </div>
@@ -162,110 +182,135 @@
 } @else {
   <div class="empty-state">
     <app-icon name="i-box" />
-    <h3>No bookings yet</h3>
-    <p>Accepted applications will appear here as confirmed bookings.</p>
+    <h3>{{ 'bookings.empty.title' | t }}</h3>
+    <p>{{ 'bookings.empty.desc' | t }}</p>
   </div>
 }
 
+@if (offlinePaymentFor(); as booking) {
+  <app-modal [title]="'bookings.offline.title' | t" (close)="offlinePaymentFor.set(null)">
+    <p style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.offline.intro' | t }}</p>
+    <div class="field"><label for="offline-amount">{{ 'bookings.offline.amount' | t }}</label><input id="offline-amount" class="input" [ngModel]="offlineAmount()" (ngModelChange)="offlineAmount.set($event)" name="offlineAmount" /></div>
+    <div class="field"><label for="offline-reference">{{ 'bookings.offline.reference' | t }}</label><input id="offline-reference" class="input" [ngModel]="offlineReference()" (ngModelChange)="offlineReference.set($event)" name="offlineReference" /></div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="offlinePaymentFor.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary" [disabled]="!offlineAmountValid()" (click)="recordOfflinePayment()">{{ 'bookings.offline.submit' | t }}</button></div>
+  </app-modal>
+}
+
+@if (disputingBooking()) {
+  <app-modal [title]="'bookings.dispute.title' | t" (close)="disputingBooking.set(null)">
+    <div class="field">
+      <label for="dispute-reason">{{ 'bookings.dispute.reason' | t }}</label>
+      <textarea id="dispute-reason" class="input" rows="4" [ngModel]="disputeReason()" (ngModelChange)="disputeReason.set($event)" name="disputeReason"></textarea>
+    </div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      <button type="button" class="btn btn-outline" (click)="disputingBooking.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="!disputeReason().trim()" (click)="submitDispute()">{{ 'bookings.dispute.submit' | t }}</button>
+    </div>
+  </app-modal>
+}
+
 @if (payingBooking(); as p) {
-  <app-modal title="Pay Booking Security Deposit" (close)="payingBooking.set(null)">
+  <app-modal [title]="'bookings.pay.title' | t" (close)="payingBooking.set(null)">
     <p style="font-size:13.5px;color:var(--color-text-muted);margin-bottom:14px;">
-      Pay <b>{{ p.amount }}</b> into TransportSeva's escrow to confirm your commitment to this booking. Deposits from both sides are released together on settlement.
+      {{ 'bookings.pay.intro' | t:{ amount: p.amount } }}
     </p>
     <div class="field">
-      <label>Payment Method</label>
+      <label>{{ 'bookings.pay.method' | t }}</label>
       <div style="display:flex;gap:10px;">
-        <button type="button" class="btn btn-sm" [class.btn-primary]="payMethod() === 'upi'" [class.btn-outline]="payMethod() !== 'upi'" (click)="payMethod.set('upi')">UPI</button>
-        <button type="button" class="btn btn-sm" [class.btn-primary]="payMethod() === 'card'" [class.btn-outline]="payMethod() !== 'card'" (click)="payMethod.set('card')">Card</button>
+        <button type="button" class="btn btn-sm" [class.btn-primary]="payMethod() === 'upi'" [class.btn-outline]="payMethod() !== 'upi'" (click)="payMethod.set('upi')">{{ 'bookings.pay.upi' | t }}</button>
+        <button type="button" class="btn btn-sm" [class.btn-primary]="payMethod() === 'card'" [class.btn-outline]="payMethod() !== 'card'" (click)="payMethod.set('card')">{{ 'bookings.pay.card' | t }}</button>
       </div>
     </div>
     @if (payMethod() === 'upi') {
       <div class="field">
-        <label>UPI ID</label>
-        <input type="text" class="input" placeholder="yourname@upi" [ngModel]="upiId()" (ngModelChange)="upiId.set($event)" name="upiId" />
+        <label>{{ 'bookings.pay.upiId' | t }}</label>
+        <input type="text" class="input" [placeholder]="'bookings.pay.upiPlaceholder' | t" [ngModel]="upiId()" (ngModelChange)="upiId.set($event)" name="upiId" />
       </div>
     } @else {
       <div class="field">
-        <label>Card Number</label>
-        <input type="text" class="input" placeholder="4242 4242 4242 4242" [ngModel]="cardNumber()" (ngModelChange)="cardNumber.set($event)" name="cardNumber" />
+        <label>{{ 'bookings.pay.cardNumber' | t }}</label>
+        <input type="text" class="input" [placeholder]="'bookings.pay.cardNumberPlaceholder' | t" [ngModel]="cardNumber()" (ngModelChange)="cardNumber.set($event)" name="cardNumber" />
       </div>
       <div style="display:flex;gap:10px;">
         <div class="field" style="flex:1;">
-          <label>Expiry</label>
-          <input type="text" class="input" placeholder="MM/YY" [ngModel]="cardExpiry()" (ngModelChange)="cardExpiry.set($event)" name="cardExpiry" />
+          <label>{{ 'bookings.pay.expiry' | t }}</label>
+          <input type="text" class="input" [placeholder]="'bookings.pay.expiryPlaceholder' | t" [ngModel]="cardExpiry()" (ngModelChange)="cardExpiry.set($event)" name="cardExpiry" />
         </div>
         <div class="field" style="flex:1;">
-          <label>CVV</label>
-          <input type="text" class="input" placeholder="123" [ngModel]="cardCvv()" (ngModelChange)="cardCvv.set($event)" name="cardCvv" />
+          <label>{{ 'bookings.pay.cvv' | t }}</label>
+          <input type="text" class="input" [placeholder]="'bookings.pay.cvvPlaceholder' | t" [ngModel]="cardCvv()" (ngModelChange)="cardCvv.set($event)" name="cardCvv" />
         </div>
       </div>
     }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="payingBooking.set(null)">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="processingPayment()" (click)="confirmPayDeposit()">{{ processingPayment() ? 'Processing…' : 'Pay ' + p.amount }}</button>
+      <button type="button" class="btn btn-outline" (click)="payingBooking.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="processingPayment()" (click)="confirmPayDeposit()">{{ processingPayment() ? ('bookings.pay.processing' | t) : ('bookings.pay.pay' | t:{ amount: p.amount }) }}</button>
     </div>
   </app-modal>
 }
 
 @if (assigningVehicleFor(); as bookingId) {
-  <app-modal title="Assign Vehicle" (close)="assigningVehicleFor.set(null)">
+  <app-modal [title]="'bookings.assignVehicle.title' | t" (close)="assigningVehicleFor.set(null)">
     <div class="field">
-      <label>Assignment Mode</label>
+      <label>{{ 'bookings.assignVehicle.mode' | t }}</label>
       <div style="display:flex;gap:10px;">
-        <button type="button" class="btn btn-sm" [class.btn-primary]="vehicleMode() === 'Own Fleet'" [class.btn-outline]="vehicleMode() !== 'Own Fleet'" (click)="vehicleMode.set('Own Fleet')">Own Fleet</button>
-        <button type="button" class="btn btn-sm" [class.btn-primary]="vehicleMode() === 'Subcontracted'" [class.btn-outline]="vehicleMode() !== 'Subcontracted'" (click)="vehicleMode.set('Subcontracted')">Subcontract</button>
+        <button type="button" class="btn btn-sm" [class.btn-primary]="vehicleMode() === 'Own Fleet'" [class.btn-outline]="vehicleMode() !== 'Own Fleet'" (click)="vehicleMode.set('Own Fleet')">{{ 'bookings.assignVehicle.ownFleet' | t }}</button>
+        <button type="button" class="btn btn-sm" [class.btn-primary]="vehicleMode() === 'Subcontracted'" [class.btn-outline]="vehicleMode() !== 'Subcontracted'" (click)="vehicleMode.set('Subcontracted')">{{ 'bookings.assignVehicle.subcontract' | t }}</button>
       </div>
     </div>
     <div class="field">
-      <label>Vehicle Registration Number</label>
-      <input type="text" class="input" placeholder="e.g. RJ14GA1234" [ngModel]="vehicleRegInput()" (ngModelChange)="vehicleRegInput.set($event)" name="vehicleRegInput" />
+      <label>{{ 'bookings.assignVehicle.regLabel' | t }}</label>
+      <input type="text" class="input" [placeholder]="'bookings.assignVehicle.regPlaceholder' | t" [ngModel]="vehicleRegInput()" (ngModelChange)="vehicleRegInput.set($event)" name="vehicleRegInput" />
     </div>
     @if (vehicleMode() === 'Subcontracted') {
       <div class="field">
-        <label>Subcontracted To (Truck Owner)</label>
-        <input type="text" class="input" placeholder="e.g. Ramesh Fleet Services" [ngModel]="subcontractedToInput()" (ngModelChange)="subcontractedToInput.set($event)" name="subcontractedToInput" />
+        <label>{{ 'bookings.assignVehicle.subToLabel' | t }}</label>
+        <input type="text" class="input" [placeholder]="'bookings.assignVehicle.subToPlaceholder' | t" [ngModel]="subcontractedToInput()" (ngModelChange)="subcontractedToInput.set($event)" name="subcontractedToInput" />
       </div>
     }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="assigningVehicleFor.set(null)">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="confirmAssignVehicle()">Assign</button>
+      <button type="button" class="btn btn-outline" (click)="assigningVehicleFor.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" (click)="confirmAssignVehicle()">{{ 'bookings.assignVehicle.assign' | t }}</button>
     </div>
   </app-modal>
 }
 
 @if (assigningDriverFor(); as bookingId) {
-  <app-modal title="Assign Driver" (close)="assigningDriverFor.set(null)">
+  <app-modal [title]="'bookings.assignDriver.title' | t" (close)="assigningDriverFor.set(null)">
     <div class="field">
-      <label>Driver Name</label>
-      <input type="text" class="input" placeholder="e.g. Ramesh Kumar" [ngModel]="driverNameInput()" (ngModelChange)="driverNameInput.set($event)" name="driverNameInput" />
+      <label>{{ 'bookings.assignDriver.name' | t }}</label>
+      <input type="text" class="input" [placeholder]="'bookings.assignDriver.namePlaceholder' | t" [ngModel]="driverNameInput()" (ngModelChange)="driverNameInput.set($event)" name="driverNameInput" />
     </div>
     <div class="field">
-      <label>Driver Phone (optional)</label>
-      <input type="text" class="input" placeholder="+91 98765 43210" [ngModel]="driverPhoneInput()" (ngModelChange)="driverPhoneInput.set($event)" name="driverPhoneInput" />
+      <label>{{ 'bookings.assignDriver.phone' | t }}</label>
+      <input type="text" class="input" [placeholder]="'bookings.assignDriver.phonePlaceholder' | t" [ngModel]="driverPhoneInput()" (ngModelChange)="driverPhoneInput.set($event)" name="driverPhoneInput" />
     </div>
+    @if (paymentError()) {
+      <p role="alert" style="margin:10px 0 0;color:var(--color-danger);font-size:13px;">{{ 'bookings.pay.failed' | t }}</p>
+    }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="assigningDriverFor.set(null)">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="confirmAssignDriver()">Assign</button>
+      <button type="button" class="btn btn-outline" (click)="assigningDriverFor.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" (click)="confirmAssignDriver()">{{ 'bookings.assignVehicle.assign' | t }}</button>
     </div>
   </app-modal>
 }
 
 @if (addingMilestoneFor(); as bookingId) {
-  <app-modal title="Add Mid-Trip Payment" (close)="addingMilestoneFor.set(null)">
+  <app-modal [title]="'bookings.midTrip.title' | t" (close)="addingMilestoneFor.set(null)">
     <p style="font-size:13.5px;color:var(--color-text-muted);margin-bottom:14px;">
-      Adds an optional milestone payment (e.g. released on reaching a geofence checkpoint). The amount is deducted from the pending Final Settlement.
+      {{ 'bookings.midTrip.intro' | t }}
     </p>
     <div class="field">
-      <label>Amount</label>
-      <input type="text" class="input" placeholder="e.g. ₹5,000" [ngModel]="midTripAmount()" (ngModelChange)="midTripAmount.set($event)" name="midTripAmount" />
+      <label>{{ 'bookings.midTrip.amount' | t }}</label>
+      <input type="text" class="input" [placeholder]="'bookings.midTrip.amountPlaceholder' | t" [ngModel]="midTripAmount()" (ngModelChange)="midTripAmount.set($event)" name="midTripAmount" />
     </div>
     <div class="field">
-      <label>Release Trigger</label>
-      <input type="text" class="input" placeholder="e.g. On reaching the midway checkpoint" [ngModel]="midTripTrigger()" (ngModelChange)="midTripTrigger.set($event)" name="midTripTrigger" />
+      <label>{{ 'bookings.midTrip.trigger' | t }}</label>
+      <input type="text" class="input" [placeholder]="'bookings.midTrip.triggerPlaceholder' | t" [ngModel]="midTripTrigger()" (ngModelChange)="midTripTrigger.set($event)" name="midTripTrigger" />
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="addingMilestoneFor.set(null)">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="!midTripAmount()" (click)="confirmAddMilestone()">Add Milestone</button>
+      <button type="button" class="btn btn-outline" (click)="addingMilestoneFor.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="!midTripAmount()" (click)="confirmAddMilestone()">{{ 'bookings.midTrip.add' | t }}</button>
     </div>
   </app-modal>
 }

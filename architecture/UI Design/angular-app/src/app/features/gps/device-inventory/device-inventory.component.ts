@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { TranslatePipe } from '../../../core/i18n';
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { GpsMockService } from '../../../core/services/gps-mock.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -16,11 +17,25 @@ const STATUS_CLASS: Record<DeviceStatus, string> = {
   Maintenance: 'status-pending',
 };
 
+const STATUS_KEY: Record<DeviceStatus, string> = {
+  Available: 'status.device.available',
+  Installed: 'status.device.installed',
+  Faulty: 'status.device.faulty',
+  Maintenance: 'status.device.maintenance',
+};
+
 const HEALTH_CLASS: Record<DeviceHealthStatus, string> = {
   Healthy: 'status-delivered',
   Warning: 'status-pending',
   Critical: 'status-cancelled',
   Offline: 'status-cancelled',
+};
+
+const HEALTH_KEY: Record<DeviceHealthStatus, string> = {
+  Healthy: 'status.deviceHealth.healthy',
+  Warning: 'status.deviceHealth.warning',
+  Critical: 'status.deviceHealth.critical',
+  Offline: 'status.deviceHealth.offline',
 };
 
 const OEM_OPTIONS: OemPartner[] = ['Teltonika', 'Concox', 'Ruptela', 'ATrack'];
@@ -33,7 +48,7 @@ const OEM_OPTIONS: OemPartner[] = ['Teltonika', 'Concox', 'Ruptela', 'ATrack'];
 @Component({
   selector: 'app-device-inventory',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule],
+  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './device-inventory.component.html',
 })
@@ -44,7 +59,9 @@ export class DeviceInventoryComponent {
   private readonly router = inject(Router);
 
   protected readonly statusClass = STATUS_CLASS;
+  protected readonly statusKey = STATUS_KEY;
   protected readonly healthClass = HEALTH_CLASS;
+  protected readonly healthKey = HEALTH_KEY;
   protected readonly oemOptions = OEM_OPTIONS;
 
   protected readonly search = signal('');

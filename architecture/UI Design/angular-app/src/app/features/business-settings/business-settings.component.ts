@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { TranslatePipe } from '../../core/i18n';
 import { BusinessSettingsMockService } from '../../core/services/business-settings-mock.service';
 import { BillingInvoiceStatus, CompanyProfile, StaffUserStatus } from '../../core/models/business-settings.model';
 import { PlanTier, SUBSCRIPTION_PLANS } from '../../core/data/subscription-plans';
@@ -30,7 +31,7 @@ const BILLING_STATUS_CLASS: Record<BillingInvoiceStatus, string> = {
 @Component({
   selector: 'app-business-settings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-settings.component.html',
 })
