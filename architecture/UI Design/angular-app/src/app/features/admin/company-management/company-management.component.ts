@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { TranslatePipe } from '../../../core/i18n';
 
 interface AdminCompany { name: string; type: string; users: number; plan: string; status: 'Active' | 'Review' | 'Suspended'; joined: string; }
 
 @Component({
   selector: 'app-company-management',
-  standalone: true, imports: [FormsModule, ModalComponent],
+  standalone: true, imports: [FormsModule, ModalComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './company-management.component.html',
 })

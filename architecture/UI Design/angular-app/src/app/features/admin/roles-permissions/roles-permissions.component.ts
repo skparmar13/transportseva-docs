@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { TranslatePipe } from '../../../core/i18n';
 
 interface AdminRole { name: string; members: number; permissions: string[]; }
 
-@Component({ selector: 'app-roles-permissions', standalone: true, changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './roles-permissions.component.html' })
+@Component({ selector: 'app-roles-permissions', standalone: true, imports: [TranslatePipe], changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './roles-permissions.component.html' })
 export class RolesPermissionsComponent {
   protected readonly roles = signal<AdminRole[]>([
     { name: 'Company Admin', members: 12, permissions: ['Manage users', 'Manage bookings', 'View payments', 'Manage vehicles'] },

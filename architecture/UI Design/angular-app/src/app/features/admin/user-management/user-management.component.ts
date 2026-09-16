@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { TranslatePipe } from '../../../core/i18n';
 
 interface AdminUser { name: string; email: string; role: string; company: string; scope: 'Platform Staff' | 'Workspace User'; status: 'Active' | 'Invited' | 'Suspended'; lastSeen: string; }
 
-@Component({ selector: 'app-user-management', standalone: true, imports: [FormsModule, ModalComponent], changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './user-management.component.html' })
+@Component({ selector: 'app-user-management', standalone: true, imports: [FormsModule, ModalComponent, TranslatePipe], changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './user-management.component.html' })
 export class UserManagementComponent {
   protected readonly users = signal<AdminUser[]>([
     { name: 'Priya Nair', email: 'priya.nair@transportseva.in', role: 'Operations Manager', company: 'TransportSeva', scope: 'Platform Staff', status: 'Active', lastSeen: 'Today, 11:20 AM' },

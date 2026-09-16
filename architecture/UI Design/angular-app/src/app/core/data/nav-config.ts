@@ -29,10 +29,10 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { label: 'User Management', labelKey: 'nav.userManagement', icon: 'i-users', path: 'users' },
           { label: 'Roles & Permissions', labelKey: 'nav.rolesPermissions', icon: 'i-shield', path: 'roles' },
-          { label: 'Customer Management', labelKey: 'nav.customerManagement', icon: 'i-user', path: 'customers', planned: true },
-          { label: 'Transporter Management', labelKey: 'nav.transporterManagement', icon: 'i-building', path: 'transporters', planned: true },
-          { label: 'Driver Management', labelKey: 'nav.driverManagement', icon: 'i-truck', path: 'drivers', planned: true },
-          { label: 'Vehicle & Fleet Management', labelKey: 'nav.vehicleFleetManagement', icon: 'i-car', path: 'vehicles', planned: true },
+          { label: 'Customer Management', labelKey: 'nav.customerManagement', icon: 'i-user', path: 'customers' },
+          { label: 'Transporter Management', labelKey: 'nav.transporterManagement', icon: 'i-building', path: 'transporters' },
+          { label: 'Driver Management', labelKey: 'nav.driverManagement', icon: 'i-truck', path: 'drivers' },
+          { label: 'Vehicle & Fleet Management', labelKey: 'nav.vehicleFleetManagement', icon: 'i-car', path: 'vehicles' },
           { label: 'Device Inventory', labelKey: 'nav.deviceInventory', icon: 'i-api', path: 'devices' },
         ],
       },
@@ -40,7 +40,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         title: 'Operations',
         titleKey: 'nav.operations',
         items: [
-          { label: 'Load / Booking Management', labelKey: 'nav.loadBookingManagement', icon: 'i-box', path: 'bookings', planned: true },
+          { label: 'Load / Booking Management', labelKey: 'nav.loadBookingManagement', icon: 'i-box', path: 'bookings' },
           { label: 'Route Management', labelKey: 'nav.routeManagement', icon: 'i-route', path: 'routes', planned: true },
           { label: 'Trip Management', labelKey: 'nav.tripManagement', icon: 'i-truck', path: 'trips' },
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
@@ -52,7 +52,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { label: 'Payment Ledger', labelKey: 'nav.paymentLedger', icon: 'i-invoice', path: 'financials' },
           { label: 'Payments', labelKey: 'nav.payments', icon: 'i-invoice', path: 'payments' },
-          { label: 'Invoice & Tax', labelKey: 'nav.invoiceTax', icon: 'i-invoice', path: 'invoices', planned: true },
+          { label: 'Invoice & Tax', labelKey: 'nav.invoiceTax', icon: 'i-invoice', path: 'invoices' },
         ],
       },
       {
@@ -70,9 +70,9 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         titleKey: 'nav.system',
         items: [
           { label: 'Reports & Analytics', labelKey: 'nav.reportsAnalytics', icon: 'i-chart', path: 'reports' },
-          { label: 'Audit Logs', labelKey: 'nav.auditLogs', icon: 'i-audit', path: 'audit', planned: true },
+          { label: 'Audit Logs', labelKey: 'nav.auditLogs', icon: 'i-audit', path: 'audit' },
           { label: 'API Management', labelKey: 'nav.apiManagement', icon: 'i-api', path: 'api', planned: true },
-          { label: 'System Settings', labelKey: 'nav.systemSettings', icon: 'i-settings', path: 'settings', planned: true },
+          { label: 'System Settings', labelKey: 'nav.systemSettings', icon: 'i-settings', path: 'settings' },
         ],
       },
     ],
