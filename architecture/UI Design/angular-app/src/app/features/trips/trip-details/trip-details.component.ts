@@ -46,23 +46,30 @@ export class TripDetailsComponent {
   protected readonly podNumber = signal('');
   protected readonly receivedByName = signal('');
   protected readonly remarks = signal('');
+  protected readonly podFileName = signal('');
   protected readonly saving = signal(false);
+
+  protected selectPodFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.podFileName.set(input.files?.[0]?.name ?? '');
+  }
 
   protected submitPod(): void {
     const trip = this.trip();
-    if (!trip || !this.podNumber() || !this.receivedByName()) return;
+    if (!trip || !this.podNumber() || !this.receivedByName() || !this.podFileName()) return;
     this.saving.set(true);
     setTimeout(() => {
       this.trips.uploadPod(trip.id, {
         podNumber: this.podNumber().trim(),
         receivedByName: this.receivedByName().trim(),
         remarks: this.remarks().trim() || undefined,
-        fileName: 'pod-signed-copy.pdf',
+        fileName: this.podFileName(),
       });
       this.saving.set(false);
       this.podNumber.set('');
       this.receivedByName.set('');
       this.remarks.set('');
+      this.podFileName.set('');
     }, 400);
   }
 }

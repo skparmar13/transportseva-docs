@@ -7,6 +7,7 @@ import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DriverDocStatus, DriverStatus } from '../../../core/models/driver.model';
+import { DriverDocument } from '../../../core/models/driver.model';
 
 type TabId = 'profile' | 'documents' | 'assignment' | 'timeline';
 
@@ -62,6 +63,14 @@ export class DriverDetailsComponent {
 
   protected setTab(tab: TabId): void {
     this.activeTab.set(tab);
+  }
+
+  protected attachDriverDocument(event: Event, type: DriverDocument['type']): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const driver = this.driver();
+    if (file && driver) this.driverSvc.attachDocument(driver.name, type, file.name);
+    input.value = '';
   }
 
   // Vehicle assignment

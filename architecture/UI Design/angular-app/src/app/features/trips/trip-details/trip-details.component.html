@@ -118,12 +118,10 @@
             </div>
             <div class="field">
               <label>Signed POD Copy</label>
-              <div class="input" style="padding-left:14px;display:flex;align-items:center;gap:8px;color:var(--color-text-soft);">
-                <app-icon name="i-upload" [size]="16" />
-                <span>Choose file (prototype — no upload wired)</span>
-              </div>
+              <input type="file" class="input" accept="application/pdf,image/*" (change)="selectPodFile($event)" />
+              @if (podFileName()) { <small style="color:var(--color-text-soft);">{{ podFileName() }}</small> }
             </div>
-            <button type="button" class="btn btn-primary" [disabled]="saving() || !podNumber() || !receivedByName()" (click)="submitPod()">{{ saving() ? 'Saving…' : 'Upload POD' }}</button>
+            <button type="button" class="btn btn-primary" [disabled]="saving() || !podNumber() || !receivedByName() || !podFileName()" (click)="submitPod()">{{ saving() ? 'Saving…' : 'Upload POD' }}</button>
           </div>
         </div>
       } @else {

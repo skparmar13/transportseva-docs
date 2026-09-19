@@ -76,6 +76,7 @@ export const EN: Record<string, string> = {
   'app.googlePlay': 'Google Play',
   'app.downloadOnThe': 'Download on the',
   'app.appStore': 'App Store',
+  'app.comingSoon': 'Coming soon',
 
   'stats.happyCustomers': 'Happy Customers',
   'stats.shipmentsDelivered': 'Shipments Delivered',

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -20,9 +20,11 @@ export class TransporterDashboardComponent {
   protected readonly kpis = toSignal(this.mock.getTransporterKpis(), { initialValue: [] });
   protected readonly requests = toSignal(this.mock.getTransporterRequests(), { initialValue: [] });
   protected readonly quickActions = toSignal(this.mock.getTransporterQuickActions(), { initialValue: [] });
-  protected readonly acceptedRequests = signal<Set<string>>(new Set());
-
   protected acceptRequest(bookingId: string): void {
-    this.acceptedRequests.update((accepted) => new Set(accepted).add(bookingId));
+    this.mock.acceptTransporterRequest(bookingId);
+  }
+
+  protected isAccepted(bookingId: string): boolean {
+    return this.mock.isTransporterRequestAccepted(bookingId);
   }
 }

@@ -7,6 +7,7 @@ import { TranslatePipe } from '../../../core/i18n';
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DocumentStatus, VehicleLiveStatus } from '../../../core/models/fleet.model';
+import { VehicleDocument } from '../../../core/models/fleet.model';
 
 type TabId = 'overview' | 'device' | 'documents' | 'maintenance' | 'fuel';
 
@@ -70,6 +71,14 @@ export class VehicleDetailsComponent {
 
   protected setTab(tab: TabId): void {
     this.activeTab.set(tab);
+  }
+
+  protected attachVehicleDocument(event: Event, type: VehicleDocument['type']): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const vehicle = this.vehicle();
+    if (file && vehicle) this.fleet.attachDocument(vehicle.regNumber, type, file.name);
+    input.value = '';
   }
 
   // Device assignment

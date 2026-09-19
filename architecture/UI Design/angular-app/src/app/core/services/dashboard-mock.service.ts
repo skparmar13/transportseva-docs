@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { of, delay } from 'rxjs';
 import {
   AssignedTrip,
@@ -19,6 +19,16 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class DashboardMockService {
+  private readonly acceptedTransporterRequests = signal<ReadonlySet<string>>(new Set());
+
+  acceptTransporterRequest(bookingId: string): void {
+    this.acceptedTransporterRequests.update((accepted) => new Set(accepted).add(bookingId));
+  }
+
+  isTransporterRequestAccepted(bookingId: string): boolean {
+    return this.acceptedTransporterRequests().has(bookingId);
+  }
+
   getKpis() {
     const kpis: KpiCard[] = [
       { icon: 'i-box', trend: '+12.4%', value: '48,562', label: 'Total Bookings' },
@@ -42,10 +52,10 @@ export class DashboardMockService {
 
   getQuickActions() {
     const actions: QuickAction[] = [
-      { icon: 'i-building', label: 'Add Company' },
-      { icon: 'i-user', label: 'Add User' },
-      { icon: 'i-tag', label: 'New Subscription Plan' },
-      { icon: 'i-bell', label: 'Broadcast Notification' },
+      { icon: 'i-building', label: 'Add Company', path: 'companies' },
+      { icon: 'i-user', label: 'Add User', path: 'users' },
+      { icon: 'i-tag', label: 'New Subscription Plan', path: 'subscriptions' },
+      { icon: 'i-bell', label: 'Broadcast Notification', path: 'notifications' },
     ];
     return of(actions).pipe(delay(150));
   }

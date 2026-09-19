@@ -30,6 +30,16 @@ export class BlogPostComponent implements OnInit {
   private readonly language = inject(LanguageService);
   private readonly route = inject(ActivatedRoute);
   private readonly cms = inject(CmsMockService);
+
+  protected shareLink(network: 'facebook' | 'x' | 'linkedin'): string {
+    const pageUrl = typeof window === 'undefined' ? '' : encodeURIComponent(window.location.href);
+    const shareUrls = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+      x: `https://twitter.com/intent/tweet?url=${pageUrl}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`,
+    };
+    return shareUrls[network];
+  }
   private readonly selectedPostId = signal(this.route.snapshot.queryParamMap.get('id'));
   protected readonly managedPost = computed(() => {
     const selectedLanguage = this.language.lang() === 'hi' ? 'Hindi' : 'English';

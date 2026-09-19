@@ -50,11 +50,11 @@
           <tbody>
             @for (doc of d.documents; track doc.type) {
               <tr>
-                <td><b>{{ doc.type }}</b></td>
+                <td><b>{{ doc.type }}</b>@if (doc.fileName) { <small style="display:block;color:var(--color-text-soft);">{{ doc.fileName }}</small> }</td>
                 <td>{{ doc.documentNumber || '—' }}</td>
                 <td>{{ doc.expiryDate || '—' }}</td>
                 <td><span class="status-pill" [class]="docStatusClass[doc.status]">{{ doc.status }}</span></td>
-                <td><button type="button" class="btn btn-outline btn-sm"><app-icon name="i-upload" [size]="14" /><span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Update' }}</span></button></td>
+                <td><label class="btn btn-outline btn-sm"><app-icon name="i-upload" [size]="14" /><span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Update' }}</span><input type="file" accept="application/pdf,image/*" hidden (change)="attachDriverDocument($event, doc.type)" /></label></td>
               </tr>
             }
           </tbody>

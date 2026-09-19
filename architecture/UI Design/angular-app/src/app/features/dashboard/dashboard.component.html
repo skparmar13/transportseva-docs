@@ -50,7 +50,7 @@
     <div class="card-head"><h3>{{ 'dashboard.quickActions' | t }}</h3></div>
     <div class="qa-list">
       @for (action of quickActions(); track action.label) {
-        <a class="qa-item"><app-icon [name]="action.icon" /><span>{{ action.label }}</span></a>
+        <a class="qa-item" [routerLink]="['/admin', action.path]"><app-icon [name]="action.icon" /><span>{{ action.label }}</span></a>
       }
     </div>
   </div>

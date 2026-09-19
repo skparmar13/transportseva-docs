@@ -75,6 +75,7 @@ export const HI: Record<string, string> = {
   'app.googlePlay': 'प्राप्त करें',
   'app.downloadOnThe': 'ऐप स्टोर से',
   'app.appStore': 'डाउनलोड करें',
+  'app.comingSoon': 'जल्द आ रहा है',
 
   'stats.happyCustomers': 'खुश ग्राहक',
   'stats.shipmentsDelivered': 'डिलीवर की गई शिपमेंट',
