@@ -1,19 +1,31 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
+import { CmsMockService } from '../../../core/services/cms-mock.service';
+import { LanguageService } from '../../../core/i18n/language.service';
 
 @Component({
   selector: 'app-help-center',
   standalone: true,
-  imports: [RouterLink, IconComponent, TranslatePipe],
+  imports: [FormsModule, RouterLink, IconComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './help-center.component.html',
   styleUrl: './help-center.component.scss',
 })
 export class HelpCenterComponent implements OnInit {
   private readonly seo = inject(SeoService);
+  private readonly cms = inject(CmsMockService);
+  private readonly language = inject(LanguageService);
+  protected readonly searchTerm = signal('');
+  protected readonly helpArticles = computed(() => {
+    const selectedLanguage = this.language.lang() === 'hi' ? 'Hindi' : 'English';
+    const term = this.searchTerm().trim().toLocaleLowerCase();
+    return this.cms.publishedHelpArticles().filter((article) => article.language === selectedLanguage
+      && (!term || `${article.title} ${article.summary}`.toLocaleLowerCase().includes(term)));
+  });
 
   ngOnInit(): void {
     this.seo.update({

@@ -20,7 +20,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         titleKey: 'nav.companyManagement',
         items: [
           { label: 'Company Management', labelKey: 'nav.companyManagement', icon: 'i-building', path: 'companies' },
-          { label: 'Subscription Plans', labelKey: 'nav.subscriptionPlans', icon: 'i-tag', path: 'subscriptions', planned: true },
+          { label: 'Subscription Plans', labelKey: 'nav.subscriptionPlans', icon: 'i-tag', path: 'subscriptions' },
         ],
       },
       {
@@ -41,7 +41,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         titleKey: 'nav.operations',
         items: [
           { label: 'Load / Booking Management', labelKey: 'nav.loadBookingManagement', icon: 'i-box', path: 'bookings' },
-          { label: 'Route Management', labelKey: 'nav.routeManagement', icon: 'i-route', path: 'routes', planned: true },
+          { label: 'Route Management', labelKey: 'nav.routeManagement', icon: 'i-route', path: 'routes' },
           { label: 'Trip Management', labelKey: 'nav.tripManagement', icon: 'i-truck', path: 'trips' },
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
         ],
@@ -62,7 +62,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Notification Management', labelKey: 'nav.notificationManagement', icon: 'i-bell', path: 'notifications' },
           { label: 'Support Tickets', labelKey: 'nav.supportTickets', icon: 'i-ticket', path: 'support' },
           { label: 'Document Verification', labelKey: 'nav.documentVerification', icon: 'i-doc', path: 'documents' },
-          { label: 'CMS Management', labelKey: 'nav.cmsManagement', icon: 'i-layers', path: 'cms', planned: true },
+          { label: 'CMS Management', labelKey: 'nav.cmsManagement', icon: 'i-layers', path: 'cms' },
         ],
       },
       {
@@ -71,7 +71,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { label: 'Reports & Analytics', labelKey: 'nav.reportsAnalytics', icon: 'i-chart', path: 'reports' },
           { label: 'Audit Logs', labelKey: 'nav.auditLogs', icon: 'i-audit', path: 'audit' },
-          { label: 'API Management', labelKey: 'nav.apiManagement', icon: 'i-api', path: 'api', planned: true },
+          { label: 'API Management', labelKey: 'nav.apiManagement', icon: 'i-api', path: 'api' },
           { label: 'System Settings', labelKey: 'nav.systemSettings', icon: 'i-settings', path: 'settings' },
         ],
       },

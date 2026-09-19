@@ -1,0 +1,66 @@
+<div class="page-toolbar">
+  <div><h1>{{ 'admin.cms.title' | t }}</h1><p class="desc">{{ 'admin.cms.desc' | t }}</p></div>
+  <button type="button" class="btn btn-primary" (click)="create()">+ {{ 'admin.cms.add' | t }}</button>
+</div>
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-value">{{ items().length }}</div><div class="kpi-label">{{ 'admin.cms.total' | t }}</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ publishedCount() }}</div><div class="kpi-label">{{ 'admin.cms.published' | t }}</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ items().length - publishedCount() }}</div><div class="kpi-label">{{ 'admin.cms.drafts' | t }}</div></div>
+</div>
+<div class="page-toolbar"><div class="tab-row">
+  <button type="button" class="tab-btn" [class.active]="typeFilter() === 'All'" (click)="typeFilter.set('All')">{{ 'admin.cms.all' | t }}</button>
+  @for (type of types; track type) {<button type="button" class="tab-btn" [class.active]="typeFilter() === type" (click)="typeFilter.set(type)">{{ ('admin.cms.type.' + type) | t }}</button>}
+</div></div>
+<div class="cms-filter-toolbar">
+  <label class="cms-search"><span>{{ 'admin.cms.search' | t }}</span><input class="input" type="search" [placeholder]="'admin.cms.searchPlaceholder' | t" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" /></label>
+  <label><span>{{ 'admin.cms.status' | t }}</span><select class="input" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)"><option value="All">{{ 'admin.cms.all' | t }}</option><option value="Published">{{ 'admin.cms.published' | t }}</option><option value="Draft">{{ 'admin.cms.drafts' | t }}</option></select></label>
+  <label><span>{{ 'admin.cms.language' | t }}</span><select class="input" [ngModel]="languageFilter()" (ngModelChange)="languageFilter.set($event)"><option value="All">{{ 'admin.cms.all' | t }}</option><option value="English">{{ 'admin.cms.english' | t }}</option><option value="Hindi">{{ 'admin.cms.hindi' | t }}</option></select></label>
+</div>
+<div class="card"><div class="table-scroll"><table class="data-table">
+  <caption class="sr-only">{{ 'admin.cms.title' | t }}</caption>
+  <thead><tr><th scope="col">{{ 'admin.cms.content' | t }}</th><th scope="col">{{ 'admin.cms.type' | t }}</th><th scope="col">{{ 'admin.cms.language' | t }}</th><th scope="col">{{ 'admin.cms.updated' | t }}</th><th scope="col">{{ 'admin.cms.status' | t }}</th><th scope="col">{{ 'admin.cms.actions' | t }}</th></tr></thead>
+  <tbody>@for (item of filtered(); track item.id) {
+    <tr><td><b>{{ item.title }}</b><div style="font-size:12px;color:var(--color-text-muted);">{{ item.section }} · {{ item.author }}</div></td>
+      <td>{{ ('admin.cms.type.' + item.type) | t }}</td><td>{{ item.language === 'English' ? ('admin.cms.english' | t) : ('admin.cms.hindi' | t) }}</td><td>{{ item.updated }}</td>
+      <td><span class="status-pill" [class.status-delivered]="item.status === 'Published'" [class.status-pending]="item.status === 'Draft'">{{ item.status === 'Published' ? ('admin.cms.published' | t) : ('admin.cms.drafts' | t) }}</span></td>
+      <td style="display:flex;gap:6px;"><button type="button" class="btn btn-outline btn-sm" (click)="edit(item)">{{ 'admin.action.edit' | t }}</button><button type="button" class="btn btn-outline btn-sm" (click)="toggle(item)">{{ item.status === 'Published' ? ('admin.cms.unpublish' | t) : ('admin.cms.publish' | t) }}</button><button type="button" class="btn btn-outline btn-sm" (click)="remove(item)">{{ 'admin.action.remove' | t }}</button></td></tr>
+  } @empty {<tr><td colspan="6">{{ searchTerm() || statusFilter() !== 'All' || languageFilter() !== 'All' || typeFilter() !== 'All' ? ('admin.cms.noResults' | t) : ('admin.cms.empty' | t) }}</td></tr>}</tbody>
+</table></div></div>
+@if (editing(); as item) {
+  <app-modal [title]="(item.id ? 'admin.cms.edit' : 'admin.cms.add') | t" (close)="editing.set(null)">
+    <div class="field"><label for="cms-type">{{ 'admin.cms.type' | t }}</label><select id="cms-type" class="input" [ngModel]="form().type" (ngModelChange)="update('type', $event)">@for (type of types; track type) {<option [value]="type">{{ ('admin.cms.type.' + type) | t }}</option>}</select></div>
+    <div class="field"><label for="cms-language">{{ 'admin.cms.language' | t }}</label><select id="cms-language" class="input" [ngModel]="form().language" (ngModelChange)="update('language', $event)"><option value="English">{{ 'admin.cms.english' | t }}</option><option value="Hindi">{{ 'admin.cms.hindi' | t }}</option></select></div>
+    <div class="field"><label for="cms-title">{{ 'admin.cms.contentTitle' | t }}</label><input id="cms-title" class="input" [ngModel]="form().title" (ngModelChange)="update('title', $event)" /></div>
+    <div class="field"><label for="cms-summary">{{ 'admin.cms.summary' | t }}</label><textarea id="cms-summary" class="input" rows="2" [ngModel]="form().summary" (ngModelChange)="update('summary', $event)"></textarea></div>
+    <div class="field">
+      <div class="cms-editor-heading"><label id="cms-body-label">{{ 'admin.cms.body' | t }}</label><button type="button" class="btn btn-outline btn-sm" (click)="togglePreview()">{{ (previewMode() ? 'admin.cms.backToEditor' : 'admin.cms.preview') | t }}</button></div>
+      @if (previewMode()) {
+        <article class="cms-content-preview"><span class="cms-preview-type">{{ ('admin.cms.type.' + form().type) | t }} · {{ ('admin.cms.category.' + form().section) | t }}</span>@if (form().type === 'Blog Post' && form().featuredImageUrl) {<img class="cms-preview-image" [src]="form().featuredImageUrl" [alt]="form().imageAlt" />}<h2>{{ form().title || ('admin.cms.previewTitle' | t) }}</h2>@if (form().summary) {<p class="cms-preview-summary">{{ form().summary }}</p>}<div class="rich-editor-preview-body" [innerHTML]="form().body"></div><footer>{{ form().author }}@if (form().attribution) {<span> · {{ form().attribution }}</span>}</footer></article>
+      } @else {
+      <div class="rich-editor">
+        <div class="rich-editor-toolbar" role="toolbar" [attr.aria-label]="'admin.cms.editorToolbar' | t">
+          <button type="button" class="btn btn-outline btn-sm" [attr.aria-label]="'admin.cms.bold' | t" title="Bold" (mousedown)="$event.preventDefault()" (click)="format('bold')"><b>B</b></button>
+          <button type="button" class="btn btn-outline btn-sm" [attr.aria-label]="'admin.cms.italic' | t" title="Italic" (mousedown)="$event.preventDefault()" (click)="format('italic')"><i>I</i></button>
+          <button type="button" class="btn btn-outline btn-sm" [attr.aria-label]="'admin.cms.underline' | t" title="Underline" (mousedown)="$event.preventDefault()" (click)="format('underline')"><u>U</u></button>
+          <button type="button" class="btn btn-outline btn-sm" (mousedown)="$event.preventDefault()" (click)="format('formatBlock', 'h2')">{{ 'admin.cms.heading' | t }}</button>
+          <button type="button" class="btn btn-outline btn-sm" [attr.aria-label]="'admin.cms.bullets' | t" title="Bulleted list" (mousedown)="$event.preventDefault()" (click)="format('insertUnorderedList')">• {{ 'admin.cms.bullets' | t }}</button>
+          <button type="button" class="btn btn-outline btn-sm" [attr.aria-label]="'admin.cms.numbered' | t" title="Numbered list" (mousedown)="$event.preventDefault()" (click)="format('insertOrderedList')">1. {{ 'admin.cms.numbered' | t }}</button>
+          <button type="button" class="btn btn-outline btn-sm" (mousedown)="$event.preventDefault()" (click)="format('formatBlock', 'blockquote')">“ ” {{ 'admin.cms.quote' | t }}</button>
+          <button type="button" class="btn btn-outline btn-sm" (mousedown)="$event.preventDefault()" (click)="openLinkPanel()">{{ 'admin.cms.link' | t }}</button>
+        </div>
+        @if (linkPanelOpen()) {
+          <div class="rich-editor-link"><label class="sr-only" for="cms-link-url">{{ 'admin.cms.linkUrl' | t }}</label><input id="cms-link-url" class="input" type="url" [placeholder]="'admin.cms.linkUrl' | t" [ngModel]="linkUrl()" (ngModelChange)="linkUrl.set($event)" /><button type="button" class="btn btn-primary btn-sm" [disabled]="!linkUrl().trim()" (mousedown)="$event.preventDefault()" (click)="insertLink()">{{ 'admin.cms.applyLink' | t }}</button><button type="button" class="btn btn-outline btn-sm" (click)="linkPanelOpen.set(false)">{{ 'admin.common.cancel' | t }}</button></div>
+        }
+        <div id="cms-body" class="rich-editor-content" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="cms-body-label" [attr.data-placeholder]="'admin.cms.bodyPlaceholder' | t" [innerHTML]="form().body" (input)="updateBody($event)"></div>
+      </div>
+      <small class="rich-editor-hint">{{ 'admin.cms.editorHint' | t }}</small>
+      }
+    </div>
+    @if (form().type === 'Blog Post') {<div class="field"><label for="cms-image-url">{{ 'admin.cms.featuredImage' | t }}</label><input id="cms-image-url" class="input" type="url" placeholder="https://example.com/image.jpg" [ngModel]="form().featuredImageUrl" (ngModelChange)="update('featuredImageUrl', $event)" /><small>{{ 'admin.cms.featuredImageHint' | t }}</small></div>@if (form().featuredImageUrl) {<div class="field"><label for="cms-image-alt">{{ 'admin.cms.imageAlt' | t }}</label><input id="cms-image-alt" class="input" [ngModel]="form().imageAlt" (ngModelChange)="update('imageAlt', $event)" /></div>}}
+    @if (form().type === 'Blog Post' || form().type === 'Public Page') {<details class="cms-seo-fields"><summary>{{ 'admin.cms.seo' | t }}</summary><div class="field"><label for="cms-seo-title">{{ 'admin.cms.seoTitle' | t }}</label><input id="cms-seo-title" class="input" maxlength="70" [ngModel]="form().seoTitle" (ngModelChange)="update('seoTitle', $event)" /><small>{{ form().seoTitle.length }}/70</small></div><div class="field"><label for="cms-seo-description">{{ 'admin.cms.seoDescription' | t }}</label><textarea id="cms-seo-description" class="input" rows="2" maxlength="160" [ngModel]="form().seoDescription" (ngModelChange)="update('seoDescription', $event)"></textarea><small>{{ form().seoDescription.length }}/160</small></div></details>}
+    <div class="field"><label for="cms-author">{{ 'admin.cms.author' | t }}</label><input id="cms-author" class="input" [ngModel]="form().author" (ngModelChange)="update('author', $event)" /></div>
+    @if (form().type === 'Testimonial') {<div class="field"><label for="cms-attribution">{{ 'admin.cms.attribution' | t }}</label><input id="cms-attribution" class="input" [ngModel]="form().attribution" (ngModelChange)="update('attribution', $event)" /></div>}
+    <div class="field"><label for="cms-section">{{ form().type === 'Public Page' ? ('admin.cms.pageTarget' | t) : form().type === 'Blog Post' ? ('admin.cms.category' | t) : ('admin.cms.section' | t) }}</label>@if (form().type === 'Public Page') {<select id="cms-section" class="input" [ngModel]="form().section" (ngModelChange)="update('section', $event)">@for (section of pageSections; track section) {<option [value]="section">{{ ('admin.cms.page.' + section) | t }}</option>}</select>} @else if (form().type === 'Blog Post') {<select id="cms-section" class="input" [ngModel]="form().section" (ngModelChange)="update('section', $event)">@for (category of blogCategories; track category) {<option [value]="category">{{ ('admin.cms.category.' + category) | t }}</option>}</select>} @else {<input id="cms-section" class="input" [ngModel]="form().section" (ngModelChange)="update('section', $event)" />}</div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="editing.set(null)">{{ 'admin.common.cancel' | t }}</button><button type="button" class="btn btn-primary" [disabled]="!form().title.trim() || !form().body.trim()" (click)="save()">{{ 'admin.common.save' | t }}</button></div>
+  </app-modal>
+}

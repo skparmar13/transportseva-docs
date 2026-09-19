@@ -28,6 +28,8 @@
     </div>
   </header>
 
+  @if (announcement(); as notice) {<aside class="cms-announcement" role="status"><div class="container"><div><strong>{{ notice.title }}</strong>@if (notice.summary) {<span>{{ notice.summary }}</span>}</div><button type="button" [attr.aria-label]="'cms.dismissAnnouncement' | t" (click)="dismissedAnnouncementId.set(notice.id)">×</button></div></aside>}
+
   <main class="public-main">
     <router-outlet />
   </main>

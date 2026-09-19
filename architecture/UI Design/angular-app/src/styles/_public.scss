@@ -10,6 +10,15 @@
 
   .container { max-width: var(--container-w); margin: 0 auto; padding: 0 24px; }
   .public-main { display: block; }
+  .cms-announcement { background: var(--color-secondary); color: #fff; }
+  .cms-announcement > .container { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 10px; padding-bottom: 10px; }
+  .cms-announcement strong { margin-right: 12px; }
+  .cms-announcement span { color: rgba(255,255,255,.82); font-size: 13px; }
+  .cms-announcement button { border: 0; background: transparent; color: #fff; font-size: 23px; cursor: pointer; line-height: 1; }
+  .cms-help-articles { display: grid; gap: 14px; }
+  .cms-help-articles .faq-item { padding: 22px; }
+  .cms-help-articles h3 { margin: 0 0 8px; color: var(--color-secondary); font-size: 17px; }
+  .cms-help-articles p { color: var(--color-text-muted); margin: 0 0 10px; }
 
   .eyebrow {
     display: inline-flex; align-items: center; gap: 6px;
@@ -312,6 +321,8 @@
     height: 190px; background: linear-gradient(135deg, var(--color-accent) 0%, #FFF3EA 100%);
     display: flex; align-items: center; justify-content: center; color: var(--color-primary); position: relative;
   }
+  .blog-thumb .blog-featured-image { width: 100%; height: 100%; object-fit: cover; }
+  .blog-hero-image, .post-hero-image { display: block; width: 100%; max-height: 440px; object-fit: cover; border-radius: var(--radius-lg); margin-bottom: 30px; }
   .blog-thumb .tag {
     position: absolute; top: 14px; left: 14px; background: #fff; color: var(--color-primary);
     font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: var(--radius-pill);
@@ -329,12 +340,29 @@
     color: var(--color-text-muted); background: #fff;
   }
   .pagination-row .active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  .pagination-row button { cursor: pointer; }
+  .pagination-row button:disabled { opacity: .45; cursor: not-allowed; }
+  .blog-filter-row button { cursor: pointer; }
+  .blog-empty { grid-column: 1 / -1; text-align: center; color: var(--color-text-muted); padding: 32px; }
 
   .post-hero-img { height: 360px; border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--color-accent) 0%, #FFF3EA 100%); margin-bottom: 36px; }
   .post-body { max-width: 760px; margin: 0 auto; }
+  .cms-page-content { max-width: 900px; margin: 0 auto; }
+  .cms-page-content h2, .cms-page-content h3 { color: var(--color-secondary); margin: 24px 0 12px; }
+  .cms-page-content p { color: var(--color-text-muted); line-height: 1.7; margin: 0 0 14px; }
+  .cms-page-content ul, .cms-page-content ol { padding-left: 24px; margin: 0 0 16px; }
+  .cms-page-content li { list-style: revert; display: list-item; color: var(--color-text-muted); margin-bottom: 7px; }
   .post-body h2 { font-size: 24px; font-weight: 800; color: var(--color-secondary); margin: 32px 0 14px; }
   .post-body h3 { font-size: 19px; font-weight: 700; color: var(--color-secondary); margin: 26px 0 12px; }
   .post-body p { font-size: 15px; color: var(--color-text-muted); margin-bottom: 16px; }
+  .managed-article-body { color: var(--color-text-muted); font-size: 15px; line-height: 1.75; }
+  .managed-article-body h2 { margin-top: 28px; }
+  .managed-article-body h3 { margin-top: 22px; }
+  .managed-article-body p { margin: 0 0 16px; }
+  .managed-article-body ul,
+  .managed-article-body ol { margin: 0 0 16px; padding-left: 24px; }
+  .managed-article-body li { display: list-item; list-style: revert; margin-bottom: 7px; }
+  .managed-article-body a { color: var(--color-primary); text-decoration: underline; }
   .post-body ul,
   .legal-content ul { margin: 0 0 16px; padding-left: 0; }
   .post-body ul li,
@@ -345,7 +373,7 @@
   .legal-content ul li::before {
     content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); margin-top: 8px; flex-shrink: 0;
   }
-  .post-body blockquote {
+.post-body blockquote {
     border-left: 3px solid var(--color-primary); background: var(--color-muted-bg); padding: 18px 22px;
     border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: 15px; font-style: italic; color: var(--color-secondary); margin: 24px 0;
   }

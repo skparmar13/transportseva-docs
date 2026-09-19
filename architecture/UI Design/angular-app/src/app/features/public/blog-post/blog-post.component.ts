@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SeoService } from '../../../core/seo/seo.service';
+import { CmsMockService } from '../../../core/services/cms-mock.service';
 
 interface LoadedPost {
   tagKey: string;
@@ -26,6 +28,17 @@ interface LoadedPost {
 export class BlogPostComponent implements OnInit {
   private readonly seo = inject(SeoService);
   private readonly language = inject(LanguageService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly cms = inject(CmsMockService);
+  private readonly selectedPostId = signal(this.route.snapshot.queryParamMap.get('id'));
+  protected readonly managedPost = computed(() => {
+    const selectedLanguage = this.language.lang() === 'hi' ? 'Hindi' : 'English';
+    return this.cms.publishedBlogPosts().find((post) => post.id === this.selectedPostId() && post.language === selectedLanguage) ?? null;
+  });
+  private readonly managedPostSeo = effect(() => {
+    const post = this.managedPost();
+    if (post) this.seo.update({ title: post.seoTitle?.trim() || `${post.title} | TransportSeva Blog`, description: post.seoDescription?.trim() || post.summary, url: `/blog-post?id=${post.id}`, type: 'article' });
+  });
 
   /** The active post being displayed on this route. In production this would come
    * from a route param + API/CMS lookup; today we hardcode "post 1" but keep the
@@ -41,6 +54,7 @@ export class BlogPostComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => this.selectedPostId.set(params.get('id')));
     const p = this.post();
     const title = this.language.translate(p.titleKey);
     const description = this.language.translate(p.descKey);
