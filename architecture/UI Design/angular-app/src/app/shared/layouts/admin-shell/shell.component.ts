@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, signal } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { IconComponent } from '../../components/icon/icon.component';
 import { SessionService } from '../../../core/services/session.service';
 import { CommunicationMockService } from '../../../core/services/communication-mock.service';
 import { NotificationCategory } from '../../../core/models/communication.model';
 import { LanguageService, TranslatePipe } from '../../../core/i18n';
+import { NavItem } from '../../../core/models/nav.model';
 
 const CATEGORY_ICON: Record<NotificationCategory, string> = {
   Booking: 'i-box',
@@ -26,7 +28,7 @@ const CATEGORY_ICON: Record<NotificationCategory, string> = {
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, IconComponent, UpperCasePipe, TranslatePipe],
+  imports: [FormsModule, RouterLink, RouterLinkActive, RouterOutlet, IconComponent, UpperCasePipe, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -46,13 +48,61 @@ export class ShellComponent {
   protected readonly categoryIcon = CATEGORY_ICON;
   protected readonly showBellDropdown = signal(false);
   protected readonly sidebarOpen = signal(false);
+  protected readonly sidebarCollapsed = signal(false);
+  protected readonly searchTerm = signal('');
+  protected readonly searchOpen = signal(false);
+  protected readonly searchResults = computed(() => {
+    this.language.lang();
+    const term = this.searchTerm().trim().toLocaleLowerCase();
+    if (!term) return [];
+    return this.portal().nav.flatMap((section) => section.items)
+      .filter((item) => !item.planned && `${this.language.translate(item.labelKey)} ${item.path}`.toLocaleLowerCase().includes(term))
+      .slice(0, 8);
+  });
 
   protected toggleSidebar(): void {
-    this.sidebarOpen.update((v) => !v);
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      this.sidebarCollapsed.set(false);
+      this.sidebarOpen.update((v) => !v);
+    }
+    else this.sidebarCollapsed.update((v) => !v);
+  }
+
+  protected isSidebarExpanded(): boolean {
+    return window.matchMedia('(max-width: 900px)').matches ? this.sidebarOpen() : !this.sidebarCollapsed();
   }
 
   protected closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  protected navigateToSearchResult(item: NavItem): void {
+    this.searchOpen.set(false);
+    this.searchTerm.set('');
+    this.router.navigate([this.portal().basePath, item.path]);
+  }
+
+  protected handleSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.searchOpen.set(false);
+      this.searchTerm.set('');
+    } else if (event.key === 'Enter' && this.searchResults().length) {
+      event.preventDefault();
+      this.navigateToSearchResult(this.searchResults()[0]);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  protected closeSearchOutside(event: MouseEvent): void {
+    if (!(event.target as HTMLElement | null)?.closest('.topbar-search')) this.searchOpen.set(false);
+  }
+
+  protected logout(): void {
+    this.closeSidebar();
+    this.closeBellDropdown();
+    this.searchTerm.set('');
+    this.sessionSvc.setRole('admin');
+    this.router.navigate(['/auth/login']);
   }
 
   protected toggleBellDropdown(): void {

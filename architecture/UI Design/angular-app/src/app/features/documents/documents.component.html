@@ -53,15 +53,16 @@
         @for (doc of vehicleDocs(); track doc.ownerRef + doc.type) {
           <tr>
             <td><b>{{ doc.ownerRef }}</b></td>
-            <td>{{ doc.type }}</td>
+            <td>{{ doc.type }}@if (doc.fileName) { <small style="display:block;color:var(--color-text-soft);">{{ doc.fileName }}</small> }</td>
             <td>{{ doc.documentNumber }}</td>
             <td>{{ doc.expiryDate }}</td>
             <td><span class="status-pill" [class]="statusClass[doc.status]">{{ doc.status }}</span></td>
             <td>
-              <button type="button" class="btn btn-outline btn-sm">
+              <label class="btn btn-outline btn-sm">
                 <app-icon name="i-upload" [size]="16" />
                 <span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Re-upload' }}</span>
-              </button>
+                <input type="file" accept="application/pdf,image/*" hidden (change)="uploadVehicle($event, doc)" />
+              </label>
             </td>
           </tr>
         }
@@ -87,15 +88,16 @@
         @for (doc of driverDocs(); track doc.ownerRef + doc.type) {
           <tr>
             <td><b>{{ doc.ownerRef }}</b></td>
-            <td>{{ doc.type }}</td>
+            <td>{{ doc.type }}@if (doc.fileName) { <small style="display:block;color:var(--color-text-soft);">{{ doc.fileName }}</small> }</td>
             <td>{{ doc.documentNumber }}</td>
             <td>{{ doc.expiryDate }}</td>
             <td><span class="status-pill" [class]="statusClass[doc.status]">{{ doc.status }}</span></td>
             <td>
-              <button type="button" class="btn btn-outline btn-sm">
+              <label class="btn btn-outline btn-sm">
                 <app-icon name="i-upload" [size]="16" />
                 <span>{{ doc.status === 'Not Uploaded' ? 'Upload' : 'Re-upload' }}</span>
-              </button>
+                <input type="file" accept="application/pdf,image/*" hidden (change)="uploadDriver($event, doc)" />
+              </label>
             </td>
           </tr>
         }
@@ -127,7 +129,7 @@
               <td>{{ doc.receivedBy }}</td>
               <td>{{ doc.uploadedAt }}</td>
               <td>
-                <button type="button" class="btn btn-outline btn-sm">
+                <button type="button" class="btn btn-outline btn-sm" (click)="downloadPod(doc)">
                   <app-icon name="i-download" [size]="16" />
                   <span>View</span>
                 </button>

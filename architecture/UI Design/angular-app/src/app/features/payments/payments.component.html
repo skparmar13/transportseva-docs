@@ -129,7 +129,7 @@
             <td>{{ g.totalAmount }}</td>
             <td><span class="status-pill" [class]="gstStatusClass[g.status]">{{ g.status }}</span></td>
             <td style="display:flex;gap:6px;">
-              <button type="button" class="btn btn-outline btn-sm" title="Download">
+              <button type="button" class="btn btn-outline btn-sm" title="Download" (click)="downloadGstInvoice(g)">
                 <app-icon name="i-download" [size]="16" />
               </button>
               @if (g.status === 'Unpaid') {

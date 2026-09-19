@@ -18,6 +18,8 @@ export const HI: Record<string, string> = {
   'common.continue': 'जारी रखें',
   'common.viewAll': 'सभी देखें',
   'common.search': 'खोजें',
+  'common.searchResults': 'खोज परिणाम', 'common.searchNoResults': 'कोई मिलते-जुलते पृष्ठ नहीं मिले।', 'common.toggleMenu': 'नेविगेशन मेनू टॉगल करें', 'common.logout': 'लॉग आउट',
+  'common.accepted': 'स्वीकृत',
   'common.filter': 'फ़िल्टर',
   'common.actions': 'कार्रवाई',
   'common.status': 'स्थिति',
@@ -1080,6 +1082,10 @@ export const HI: Record<string, string> = {
   'support.category.other': 'अन्य',
 
   // --- retrofitted marketplace/drivers/fleet page keys ---
+  'status.idle': 'खाली', 'status.maintenance': 'रखरखाव', 'status.offline': 'ऑफ़लाइन', 'status.planned': 'नियोजित',
+  'status.pending': 'लंबित', 'status.completed': 'पूर्ण', 'status.paid': 'भुगतान किया', 'status.open': 'खुला',
+  'status.onTrip': 'ट्रिप पर', 'status.suspended': 'निलंबित', 'status.offerAccepted': 'प्रस्ताव स्वीकार',
+  'status.settlementPending': 'निपटान लंबित', 'status.awaitingDeposits': 'जमा राशि का इंतज़ार',
   'status.applicationsReceived': 'आवेदन प्राप्त',
   'status.awaitingDeposit': 'जमा राशि प्रतीक्षित',
   'status.confirmed': 'पुष्ट',

@@ -15,6 +15,7 @@ export interface DriverDocument {
   documentNumber?: string;
   expiryDate?: string;
   status: DriverDocStatus;
+  fileName?: string;
 }
 
 export interface DriverTimelineEvent {

@@ -3,6 +3,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 import { FleetMockService } from '../../core/services/fleet-mock.service';
 import { DriverMockService } from '../../core/services/driver-mock.service';
 import { TripMockService } from '../../core/services/trip-mock.service';
+import { VehicleDocument } from '../../core/models/fleet.model';
+import { DriverDocument } from '../../core/models/driver.model';
 
 type DocumentsTab = 'vehicle' | 'driver' | 'pod';
 
@@ -12,6 +14,7 @@ interface VehicleDocRow {
   documentNumber: string;
   expiryDate: string;
   status: string;
+  fileName?: string;
 }
 
 interface DriverDocRow {
@@ -20,6 +23,7 @@ interface DriverDocRow {
   documentNumber: string;
   expiryDate: string;
   status: string;
+  fileName?: string;
 }
 
 interface PodDocRow {
@@ -28,6 +32,7 @@ interface PodDocRow {
   podNumber: string;
   receivedBy: string;
   uploadedAt: string;
+  fileRef?: string;
 }
 
 const STATUS_CLASS: Record<string, string> = {
@@ -64,6 +69,31 @@ export class DocumentsComponent {
     this.activeTab.set(tab);
   }
 
+  protected uploadVehicle(event: Event, doc: VehicleDocRow): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.fleet.attachDocument(doc.ownerRef, doc.type as VehicleDocument['type'], file.name);
+    input.value = '';
+  }
+
+  protected uploadDriver(event: Event, doc: DriverDocRow): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.drivers.attachDocument(doc.ownerRef, doc.type as DriverDocument['type'], file.name);
+    input.value = '';
+  }
+
+  protected downloadPod(doc: PodDocRow): void {
+    const fileRef = doc.fileRef ?? doc.podNumber ?? doc.tripId;
+    const content = [`Proof of delivery: ${fileRef}`, `Trip: ${doc.tripId}`, `Route: ${doc.route}`, `Received by: ${doc.receivedBy}`, `Uploaded: ${doc.uploadedAt}`].join('\r\n');
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fileRef}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   protected readonly vehicleDocs = computed<VehicleDocRow[]>(() =>
     this.fleet.vehicles().flatMap((v) =>
       v.documents.map((d) => ({
@@ -72,6 +102,7 @@ export class DocumentsComponent {
         documentNumber: d.documentNumber ?? '—',
         expiryDate: d.expiryDate ?? '—',
         status: d.status,
+        fileName: d.fileName,
       })),
     ),
   );
@@ -84,6 +115,7 @@ export class DocumentsComponent {
         documentNumber: d.documentNumber ?? '—',
         expiryDate: d.expiryDate ?? '—',
         status: d.status,
+        fileName: d.fileName,
       })),
     ),
   );

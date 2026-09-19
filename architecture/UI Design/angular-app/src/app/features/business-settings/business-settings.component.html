@@ -282,7 +282,7 @@
             <td>{{ inv.dueDate }}</td>
             <td><span class="status-pill" [class]="billingStatusClass[inv.status]">{{ inv.status }}</span></td>
             <td style="display:flex;gap:6px;">
-              <button type="button" class="btn btn-outline btn-sm" [title]="'common.download' | t">
+              <button type="button" class="btn btn-outline btn-sm" [title]="'common.download' | t" (click)="downloadInvoice(inv)">
                 <app-icon name="i-download" [size]="16" />
               </button>
               @if (inv.status !== 'Paid') {

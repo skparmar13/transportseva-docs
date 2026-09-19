@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { UpperCasePipe } from '@angular/common';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { PaymentMockService } from '../../core/services/payment-mock.service';
-import { GstInvoiceStatus, PaymentStatus, PayoutStatus } from '../../core/models/payment.model';
+import { GstInvoice, GstInvoiceStatus, PaymentStatus, PayoutStatus } from '../../core/models/payment.model';
 
 type PaymentsTab = 'freight' | 'commission' | 'gst' | 'payouts';
 
@@ -56,5 +56,15 @@ export class PaymentsComponent {
 
   protected markGstPaid(id: string): void {
     this.payments.markGstInvoicePaid(id);
+  }
+
+  protected downloadGstInvoice(invoice: GstInvoice): void {
+    const content = [`Tax invoice: ${invoice.invoiceNumber}`, `Date: ${invoice.date}`, `Billed to: ${invoice.billedTo}`, `Taxable amount: ${invoice.taxableAmount}`, `GST: ${invoice.gstAmount}`, `Total: ${invoice.totalAmount}`, `Status: ${invoice.status}`].join('\r\n');
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${invoice.invoiceNumber}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }

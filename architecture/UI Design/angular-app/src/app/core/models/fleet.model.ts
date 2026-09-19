@@ -17,6 +17,7 @@ export interface VehicleDocument {
   documentNumber?: string;
   expiryDate?: string;
   status: DocumentStatus;
+  fileName?: string;
 }
 
 export interface MaintenanceRecord {

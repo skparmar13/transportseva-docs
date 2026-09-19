@@ -37,7 +37,7 @@
             <td>{{ req.customer }}</td>
             <td>{{ req.route }}</td>
             <td>{{ req.amount }}</td>
-            <td><button class="btn btn-primary" style="padding:6px 14px;font-size:12.5px;">{{ 'transporterDashboard.accept' | t }}</button></td>
+            <td><button type="button" class="btn" [class.btn-primary]="!acceptedRequests().has(req.bookingId)" [class.btn-outline]="acceptedRequests().has(req.bookingId)" style="padding:6px 14px;font-size:12.5px;" [disabled]="acceptedRequests().has(req.bookingId)" (click)="acceptRequest(req.bookingId)">{{ (acceptedRequests().has(req.bookingId) ? 'common.accepted' : 'transporterDashboard.accept') | t }}</button></td>
           </tr>
         }
       </tbody>

@@ -1,6 +1,6 @@
 <div class="admin-shell">
   <div class="sidebar-overlay" [class.visible]="sidebarOpen()" (click)="closeSidebar()"></div>
-  <aside class="sidebar" [class.open]="sidebarOpen()">
+  <aside class="sidebar" [class.open]="sidebarOpen()" [class.collapsed]="sidebarCollapsed()">
     <a [routerLink]="[portal().basePath, 'dashboard']" class="side-logo" (click)="closeSidebar()">
       <img src="images/logo-white.png" alt="TransportSeva">
     </a>
@@ -35,12 +35,19 @@
 
   <div class="admin-main">
     <header class="topbar">
-      <button class="icon-btn sidebar-toggle" type="button" aria-label="Open menu" (click)="toggleSidebar()">
+      <button class="icon-btn sidebar-toggle" type="button" [attr.aria-label]="'common.toggleMenu' | t" [attr.aria-expanded]="isSidebarExpanded()" (click)="toggleSidebar()">
         <app-icon name="i-menu" [size]="22" />
       </button>
-      <div class="topbar-search">
+      <div class="topbar-search" (click)="$event.stopPropagation()">
         <app-icon name="i-search" [size]="18" />
-        <input type="text" [placeholder]="'common.search' | t" [attr.aria-label]="'common.search' | t" />
+        <input type="search" [placeholder]="'common.search' | t" [attr.aria-label]="'common.search' | t" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" (focus)="searchOpen.set(true)" (keydown)="handleSearchKeydown($event)" />
+        @if (searchOpen() && searchTerm().trim()) {
+          <div class="topbar-search-results" role="listbox" [attr.aria-label]="'common.searchResults' | t">
+            @for (item of searchResults(); track item.path) {
+              <button type="button" role="option" (mousedown)="$event.preventDefault()" (click)="navigateToSearchResult(item)"><app-icon [name]="item.icon" [size]="16" /><span>{{ item.labelKey | t }}</span></button>
+            } @empty {<div class="topbar-search-empty">{{ 'common.searchNoResults' | t }}</div>}
+          </div>
+        }
       </div>
       <div class="topbar-actions">
         <button class="lang-switch" type="button" aria-label="Change language" (click)="language.toggle()">
@@ -83,7 +90,7 @@
           <div class="avatar">{{ user().avatarInitials }}</div>
           <div>
             <div class="name">{{ user().name }}</div>
-            <div class="role" style="cursor:pointer;">Log Out</div>
+            <button type="button" class="role logout-button" [attr.aria-label]="'common.logout' | t" (click)="logout()"><app-icon name="i-logout" [size]="14" /><span class="logout-label">{{ 'common.logout' | t }}</span></button>
           </div>
         </div>
       </div>

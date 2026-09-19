@@ -191,6 +191,13 @@ export class FleetMockService {
     this.vehiclesState.update((vehicles) => vehicles.map((v) => (v.regNumber === regNumber ? { ...v, driver: undefined } : v)));
   }
 
+  attachDocument(regNumber: string, type: VehicleDocument['type'], fileName: string): void {
+    this.vehiclesState.update((vehicles) => vehicles.map((vehicle) => vehicle.regNumber !== regNumber ? vehicle : {
+      ...vehicle,
+      documents: vehicle.documents.map((document) => document.type !== type ? document : { ...document, fileName }),
+    }));
+  }
+
   addMaintenanceRecord(vehicleId: string, input: Omit<MaintenanceRecord, 'id'>): void {
     const record: MaintenanceRecord = { id: nextId('mt'), ...input };
     this.vehiclesState.update((vehicles) =>

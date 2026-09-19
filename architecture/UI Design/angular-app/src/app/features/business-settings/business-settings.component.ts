@@ -5,7 +5,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { TranslatePipe } from '../../core/i18n';
 import { BusinessSettingsMockService } from '../../core/services/business-settings-mock.service';
-import { BillingInvoiceStatus, CompanyProfile, StaffUserStatus } from '../../core/models/business-settings.model';
+import { BillingInvoice, BillingInvoiceStatus, CompanyProfile, StaffUserStatus } from '../../core/models/business-settings.model';
 import { PlanTier, SUBSCRIPTION_PLANS } from '../../core/data/subscription-plans';
 
 type SettingsTab = 'company' | 'branches' | 'users' | 'roles' | 'billing';
@@ -142,6 +142,16 @@ export class BusinessSettingsComponent {
 
   protected markInvoicePaid(id: string): void {
     this.settings.markInvoicePaid(id);
+  }
+
+  protected downloadInvoice(invoice: BillingInvoice): void {
+    const lines = ['TransportSeva subscription invoice', `Invoice: ${invoice.invoiceNumber}`, `Plan: ${invoice.planName}`, `Period: ${invoice.period}`, `Amount: ${invoice.amount}`, `Due date: ${invoice.dueDate}`, `Status: ${invoice.status}`];
+    const url = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${invoice.invoiceNumber}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   // Change plan

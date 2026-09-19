@@ -180,4 +180,11 @@ export class DriverMockService {
       drivers.map((d) => (d.id === driverId ? { ...d, timeline: [event, ...d.timeline] } : d)),
     );
   }
+
+  attachDocument(driverName: string, type: DriverDocument['type'], fileName: string): void {
+    this.driversState.update((drivers) => drivers.map((driver) => driver.name !== driverName ? driver : {
+      ...driver,
+      documents: driver.documents.map((document) => document.type !== type ? document : { ...document, fileName }),
+    }));
+  }
 }

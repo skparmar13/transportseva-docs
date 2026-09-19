@@ -24,4 +24,26 @@ export class ReportsComponent {
   protected setTab(tab: ReportsTab): void {
     this.activeTab.set(tab);
   }
+
+  protected exportCurrentReport(): void {
+    const datasets: Record<ReportsTab, { name: string; rows: object[] }> = {
+      fleet: { name: 'fleet', rows: this.reports.fleetRows() },
+      driver: { name: 'drivers', rows: this.reports.driverRows() },
+      revenue: { name: 'revenue', rows: this.reports.revenueRows() },
+      gps: { name: 'gps', rows: this.reports.gpsRows() },
+      marketplace: { name: 'marketplace', rows: this.reports.marketplaceRows() },
+      trips: { name: 'trips', rows: this.reports.tripsRows() },
+    };
+    const { name, rows } = datasets[this.activeTab()];
+    if (!rows.length) return;
+    const columns = Object.keys(rows[0]);
+    const escape = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+    const csv = [columns.map(escape).join(','), ...rows.map((row) => columns.map((key) => escape((row as Record<string, unknown>)[key])).join(','))].join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `transportseva-${name}-report.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 }

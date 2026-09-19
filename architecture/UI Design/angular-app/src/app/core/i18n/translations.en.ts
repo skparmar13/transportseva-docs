@@ -19,6 +19,8 @@ export const EN: Record<string, string> = {
   'common.continue': 'Continue',
   'common.viewAll': 'View All',
   'common.search': 'Search',
+  'common.searchResults': 'Search results', 'common.searchNoResults': 'No matching pages.', 'common.toggleMenu': 'Toggle navigation menu', 'common.logout': 'Log out',
+  'common.accepted': 'Accepted',
   'common.filter': 'Filter',
   'common.actions': 'Actions',
   'common.status': 'Status',
@@ -1531,6 +1533,10 @@ export const EN: Record<string, string> = {
   'support.category.other': 'Other',
 
   // --- retrofitted marketplace/drivers/fleet page keys ---
+  'status.idle': 'Idle', 'status.maintenance': 'Maintenance', 'status.offline': 'Offline', 'status.planned': 'Planned',
+  'status.pending': 'Pending', 'status.completed': 'Completed', 'status.paid': 'Paid', 'status.open': 'Open',
+  'status.onTrip': 'On Trip', 'status.suspended': 'Suspended', 'status.offerAccepted': 'Offer Accepted',
+  'status.settlementPending': 'Settlement Pending', 'status.awaitingDeposits': 'Awaiting Deposits',
   'status.applicationsReceived': 'Applications Received',
   'status.awaitingDeposit': 'Awaiting Deposit',
   'status.confirmed': 'Confirmed',
