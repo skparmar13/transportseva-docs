@@ -186,6 +186,9 @@ export const routes: Routes = [
     canActivate: [setPortalRole('company')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', title: 'Dashboard | Company Portal | TransportSeva', loadComponent: () => import('./features/company/dashboard/company-dashboard.component').then((m) => m.CompanyDashboardComponent) },
+      { path: 'staff', title: 'Staff Management | Company Portal | TransportSeva', data: { defaultTab: 'users' }, loadComponent: () => import('./features/business-settings/business-settings.component').then((m) => m.BusinessSettingsComponent) },
+      { path: 'bookings', title: 'Bookings | Company Portal | TransportSeva', loadComponent: () => import('./features/marketplace/bookings/bookings.component').then((m) => m.BookingsComponent) },
       { path: 'fleet', title: 'Fleet & Drivers | Company Portal | TransportSeva', loadComponent: () => import('./features/fleet/vehicle-list/vehicle-list.component').then((m) => m.VehicleListComponent) },
       { path: 'fleet/drivers', title: 'Fleet & Drivers | Company Portal | TransportSeva', loadComponent: () => import('./features/drivers/driver-list/driver-list.component').then((m) => m.DriverListComponent) },
       { path: 'fleet/drivers/:id', title: 'Driver Profile | Company Portal | TransportSeva', loadComponent: () => import('./features/drivers/driver-details/driver-details.component').then((m) => m.DriverDetailsComponent) },
@@ -199,7 +202,6 @@ export const routes: Routes = [
       { path: 'notifications', title: 'Notifications | Company Portal | TransportSeva', loadComponent: () => import('./features/notifications/notifications.component').then((m) => m.NotificationsComponent) },
       { path: 'support', title: 'Support | Company Portal | TransportSeva', loadComponent: () => import('./features/support/support.component').then((m) => m.SupportComponent) },
       { path: 'profile', title: 'Business Settings | Company Portal | TransportSeva', loadComponent: () => import('./features/business-settings/business-settings.component').then((m) => m.BusinessSettingsComponent) },
-      { path: 'staff', title: 'Business Settings | Company Portal | TransportSeva', loadComponent: () => import('./features/business-settings/business-settings.component').then((m) => m.BusinessSettingsComponent) },
       { path: '**', title: 'Company Portal | TransportSeva', component: ComingSoonComponent },
     ],
   },

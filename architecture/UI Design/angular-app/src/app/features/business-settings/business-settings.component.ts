@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { TranslatePipe } from '../../core/i18n';
@@ -41,7 +41,12 @@ export class BusinessSettingsComponent {
   protected readonly staffStatusClass = STAFF_STATUS_CLASS;
   protected readonly billingStatusClass = BILLING_STATUS_CLASS;
 
-  protected readonly activeTab = signal<SettingsTab>('company');
+  protected readonly activeTab = signal<SettingsTab>(this.defaultTab());
+
+  private defaultTab(): SettingsTab {
+    const requested = inject(ActivatedRoute).snapshot.data['defaultTab'];
+    return requested === 'users' ? 'users' : 'company';
+  }
   protected setTab(tab: SettingsTab): void {
     this.activeTab.set(tab);
   }
