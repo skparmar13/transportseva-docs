@@ -76,6 +76,10 @@ export class VehicleListComponent {
   }
 
   protected submitAdd(): void {
+    const capacity = this.capacityTons();
+    const year = Number(this.yearOfMake());
+    if (capacity === null || !Number.isFinite(capacity) || capacity <= 0 || !Number.isInteger(capacity * 10)) return;
+    if (this.yearOfMake() && (!Number.isInteger(year) || year < 1950 || year > new Date().getFullYear())) return;
     if (!this.regNumber() || !this.make() || !this.model()) return;
     this.saving.set(true);
     setTimeout(() => {

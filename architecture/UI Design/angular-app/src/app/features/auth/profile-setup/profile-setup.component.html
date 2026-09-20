@@ -21,18 +21,18 @@
       <label>{{ 'profileSetup.addressLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-map" [size]="18" />
-        <input type="text" class="input" [placeholder]="'profileSetup.addressPlaceholder' | t" name="address" [ngModel]="address()" (ngModelChange)="address.set($event)">
+        <app-location-picker id="profile-address" name="address" labelKey="profileSetup.addressLabel" placeholderKey="profileSetup.addressPlaceholder" [value]="address()" (valueChange)="address.set($event)" />
       </div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
       <div class="field">
         <label>{{ 'profileSetup.cityLabel' | t }}</label>
-        <input type="text" class="input" [placeholder]="'profileSetup.cityLabel' | t" name="city" [ngModel]="city()" (ngModelChange)="city.set($event)">
+        <app-location-picker id="profile-city" name="city" labelKey="profileSetup.cityLabel" placeholderKey="profileSetup.cityLabel" [value]="city()" (valueChange)="city.set($event)" (locationSelected)="setProfileCity($event)" />
       </div>
       <div class="field">
         <label>{{ 'profileSetup.pincodeLabel' | t }}</label>
-        <input type="text" class="input" [placeholder]="'profileSetup.pincodeLabel' | t" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)">
+        <input type="text" class="input" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" [placeholder]="'profileSetup.pincodeLabel' | t" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)">
       </div>
     </div>
 

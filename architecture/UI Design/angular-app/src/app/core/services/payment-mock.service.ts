@@ -187,14 +187,14 @@ export class PaymentMockService {
   }
 
   recordOfflinePayment(bookingId: string, amount: string, reference: string): void {
-    if (!/^\s*₹?\s*\d+(?:[,.]\d{1,2})?\s*$/.test(amount)) return;
+    if (!/^\d+(?:\.\d{1,2})?$/.test(amount) || Number(amount) <= 0) return;
     this.recordLedgerEntry({
       reference: reference.trim() || `COD-${Date.now()}`,
       bookingId,
       date: 'Just now',
       type: 'Payment',
       direction: 'Receivable',
-      amount: amount.trim(),
+        amount: `₹${Number(amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`,
       status: 'Completed',
       description: 'Offline/COD balance recorded by portal operator',
     });

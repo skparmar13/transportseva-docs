@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { PortalRole } from '../models/nav.model';
 import { PORTAL_CONFIGS } from '../data/nav-config';
+import type { MockPlatformStaff } from './auth-mock.service';
 
 export interface MockUser {
   name: string;
@@ -29,12 +30,31 @@ const MOCK_USERS: Record<PortalRole, MockUser> = {
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly activeRole = signal<PortalRole>('admin');
+  private readonly activePlatformStaff = signal<MockPlatformStaff | null>(null);
 
   readonly role = computed(() => this.activeRole());
-  readonly user = computed<MockUser>(() => MOCK_USERS[this.activeRole()]);
+  readonly platformStaff = computed(() => this.activePlatformStaff());
+  readonly user = computed<MockUser>(() => {
+    const staff = this.activePlatformStaff();
+    if (this.activeRole() === 'admin' && staff) {
+      const initials = staff.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+      return { name: staff.name, role: 'admin', roleTag: staff.role, avatarInitials: initials };
+    }
+    return MOCK_USERS[this.activeRole()];
+  });
   readonly portal = computed(() => PORTAL_CONFIGS[this.activeRole()]);
 
   setRole(role: PortalRole): void {
     this.activeRole.set(role);
+    if (role !== 'admin') this.activePlatformStaff.set(null);
+  }
+
+  setPlatformStaff(staff: MockPlatformStaff): void {
+    this.activePlatformStaff.set(staff);
+    this.activeRole.set('admin');
+  }
+
+  clearPlatformStaff(): void {
+    this.activePlatformStaff.set(null);
   }
 }

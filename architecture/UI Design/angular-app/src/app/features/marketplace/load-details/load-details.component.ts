@@ -60,13 +60,13 @@ export class LoadDetailsComponent {
   protected readonly vehicleRegNumber = signal('');
   protected readonly vehicleType = signal<VehicleType>('Open Body Truck');
   protected readonly availability = signal('');
-  protected readonly quotedAmount = signal('');
+  protected readonly quotedAmount = signal<number | null>(null);
   protected readonly applyMessage = signal('');
   protected readonly applying = signal(false);
 
   // Negotiation (offer/counter-offer) state — keyed by applicationId being negotiated
   protected readonly negotiatingApplicationId = signal<string | null>(null);
-  protected readonly counterAmount = signal('');
+  protected readonly counterAmount = signal<number | null>(null);
   protected readonly counterMessage = signal('');
 
   // Chat state (unlocked only after the application is Accepted)
@@ -86,7 +86,8 @@ export class LoadDetailsComponent {
 
   protected submitApplication(): void {
     const load = this.load();
-    if (!load || !this.vehicleRegNumber() || !this.quotedAmount() || !this.availability()) return;
+    const amount = this.quotedAmount();
+    if (!load || !this.vehicleRegNumber().trim() || !this.availability().trim() || amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
     this.applying.set(true);
     setTimeout(() => {
       this.marketplace.applyForLoad({
@@ -96,7 +97,7 @@ export class LoadDetailsComponent {
         vehicleRegNumber: this.vehicleRegNumber(),
         vehicleType: this.vehicleType(),
         availability: this.availability(),
-        quotedAmount: this.quotedAmount(),
+        quotedAmount: String(amount),
         message: this.applyMessage() || undefined,
       });
       this.applying.set(false);
@@ -108,19 +109,19 @@ export class LoadDetailsComponent {
     const current = this.negotiatingApplicationId();
     this.negotiatingApplicationId.set(current === applicationId ? null : applicationId);
     const latest = this.marketplace.getLatestOffer(applicationId)();
-    this.counterAmount.set(latest?.amount ?? '');
+    this.counterAmount.set(latest?.amount ? Number(latest.amount.replace(/[^0-9.]/g, '')) : null);
     this.counterMessage.set('');
   }
 
   protected sendCounterOffer(applicationId: string): void {
-    const amount = this.counterAmount().trim();
-    if (!amount) return;
+    const amount = this.counterAmount();
+    if (amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
     this.marketplace.sendCounterOffer({
       applicationId,
       loadId: this.loadId,
       by: this.isOwner() ? 'owner' : 'applicant',
       byName: this.session.user().company ?? this.session.user().name,
-      amount,
+      amount: String(amount),
       message: this.counterMessage() || undefined,
     });
     this.counterMessage.set('');

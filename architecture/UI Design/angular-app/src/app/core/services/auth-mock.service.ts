@@ -2,6 +2,24 @@ import { Injectable, signal } from '@angular/core';
 import { of, delay } from 'rxjs';
 import { RoleOption, WorkspaceOption } from '../models/auth.model';
 import { PlanTier } from '../data/subscription-plans';
+import { SignupRole } from '../models/auth.model';
+
+export interface MockSignupPayload {
+  identifier: string;
+  fullName: string;
+  mobile: string;
+  email: string;
+  password: string;
+  role: SignupRole;
+  planTier: Exclude<PlanTier, 'enterprise'>;
+}
+
+export interface MockPlatformStaff {
+  name: string;
+  email: string;
+  role: 'Super Admin' | 'Operations Manager' | 'KYC Officer' | 'Finance Manager' | 'Support Agent';
+  destination: string;
+}
 
 /**
  * Mock auth flow — NO real authentication/backend. Simulates
@@ -18,6 +36,8 @@ export class AuthMockService {
   readonly pendingRole = signal<import('../models/auth.model').SignupRole>('shipper');
   /** Subscription plan chosen on the way into signup (via the Pricing page CTA, or 'starter' by default for the generic Sign Up button). Applied to the new tenant once onboarding finishes. */
   readonly pendingPlanTier = signal<Exclude<PlanTier, 'enterprise'>>('starter');
+  /** Transient onboarding data only; deliberately excludes the submitted password. */
+  readonly pendingSignup = signal<Omit<MockSignupPayload, 'password'> | null>(null);
 
   readonly roleOptions: RoleOption[] = [
     {
@@ -44,14 +64,6 @@ export class AuthMockService {
       examples: 'Apply for loads · GPS tracking · Driver management · Earnings & maintenance',
       requiresCompany: true,
     },
-    {
-      role: 'driver',
-      label: 'Driver',
-      icon: 'i-truck',
-      description: 'You drive for a transporter or truck owner and execute assigned trips. Your employer manages billing.',
-      examples: 'Trip assignments · Navigation · Digital POD · Earnings',
-      requiresCompany: false,
-    },
   ];
 
   private readonly mockWorkspaces: WorkspaceOption[] = [
@@ -60,15 +72,30 @@ export class AuthMockService {
     { id: 'ws-truck-owner', name: 'Sanjay Fleet Co.', roleTag: 'Truck Owner Workspace', role: 'truck-owner', icon: 'i-car' },
   ];
 
+  private readonly mockPlatformStaff: MockPlatformStaff[] = [
+    { name: 'Aarav Shah', email: 'admin@transportseva.in', role: 'Super Admin', destination: '/admin/dashboard' },
+    { name: 'Priya Nair', email: 'operations@transportseva.in', role: 'Operations Manager', destination: '/admin/companies' },
+    { name: 'Arjun Rao', email: 'kyc@transportseva.in', role: 'KYC Officer', destination: '/admin/documents' },
+    { name: 'Meera Iyer', email: 'finance@transportseva.in', role: 'Finance Manager', destination: '/admin/financials' },
+    { name: 'Kabir Das', email: 'support@transportseva.in', role: 'Support Agent', destination: '/admin/support' },
+  ];
+
   login(_identifier: string, _password: string) {
     // Always "succeeds" in the prototype — returns the workspaces this mock user belongs to.
     return of(this.mockWorkspaces).pipe(delay(400));
   }
 
-  signup(identifier: string, role: import('../models/auth.model').SignupRole, planTier: Exclude<PlanTier, 'enterprise'> = 'starter') {
-    this.pendingIdentifier.set(identifier);
-    this.pendingRole.set(role);
-    this.pendingPlanTier.set(planTier);
+  loginPlatformStaff(email: string, _password: string) {
+    const staff = this.mockPlatformStaff.find((user) => user.email.toLowerCase() === email.trim().toLowerCase()) ?? null;
+    return of(staff).pipe(delay(400));
+  }
+
+  signup(payload: MockSignupPayload) {
+    const { password: _password, ...safePayload } = payload;
+    this.pendingIdentifier.set(payload.identifier);
+    this.pendingRole.set(payload.role);
+    this.pendingPlanTier.set(payload.planTier);
+    this.pendingSignup.set(safePayload);
     return of({ ok: true }).pipe(delay(400));
   }
 

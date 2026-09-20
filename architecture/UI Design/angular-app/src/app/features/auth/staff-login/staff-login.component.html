@@ -1,0 +1,46 @@
+<app-auth-shell
+  backLink="/auth/login"
+  [backLabel]="'staffLogin.back' | t"
+  [eyebrow]="'staffLogin.eyebrow' | t"
+  [title]="'staffLogin.title' | t"
+  [sub]="'staffLogin.sub' | t"
+  [visualHeadingLine1]="'staffLogin.eyebrow' | t"
+  [visualHeadingLine2]="'staffLogin.title' | t"
+  [visualDescription]="'staffLogin.sub' | t"
+  visualImage="images/app-truck.png"
+>
+  <form #staffForm="ngForm" (ngSubmit)="submit(staffForm)">
+    <div class="field">
+      <label for="staff-email">{{ 'staffLogin.emailLabel' | t }}</label>
+      <div class="input-wrap">
+        <app-icon name="i-mail" [size]="18" />
+        <input id="staff-email" type="email" class="input" [placeholder]="'staffLogin.emailPlaceholder' | t" name="email" autocomplete="username" [ngModel]="email()" (ngModelChange)="email.set($event)" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="staff-password">{{ 'staffLogin.passwordLabel' | t }}</label>
+      <div class="input-wrap">
+        <app-icon name="i-lock" [size]="18" />
+        <input id="staff-password" type="password" class="input" name="password" autocomplete="current-password" [ngModel]="password()" (ngModelChange)="password.set($event)" required>
+      </div>
+    </div>
+
+    @if (invalid()) {
+      <p class="hint" role="alert">{{ 'staffLogin.invalid' | t }}</p>
+    }
+
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+      <span>{{ (submitting() ? 'staffLogin.submitting' : 'staffLogin.submit') | t }}</span>
+      @if (!submitting()) { <app-icon name="i-arrow-right" [size]="18" /> }
+    </button>
+  </form>
+
+  <section class="staff-demo" aria-label="Prototype demo accounts">
+    <p>{{ 'staffLogin.demoHint' | t }}</p>
+    <div class="staff-demo-list">
+      @for (demoEmail of demoEmails; track demoEmail) {
+        <button type="button" class="btn btn-outline btn-sm" (click)="useDemoAccount(demoEmail)">{{ demoEmail }}</button>
+      }
+    </div>
+  </section>
+</app-auth-shell>

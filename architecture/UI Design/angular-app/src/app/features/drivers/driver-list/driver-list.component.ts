@@ -7,6 +7,7 @@ import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DriverStatus } from '../../../core/models/driver.model';
 import { TranslatePipe } from '../../../core/i18n';
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
 
 const STATUS_CLASS: Record<DriverStatus, string> = {
   'On Trip': 'status-transit',
@@ -19,7 +20,7 @@ const STATUS_CLASS: Record<DriverStatus, string> = {
 @Component({
   selector: 'app-driver-list',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, LocationPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './driver-list.component.html',
 })
@@ -78,6 +79,9 @@ export class DriverListComponent {
   }
 
   protected submitAdd(): void {
+    const experience = this.experienceYears();
+    if (!/^[6-9]\d{9}$/.test(this.phone().trim())) return;
+    if (experience !== null && (!Number.isInteger(experience) || experience < 0 || experience > 60)) return;
     if (!this.name() || !this.phone() || !this.licenseNumber()) return;
     this.saving.set(true);
     setTimeout(() => {

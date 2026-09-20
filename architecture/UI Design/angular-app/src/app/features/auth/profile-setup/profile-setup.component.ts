@@ -7,11 +7,13 @@ import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { BusinessSettingsMockService } from '../../../core/services/business-settings-mock.service';
 import { TranslatePipe } from '../../../core/i18n';
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { GeoLocation } from '../../../core/models/location.model';
 
 @Component({
   selector: 'app-profile-setup',
   standalone: true,
-  imports: [FormsModule, AuthShellComponent, IconComponent, TranslatePipe],
+  imports: [FormsModule, AuthShellComponent, IconComponent, TranslatePipe, LocationPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-setup.component.html',
   styleUrl: './profile-setup.component.scss',
@@ -29,6 +31,10 @@ export class ProfileSetupComponent {
   protected readonly notifyEmail = signal(true);
   protected readonly notifySms = signal(true);
   protected readonly submitting = signal(false);
+
+  protected setProfileCity(location: GeoLocation | null): void {
+    if (location) this.city.set(location.city);
+  }
 
   protected skip(): void {
     this.goToDashboard();

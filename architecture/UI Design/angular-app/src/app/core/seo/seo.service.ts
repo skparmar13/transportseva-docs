@@ -10,7 +10,7 @@ export interface SeoData {
 }
 
 const SITE_URL = 'https://www.transportseva.com';
-const DEFAULT_IMAGE = `${SITE_URL}/images/og-cover.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/images/hero-truck.png`;
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
@@ -38,8 +38,13 @@ export class SeoService {
     this.meta.updateTag({ name: 'twitter:title', content: data.title });
     this.meta.updateTag({ name: 'twitter:description', content: data.description });
     this.meta.updateTag({ name: 'twitter:image', content: image });
+    this.setRobots(true);
 
     this.setCanonical(url);
+  }
+
+  setIndexable(indexable: boolean): void {
+    this.setRobots(indexable);
   }
 
   setJsonLd(id: string, payload: Record<string, unknown>): void {
@@ -69,6 +74,10 @@ export class SeoService {
       head.appendChild(link);
     }
     link.setAttribute('href', url);
+  }
+
+  private setRobots(indexable: boolean): void {
+    this.meta.updateTag({ name: 'robots', content: indexable ? 'index,follow' : 'noindex,nofollow' });
   }
 
   private absolute(path: string): string {

@@ -1,8 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { of, delay } from 'rxjs';
 import {
   AssignedTrip,
-  BookingRequest,
   KpiCard,
   OwnedVehicle,
   QuickAction,
@@ -19,16 +18,6 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class DashboardMockService {
-  private readonly acceptedTransporterRequests = signal<ReadonlySet<string>>(new Set());
-
-  acceptTransporterRequest(bookingId: string): void {
-    this.acceptedTransporterRequests.update((accepted) => new Set(accepted).add(bookingId));
-  }
-
-  isTransporterRequestAccepted(bookingId: string): boolean {
-    return this.acceptedTransporterRequests().has(bookingId);
-  }
-
   getKpis() {
     const kpis: KpiCard[] = [
       { icon: 'i-box', trend: '+12.4%', value: '48,562', label: 'Total Bookings' },
@@ -104,15 +93,6 @@ export class DashboardMockService {
       { icon: 'i-box', trend: '', value: '6', label: 'New Requests' },
     ];
     return of(kpis).pipe(delay(150));
-  }
-
-  getTransporterRequests() {
-    const requests: BookingRequest[] = [
-      { bookingId: '#TS-48231', customer: 'Rajesh Kumar', route: 'Delhi → Mumbai', amount: '₹18,500' },
-      { bookingId: '#TS-48230', customer: 'Priya Sharma', route: 'Pune → Bengaluru', amount: '₹22,300' },
-      { bookingId: '#TS-48227', customer: 'Global Logistics Co.', route: 'Kolkata → Patna', amount: '₹7,100' },
-    ];
-    return of(requests).pipe(delay(150));
   }
 
   getTransporterQuickActions() {

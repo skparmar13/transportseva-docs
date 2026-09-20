@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { BusinessSettingsMockService } from './core/services/business-settings-mock.service';
@@ -7,10 +7,22 @@ import { MarketplaceMockService } from './core/services/marketplace-mock.service
 import { FleetMockService } from './core/services/fleet-mock.service';
 import { TripMockService } from './core/services/trip-mock.service';
 import { DriverMockService } from './core/services/driver-mock.service';
+import { LocationSearchService } from './core/services/location-search.service';
+import { GeoLocation } from './core/models/location.model';
+import { of } from 'rxjs';
 
 describe('portal route browser smoke checks', () => {
+  let locationSearch: jasmine.SpyObj<LocationSearchService>;
+
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ providers: [provideRouter(routes)] }).compileComponents();
+    locationSearch = jasmine.createSpyObj<LocationSearchService>('LocationSearchService', ['search']);
+    locationSearch.search.and.returnValue(of([]));
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter(routes),
+        { provide: LocationSearchService, useValue: locationSearch },
+      ],
+    }).compileComponents();
   });
 
   it('renders a dashboard screen for every portal role', async () => {
@@ -55,20 +67,49 @@ describe('portal route browser smoke checks', () => {
     const button = harness.routeNativeElement?.querySelector('tbody button') as HTMLButtonElement;
     expect(button).toBeTruthy();
     expect(button.disabled).toBeFalse();
-    const initialLabel = button.textContent?.trim();
     button.click();
     harness.fixture.detectChanges();
-    expect(button.disabled).toBeTrue();
-    expect(button.textContent?.trim()).not.toBe(initialLabel);
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).not.toContain('#TS-48231');
 
     await harness.navigateByUrl('/transporter/requests');
+    await harness.fixture.whenStable();
+    harness.fixture.detectChanges();
+    const acceptedBooking = TestBed.inject(MarketplaceMockService).bookings().find((booking) => booking.bookingId === '#TS-48231');
+    expect(acceptedBooking?.status).toBe('Awaiting Deposit');
+    const bookingCard = Array.from(harness.routeNativeElement?.querySelectorAll('.card') ?? [])
+      .find((card) => card.textContent?.includes('#TS-48231'));
+    expect(bookingCard?.querySelector('.status-pill')?.textContent?.trim()).toBeTruthy();
+
     await harness.navigateByUrl('/transporter/dashboard');
     await harness.fixture.whenStable();
     await new Promise((resolve) => setTimeout(resolve, 200));
     harness.fixture.detectChanges();
-    const persistedButton = harness.routeNativeElement?.querySelector('tbody button') as HTMLButtonElement;
-    expect(persistedButton).toBeTruthy();
-    expect(persistedButton.disabled).toBeTrue();
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).not.toContain('#TS-48231');
+    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain('#TS-48227');
+    const requestsKpi = Array.from(harness.routeNativeElement?.querySelectorAll('.kpi-card') ?? [])
+      .find((card) => card.textContent?.includes('New Requests'));
+    expect(requestsKpi?.textContent).toContain('1');
+  });
+
+  it('returns a shipper to My Loads from a load detail instead of the missing load-board route', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/shipper/my-loads');
+    harness.fixture.detectChanges();
+
+    const viewButton = harness.routeNativeElement?.querySelector('tbody button') as HTMLButtonElement;
+    expect(viewButton).toBeTruthy();
+    viewButton.click();
+    await harness.fixture.whenStable();
+    harness.fixture.detectChanges();
+    expect(TestBed.inject(Router).url).toMatch(/^\/shipper\/load-board\//);
+
+    const backLink = harness.routeNativeElement?.querySelector('.page-toolbar a') as HTMLAnchorElement;
+    expect(backLink?.getAttribute('href')).toBe('/shipper/my-loads');
+    backLink.click();
+    await harness.fixture.whenStable();
+    harness.fixture.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/shipper/my-loads');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).not.toContain('Coming Soon');
   });
 
   it('lets a company manager suspend and reactivate a staff member', async () => {
@@ -86,6 +127,7 @@ describe('portal route browser smoke checks', () => {
     harness.fixture.detectChanges();
     expect(button.textContent?.trim()).toBe(initialLabel);
   });
+
 
   it('lets a company manager invite a staff member from the Staff Management screen', async () => {
     const harness = await RouterTestingHarness.create();
@@ -115,11 +157,30 @@ describe('portal route browser smoke checks', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/shipper/post-load');
 
+    const pickupLocation: GeoLocation = {
+      label: 'Connaught Place, New Delhi, Delhi, India', city: 'New Delhi', state: 'Delhi', country: 'India',
+      latitude: 28.6315, longitude: 77.2167, source: 'OpenStreetMap', osmId: '123',
+    };
+    const dropLocation: GeoLocation = {
+      label: 'Andheri, Mumbai, Maharashtra, India', city: 'Mumbai', state: 'Maharashtra', country: 'India',
+      latitude: 19.1197, longitude: 72.8468, source: 'OpenStreetMap', osmId: '456',
+    };
+    locationSearch.search.and.returnValues(of([pickupLocation]), of([dropLocation]));
+
+    for (const [field, value] of [['pickupCity', 'Connaught Place'], ['dropCity', 'Andheri']]) {
+      const input = harness.routeNativeElement?.querySelector(`input[name="${field}"]`) as HTMLInputElement;
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    harness.fixture.detectChanges();
+    (harness.routeNativeElement?.querySelector('[role="option"]') as HTMLButtonElement).click();
+    harness.fixture.detectChanges();
+    (harness.routeNativeElement?.querySelector('[role="option"]') as HTMLButtonElement).click();
+
     for (const [field, value] of [
-      ['pickupCity', 'Smoke Origin'],
-      ['dropCity', 'Smoke Destination'],
       ['material', 'Prototype cargo'],
-      ['budget', '₹12,500'],
+      ['budget', '12500'],
     ]) {
       const input = harness.routeNativeElement?.querySelector(`input[name="${field}"]`) as HTMLInputElement;
       input.value = value;
@@ -130,7 +191,11 @@ describe('portal route browser smoke checks', () => {
     await harness.fixture.whenStable();
     harness.fixture.detectChanges();
 
-    expect(TestBed.inject(MarketplaceMockService).loads().some((load) => load.pickupCity === 'Smoke Origin' && load.dropCity === 'Smoke Destination')).toBeTrue();
+    const postedLoad = TestBed.inject(MarketplaceMockService).loads().find((load) => load.pickupLocation?.osmId === '123' && load.dropLocation?.osmId === '456');
+    expect(postedLoad?.pickupCity).toBe('New Delhi');
+    expect(postedLoad?.dropCity).toBe('Mumbai');
+    expect(postedLoad?.pickupLocation?.latitude).toBe(28.6315);
+    expect(postedLoad?.dropLocation?.longitude).toBe(72.8468);
   });
 
   it('lets a truck owner add a vehicle to the fleet list', async () => {

@@ -15,6 +15,9 @@
             class="otp-box"
             maxlength="1"
             inputmode="numeric"
+            type="text"
+            pattern="[0-9]"
+            autocomplete="one-time-code"
             [ngModel]="digit"
             (ngModelChange)="onDigitInput($index, $event)"
             [name]="'otp' + $index"
@@ -24,7 +27,7 @@
       <p class="hint">{{ 'otp.notReceived' | t }} <button type="button" class="link-button" (click)="resend()">{{ 'otp.resendOtp' | t }}</button></p>
     </div>
 
-    <button type="submit" class="btn btn-primary btn-block" [disabled]="verifying()">
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="verifying() || !isOtpComplete()">
       {{ (verifying() ? 'otp.verifying' : 'otp.verify') | t }}
     </button>
   </form>

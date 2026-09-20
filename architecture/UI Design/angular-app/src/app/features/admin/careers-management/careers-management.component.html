@@ -1,0 +1,48 @@
+<div class="page-toolbar">
+  <div><h1>{{ 'admin.careers.title' | t }}</h1><p class="desc">{{ 'admin.careers.desc' | t }}</p></div>
+  <button type="button" class="btn btn-primary" (click)="create()">+ {{ 'admin.careers.add' | t }}</button>
+</div>
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-value">{{ jobs().length }}</div><div class="kpi-label">{{ 'admin.careers.total' | t }}</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ publishedCount() }}</div><div class="kpi-label">{{ 'admin.careers.published' | t }}</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ jobs().length - publishedCount() }}</div><div class="kpi-label">{{ 'admin.careers.notPublished' | t }}</div></div>
+</div>
+<div class="cms-filter-toolbar">
+  <label class="cms-search"><span>{{ 'admin.careers.search' | t }}</span><input class="input" type="search" [placeholder]="'admin.careers.searchPlaceholder' | t" [ngModel]="query()" (ngModelChange)="query.set($event)" /></label>
+  <label><span>{{ 'admin.careers.status' | t }}</span><select class="input" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)"><option value="All">{{ 'admin.careers.all' | t }}</option><option value="Draft">{{ 'admin.careers.draft' | t }}</option><option value="Published">{{ 'admin.careers.published' | t }}</option><option value="Closed">{{ 'admin.careers.closed' | t }}</option></select></label>
+</div>
+<div class="card"><div class="table-scroll"><table class="data-table">
+  <thead><tr><th>{{ 'admin.careers.job' | t }}</th><th>{{ 'admin.careers.department' | t }}</th><th>{{ 'admin.careers.location' | t }}</th><th>{{ 'admin.careers.updated' | t }}</th><th>{{ 'admin.careers.status' | t }}</th><th>{{ 'admin.careers.actions' | t }}</th></tr></thead>
+  <tbody>@for (job of filteredJobs(); track job.id) {
+    <tr><td><b>{{ job.title.en }}</b><div style="font-size:12px;color:var(--color-text-muted);">{{ job.title.hi || ('admin.careers.hindiMissing' | t) }} · {{ job.employmentType }}</div></td><td>{{ job.department }}</td><td>{{ job.location }}</td><td>{{ job.updatedAt }}</td>
+      <td><span class="status-pill" [class.status-delivered]="job.status === 'Published'" [class.status-pending]="job.status === 'Draft'" [class.status-cancelled]="job.status === 'Closed'">{{ ('admin.careers.status.' + job.status) | t }}</span></td>
+      <td><div style="display:flex;gap:6px;flex-wrap:wrap;"><button type="button" class="btn btn-outline btn-sm" (click)="edit(job)">{{ 'admin.careers.edit' | t }}</button>
+        @if (job.status === 'Draft') {<button type="button" class="btn btn-outline btn-sm" (click)="publish(job)">{{ 'admin.careers.publish' | t }}</button>}
+        @if (job.status === 'Published') {<button type="button" class="btn btn-outline btn-sm" (click)="unpublish(job)">{{ 'admin.careers.unpublish' | t }}</button><button type="button" class="btn btn-outline btn-sm" (click)="closeJob(job)">{{ 'admin.careers.close' | t }}</button>}
+        @if (job.status === 'Closed') {<button type="button" class="btn btn-outline btn-sm" (click)="reopen(job)">{{ 'admin.careers.reopen' | t }}</button>}
+        <button type="button" class="btn btn-outline btn-sm" (click)="remove(job)">{{ 'admin.careers.remove' | t }}</button></div></td>
+    </tr>
+  } @empty {<tr><td colspan="6">{{ 'admin.careers.empty' | t }}</td></tr>}</tbody>
+</table></div></div>
+
+@if (editingId() !== null) {
+  <app-modal [large]="true" [title]="editingId() ? ('admin.careers.editTitle' | t) : ('admin.careers.createTitle' | t)" (close)="cancel()">
+    <div class="field"><label for="career-title-en">{{ 'admin.careers.titleEnglish' | t }} *</label><input id="career-title-en" class="input" [ngModel]="form().title.en" (ngModelChange)="updateLocalized('title', 'en', $event)" /></div>
+    <div class="field"><label for="career-title-hi">{{ 'admin.careers.titleHindi' | t }}</label><input id="career-title-hi" class="input" [ngModel]="form().title.hi" (ngModelChange)="updateLocalized('title', 'hi', $event)" /></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;">
+      <div class="field"><label for="career-dept">{{ 'admin.careers.department' | t }} *</label><input id="career-dept" class="input" [ngModel]="form().department" (ngModelChange)="update('department', $event)" /></div>
+      <div class="field"><label for="career-location">{{ 'admin.careers.location' | t }} *</label><input id="career-location" class="input" [ngModel]="form().location" (ngModelChange)="update('location', $event)" /></div>
+      <div class="field"><label for="career-type">{{ 'admin.careers.employmentType' | t }}</label><select id="career-type" class="input" [ngModel]="form().employmentType" (ngModelChange)="update('employmentType', $event)"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option></select></div>
+      <div class="field"><label for="career-close-date">{{ 'admin.careers.closingDate' | t }}</label><input id="career-close-date" type="date" class="input" [ngModel]="form().closingDate" (ngModelChange)="update('closingDate', $event)" /></div>
+    </div>
+    <div class="field"><label for="career-summary-en">{{ 'admin.careers.summaryEnglish' | t }} *</label><textarea id="career-summary-en" class="input" rows="2" [ngModel]="form().summary.en" (ngModelChange)="updateLocalized('summary', 'en', $event)"></textarea></div>
+    <div class="field"><label for="career-summary-hi">{{ 'admin.careers.summaryHindi' | t }}</label><textarea id="career-summary-hi" class="input" rows="2" [ngModel]="form().summary.hi" (ngModelChange)="updateLocalized('summary', 'hi', $event)"></textarea></div>
+    <div class="field"><label for="career-desc-en">{{ 'admin.careers.descriptionEnglish' | t }} *</label><textarea id="career-desc-en" class="input" rows="4" [ngModel]="form().description.en" (ngModelChange)="updateLocalized('description', 'en', $event)"></textarea></div>
+    <div class="field"><label for="career-desc-hi">{{ 'admin.careers.descriptionHindi' | t }}</label><textarea id="career-desc-hi" class="input" rows="4" [ngModel]="form().description.hi" (ngModelChange)="updateLocalized('description', 'hi', $event)"></textarea></div>
+    <div class="field"><label for="career-req-en">{{ 'admin.careers.requirementsEnglish' | t }}</label><textarea id="career-req-en" class="input" rows="3" [ngModel]="form().requirements.en" (ngModelChange)="updateLocalized('requirements', 'en', $event)"></textarea></div>
+    <div class="field"><label for="career-req-hi">{{ 'admin.careers.requirementsHindi' | t }}</label><textarea id="career-req-hi" class="input" rows="3" [ngModel]="form().requirements.hi" (ngModelChange)="updateLocalized('requirements', 'hi', $event)"></textarea></div>
+    <div class="field"><label for="career-url">{{ 'admin.careers.applicationUrl' | t }}</label><input id="career-url" type="url" class="input" placeholder="https://" [ngModel]="form().applicationUrl" (ngModelChange)="update('applicationUrl', $event)" /><small>{{ 'admin.careers.applicationUrlHint' | t }}</small></div>
+    @if (formError()) {<p role="alert" style="color:var(--color-danger);">{{ formError() | t }}</p>}
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="cancel()">{{ 'admin.common.cancel' | t }}</button><button type="button" class="btn btn-primary" (click)="save()">{{ 'admin.common.save' | t }}</button></div>
+  </app-modal>
+}

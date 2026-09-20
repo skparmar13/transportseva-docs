@@ -209,13 +209,13 @@
         </div>
         <div class="field">
           <label>{{ 'vehicleDetails.modal.maintenance.odometer' | t }}</label>
-          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.odometerPh' | t" [ngModel]="odometer()" (ngModelChange)="odometer.set($event)" name="odometer" />
+          <input type="number" min="0" step="1" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.odometerPh' | t" [ngModel]="odometer()" (ngModelChange)="odometer.set($event)" name="odometer" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
           <label>{{ 'vehicleDetails.modal.maintenance.cost' | t }}</label>
-          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.costPh' | t" [ngModel]="cost()" (ngModelChange)="cost.set($event)" name="cost" />
+          <input type="number" min="0" step="0.01" inputmode="decimal" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.maintenance.costPh' | t" [ngModel]="cost()" (ngModelChange)="cost.set($event)" name="cost" />
         </div>
         <div class="field">
           <label>{{ 'vehicleDetails.modal.maintenance.workshop' | t }}</label>
@@ -242,17 +242,17 @@
         </div>
         <div class="field">
           <label>{{ 'vehicleDetails.modal.fuel.liters' | t }}</label>
-          <input type="number" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.litersPh' | t" [ngModel]="liters()" (ngModelChange)="liters.set($event)" name="liters" />
+          <input type="number" min="0.01" step="0.01" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.litersPh' | t" [ngModel]="liters()" (ngModelChange)="liters.set($event)" name="liters" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
           <label>{{ 'vehicleDetails.modal.fuel.cost' | t }}</label>
-          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.costPh' | t" [ngModel]="fuelCost()" (ngModelChange)="fuelCost.set($event)" name="fuelCost" />
+          <input type="number" min="0" step="0.01" inputmode="decimal" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.costPh' | t" [ngModel]="fuelCost()" (ngModelChange)="fuelCost.set($event)" name="fuelCost" />
         </div>
         <div class="field">
           <label>{{ 'vehicleDetails.modal.fuel.odometer' | t }}</label>
-          <input type="text" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.odometerPh' | t" [ngModel]="fuelOdometer()" (ngModelChange)="fuelOdometer.set($event)" name="fuelOdometer" />
+          <input type="number" min="0" step="1" class="input" style="padding-left:14px;" [placeholder]="'vehicleDetails.modal.fuel.odometerPh' | t" [ngModel]="fuelOdometer()" (ngModelChange)="fuelOdometer.set($event)" name="fuelOdometer" />
         </div>
       </div>
       <div class="field">

@@ -1,7 +1,7 @@
 @if (load(); as l) {
   <div class="page-toolbar">
     <div>
-      <a [routerLink]="[session.portal().basePath, 'load-board']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">{{ 'loadDetails.back' | t }}</a>
+      <a [routerLink]="[session.portal().basePath, isOwner() ? 'my-loads' : 'load-board']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">{{ 'loadDetails.back' | t }}</a>
       <h1 style="margin-top:6px;">{{ l.loadId }} — {{ l.pickupCity }} → {{ l.dropCity }}</h1>
     </div>
     <span class="status-pill" [class]="l.status === 'Booked' ? 'status-delivered' : l.status === 'Applications Received' ? 'status-transit' : 'status-pending'">{{ statusKey(l.status) | t }}</span>
@@ -70,7 +70,7 @@
                       }
                       <div class="field" style="margin-top:10px;">
                         <label>{{ 'loadDetails.counter.amountLabel' | t }}</label>
-                        <input type="text" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
+                        <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
                       </div>
                       <div class="field">
                         <label>{{ 'loadDetails.counter.message' | t }}</label>
@@ -145,7 +145,7 @@
                   }
                   <div class="field" style="margin-top:10px;">
                     <label>{{ 'loadDetails.counter.amountLabel' | t }}</label>
-                    <input type="text" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
+                    <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
                   </div>
                   <div class="field">
                     <label>{{ 'loadDetails.counter.message' | t }}</label>
@@ -242,7 +242,7 @@
         <label>{{ 'loadDetails.apply.freightLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-wallet" [size]="18" />
-          <input type="text" class="input" [placeholder]="'loadDetails.apply.freightPlaceholder' | t" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
+        <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.apply.freightPlaceholder' | t" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
         </div>
       </div>
       <div class="field">

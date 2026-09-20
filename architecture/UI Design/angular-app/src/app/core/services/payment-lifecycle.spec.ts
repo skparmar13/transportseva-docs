@@ -24,9 +24,12 @@ describe('Payment lifecycle prototype', () => {
   it('records valid offline payments and rejects malformed amounts', () => {
     payments.recordOfflinePayment('#TS-48230', '2500', 'RCPT-1');
     payments.recordOfflinePayment('#TS-48230', 'not-money', 'RCPT-2');
+    payments.recordOfflinePayment('#TS-48230', '0', 'RCPT-3');
+    payments.recordOfflinePayment('#TS-48230', '12.345', 'RCPT-4');
     const entries = payments.ledgerEntries().filter((e) => e.reference.startsWith('RCPT-'));
     expect(entries.length).toBe(1);
     expect(entries[0].type).toBe('Payment');
+    expect(entries[0].amount).toContain('2,500');
   });
 
   it('moves a processing refund to completed', () => {

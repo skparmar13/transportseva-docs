@@ -1,0 +1,46 @@
+<div class="page-toolbar">
+  <div>
+    <h1>{{ 'geofences.title' | t }}</h1>
+    <p class="desc">{{ 'geofences.desc' | t }}</p>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button type="button" class="btn btn-outline" (click)="backToTracking()">{{ 'geofences.backToTracking' | t }}</button>
+    <button type="button" class="btn btn-primary" (click)="openForm()"><app-icon name="i-plus" [size]="16" /> {{ 'geofences.add' | t }}</button>
+  </div>
+</div>
+
+@if (showForm()) {
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head"><h3>{{ 'geofences.formTitle' | t }}</h3><button type="button" class="btn btn-outline btn-sm" (click)="cancelForm()">{{ 'geofences.cancel' | t }}</button></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+        <div class="field"><label for="zone-name">{{ 'geofences.name' | t }}</label><input id="zone-name" class="input" style="padding-left:14px;" [placeholder]="'geofences.namePlaceholder' | t" [ngModel]="name()" (ngModelChange)="name.set($event)" /></div>
+        <div class="field"><app-location-picker id="zone-location" name="zoneLocation" labelKey="geofences.center" placeholderKey="geofences.centerPlaceholder" [value]="center()" [suggestionsAbove]="true" (valueChange)="onCenterChange($event)" (locationSelected)="onCenterSelected($event)" /></div>
+        <div class="field"><label for="zone-radius">{{ 'geofences.radius' | t }}</label><input id="zone-radius" type="number" class="input" style="padding-left:14px;" min="0.1" max="500" step="0.1" [ngModel]="radius()" (ngModelChange)="radius.set($event === '' ? null : +$event)" /></div>
+        <div class="field"><label for="zone-vehicle">{{ 'geofences.vehicle' | t }}</label><select id="zone-vehicle" class="input" style="padding-left:14px;" [ngModel]="vehicleReg()" (ngModelChange)="vehicleReg.set($event)"><option value="">{{ 'geofences.selectVehicle' | t }}</option>@for (vehicle of vehicles(); track vehicle.regNumber) { <option [value]="vehicle.regNumber">{{ vehicle.regNumber }}</option> }</select></div>
+      </div>
+      @if (formError()) { <p role="alert" style="color:var(--color-danger);margin:10px 0 0;">{{ formError() | t }}</p> }
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;"><button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="saveZone()">{{ 'geofences.save' | t }}</button></div>
+    </div>
+  </div>
+}
+
+<div class="card">
+  <div class="card-head"><h3>{{ 'geofences.listTitle' | t }}</h3><span>{{ zones().length }} {{ 'geofences.countLabel' | t }}</span></div>
+  <div class="card-body" style="padding:0;">
+    @if (zones().length) {
+      <table class="data-table">
+        <thead><tr><th>{{ 'geofences.name' | t }}</th><th>{{ 'geofences.location' | t }}</th><th>{{ 'geofences.vehicle' | t }}</th><th>{{ 'geofences.status' | t }}</th><th>{{ 'geofences.actions' | t }}</th></tr></thead>
+        <tbody>@for (zone of zones(); track zone.id) {
+          <tr>
+            <td><b>{{ zone.name }}</b><div style="font-size:12px;color:var(--color-text-soft);">{{ zone.type }}</div></td>
+            <td>{{ zone.centerLabel }}@if (zone.radiusKm) { <div style="font-size:12px;color:var(--color-text-soft);">{{ zone.radiusKm }} km {{ 'geofences.radiusSuffix' | t }}</div> }</td>
+            <td>{{ zone.assignedVehicles.join(', ') || '—' }}</td>
+            <td><span class="status-pill" [class]="zone.status === 'Active' ? 'status-delivered' : 'status-pending'">{{ (zone.status === 'Active' ? 'geofences.active' : 'geofences.inactive') | t }}</span></td>
+            <td><button type="button" class="btn btn-outline btn-sm" (click)="toggleZone(zone.id)">{{ (zone.status === 'Active' ? 'geofences.deactivate' : 'geofences.activate') | t }}</button></td>
+          </tr>
+        }</tbody>
+      </table>
+    } @else { <div class="empty-state"><app-icon name="i-map" /><h3>{{ 'geofences.emptyTitle' | t }}</h3><p>{{ 'geofences.emptyDesc' | t }}</p></div> }
+  </div>
+</div>

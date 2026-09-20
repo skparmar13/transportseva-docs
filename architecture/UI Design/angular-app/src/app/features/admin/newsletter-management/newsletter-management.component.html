@@ -1,0 +1,21 @@
+<div class="page-toolbar">
+  <div><h1>{{ 'admin.newsletter.title' | t }}</h1><p class="desc">{{ 'admin.newsletter.desc' | t }}</p></div>
+</div>
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-value">{{ subscribers().length }}</div><div class="kpi-label">{{ 'admin.newsletter.total' | t }}</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ activeCount() }}</div><div class="kpi-label">{{ 'admin.newsletter.active' | t }}</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ unsubscribedCount() }}</div><div class="kpi-label">{{ 'admin.newsletter.unsubscribed' | t }}</div></div>
+</div>
+<div class="cms-filter-toolbar">
+  <label class="cms-search"><span>{{ 'admin.newsletter.search' | t }}</span><input class="input" type="search" [placeholder]="'admin.newsletter.searchPlaceholder' | t" [ngModel]="query()" (ngModelChange)="query.set($event)" /></label>
+  <label><span>{{ 'admin.newsletter.status' | t }}</span><select class="input" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)"><option value="All">{{ 'admin.newsletter.all' | t }}</option><option value="Subscribed">{{ 'admin.newsletter.active' | t }}</option><option value="Unsubscribed">{{ 'admin.newsletter.unsubscribed' | t }}</option></select></label>
+</div>
+<div class="card"><div class="table-scroll"><table class="data-table">
+  <thead><tr><th>{{ 'admin.newsletter.email' | t }}</th><th>{{ 'admin.newsletter.date' | t }}</th><th>{{ 'admin.newsletter.source' | t }}</th><th>{{ 'admin.newsletter.status' | t }}</th><th>{{ 'admin.newsletter.actions' | t }}</th></tr></thead>
+  <tbody>@for (subscriber of filtered(); track subscriber.id) {
+    <tr><td><b>{{ subscriber.email }}</b></td><td>{{ subscriber.subscribedAt }}</td><td>{{ 'admin.newsletter.publicWebsite' | t }}</td>
+      <td><span class="status-pill" [class.status-delivered]="subscriber.status === 'Subscribed'" [class.status-cancelled]="subscriber.status === 'Unsubscribed'">{{ (subscriber.status === 'Subscribed' ? 'admin.newsletter.active' : 'admin.newsletter.unsubscribed') | t }}</span></td>
+      <td><div style="display:flex;gap:6px;"><button type="button" class="btn btn-outline btn-sm" (click)="toggleStatus(subscriber)">{{ (subscriber.status === 'Subscribed' ? 'admin.newsletter.unsubscribe' : 'admin.newsletter.resubscribe') | t }}</button><button type="button" class="btn btn-outline btn-sm" (click)="remove(subscriber)">{{ 'admin.newsletter.remove' | t }}</button></div></td>
+    </tr>
+  } @empty {<tr><td colspan="5">{{ subscribers().length ? ('admin.newsletter.noResults' | t) : ('admin.newsletter.empty' | t) }}</td></tr>}</tbody>
+</table></div></div>

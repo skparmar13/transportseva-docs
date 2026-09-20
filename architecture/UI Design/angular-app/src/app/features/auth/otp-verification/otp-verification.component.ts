@@ -26,14 +26,19 @@ export class OtpVerificationComponent {
 
   protected onDigitInput(index: number, value: string): void {
     const next = [...this.digits()];
-    next[index] = value.slice(-1);
+    next[index] = value.replace(/\D/g, '').slice(-1);
     this.digits.set(next);
-    if (value && index < 5) {
+    if (next[index] && index < 5) {
       this.otpInputs.get(index + 1)?.nativeElement.focus();
     }
   }
 
+  protected isOtpComplete(): boolean {
+    return this.digits().every((digit) => /^\d$/.test(digit));
+  }
+
   protected verify(): void {
+    if (!this.isOtpComplete()) return;
     this.verifying.set(true);
     this.auth.verifyOtp(this.digits().join('')).subscribe(() => {
       this.verifying.set(false);

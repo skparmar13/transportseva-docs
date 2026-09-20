@@ -1,4 +1,5 @@
 import { PortalRole } from './nav.model';
+import { GeoLocation } from './location.model';
 
 /**
  * TransportSeva Marketplace — core domain model for the UX/UI
@@ -22,6 +23,8 @@ export interface Load {
   onBehalfOfCustomer?: string;
   pickupCity: string;
   dropCity: string;
+  pickupLocation?: GeoLocation;
+  dropLocation?: GeoLocation;
   material: string;
   weightTons: number;
   vehicleType: VehicleType;

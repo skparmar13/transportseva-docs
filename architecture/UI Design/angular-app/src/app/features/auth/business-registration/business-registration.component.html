@@ -10,16 +10,10 @@
   visualImage="images/app-truck.png"
   [wide]="true"
 >
-  <form (ngSubmit)="submit()">
+  <form #businessForm="ngForm" (ngSubmit)="submit(businessForm)">
     <div class="field">
       <label>{{ 'businessReg.businessType' | t }}</label>
-      <div class="role-grid" style="grid-template-columns: repeat(3, 1fr);">
-        @for (type of businessTypes; track type.value) {
-          <div class="role-card" [class.active]="businessType() === type.value" (click)="businessType.set(type.value)" style="padding:12px 8px;">
-            <span style="font-size:12px;">{{ type.labelKey | t }}</span>
-          </div>
-        }
-      </div>
+      <div class="input-wrap" aria-live="polite"><span>{{ ('businessReg.type.' + (businessType() === 'truck-owner' ? 'truckOwner' : businessType())) | t }}</span></div>
     </div>
 
     <div class="field">
@@ -51,32 +45,33 @@
       <label>{{ 'businessReg.fleetSizeLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-truck" [size]="18" />
-        <input type="number" class="input" [placeholder]="'businessReg.fleetSizePlaceholder' | t" name="fleetSize" [ngModel]="fleetSize()" (ngModelChange)="fleetSize.set($event)">
+<input type="number" class="input" min="1" max="100000" step="1" [required]="businessType() === 'truck-owner'" [placeholder]="'businessReg.fleetSizePlaceholder' | t" name="fleetSize" [ngModel]="fleetSize()" (ngModelChange)="fleetSize.set($event)">
       </div>
     </div>
 
     <div class="field">
-      <label>{{ 'businessReg.addressLabel' | t }}</label>
       <div class="input-wrap">
-        <app-icon name="i-map" [size]="18" />
-        <input type="text" class="input" [placeholder]="'businessReg.addressPlaceholder' | t" name="address" [ngModel]="address()" (ngModelChange)="address.set($event)">
+        <app-location-picker id="business-address" name="address" labelKey="businessReg.addressLabel" placeholderKey="businessReg.addressPlaceholder" [value]="address()" (valueChange)="address.set($event)" (locationSelected)="setBusinessLocation($event)" />
       </div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
       <div class="field">
-        <label>{{ 'businessReg.cityLabel' | t }}</label>
-        <input type="text" class="input" [placeholder]="'businessReg.cityLabel' | t" name="city" [ngModel]="city()" (ngModelChange)="city.set($event)">
+        <app-location-picker id="business-city" name="city" labelKey="businessReg.cityLabel" placeholderKey="businessReg.cityLabel" [value]="city()" (valueChange)="city.set($event)" (locationSelected)="setBusinessLocation($event)" />
       </div>
       <div class="field">
         <label>{{ 'businessReg.stateLabel' | t }}</label>
-        <input type="text" class="input" [placeholder]="'businessReg.stateLabel' | t" name="state" [ngModel]="state()" (ngModelChange)="state.set($event)">
+        <input type="text" class="input" [placeholder]="'businessReg.stateLabel' | t" name="state" [ngModel]="state()" (ngModelChange)="state.set($event)" required>
       </div>
       <div class="field">
         <label>{{ 'businessReg.pincodeLabel' | t }}</label>
-        <input type="text" class="input" [placeholder]="'businessReg.pincodeLabel' | t" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)">
+<input type="text" class="input" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" [placeholder]="'businessReg.pincodeLabel' | t" name="pincode" [ngModel]="pincode()" (ngModelChange)="pincode.set($event)" required>
       </div>
     </div>
+
+    @if (validationError()) {
+      <p class="hint" role="alert">{{ validationError() | t }}</p>
+    }
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
       <span>{{ (submitting() ? 'businessReg.saving' : 'common.continue') | t }}</span>

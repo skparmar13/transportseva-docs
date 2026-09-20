@@ -44,6 +44,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Route Management', labelKey: 'nav.routeManagement', icon: 'i-route', path: 'routes' },
           { label: 'Trip Management', labelKey: 'nav.tripManagement', icon: 'i-truck', path: 'trips' },
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
+          { label: 'Geofences', labelKey: 'nav.geofences', icon: 'i-target', path: 'geofences' },
         ],
       },
       {
@@ -63,6 +64,8 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Support Tickets', labelKey: 'nav.supportTickets', icon: 'i-ticket', path: 'support' },
           { label: 'Document Verification', labelKey: 'nav.documentVerification', icon: 'i-doc', path: 'documents' },
           { label: 'CMS Management', labelKey: 'nav.cmsManagement', icon: 'i-layers', path: 'cms' },
+          { label: 'Careers Management', labelKey: 'nav.careersManagement', icon: 'i-users', path: 'careers' },
+          { label: 'Newsletter Subscribers', labelKey: 'nav.newsletter', icon: 'i-mail', path: 'newsletter' },
         ],
       },
       {
@@ -100,6 +103,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         titleKey: 'nav.shipments',
         items: [
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
+          { label: 'Geofences', labelKey: 'nav.geofences', icon: 'i-target', path: 'geofences' },
           { label: 'Trip History', labelKey: 'nav.tripHistory', icon: 'i-clock', path: 'trips' },
           { label: 'Reports & Analytics', labelKey: 'nav.reportsAnalytics', icon: 'i-chart', path: 'reports' },
         ],
@@ -143,6 +147,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Fleet & Drivers', labelKey: 'nav.fleetDrivers', icon: 'i-car', path: 'fleet' },
           { label: 'Device Inventory', labelKey: 'nav.deviceInventory', icon: 'i-api', path: 'devices' },
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
+          { label: 'Geofences', labelKey: 'nav.geofences', icon: 'i-target', path: 'geofences' },
         ],
       },
       {
@@ -198,6 +203,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'My Drivers', labelKey: 'nav.myDrivers', icon: 'i-truck', path: 'drivers' },
           { label: 'Device Inventory', labelKey: 'nav.deviceInventory', icon: 'i-api', path: 'devices' },
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
+          { label: 'Geofences', labelKey: 'nav.geofences', icon: 'i-target', path: 'geofences' },
         ],
       },
       {

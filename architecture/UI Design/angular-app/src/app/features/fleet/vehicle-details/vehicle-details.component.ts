@@ -104,8 +104,8 @@ export class VehicleDetailsComponent {
   protected readonly showMaintenanceModal = signal(false);
   protected readonly serviceType = signal('');
   protected readonly serviceDate = signal('');
-  protected readonly odometer = signal('');
-  protected readonly cost = signal('');
+  protected readonly odometer = signal<number | null>(null);
+  protected readonly cost = signal<number | null>(null);
   protected readonly workshop = signal('');
   protected readonly notes = signal('');
 
@@ -117,19 +117,20 @@ export class VehicleDetailsComponent {
     this.showMaintenanceModal.set(false);
     this.serviceType.set('');
     this.serviceDate.set('');
-    this.odometer.set('');
-    this.cost.set('');
+    this.odometer.set(null);
+    this.cost.set(null);
     this.workshop.set('');
     this.notes.set('');
   }
 
   protected submitMaintenance(): void {
-    if (!this.serviceType() || !this.workshop()) return;
+    if (!this.serviceType().trim() || !this.workshop().trim()) return;
+    if (!this.validNonNegativeMoney(this.cost()) || (this.odometer() !== null && (!Number.isInteger(this.odometer()) || this.odometer()! < 0))) return;
     this.fleet.addMaintenanceRecord(this.vehicleId, {
       serviceType: this.serviceType(),
       date: this.serviceDate() || 'Just now',
-      odometer: this.odometer() || '—',
-      cost: this.cost() || '—',
+      odometer: this.odometer()?.toLocaleString('en-IN') ?? '—',
+      cost: this.cost() === null ? '—' : `₹${this.cost()!.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`,
       workshop: this.workshop(),
       notes: this.notes() || undefined,
     });
@@ -140,8 +141,8 @@ export class VehicleDetailsComponent {
   protected readonly showFuelModal = signal(false);
   protected readonly fuelDate = signal('');
   protected readonly liters = signal<number | null>(null);
-  protected readonly fuelCost = signal('');
-  protected readonly fuelOdometer = signal('');
+  protected readonly fuelCost = signal<number | null>(null);
+  protected readonly fuelOdometer = signal<number | null>(null);
   protected readonly fuelStation = signal('');
 
   protected openAddFuel(): void {
@@ -152,20 +153,25 @@ export class VehicleDetailsComponent {
     this.showFuelModal.set(false);
     this.fuelDate.set('');
     this.liters.set(null);
-    this.fuelCost.set('');
-    this.fuelOdometer.set('');
+    this.fuelCost.set(null);
+    this.fuelOdometer.set(null);
     this.fuelStation.set('');
   }
 
   protected submitFuel(): void {
-    if (!this.liters() || !this.fuelStation()) return;
+    if (!this.liters() || !this.fuelStation().trim() || !this.validNonNegativeMoney(this.fuelCost())) return;
+    if (this.fuelOdometer() !== null && (!Number.isInteger(this.fuelOdometer()) || this.fuelOdometer()! < 0)) return;
     this.fleet.addFuelLog(this.vehicleId, {
       date: this.fuelDate() || 'Just now',
       liters: this.liters() ?? 0,
-      cost: this.fuelCost() || '—',
-      odometer: this.fuelOdometer() || '—',
+      cost: this.fuelCost() === null ? '—' : `₹${this.fuelCost()!.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`,
+      odometer: this.fuelOdometer()?.toLocaleString('en-IN') ?? '—',
       fuelStation: this.fuelStation(),
     });
     this.closeFuel();
+  }
+
+  private validNonNegativeMoney(value: number | null): boolean {
+    return value === null || (Number.isFinite(value) && value >= 0 && Number.isInteger(value * 100));
   }
 }

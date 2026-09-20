@@ -6,6 +6,8 @@ import { MarketplaceMockService } from '../../../core/services/marketplace-mock.
 import { SessionService } from '../../../core/services/session.service';
 import { VehicleType } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
+import { GeoLocation } from '../../../core/models/location.model';
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
 
 const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -18,7 +20,7 @@ const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft
 @Component({
   selector: 'app-post-load',
   standalone: true,
-  imports: [IconComponent, FormsModule, TranslatePipe],
+  imports: [IconComponent, FormsModule, TranslatePipe, LocationPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './post-load.component.html',
 })
@@ -33,37 +35,49 @@ export class PostLoadComponent {
   protected readonly onBehalfOfCustomer = signal('');
   protected readonly pickupCity = signal('');
   protected readonly dropCity = signal('');
+  protected readonly pickupLocation = signal<GeoLocation | null>(null);
+  protected readonly dropLocation = signal<GeoLocation | null>(null);
   protected readonly material = signal('');
   protected readonly weightTons = signal<number | null>(null);
   protected readonly vehicleType = signal<VehicleType>('Open Body Truck');
   protected readonly pickupDate = signal('');
-  protected readonly budget = signal('');
+  protected readonly budget = signal<number | null>(null);
   protected readonly notes = signal('');
   protected readonly submitting = signal(false);
   protected readonly submitted = signal(false);
   protected readonly postedLoadId = signal('');
 
   protected submit(): void {
-    if (!this.pickupCity() || !this.dropCity() || !this.material() || !this.budget()) return;
+    const budget = this.budget();
+    const weight = this.weightTons();
+    if (!this.pickupCity().trim() || !this.dropCity().trim() || !this.material().trim()) return;
+    if (budget === null || !Number.isFinite(budget) || budget <= 0 || !this.hasAtMostTwoDecimals(budget)) return;
+    if (weight !== null && (!Number.isFinite(weight) || weight <= 0 || !this.hasAtMostTwoDecimals(weight))) return;
     this.submitting.set(true);
     setTimeout(() => {
       const load = this.marketplace.postLoad({
         postedBy: this.session.role(),
         postedByName: this.session.user().company ?? this.session.user().name,
         onBehalfOfCustomer: this.isTransporter() && this.onBehalfOfCustomer() ? this.onBehalfOfCustomer() : undefined,
-        pickupCity: this.pickupCity(),
-        dropCity: this.dropCity(),
+        pickupCity: this.pickupLocation()?.city ?? this.pickupCity(),
+        dropCity: this.dropLocation()?.city ?? this.dropCity(),
+        pickupLocation: this.pickupLocation() ?? undefined,
+        dropLocation: this.dropLocation() ?? undefined,
         material: this.material(),
         weightTons: this.weightTons() ?? 0,
         vehicleType: this.vehicleType(),
         pickupDate: this.pickupDate() || 'To be confirmed',
-        budget: this.budget(),
+        budget,
         notes: this.notes() || undefined,
       });
       this.postedLoadId.set(load.loadId);
       this.submitting.set(false);
       this.submitted.set(true);
     }, 500);
+  }
+
+  private hasAtMostTwoDecimals(value: number): boolean {
+    return Number.isInteger(value * 100);
   }
 
   protected goToMyLoads(): void {
@@ -75,10 +89,12 @@ export class PostLoadComponent {
     this.onBehalfOfCustomer.set('');
     this.pickupCity.set('');
     this.dropCity.set('');
+    this.pickupLocation.set(null);
+    this.dropLocation.set(null);
     this.material.set('');
     this.weightTons.set(null);
     this.pickupDate.set('');
-    this.budget.set('');
+    this.budget.set(null);
     this.notes.set('');
   }
 }

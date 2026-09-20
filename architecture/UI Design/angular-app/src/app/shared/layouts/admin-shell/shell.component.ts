@@ -101,8 +101,10 @@ export class ShellComponent {
     this.closeSidebar();
     this.closeBellDropdown();
     this.searchTerm.set('');
+    const isPlatformStaff = this.sessionSvc.platformStaff() !== null;
+    this.sessionSvc.clearPlatformStaff();
     this.sessionSvc.setRole('admin');
-    this.router.navigate(['/auth/login']);
+    this.router.navigate([isPlatformStaff ? '/auth/staff/login' : '/auth/login']);
   }
 
   protected toggleBellDropdown(): void {

@@ -12,6 +12,14 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+const privateRoutePrefixes = ['/auth', '/admin', '/shipper', '/transporter', '/truck-owner', '/driver', '/company'];
+app.use((req, res, next) => {
+  if (privateRoutePrefixes.some((prefix) => req.path === prefix || req.path.startsWith(`${prefix}/`))) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+  next();
+});
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.

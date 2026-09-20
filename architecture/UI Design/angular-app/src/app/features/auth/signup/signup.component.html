@@ -41,7 +41,7 @@
     }
   </div>
 
-  <form (ngSubmit)="submit()">
+  <form #signupForm="ngForm" (ngSubmit)="submit(signupForm)">
     <div class="field">
       <label>{{ 'auth.fullName' | t }}</label>
       <div class="input-wrap">
@@ -56,7 +56,7 @@
         <div class="phone-code">+91</div>
         <div class="input-wrap" style="flex:1;">
           <app-icon name="i-phone" [size]="18" />
-          <input type="tel" class="input" maxlength="10" [placeholder]="'signup.mobilePlaceholder' | t" name="mobile" [ngModel]="mobile()" (ngModelChange)="mobile.set($event)" required>
+          <input type="tel" class="input" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" [placeholder]="'signup.mobilePlaceholder' | t" name="mobile" [ngModel]="mobile()" (ngModelChange)="mobile.set($event)" required>
         </div>
       </div>
     </div>
@@ -69,21 +69,11 @@
       </div>
     </div>
 
-    @if (requiresCompany()) {
-      <div class="field">
-        <label>{{ 'signup.companyLabel' | t }}</label>
-        <div class="input-wrap">
-          <app-icon name="i-building" [size]="18" />
-          <input type="text" class="input" [placeholder]="'signup.companyPlaceholder' | t" name="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)">
-        </div>
-      </div>
-    }
-
     <div class="field">
       <label>{{ 'signup.passwordLabel' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-lock" [size]="18" />
-        <input type="password" class="input" [placeholder]="'signup.passwordPlaceholder' | t" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)" required>
+        <input type="password" class="input" minlength="8" autocomplete="new-password" [placeholder]="'signup.passwordPlaceholder' | t" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)" required>
       </div>
     </div>
 
@@ -91,14 +81,18 @@
       <label>{{ 'auth.confirmPassword' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-lock" [size]="18" />
-        <input type="password" class="input" [placeholder]="'signup.confirmPasswordPlaceholder' | t" name="confirmPassword" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" required>
+        <input type="password" class="input" autocomplete="new-password" [placeholder]="'signup.confirmPasswordPlaceholder' | t" name="confirmPassword" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" required>
       </div>
     </div>
 
     <label class="checkbox-row" style="margin-bottom:22px;">
-      <input type="checkbox" [ngModel]="agreeTerms()" (ngModelChange)="agreeTerms.set($event)" name="agreeTerms">
-      <span>{{ 'signup.termsPrefix' | t }} <a routerLink="/terms-conditions">{{ 'signup.termsLink' | t }}</a> {{ 'signup.termsAnd' | t }} <a routerLink="/privacy-policy">{{ 'signup.privacyLink' | t }}</a></span>
+      <input type="checkbox" [ngModel]="agreeTerms()" (ngModelChange)="agreeTerms.set($event)" name="agreeTerms" required>
+      <span>{{ 'signup.termsPrefix' | t }} <a routerLink="/terms-conditions" target="_blank" rel="noopener noreferrer">{{ 'signup.termsLink' | t }}</a> {{ 'signup.termsAnd' | t }} <a routerLink="/privacy-policy">{{ 'signup.privacyLink' | t }}</a></span>
     </label>
+
+    @if (validationError()) {
+      <p class="hint" role="alert">{{ validationError() | t }}</p>
+    }
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
       <span>{{ (submitting() ? 'signup.submitting' : 'signup.submit') | t }}</span>

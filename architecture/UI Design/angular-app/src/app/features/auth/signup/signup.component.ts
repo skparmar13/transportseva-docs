@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -27,11 +27,11 @@ export class SignupComponent {
   protected readonly fullName = signal('');
   protected readonly mobile = signal('');
   protected readonly email = signal('');
-  protected readonly companyName = signal('');
   protected readonly password = signal('');
   protected readonly confirmPassword = signal('');
-  protected readonly agreeTerms = signal(true);
+  protected readonly agreeTerms = signal(false);
   protected readonly submitting = signal(false);
+  protected readonly validationError = signal('');
 
   // Which plan this signup is for — driven by the CTA the user clicked (Pricing page
   // "Get Started Free" → starter, "Upgrade to Professional" → professional). Falls back
@@ -56,10 +56,6 @@ export class SignupComponent {
     this.selectedRole.set(role);
   }
 
-  protected requiresCompany(): boolean {
-    return this.roleOptions.find((r) => r.role === this.selectedRole())?.requiresCompany ?? false;
-  }
-
   /** Maps a SignupRole to its translation-key stem under `signup.role.*`. Kept in
    * sync with the keys added to `translations.en.ts`/`translations.hi.ts`. */
   protected roleKey(role: SignupRole): string {
@@ -71,10 +67,31 @@ export class SignupComponent {
     }
   }
 
-  protected submit(): void {
+  protected submit(form: NgForm): void {
+    this.validationError.set('');
+    if (form.invalid) {
+      form.form.markAllAsTouched();
+      return;
+    }
+    if (this.password().length < 8) {
+      this.validationError.set('signup.validation.passwordLength');
+      return;
+    }
+    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(this.password())) {
+      this.validationError.set('signup.validation.passwordStrength');
+      return;
+    }
+    if (this.password() !== this.confirmPassword()) {
+      this.validationError.set('signup.validation.passwordMismatch');
+      return;
+    }
+    if (!this.agreeTerms()) {
+      this.validationError.set('signup.validation.termsRequired');
+      return;
+    }
     this.submitting.set(true);
     const identifier = this.email() || `+91${this.mobile()}`;
-    this.auth.signup(identifier, this.selectedRole(), this.planTier()).subscribe(() => {
+    this.auth.signup({ identifier, fullName: this.fullName().trim(), mobile: this.mobile(), email: this.email().trim(), password: this.password(), role: this.selectedRole(), planTier: this.planTier() }).subscribe(() => {
       this.submitting.set(false);
       this.router.navigate(['/auth/otp-verification'], { queryParams: { next: 'signup' } });
     });

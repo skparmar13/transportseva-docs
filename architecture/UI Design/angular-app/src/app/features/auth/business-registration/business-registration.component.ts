@@ -1,24 +1,29 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { TranslatePipe } from '../../../core/i18n';
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { GeoLocation } from '../../../core/models/location.model';
 
 @Component({
   selector: 'app-business-registration',
   standalone: true,
-  imports: [FormsModule, AuthShellComponent, IconComponent, TranslatePipe],
+  imports: [FormsModule, AuthShellComponent, IconComponent, TranslatePipe, LocationPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-registration.component.html',
   styleUrl: './business-registration.component.scss',
 })
-export class BusinessRegistrationComponent implements OnInit {
+export class BusinessRegistrationComponent {
   private readonly auth = inject(AuthMockService);
   private readonly router = inject(Router);
 
-  protected readonly businessType = signal<'transporter' | 'truck-owner' | 'company'>('transporter');
+  protected readonly businessType = computed<'transporter' | 'truck-owner' | 'company'>(() => {
+    const role = this.auth.pendingRole();
+    return role === 'shipper' ? 'company' : role === 'truck-owner' ? 'truck-owner' : 'transporter';
+  });
   protected readonly companyName = signal('');
   protected readonly gstNumber = signal('');
   protected readonly panNumber = signal('');
@@ -28,27 +33,28 @@ export class BusinessRegistrationComponent implements OnInit {
   protected readonly state = signal('');
   protected readonly pincode = signal('');
   protected readonly submitting = signal(false);
+  protected readonly validationError = signal('');
 
-  protected readonly businessTypes = [
-    { value: 'transporter' as const, labelKey: 'businessReg.type.transporter' },
-    { value: 'truck-owner' as const, labelKey: 'businessReg.type.truckOwner' },
-    { value: 'company' as const, labelKey: 'businessReg.type.company' },
-  ];
-
-  ngOnInit(): void {
-    // Pre-select the business type based on the role chosen during signup
-    // (shipper businesses register as "Company / Enterprise Shipper").
-    const role = this.auth.pendingRole();
-    if (role === 'shipper') {
-      this.businessType.set('company');
-    } else if (role === 'truck-owner') {
-      this.businessType.set('truck-owner');
-    } else {
-      this.businessType.set('transporter');
-    }
+  protected setBusinessLocation(location: GeoLocation | null): void {
+    if (!location) return;
+    this.city.set(location.city);
+    this.state.set(location.state ?? '');
   }
 
-  protected submit(): void {
+  protected submit(form: NgForm): void {
+    this.validationError.set('');
+    if (form.invalid) {
+      form.form.markAllAsTouched();
+      return;
+    }
+    if (!this.city().trim()) {
+      this.validationError.set('businessReg.validation.cityRequired');
+      return;
+    }
+    if (this.businessType() === 'truck-owner' && (!Number.isInteger(Number(this.fleetSize())) || Number(this.fleetSize()) < 1)) {
+      this.validationError.set('businessReg.validation.fleetRequired');
+      return;
+    }
     this.submitting.set(true);
     this.auth
       .completeBusinessRegistration({

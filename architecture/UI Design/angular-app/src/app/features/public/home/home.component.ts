@@ -6,6 +6,8 @@ import { LanguageService } from '../../../core/i18n/language.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
+import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
+import { Load } from '../../../core/models/marketplace.model';
 
 @Component({
   selector: 'app-home',
@@ -19,6 +21,23 @@ export class HomeComponent implements OnInit {
   private readonly seo = inject(SeoService);
   private readonly cms = inject(CmsMockService);
   private readonly language = inject(LanguageService);
+  private readonly marketplace = inject(MarketplaceMockService);
+  protected readonly sourceQuery = signal('');
+  protected readonly destinationQuery = signal('');
+  protected readonly vehicleTypeFilter = signal('All');
+  protected readonly previewLimit = signal(10);
+  protected readonly publicVehicleTypes = computed(() => [...new Set(this.publicLoads().map((load) => load.vehicleType))].sort());
+  protected readonly publicLoads = computed(() => this.marketplace.loads()
+    .filter((load) => load.status === 'Open' || load.status === 'Applications Received')
+    .sort((a, b) => this.postedMinutesAgo(a.postedAgo) - this.postedMinutesAgo(b.postedAgo)));
+  protected readonly visiblePublicLoads = computed(() => {
+    const source = this.sourceQuery().trim().toLowerCase();
+    const destination = this.destinationQuery().trim().toLowerCase();
+    const vehicle = this.vehicleTypeFilter();
+    return this.publicLoads().filter((load) => load.pickupCity.toLowerCase().includes(source)
+      && load.dropCity.toLowerCase().includes(destination)
+      && (vehicle === 'All' || load.vehicleType === vehicle)).slice(0, this.previewLimit());
+  });
 
   ngOnInit(): void {
     this.seo.update({
@@ -33,15 +52,6 @@ export class HomeComponent implements OnInit {
       name: 'TransportSeva',
       url: 'https://www.transportseva.com',
       logo: 'https://www.transportseva.com/images/logo.png',
-      sameAs: [],
-      contactPoint: [
-        {
-          '@type': 'ContactPoint',
-          telephone: '+91-12345-67890',
-          contactType: 'customer service',
-          areaServed: 'IN',
-        },
-      ],
     });
   }
 
@@ -87,4 +97,15 @@ export class HomeComponent implements OnInit {
       : this.defaultTestimonials;
   });
   protected readonly partners = signal(['TATA MOTORS', 'ASHOK LEYLAND', 'mahindra', 'Castrol', 'FASTag', 'ICICI Lombard']);
+
+  protected setPreviewLimit(value: string): void { this.previewLimit.set(Number(value) === 20 ? 20 : 10); }
+  protected loadBudget(load: Load): string { return load.budget; }
+
+  private postedMinutesAgo(value: string): number {
+    if (/just now/i.test(value)) return 0;
+    const match = value.match(/(\d+)\s*(minute|hour|day)/i);
+    if (!match) return Number.MAX_SAFE_INTEGER;
+    const count = Number(match[1]);
+    return match[2].toLowerCase().startsWith('minute') ? count : match[2].toLowerCase().startsWith('hour') ? count * 60 : count * 1440;
+  }
 }

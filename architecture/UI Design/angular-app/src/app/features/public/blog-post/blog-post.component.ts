@@ -60,7 +60,7 @@ export class BlogPostComponent implements OnInit {
     readKey: 'blog.readTime.6',
     titleKey: 'blog.post1.title',
     descKey: 'blog.post1.desc',
-    image: '/images/blog/post-1-hero.jpg',
+    image: '/images/hero-truck.png',
   });
 
   ngOnInit(): void {

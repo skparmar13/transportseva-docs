@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { PortalRole } from '../models/nav.model';
+import { GeoLocation } from '../models/location.model';
 import {
   BookingStage,
   Load,
@@ -105,6 +106,21 @@ const INITIAL_LOADS: Load[] = [
     vehicleType: 'Trailer (Flatbed)', pickupDate: '16 Aug 2026', budget: '₹26,000',
     status: 'Open', applicationsCount: 0, postedAgo: '10 minutes ago',
   },
+  { id: 'l7', loadId: '#LD-3850', postedBy: 'shipper', postedByName: 'Northstar Foods', pickupCity: 'Gurugram', dropCity: 'Lucknow', material: 'Packaged Foods', weightTons: 14, vehicleType: '32ft Trailer', pickupDate: '22 Sep 2026', budget: '₹21,500', status: 'Open', applicationsCount: 1, postedAgo: '18 minutes ago' },
+  { id: 'l8', loadId: '#LD-3851', postedBy: 'shipper', postedByName: 'Pragati Chemicals', pickupCity: 'Vadodara', dropCity: 'Indore', material: 'Industrial Drums', weightTons: 16, vehicleType: 'Tanker', pickupDate: '23 Sep 2026', budget: '₹17,800', status: 'Open', applicationsCount: 0, postedAgo: '25 minutes ago' },
+  { id: 'l9', loadId: '#LD-3852', postedBy: 'shipper', postedByName: 'Eastern Textiles', pickupCity: 'Surat', dropCity: 'Jaipur', material: 'Textile Rolls', weightTons: 11, vehicleType: '20ft Container', pickupDate: '24 Sep 2026', budget: '₹16,200', status: 'Open', applicationsCount: 2, postedAgo: '32 minutes ago' },
+  { id: 'l10', loadId: '#LD-3853', postedBy: 'shipper', postedByName: 'Coastal Auto Parts', pickupCity: 'Pune', dropCity: 'Chennai', material: 'Auto Components', weightTons: 8, vehicleType: '20ft Container', pickupDate: '24 Sep 2026', budget: '₹19,400', status: 'Open', applicationsCount: 1, postedAgo: '40 minutes ago' },
+  { id: 'l11', loadId: '#LD-3854', postedBy: 'shipper', postedByName: 'Greenfield Agro', pickupCity: 'Nashik', dropCity: 'Hyderabad', material: 'Fresh Produce', weightTons: 12, vehicleType: 'Open Body Truck', pickupDate: '25 Sep 2026', budget: '₹13,700', status: 'Open', applicationsCount: 0, postedAgo: '55 minutes ago' },
+  { id: 'l12', loadId: '#LD-3855', postedBy: 'shipper', postedByName: 'Metro Appliances', pickupCity: 'Noida', dropCity: 'Chandigarh', material: 'Home Appliances', weightTons: 7, vehicleType: 'Mini Truck', pickupDate: '26 Sep 2026', budget: '₹10,800', status: 'Open', applicationsCount: 0, postedAgo: '1 hour ago' },
+  { id: 'l13', loadId: '#LD-3856', postedBy: 'shipper', postedByName: 'Deccan Cement', pickupCity: 'Vijayawada', dropCity: 'Bengaluru', material: 'Cement Bags', weightTons: 24, vehicleType: 'Open Body Truck', pickupDate: '27 Sep 2026', budget: '₹18,600', status: 'Open', applicationsCount: 3, postedAgo: '1 hour ago' },
+  { id: 'l14', loadId: '#LD-3857', postedBy: 'shipper', postedByName: 'Himalaya Paper Mills', pickupCity: 'Haridwar', dropCity: 'Delhi', material: 'Paper Reels', weightTons: 19, vehicleType: '32ft Trailer', pickupDate: '28 Sep 2026', budget: '₹15,900', status: 'Open', applicationsCount: 0, postedAgo: '2 hours ago' },
+  { id: 'l15', loadId: '#LD-3858', postedBy: 'shipper', postedByName: 'Central Steel Works', pickupCity: 'Jamshedpur', dropCity: 'Kolkata', material: 'Steel Sections', weightTons: 26, vehicleType: 'Trailer (Flatbed)', pickupDate: '28 Sep 2026', budget: '₹20,500', status: 'Open', applicationsCount: 1, postedAgo: '2 hours ago' },
+  { id: 'l16', loadId: '#LD-3859', postedBy: 'shipper', postedByName: 'Sahyadri Beverages', pickupCity: 'Mumbai', dropCity: 'Goa', material: 'Beverage Cartons', weightTons: 10, vehicleType: '20ft Container', pickupDate: '29 Sep 2026', budget: '₹12,400', status: 'Open', applicationsCount: 0, postedAgo: '3 hours ago' },
+  { id: 'l17', loadId: '#LD-3860', postedBy: 'shipper', postedByName: 'Desert Ceramics', pickupCity: 'Morbi', dropCity: 'Bhopal', material: 'Ceramic Tiles', weightTons: 21, vehicleType: '32ft Trailer', pickupDate: '30 Sep 2026', budget: '₹18,900', status: 'Open', applicationsCount: 2, postedAgo: '4 hours ago' },
+  { id: 'l18', loadId: '#LD-3861', postedBy: 'shipper', postedByName: 'Riverbend Plastics', pickupCity: 'Kanpur', dropCity: 'Patna', material: 'Plastic Granules', weightTons: 15, vehicleType: '20ft Container', pickupDate: '01 Oct 2026', budget: '₹14,700', status: 'Open', applicationsCount: 0, postedAgo: '5 hours ago' },
+  { id: 'l19', loadId: '#LD-3862', postedBy: 'shipper', postedByName: 'Southern Engineering', pickupCity: 'Coimbatore', dropCity: 'Kochi', material: 'Machine Parts', weightTons: 9, vehicleType: 'Mini Truck', pickupDate: '02 Oct 2026', budget: '₹11,300', status: 'Open', applicationsCount: 0, postedAgo: '6 hours ago' },
+  { id: 'l20', loadId: '#LD-3863', postedBy: 'shipper', postedByName: 'Frontier Minerals', pickupCity: 'Bhilai', dropCity: 'Ranchi', material: 'Mineral Ore', weightTons: 30, vehicleType: 'Trailer (Flatbed)', pickupDate: '03 Oct 2026', budget: '₹22,600', status: 'Open', applicationsCount: 1, postedAgo: '8 hours ago' },
+  { id: 'l21', loadId: '#LD-3864', postedBy: 'shipper', postedByName: 'Western Auto Glass', pickupCity: 'Aurangabad', dropCity: 'Nagpur', material: 'Automotive Glass', weightTons: 13, vehicleType: '20ft Container', pickupDate: '04 Oct 2026', budget: '₹12,900', status: 'Open', applicationsCount: 0, postedAgo: '9 hours ago' },
 ];
 
 const INITIAL_APPLICATIONS: LoadApplication[] = [
@@ -128,6 +144,24 @@ const INITIAL_MESSAGES: NegotiationMessage[] = [
 ];
 
 const INITIAL_BOOKINGS: MarketplaceBooking[] = [
+  {
+    id: 'b-request-48231', bookingId: '#TS-48231', loadId: 'l-request-48231', applicationId: 'a-request-48231',
+    route: 'Delhi → Mumbai', material: 'General Cargo', ownerRole: 'shipper', ownerName: 'Rajesh Kumar',
+    counterpartyRole: 'transporter', counterpartyName: 'TransportSeva Transporter', vehicleRegNumber: 'DL1LT4521',
+    amount: '₹18,500', status: 'Offer Accepted', timeline: buildTimeline('Offer Accepted'),
+    ownerDeposit: { role: 'shipper', partyName: 'Rajesh Kumar', amount: DEPOSIT_AMOUNT, status: 'Pending' },
+    counterpartyDeposit: { role: 'transporter', partyName: 'TransportSeva Transporter', amount: DEPOSIT_AMOUNT, status: 'Pending' },
+    escrowStatus: 'Awaiting Deposits', settlementPlan: buildDefaultSettlementPlan('₹18,500'),
+  },
+  {
+    id: 'b-request-48227', bookingId: '#TS-48227', loadId: 'l-request-48227', applicationId: 'a-request-48227',
+    route: 'Kolkata → Patna', material: 'Textiles', ownerRole: 'shipper', ownerName: 'Global Logistics Co.',
+    counterpartyRole: 'transporter', counterpartyName: 'TransportSeva Transporter', vehicleRegNumber: 'WB23A4827',
+    amount: '₹7,100', status: 'Offer Accepted', timeline: buildTimeline('Offer Accepted'),
+    ownerDeposit: { role: 'shipper', partyName: 'Global Logistics Co.', amount: DEPOSIT_AMOUNT, status: 'Pending' },
+    counterpartyDeposit: { role: 'transporter', partyName: 'TransportSeva Transporter', amount: DEPOSIT_AMOUNT, status: 'Pending' },
+    escrowStatus: 'Awaiting Deposits', settlementPlan: buildDefaultSettlementPlan('₹7,100'),
+  },
   {
     id: 'b1', bookingId: '#TS-48230', loadId: 'l2', applicationId: 'a4', route: 'Pune → Bengaluru', material: 'FMCG Cartons',
     ownerRole: 'shipper', ownerName: 'Mehta Industries', counterpartyRole: 'truck-owner', counterpartyName: 'Sanjay Yadav',
@@ -175,6 +209,15 @@ export class MarketplaceMockService {
   readonly applications = computed(() => this.applicationsState());
   readonly bookings = computed(() => this.bookingsState());
 
+  /** Transporter accepts a prepared marketplace booking; repeated or ineligible accepts do nothing. */
+  acceptTransporterRequest(bookingId: string): void {
+    this.bookingsState.update((bookings) => bookings.map((booking) =>
+      booking.bookingId === bookingId && booking.status === 'Offer Accepted'
+        ? { ...booking, status: 'Awaiting Deposit', timeline: buildTimeline('Awaiting Deposit') }
+        : booking,
+    ));
+  }
+
   getLoadById(id: string) {
     return computed(() => this.loadsState().find((load) => load.id === id));
   }
@@ -219,13 +262,22 @@ export class MarketplaceMockService {
     onBehalfOfCustomer?: string;
     pickupCity: string;
     dropCity: string;
+    pickupLocation?: GeoLocation;
+    dropLocation?: GeoLocation;
     material: string;
     weightTons: number;
     vehicleType: VehicleType;
     pickupDate: string;
-    budget: string;
+    budget: string | number;
     notes?: string;
   }): Load {
+    const budgetAmount = typeof input.budget === 'number'
+      ? input.budget
+      : Number(input.budget.replace(/[₹,\s]/g, ''));
+    if (!Number.isFinite(budgetAmount) || budgetAmount <= 0 || !Number.isInteger(budgetAmount * 100)) {
+      throw new RangeError('Load budget must be a positive amount with at most two decimal places.');
+    }
+    const formattedBudget = `₹${budgetAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
     const load: Load = {
       id: nextId('l'),
       loadId: nextId('#LD'),
@@ -233,6 +285,7 @@ export class MarketplaceMockService {
       applicationsCount: 0,
       postedAgo: 'Just now',
       ...input,
+      budget: formattedBudget,
     };
     this.loadsState.update((loads) => [load, ...loads]);
     return load;
@@ -249,11 +302,19 @@ export class MarketplaceMockService {
     quotedAmount: string;
     message?: string;
   }): LoadApplication {
+    if (!/^\d+(?:\.\d{1,2})?$/.test(input.quotedAmount) || Number(input.quotedAmount) <= 0) {
+      throw new RangeError('Quoted freight must be a positive amount with at most two decimal places.');
+    }
+    if (!input.vehicleRegNumber.trim() || !input.availability.trim()) {
+      throw new Error('Vehicle registration and availability are required to apply for a load.');
+    }
+    const quotedAmount = `₹${Number(input.quotedAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
     const application: LoadApplication = {
       id: nextId('a'),
       status: 'Pending',
       appliedAgo: 'Just now',
       ...input,
+      quotedAmount,
     };
     this.applicationsState.update((apps) => [application, ...apps]);
     this.loadsState.update((loads) =>
@@ -265,13 +326,16 @@ export class MarketplaceMockService {
     );
     this.offersState.update((offers) => [
       ...offers,
-      { id: nextId('o'), loadId: input.loadId, applicationId: application.id, by: 'applicant', byName: input.applicantName, amount: input.quotedAmount, message: input.message, timestamp: 'Just now' },
+      { id: nextId('o'), loadId: input.loadId, applicationId: application.id, by: 'applicant', byName: input.applicantName, amount: quotedAmount, message: input.message, timestamp: 'Just now' },
     ]);
     return application;
   }
 
   /** Either side proposes a counter-offer — moves the application into "Negotiating". */
   sendCounterOffer(input: { applicationId: string; loadId: string; by: 'owner' | 'applicant'; byName: string; amount: string; message?: string }): void {
+    if (!/^\d+(?:\.\d{1,2})?$/.test(input.amount) || Number(input.amount) <= 0) return;
+    const application = this.applicationsState().find((a) => a.id === input.applicationId);
+    if (!application || !['Pending', 'Negotiating'].includes(application.status)) return;
     this.offersState.update((offers) => [
       ...offers,
       { id: nextId('o'), ...input, timestamp: 'Just now' },
@@ -284,7 +348,7 @@ export class MarketplaceMockService {
   /** Accept the latest negotiated amount — creates the booking awaiting token payment. */
   acceptApplication(applicationId: string): MarketplaceBooking | undefined {
     const application = this.applicationsState().find((a) => a.id === applicationId);
-    if (!application) return undefined;
+    if (!application || !['Pending', 'Negotiating'].includes(application.status)) return undefined;
     const latestOffer = this.getLatestOffer(applicationId)();
     const finalAmount = latestOffer?.amount ?? application.quotedAmount;
 
@@ -307,7 +371,7 @@ export class MarketplaceMockService {
       bookingId: nextId('#TS'),
       loadId: application.loadId,
       applicationId: application.id,
-      route: load ? `${load.pickupCity} → ${load.dropCity}` : '',
+      route: load ? `${load.pickupLocation?.city ?? load.pickupCity} → ${load.dropLocation?.city ?? load.dropCity}` : '',
       material: load?.material ?? '',
       ownerRole: load?.postedBy ?? 'shipper',
       ownerName: load?.postedByName ?? '',
@@ -327,6 +391,8 @@ export class MarketplaceMockService {
   }
 
   rejectApplication(applicationId: string): void {
+    const application = this.applicationsState().find((a) => a.id === applicationId);
+    if (!application || !['Pending', 'Negotiating'].includes(application.status)) return;
     this.applicationsState.update((apps) =>
       apps.map((a) => (a.id === applicationId ? { ...a, status: 'Rejected' } : a)),
     );
@@ -455,6 +521,8 @@ export class MarketplaceMockService {
 
   /** Add an optional Mid-Trip Payment milestone (e.g. released on reaching a geofence checkpoint) — deducted from the pending Final Settlement amount. */
   addMidTripMilestone(bookingId: string, input: { amount: string; trigger: string }): void {
+    if (!/^\d+(?:\.\d{1,2})?$/.test(input.amount) || Number(input.amount) <= 0) return;
+    const formattedAmount = `₹${Number(input.amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
     this.bookingsState.update((bookings) =>
       bookings.map((b) => {
         if (b.id !== bookingId) return b;
@@ -463,10 +531,10 @@ export class MarketplaceMockService {
           id: nextId('sm'),
           label: 'Mid-Trip Payment',
           trigger: input.trigger,
-          amount: input.amount,
+          amount: formattedAmount,
           status: 'Pending',
         };
-        const midTripAmount = parseAmount(input.amount);
+        const midTripAmount = Number(input.amount);
         const plan = b.settlementPlan.map((m) =>
           finalMilestone && m.id === finalMilestone.id
             ? { ...m, amount: formatAmount(Math.max(parseAmount(m.amount) - midTripAmount, 0)) }

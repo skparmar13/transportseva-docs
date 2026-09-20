@@ -57,11 +57,11 @@
           </div>
           <div class="field">
             <label>{{ 'businessSettings.company.phone' | t }}</label>
-            <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().phone" (ngModelChange)="updateDraft('phone', $event)" name="phone" />
+            <input type="tel" class="input" style="padding-left:14px;" inputmode="tel" pattern="[+]?[0-9 ()-]{10,16}" maxlength="16" [ngModel]="companyDraft().phone" (ngModelChange)="updateDraft('phone', $event)" name="phone" />
           </div>
           <div class="field" style="grid-column:span 2;">
             <label>{{ 'businessSettings.company.address' | t }}</label>
-            <input type="text" class="input" style="padding-left:14px;" [ngModel]="companyDraft().address" (ngModelChange)="updateDraft('address', $event)" name="address" />
+            <app-location-picker id="company-address" name="companyAddress" labelKey="businessSettings.company.address" placeholderKey="businessSettings.company.address" [value]="companyDraft().address" [suggestionsAbove]="true" (valueChange)="updateDraft('address', $event)" />
           </div>
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
@@ -315,11 +315,11 @@
     </div>
     <div class="field">
       <label>{{ 'businessSettings.branches.modal.city' | t }}</label>
-      <input type="text" class="input" style="padding-left:14px;" [placeholder]="'businessSettings.branches.modal.cityPh' | t" [ngModel]="branchCity()" (ngModelChange)="branchCity.set($event)" name="branchCity" />
+      <app-location-picker id="branch-city" name="branchCity" labelKey="businessSettings.branches.modal.city" placeholderKey="businessSettings.branches.modal.cityPh" [value]="branchCity()" [suggestionsAbove]="true" (valueChange)="branchCity.set($event)" (locationSelected)="setBranchCityLocation($event)" />
     </div>
     <div class="field">
       <label>{{ 'businessSettings.branches.modal.address' | t }}</label>
-      <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchAddress()" (ngModelChange)="branchAddress.set($event)" name="branchAddress" />
+      <app-location-picker id="branch-address" name="branchAddress" labelKey="businessSettings.branches.modal.address" placeholderKey="businessSettings.branches.modal.address" [value]="branchAddress()" [suggestionsAbove]="true" (valueChange)="branchAddress.set($event)" />
     </div>
     <div class="field">
       <label>{{ 'businessSettings.branches.modal.contact' | t }}</label>
@@ -327,7 +327,7 @@
     </div>
     <div class="field">
       <label>{{ 'businessSettings.branches.modal.phone' | t }}</label>
-      <input type="text" class="input" style="padding-left:14px;" [ngModel]="branchPhone()" (ngModelChange)="branchPhone.set($event)" name="branchPhone" />
+      <input type="tel" class="input" style="padding-left:14px;" inputmode="tel" pattern="[+]?[0-9 ()-]{10,16}" maxlength="16" [ngModel]="branchPhone()" (ngModelChange)="branchPhone.set($event)" name="branchPhone" />
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
       <button type="button" class="btn btn-outline" (click)="closeAddBranch()">{{ 'common.cancel' | t }}</button>

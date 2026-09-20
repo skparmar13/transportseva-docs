@@ -190,7 +190,7 @@
 @if (offlinePaymentFor(); as booking) {
   <app-modal [title]="'bookings.offline.title' | t" (close)="offlinePaymentFor.set(null)">
     <p style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.offline.intro' | t }}</p>
-    <div class="field"><label for="offline-amount">{{ 'bookings.offline.amount' | t }}</label><input id="offline-amount" class="input" [ngModel]="offlineAmount()" (ngModelChange)="offlineAmount.set($event)" name="offlineAmount" /></div>
+    <div class="field"><label for="offline-amount">{{ 'bookings.offline.amount' | t }}</label><input id="offline-amount" type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [ngModel]="offlineAmount()" (ngModelChange)="offlineAmount.set($event)" name="offlineAmount" /></div>
     <div class="field"><label for="offline-reference">{{ 'bookings.offline.reference' | t }}</label><input id="offline-reference" class="input" [ngModel]="offlineReference()" (ngModelChange)="offlineReference.set($event)" name="offlineReference" /></div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="offlinePaymentFor.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary" [disabled]="!offlineAmountValid()" (click)="recordOfflinePayment()">{{ 'bookings.offline.submit' | t }}</button></div>
   </app-modal>
@@ -302,7 +302,7 @@
     </p>
     <div class="field">
       <label>{{ 'bookings.midTrip.amount' | t }}</label>
-      <input type="text" class="input" [placeholder]="'bookings.midTrip.amountPlaceholder' | t" [ngModel]="midTripAmount()" (ngModelChange)="midTripAmount.set($event)" name="midTripAmount" />
+      <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'bookings.midTrip.amountPlaceholder' | t" [ngModel]="midTripAmount()" (ngModelChange)="midTripAmount.set($event)" name="midTripAmount" />
     </div>
     <div class="field">
       <label>{{ 'bookings.midTrip.trigger' | t }}</label>

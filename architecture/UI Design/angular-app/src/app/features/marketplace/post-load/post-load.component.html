@@ -32,18 +32,10 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="field">
-            <label>{{ 'postLoad.pickupCity' | t }}</label>
-            <div class="input-wrap">
-              <app-icon name="i-pin" [size]="18" />
-              <input type="text" class="input" [placeholder]="'postLoad.pickupCityPlaceholder' | t" required [ngModel]="pickupCity()" (ngModelChange)="pickupCity.set($event)" name="pickupCity" />
-            </div>
+            <app-location-picker id="pickup-city" name="pickupCity" labelKey="postLoad.pickupCity" placeholderKey="postLoad.pickupCityPlaceholder" [value]="pickupCity()" (valueChange)="pickupCity.set($event)" (locationSelected)="pickupLocation.set($event)" />
           </div>
           <div class="field">
-            <label>{{ 'postLoad.dropCity' | t }}</label>
-            <div class="input-wrap">
-              <app-icon name="i-pin" [size]="18" />
-              <input type="text" class="input" [placeholder]="'postLoad.dropCityPlaceholder' | t" required [ngModel]="dropCity()" (ngModelChange)="dropCity.set($event)" name="dropCity" />
-            </div>
+            <app-location-picker id="drop-city" name="dropCity" labelKey="postLoad.dropCity" placeholderKey="postLoad.dropCityPlaceholder" [value]="dropCity()" (valueChange)="dropCity.set($event)" (locationSelected)="dropLocation.set($event)" />
           </div>
         </div>
 
@@ -60,7 +52,7 @@
             <label>{{ 'postLoad.weight' | t }}</label>
             <div class="input-wrap">
               <app-icon name="i-box" [size]="18" />
-              <input type="number" class="input" [placeholder]="'postLoad.weightPlaceholder' | t" [ngModel]="weightTons()" (ngModelChange)="weightTons.set($event)" name="weightTons" />
+              <input type="number" class="input" min="0.01" step="0.01" [placeholder]="'postLoad.weightPlaceholder' | t" [ngModel]="weightTons()" (ngModelChange)="weightTons.set($event)" name="weightTons" />
             </div>
           </div>
           <div class="field">
@@ -85,7 +77,7 @@
             <label>{{ 'postLoad.budget' | t }}</label>
             <div class="input-wrap">
               <app-icon name="i-wallet" [size]="18" />
-              <input type="text" class="input" [placeholder]="'postLoad.budgetPlaceholder' | t" required [ngModel]="budget()" (ngModelChange)="budget.set($event)" name="budget" />
+              <input type="number" class="input" min="0.01" step="0.01" inputmode="decimal" [placeholder]="'postLoad.budgetPlaceholder' | t" required [ngModel]="budget()" (ngModelChange)="budget.set($event)" name="budget" />
             </div>
           </div>
         </div>

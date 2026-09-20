@@ -1,1 +1,7 @@
-﻿/* Uses global public classes from src/styles/_public.scss */
+/* Uses global public classes from src/styles/_public.scss */
+.job-card > div { flex: 1 1 420px; }
+.job-card > .btn { align-self: center; }
+.career-description { margin-top: 12px; color: var(--color-text-muted); white-space: pre-line; }
+.career-description h4 { margin: 12px 0 4px; }
+.career-description p, .job-card p { margin: 10px 0; }
+.job-card details summary { color: var(--color-primary); cursor: pointer; font-size: 13px; font-weight: 600; margin-top: 10px; }

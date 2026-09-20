@@ -5,6 +5,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { IconComponent } from '../../components/icon/icon.component';
 import { LanguageService, TranslatePipe } from '../../../core/i18n';
 import { CmsMockService } from '../../../core/services/cms-mock.service';
+import { NewsletterMockService } from '../../../core/services/newsletter-mock.service';
 
 @Component({
   selector: 'app-public-shell',
@@ -17,6 +18,7 @@ import { CmsMockService } from '../../../core/services/cms-mock.service';
 export class PublicShellComponent {
   protected readonly language = inject(LanguageService);
   private readonly cms = inject(CmsMockService);
+  private readonly newsletter = inject(NewsletterMockService);
   protected readonly dismissedAnnouncementId = signal<string | null>(null);
   protected readonly announcement = computed(() => {
     const selectedLanguage = this.language.lang() === 'hi' ? 'Hindi' : 'English';
@@ -25,6 +27,7 @@ export class PublicShellComponent {
   protected readonly mobileMenuOpen = signal(false);
   protected readonly newsletterEmail = signal('');
   protected readonly newsletterSubscribed = signal(false);
+  protected readonly newsletterMessage = signal('');
 
   protected toggleMobileMenu(): void {
     this.mobileMenuOpen.update((value) => !value);
@@ -35,7 +38,9 @@ export class PublicShellComponent {
   }
 
   protected submitNewsletter(): void {
+    const result = this.newsletter.subscribe(this.newsletterEmail());
     this.newsletterSubscribed.set(true);
+    this.newsletterMessage.set(result === 'added' ? 'footer.newsletter.success' : 'footer.newsletter.exists');
     this.newsletterEmail.set('');
   }
 }

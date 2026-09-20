@@ -33,9 +33,9 @@ export class BookingsComponent {
   protected readonly disputingBooking = signal<string | null>(null);
   protected readonly disputeReason = signal('');
   protected readonly offlinePaymentFor = signal<MarketplaceBooking | null>(null);
-  protected readonly offlineAmount = signal('');
+  protected readonly offlineAmount = signal<number | null>(null);
   protected readonly offlineReference = signal('');
-  protected readonly offlineAmountValid = computed(() => /^\s*₹?\s*\d+(?:[,.]\d{1,2})?\s*$/.test(this.offlineAmount()));
+  protected readonly offlineAmountValid = computed(() => this.isValidAmount(this.offlineAmount()));
 
   protected statusKey(s: string): string {
     return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
@@ -171,19 +171,20 @@ export class BookingsComponent {
 
   // Add Mid-Trip Payment milestone
   protected readonly addingMilestoneFor = signal<string | null>(null);
-  protected readonly midTripAmount = signal('');
+  protected readonly midTripAmount = signal<number | null>(null);
   protected readonly midTripTrigger = signal('');
 
   protected openAddMilestone(booking: MarketplaceBooking): void {
     this.addingMilestoneFor.set(booking.id);
-    this.midTripAmount.set('');
+    this.midTripAmount.set(null);
     this.midTripTrigger.set('On reaching the midway checkpoint');
   }
 
   protected confirmAddMilestone(): void {
     const bookingId = this.addingMilestoneFor();
-    if (!bookingId || !this.midTripAmount()) return;
-    this.marketplace.addMidTripMilestone(bookingId, { amount: this.midTripAmount(), trigger: this.midTripTrigger() || 'Manual release' });
+    const amount = this.midTripAmount();
+    if (!bookingId || !this.isValidAmount(amount)) return;
+    this.marketplace.addMidTripMilestone(bookingId, { amount: String(amount), trigger: this.midTripTrigger() || 'Manual release' });
     this.addingMilestoneFor.set(null);
   }
 
@@ -213,14 +214,19 @@ export class BookingsComponent {
 
   protected openOfflinePayment(booking: MarketplaceBooking): void {
     this.offlinePaymentFor.set(booking);
-    this.offlineAmount.set(booking.settlement?.payoutAmount ?? '');
+    this.offlineAmount.set(booking.settlement?.payoutAmount ? Number(booking.settlement.payoutAmount.replace(/[^0-9.]/g, '')) : null);
     this.offlineReference.set('');
   }
 
   protected recordOfflinePayment(): void {
     const booking = this.offlinePaymentFor();
-    if (!booking || !this.offlineAmount().trim()) return;
-    this.payments.recordOfflinePayment(booking.bookingId, this.offlineAmount(), this.offlineReference());
+    const amount = this.offlineAmount();
+    if (!booking || !this.isValidAmount(amount)) return;
+    this.payments.recordOfflinePayment(booking.bookingId, String(amount), this.offlineReference());
     this.offlinePaymentFor.set(null);
+  }
+
+  private isValidAmount(amount: number | null): amount is number {
+    return amount !== null && Number.isFinite(amount) && amount > 0 && Number.isInteger(amount * 100);
   }
 }

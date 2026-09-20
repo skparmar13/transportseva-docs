@@ -89,7 +89,7 @@
       <label>{{ 'driverList.modal.phone' | t }}</label>
       <div class="input-wrap">
         <app-icon name="i-phone" [size]="18" />
-        <input type="tel" class="input" [placeholder]="'driverList.modal.phonePlaceholder' | t" [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" />
+        <input type="tel" class="input" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" [placeholder]="'driverList.modal.phonePlaceholder' | t" [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" />
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -105,11 +105,11 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="field">
         <label>{{ 'driverList.modal.experience' | t }}</label>
-        <input type="number" class="input" style="padding-left:14px;" [placeholder]="'driverList.modal.experiencePlaceholder' | t" [ngModel]="experienceYears()" (ngModelChange)="experienceYears.set($event)" name="experienceYears" />
+        <input type="number" class="input" style="padding-left:14px;" min="0" max="60" step="1" [placeholder]="'driverList.modal.experiencePlaceholder' | t" [ngModel]="experienceYears()" (ngModelChange)="experienceYears.set($event)" name="experienceYears" />
       </div>
       <div class="field">
         <label>{{ 'driverList.modal.address' | t }}</label>
-        <input type="text" class="input" style="padding-left:14px;" [placeholder]="'driverList.modal.addressPlaceholder' | t" [ngModel]="address()" (ngModelChange)="address.set($event)" name="address" />
+        <app-location-picker id="driver-address" name="address" labelKey="driverList.modal.address" placeholderKey="driverList.modal.addressPlaceholder" [value]="address()" [suggestionsAbove]="true" (valueChange)="address.set($event)" />
       </div>
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">

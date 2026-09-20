@@ -7,6 +7,8 @@ import { TranslatePipe } from '../../core/i18n';
 import { BusinessSettingsMockService } from '../../core/services/business-settings-mock.service';
 import { BillingInvoice, BillingInvoiceStatus, CompanyProfile, StaffUserStatus } from '../../core/models/business-settings.model';
 import { PlanTier, SUBSCRIPTION_PLANS } from '../../core/data/subscription-plans';
+import { LocationPickerComponent } from '../../shared/components/location-picker/location-picker.component';
+import { GeoLocation } from '../../core/models/location.model';
 
 type SettingsTab = 'company' | 'branches' | 'users' | 'roles' | 'billing';
 
@@ -31,7 +33,7 @@ const BILLING_STATUS_CLASS: Record<BillingInvoiceStatus, string> = {
 @Component({
   selector: 'app-business-settings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, LocationPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-settings.component.html',
 })
@@ -81,6 +83,10 @@ export class BusinessSettingsComponent {
   protected readonly branchContact = signal('');
   protected readonly branchPhone = signal('');
   protected readonly savingBranch = signal(false);
+
+  protected setBranchCityLocation(location: GeoLocation | null): void {
+    if (location) this.branchCity.set(location.city);
+  }
 
   protected openAddBranch(): void {
     this.showAddBranch.set(true);

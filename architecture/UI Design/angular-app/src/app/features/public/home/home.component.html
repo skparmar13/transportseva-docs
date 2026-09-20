@@ -28,6 +28,24 @@
     </div>
   </div>
 </section>
+<section class="public-loads" id="current-loads">
+  <div class="container">
+    <div class="section-head"><span class="eyebrow">{{ 'publicLoads.eyebrow' | t }}</span><h2>{{ 'publicLoads.title' | t }}</h2><p>{{ 'publicLoads.desc' | t }}</p></div>
+    <div class="public-load-filters">
+      <label><span>{{ 'publicLoads.source' | t }}</span><input type="search" [placeholder]="'publicLoads.sourcePlaceholder' | t" [value]="sourceQuery()" (input)="sourceQuery.set($any($event.target).value)" /></label>
+      <label><span>{{ 'publicLoads.destination' | t }}</span><input type="search" [placeholder]="'publicLoads.destinationPlaceholder' | t" [value]="destinationQuery()" (input)="destinationQuery.set($any($event.target).value)" /></label>
+      <label><span>{{ 'publicLoads.vehicleType' | t }}</span><select [value]="vehicleTypeFilter()" (change)="vehicleTypeFilter.set($any($event.target).value)"><option value="All">{{ 'publicLoads.allVehicles' | t }}</option>@for (type of publicVehicleTypes(); track type) {<option [value]="type">{{ type }}</option>}</select></label>
+      <label><span>{{ 'publicLoads.show' | t }}</span><select [value]="previewLimit()" (change)="setPreviewLimit($any($event.target).value)"><option value="10">10</option><option value="20">20</option></select></label>
+    </div>
+    <div class="card public-load-table-wrap"><div class="table-scroll"><table class="public-load-table">
+      <thead><tr><th>{{ 'publicLoads.route' | t }}</th><th>{{ 'publicLoads.goods' | t }}</th><th>{{ 'publicLoads.vehicleType' | t }}</th><th>{{ 'publicLoads.weight' | t }}</th><th>{{ 'publicLoads.budget' | t }}</th><th>{{ 'publicLoads.posted' | t }}</th><th></th></tr></thead>
+      <tbody>@for (load of visiblePublicLoads(); track load.id) {
+        <tr><td><b>{{ load.pickupCity }}</b><span class="public-load-arrow">→</span><b>{{ load.dropCity }}</b><small>{{ load.loadId }}</small></td><td>{{ load.material }}</td><td>{{ load.vehicleType }}</td><td>{{ load.weightTons }} {{ 'publicLoads.tons' | t }}</td><td>{{ loadBudget(load) }}</td><td>{{ load.postedAgo }}</td><td><a routerLink="/auth/login" class="btn btn-primary btn-sm public-load-view-btn" [attr.aria-label]="'publicLoads.viewDetails' | t" [title]="'publicLoads.viewDetails' | t"><app-icon name="i-eye" [size]="18" /></a></td></tr>
+      } @empty {<tr><td colspan="7" class="public-load-empty">{{ 'publicLoads.empty' | t }}</td></tr>}</tbody>
+    </table></div></div>
+    <p class="public-load-login-note">{{ 'publicLoads.loginNote' | t }} <a routerLink="/auth/signup">{{ 'publicLoads.signup' | t }}</a></p>
+  </div>
+</section>
 <section class="services" id="services">
   <div class="container">
     <div class="section-head"><span class="eyebrow">{{ 'services.eyebrow' | t }}</span><h2>{{ 'services.title' | t }}</h2><p>{{ 'services.desc' | t }}</p></div>
