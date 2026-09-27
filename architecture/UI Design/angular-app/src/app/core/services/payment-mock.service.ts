@@ -6,6 +6,7 @@ import {
   LedgerEntry,
   Payout,
 } from '../models/payment.model';
+import { BookingCommissionComponent } from '../models/marketplace.model';
 
 /**
  * Shared mock financial records for V1. The provider handles money movement;
@@ -178,6 +179,60 @@ export class PaymentMockService {
   readonly gstInvoices = this.gstInvoicesSignal.asReadonly();
   readonly payouts = this.payoutsSignal.asReadonly();
 
+  recordCommissionInvoice(input: { bookingId: string; route: string; component: BookingCommissionComponent; reason?: 'completion' | 'cancellation' }): void {
+    const { bookingId, route, component } = input;
+    const invoiceNumber = `INV-CM-${bookingId.replace(/\D/g, '')}-${component.side === 'shipper' ? 'S' : 'P'}${input.reason === 'cancellation' ? '-C' : ''}`;
+    if (this.gstInvoicesSignal().some((invoice) => invoice.invoiceNumber === invoiceNumber)) return;
+    const amount = (paise: number) => `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    this.gstInvoicesSignal.update((invoices) => [{
+      id: invoiceNumber,
+      invoiceNumber,
+      date: 'Just now',
+      billedTo: component.billedToName,
+      taxableAmount: amount(component.feePaise),
+      gstAmount: amount(component.taxPaise),
+      totalAmount: amount(component.totalPaise),
+      status: 'Unpaid',
+      bookingId,
+      type: input.reason === 'cancellation' ? 'TransportSeva Cancellation Fee' : 'TransportSeva Commission',
+    }, ...invoices]);
+    this.commissionsSignal.update((commissions) => [{
+      id: invoiceNumber,
+      bookingId,
+      route,
+      freightAmount: amount(component.basisFreightPaise),
+      commissionRate: component.rule === 'fixed' ? amount(component.feePaise) : `${component.rateBps / 100}%`,
+      commissionAmount: amount(component.feePaise),
+      taxAmount: amount(component.taxPaise),
+      billedToName: component.billedToName,
+      commissionSide: component.side,
+      invoiceRef: invoiceNumber,
+      date: 'Just now',
+      status: 'Pending',
+    }, ...commissions]);
+    this.recordLedgerEntry({
+      reference: invoiceNumber,
+      bookingId,
+      date: 'Just now',
+      type: 'Commission',
+      direction: 'Receivable',
+      amount: amount(component.totalPaise),
+      status: 'Pending',
+      description: `${input.reason === 'cancellation' ? 'Cancellation fee' : component.side === 'shipper' ? 'Shipper-side commission' : 'Provider-side commission'} billed to ${component.billedToName}; includes configured tax`,
+    });
+  }
+
+  /** Records commission as collected at source from the freight settlement. */
+  recordCommissionDeduction(input: { bookingId: string; route: string; component: BookingCommissionComponent }): void {
+    const { bookingId, route, component } = input;
+    const reference = 'COM-SET-' + bookingId.replace(/\D/g, '') + '-' + (component.side === 'shipper' ? 'S' : 'P');
+    if (this.ledgerEntriesSignal().some((entry) => entry.reference === reference)) return;
+    const amount = (paise: number) => '₹' + (paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    this.gstInvoicesSignal.update((invoices) => [{ id: reference, invoiceNumber: reference, date: 'Just now', billedTo: component.billedToName, taxableAmount: amount(component.feePaise), gstAmount: amount(component.taxPaise), totalAmount: amount(component.totalPaise), status: 'Paid', bookingId, type: 'TransportSeva Commission' }, ...invoices]);
+    this.commissionsSignal.update((commissions) => [{ id: reference, bookingId, route, freightAmount: amount(component.basisFreightPaise), commissionRate: component.rule === 'fixed' ? amount(component.feePaise) : (component.rateBps / 100) + '%', commissionAmount: amount(component.feePaise), taxAmount: amount(component.taxPaise), billedToName: component.billedToName, commissionSide: component.side, invoiceRef: reference, date: 'Just now', status: 'Paid' }, ...commissions]);
+    this.recordLedgerEntry({ reference, bookingId, date: 'Just now', type: 'Commission', direction: 'Receivable', amount: amount(component.totalPaise), status: 'Completed', description: (component.side === 'shipper' ? 'Shipper-side' : 'Provider-side') + ' commission withheld from freight settlement for ' + component.billedToName + '; includes configured tax' });
+  }
+
   recordLedgerEntry(entry: Omit<LedgerEntry, 'id'>): void {
     if (this.ledgerEntriesSignal().some((existing) => existing.reference === entry.reference)) return;
     this.ledgerEntriesSignal.update((entries) => [
@@ -197,6 +252,15 @@ export class PaymentMockService {
         amount: `₹${Number(amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`,
       status: 'Completed',
       description: 'Offline/COD balance recorded by portal operator',
+    });
+  }
+
+  recordTokenForfeiture(bookingId: string, token: { partyName: string; amount: string }, reason: string): void {
+    const reference = 'FORFEIT-' + bookingId.replace(/\D/g, '') + '-' + token.partyName.replace(/\W/g, '').slice(0, 8);
+    this.recordLedgerEntry({
+      reference, bookingId, date: 'Just now', type: 'Token Forfeiture', direction: 'Receivable',
+      amount: token.amount, status: 'Completed',
+      description: 'Booking token retained after adverse dispute decision for ' + token.partyName + ': ' + reason,
     });
   }
 

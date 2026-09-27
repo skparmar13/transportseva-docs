@@ -159,11 +159,11 @@ describe('portal route browser smoke checks', () => {
 
     const pickupLocation: GeoLocation = {
       label: 'Connaught Place, New Delhi, Delhi, India', city: 'New Delhi', state: 'Delhi', country: 'India',
-      latitude: 28.6315, longitude: 77.2167, source: 'OpenStreetMap', osmId: '123',
+      latitude: 28.6315, longitude: 77.2167, source: 'geocoder', osmId: '123',
     };
     const dropLocation: GeoLocation = {
       label: 'Andheri, Mumbai, Maharashtra, India', city: 'Mumbai', state: 'Maharashtra', country: 'India',
-      latitude: 19.1197, longitude: 72.8468, source: 'OpenStreetMap', osmId: '456',
+      latitude: 19.1197, longitude: 72.8468, source: 'geocoder', osmId: '456',
     };
     locationSearch.search.and.returnValues(of([pickupLocation]), of([dropLocation]));
 

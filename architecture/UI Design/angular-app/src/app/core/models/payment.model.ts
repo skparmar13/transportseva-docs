@@ -1,5 +1,5 @@
 /** TransportSeva V1 financial records. No stored-value wallet is represented here. */
-export type LedgerEntryType = 'Booking Token' | 'Payment' | 'Refund' | 'Settlement' | 'Commission' | 'Payout';
+export type LedgerEntryType = 'Booking Token' | 'Payment' | 'Refund' | 'Token Forfeiture' | 'Settlement' | 'Commission' | 'Payout';
 
 export interface LedgerEntry {
   id: string;
@@ -29,11 +29,16 @@ export interface FreightPayment {
 
 export interface CommissionRecord {
   id: string;
-  tripId: string;
+  tripId?: string;
+  bookingId?: string;
   route: string;
   freightAmount: string;
   commissionRate: string;
   commissionAmount: string;
+  taxAmount?: string;
+  billedToName?: string;
+  commissionSide?: 'shipper' | 'provider';
+  invoiceRef?: string;
   date: string;
   status: PaymentStatus;
 }
@@ -49,6 +54,8 @@ export interface GstInvoice {
   gstAmount: string;
   totalAmount: string;
   status: GstInvoiceStatus;
+  bookingId?: string;
+  type?: 'Freight' | 'TransportSeva Commission' | 'TransportSeva Cancellation Fee';
 }
 
 export type PayoutStatus = 'Processed' | 'Pending' | 'Failed';

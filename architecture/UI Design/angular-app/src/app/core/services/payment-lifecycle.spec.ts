@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MarketplaceMockService } from './marketplace-mock.service';
 import { PaymentMockService } from './payment-mock.service';
+import { CommissionRulesService } from './commission-rules.service';
 
 describe('Payment lifecycle prototype', () => {
   let marketplace: MarketplaceMockService;
@@ -17,8 +18,22 @@ describe('Payment lifecycle prototype', () => {
     const first = payments.ledgerEntries().filter((e) => e.bookingId === '#TS-48230');
     expect(first.some((e) => e.type === 'Settlement')).toBeTrue();
     expect(first.some((e) => e.type === 'Commission')).toBeTrue();
+    expect(first.filter((e) => e.type === 'Commission').length).toBe(2);
+    expect(first.find((e) => e.type === 'Settlement')?.amount).toContain('22,000');
     marketplace.settleBooking('b1');
     expect(payments.ledgerEntries().filter((e) => e.bookingId === '#TS-48230' && e.type === 'Settlement').length).toBe(1);
+  });
+
+  it('applies the configured cancellation fee to each snapshotted side component', () => {
+    const rules = TestBed.inject(CommissionRulesService);
+    rules.updateRules({ ...rules.rules(), cancellationRateBps: 5_000 });
+    const booking = marketplace.acceptApplication('a1')!;
+    marketplace.rejectBooking(booking.id);
+
+    const invoices = payments.gstInvoices().filter((invoice) => invoice.bookingId === booking.bookingId);
+    expect(invoices.length).toBe(2);
+    expect(invoices.every((invoice) => invoice.type === 'TransportSeva Cancellation Fee' && Number(invoice.totalAmount.replace(/[^0-9.]/g, '')) > 0)).toBeTrue();
+    expect(marketplace.bookings().find((item) => item.id === booking.id)?.commissionSnapshot?.status).toBe('Invoiced');
   });
 
   it('records valid offline payments and rejects malformed amounts', () => {
@@ -51,5 +66,16 @@ describe('Payment lifecycle prototype', () => {
     const entry = { reference: 'WEBHOOK-1', bookingId: '#TS-48230', date: 'Just now', type: 'Payment' as const, direction: 'Receivable' as const, amount: '₹500', status: 'Completed' as const, description: 'Provider callback' };
     expect(payments.processProviderWebhook('evt-1', entry)).toBeTrue();
     expect(payments.processProviderWebhook('evt-1', entry)).toBeFalse();
+  });
+
+  it('records token forfeiture after an adverse dispute decision', () => {
+    const booking = marketplace.acceptApplication('a1')!;
+    marketplace.payDeposit(booking.id, 'owner');
+    marketplace.payDeposit(booking.id, 'counterparty');
+    marketplace.raiseDispute(booking.id, 'Invalid cancellation', 'Admin');
+    marketplace.resolveDispute(booking.id, true);
+    const forfeitures = payments.ledgerEntries().filter((entry) => entry.bookingId === booking.bookingId && entry.type === 'Token Forfeiture');
+    expect(forfeitures.length).toBe(2);
+    expect(marketplace.bookings().find((item) => item.id === booking.id)?.dispute?.outcome).toBe('Forfeited');
   });
 });

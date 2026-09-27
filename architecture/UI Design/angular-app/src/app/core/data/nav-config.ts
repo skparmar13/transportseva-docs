@@ -20,7 +20,6 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         titleKey: 'nav.companyManagement',
         items: [
           { label: 'Company Management', labelKey: 'nav.companyManagement', icon: 'i-building', path: 'companies' },
-          { label: 'Subscription Plans', labelKey: 'nav.subscriptionPlans', icon: 'i-tag', path: 'subscriptions' },
         ],
       },
       {

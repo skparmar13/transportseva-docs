@@ -10,51 +10,19 @@
 <section class="pg-section">
   <div class="container">
     <div class="pricing-grid">
-      @for (plan of plans(); track plan.tier) {
-        <div class="pricing-card" [class.highlighted]="plan.highlighted">
-          @if (plan.highlighted) {
-            <span class="pricing-badge">{{ 'pricing.mostPopular' | t }}</span>
-          }
-          <h3>{{ plan.nameKey | t }}</h3>
-          <p class="pricing-tagline">{{ plan.taglineKey | t }}</p>
-
-          <div class="pricing-price">
-            <span class="amount">{{ plan.priceKey ? (plan.priceKey | t) : plan.price }}</span>
-            @if (plan.showPeriod) {
-              <span class="period">{{ 'pricing.perMonth' | t }}</span>
-            }
-          </div>
-          <div class="pricing-note">{{ plan.priceNoteKey | t }}</div>
-
-          <div class="pricing-suitable">
-            @for (s of plan.suitableKeys; track s) {
-              <span>{{ s.startsWith('pricing.') ? (s | t) : s }}</span>
-            }
-          </div>
-
-          @if (plan.inheritsFrom) {
-            <div class="pricing-inherit">{{ 'pricing.everythingIn' | t : { plan: (inheritsFromKey(plan.inheritsFrom) | t) } }}</div>
-          }
-          <ul class="pricing-features">
-            @for (f of plan.featureKeys; track f) {
-              <li><app-icon name="i-check" class="icon" [size]="16" /><span>{{ f | t }}</span></li>
-            }
-          </ul>
-
-          @if (plan.limitKeys.length) {
-            <div class="pricing-limits">
-              <h5>{{ 'pricing.planLimits' | t }}</h5>
-              <ul>
-                @for (l of plan.limitKeys; track l) {
-                  <li>{{ l | t }}</li>
-                }
-              </ul>
-            </div>
-          }
-
-          <a [routerLink]="plan.tier === 'enterprise' ? '/contact' : '/auth/signup'" [queryParams]="plan.tier === 'enterprise' ? null : { plan: plan.tier }" class="btn" [class.btn-primary]="plan.highlighted" [class.btn-outline]="!plan.highlighted">{{ plan.ctaKey | t }}</a>
-        </div>
-      }
+      <div class="pricing-card highlighted">
+        <span class="pricing-badge">V1 marketplace model</span>
+        <h3>Free signup for every role</h3>
+        <p class="pricing-tagline">No monthly subscription or membership plan.</p>
+        <div class="pricing-price"><span class="amount">₹0</span></div>
+        <div class="pricing-note">No recurring platform charge</div>
+        <ul class="pricing-features">
+          <li><app-icon name="i-check" class="icon" [size]="16" /><span>Post loads, apply and manage bookings</span></li>
+          <li><app-icon name="i-check" class="icon" [size]="16" /><span>TransportSeva earns only on successful bookings</span></li>
+          <li><app-icon name="i-check" class="icon" [size]="16" /><span>Optional AIS-140 device and connectivity services are charged separately</span></li>
+        </ul>
+        <a routerLink="/auth/signup" class="btn btn-primary">Create free account</a>
+      </div>
     </div>
 
     <p class="pricing-commission-note">

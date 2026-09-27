@@ -4,15 +4,15 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { MarketplaceMockService, BOOKING_TIMELINE_STAGES } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
-import { MarketplaceBooking, VehicleAssignmentMode } from '../../../core/models/marketplace.model';
+import { BookingCommissionComponent, MarketplaceBooking, VehicleAssignmentMode } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
 import { PaymentMockService } from '../../../core/services/payment-mock.service';
 
 /**
  * Bookings — confirmed bookings with the full commercial lifecycle:
- * mutual Booking Security Deposit (escrow) → Vehicle Assignment →
- * Driver Assignment → Trip Started → Settlement (deposits released,
- * commission deducted, remaining freight paid out). Each booking
+ * provider-processed booking tokens → Vehicle Assignment → Driver
+ * Assignment → Trip Started → Settlement (freight paid separately from
+ * commission invoices). Each booking
  * shows the side the current portal represents (owner vs.
  * counterparty) so only the relevant "Pay Deposit" action appears.
  */
@@ -61,6 +61,36 @@ export class BookingsComponent {
   protected readonly cardCvv = signal('');
   protected readonly processingPayment = signal(false);
   protected readonly paymentError = signal(false);
+  protected readonly reviewedCommissionSides = signal<string[]>([]);
+  protected readonly sumCommission = (total: number, fee: BookingCommissionComponent) => total + fee.totalPaise;
+
+  protected visibleCommissionComponents(booking: MarketplaceBooking): BookingCommissionComponent[] {
+    const components = booking.commissionSnapshot?.components ?? [];
+    const role = this.session.role();
+    if (role === 'admin') return components;
+    if (role === 'transporter' && components.some((component) => component.billedToRole === 'transporter')) {
+      return components.filter((component) => component.billedToRole === 'transporter');
+    }
+    const side = this.mySide(booking);
+    return components.filter((component) => component.billedToRole === role && component.side === (side === 'owner' ? 'shipper' : 'provider'));
+  }
+
+  protected commissionDisclosureKey(booking: MarketplaceBooking): string {
+    return `${booking.id}:${this.mySide(booking) ?? this.session.role()}`;
+  }
+
+  protected hasReviewedCommission(booking: MarketplaceBooking): boolean {
+    return !booking.commissionSnapshot || this.reviewedCommissionSides().includes(this.commissionDisclosureKey(booking));
+  }
+
+  protected reviewCommission(booking: MarketplaceBooking, checked: boolean): void {
+    const key = this.commissionDisclosureKey(booking);
+    this.reviewedCommissionSides.update((keys) => checked ? [...new Set([...keys, key])] : keys.filter((item) => item !== key));
+  }
+
+  protected money(paise: number): string {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(paise / 100);
+  }
 
   protected openPayDeposit(booking: MarketplaceBooking): void {
     const side = this.mySide(booking);
@@ -203,6 +233,10 @@ export class BookingsComponent {
   protected openDispute(bookingId: string): void {
     this.disputingBooking.set(bookingId);
     this.disputeReason.set('');
+  }
+
+  protected resolveDispute(bookingId: string, chargeCommission: boolean): void {
+    this.marketplace.resolveDispute(bookingId, chargeCommission);
   }
 
   protected submitDispute(): void {

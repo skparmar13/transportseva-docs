@@ -5,6 +5,30 @@
   </div>
 </div>
 
+@if (session.role() === 'admin') {
+  <section class="card" style="margin-bottom:18px;">
+    <div class="card-body">
+      <h2 style="margin:0 0 6px;font-size:18px;">{{ 'commissionRules.title' | t }}</h2>
+      <p class="desc" style="margin:0 0 16px;">{{ 'commissionRules.desc' | t }}</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;">
+        <div class="field"><label>{{ 'commissionRules.threshold' | t }}</label><input type="number" min="1" step="0.01" class="input" [ngModel]="ruleDraft().threshold" (ngModelChange)="updateRule('threshold',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.fixedFee' | t }}</label><input type="number" min="0.01" step="0.01" class="input" [ngModel]="ruleDraft().fixedFee" (ngModelChange)="updateRule('fixedFee',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.shipperRate' | t }}</label><input type="number" min="0" max="100" step="0.01" class="input" [ngModel]="ruleDraft().shipperPercent" (ngModelChange)="updateRule('shipperPercent',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.providerRate' | t }}</label><input type="number" min="0" max="100" step="0.01" class="input" [ngModel]="ruleDraft().providerPercent" (ngModelChange)="updateRule('providerPercent',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.minimum' | t }}</label><input type="number" min="0" step="0.01" class="input" [ngModel]="ruleDraft().minimumFee" (ngModelChange)="updateRule('minimumFee',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.maximum' | t }}</label><input type="number" min="0" step="0.01" class="input" [ngModel]="ruleDraft().maximumFee" (ngModelChange)="updateRule('maximumFee',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.taxRate' | t }}</label><input type="number" min="0" max="100" step="0.01" class="input" [ngModel]="ruleDraft().taxPercent" (ngModelChange)="updateRule('taxPercent',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.cancellationRate' | t }}</label><input type="number" min="0" max="100" step="0.01" class="input" [ngModel]="ruleDraft().cancellationPercent" (ngModelChange)="updateRule('cancellationPercent',$event)"></div>
+        <div class="field"><label>{{ 'commissionRules.cancellationRefundRate' | t }}</label><input type="number" min="0" max="100" step="0.01" class="input" [ngModel]="ruleDraft().cancellationRefundPercent" (ngModelChange)="updateRule('cancellationRefundPercent',$event)"></div>
+      </div>
+      <p style="font-size:12px;color:var(--color-text-muted);">{{ 'commissionRules.transporterNote' | t }}</p>
+      @if (ruleError()) { <p role="alert" style="color:var(--color-danger);">{{ 'commissionRules.invalid' | t }}</p> }
+      @if (rulesSaved()) { <p role="status" style="color:var(--color-success);">{{ 'commissionRules.saved' | t }}</p> }
+      <button type="button" class="btn btn-primary" (click)="saveCommissionRules()">{{ 'commissionRules.save' | t }}</button>
+    </div>
+  </section>
+}
+
 <div class="kpi-grid">
   <p style="grid-column:1/-1;margin:0;color:var(--color-text-muted);font-size:12px;">Ledger totals refresh as booking, refund, settlement, commission and offline payment records are created.</p>
   <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon"><app-icon name="i-lock" /></div></div><div class="kpi-value">₹1,000</div><div class="kpi-label">Booking Tokens Held</div></div>

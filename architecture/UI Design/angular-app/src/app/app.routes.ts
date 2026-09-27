@@ -48,7 +48,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'TransportSeva | Admin Console', loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent) },
       { path: 'companies', title: 'Company Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/company-management/company-management.component').then((m) => m.CompanyManagementComponent) },
-      { path: 'subscriptions', title: 'Subscription Plans | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/subscription-plans/subscription-plans.component').then((m) => m.SubscriptionPlansComponent) },
       { path: 'users', title: 'User Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/user-management/user-management.component').then((m) => m.UserManagementComponent) },
       { path: 'roles', title: 'Roles & Permissions | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/roles-permissions/roles-permissions.component').then((m) => m.RolesPermissionsComponent) },
       { path: 'customers', title: 'Customer Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/customer-management/customer-management.component').then((m) => m.CustomerManagementComponent) },

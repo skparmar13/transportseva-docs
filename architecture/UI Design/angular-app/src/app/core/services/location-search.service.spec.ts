@@ -36,7 +36,7 @@ describe('LocationSearchService', () => {
       city: 'New Delhi',
       latitude: 28.6315,
       longitude: 77.2195,
-      source: 'OpenStreetMap',
+      source: 'geocoder',
       osmId: '123',
     }));
   });

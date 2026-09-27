@@ -6,6 +6,6 @@ export interface GeoLocation {
   postcode?: string;
   latitude: number;
   longitude: number;
-  source: 'OpenStreetMap';
+  source: 'geocoder';
   osmId?: string;
 }

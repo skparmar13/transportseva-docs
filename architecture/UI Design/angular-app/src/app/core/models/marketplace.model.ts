@@ -115,7 +115,7 @@ export interface BookingTimelineEvent {
 
 export type DepositPartyStatus = 'Pending' | 'Paid';
 
-/** One side's mutual Booking Security Deposit, held in TransportSeva's escrow. */
+/** One side's booking token; the regulated provider handles the funds, while this record tracks payment state. */
 export interface BookingDeposit {
   role: PortalRole;
   partyName: string;
@@ -143,10 +143,42 @@ export interface BookingDriverAssignment {
 
 export interface BookingSettlement {
   freightAmount: string;
-  commission: string;
+  grossFreightAmount?: string;
+  /** Provider-side commission withheld from the provider payout. */
+  commissionDeducted?: string;
+  /** Shipper-side commission added to the shipper's freight payable. */
+  shipperCommission?: string;
+  /** Gross freight plus the shipper-side commission. */
+  shipperPayable?: string;
+  /** Both commission components including tax. */
+  totalCommission?: string;
   payoutAmount: string;
   depositsReleased: boolean;
   settledAt?: string;
+}
+
+export interface BookingCommissionComponent {
+  side: 'shipper' | 'provider';
+  /** The role and account actually billed; Transporters can be billed for both sides. */
+  billedToRole: PortalRole;
+  billedToName: string;
+  basisFreightPaise: number;
+  rule: 'fixed' | 'percentage';
+  rateBps: number;
+  feePaise: number;
+  taxRateBps: number;
+  taxPaise: number;
+  totalPaise: number;
+}
+
+export interface BookingCommissionSnapshot {
+  thresholdPaise: number;
+  fixedFeePaise: number;
+  cancellationRateBps: number;
+  cancellationRefundRateBps: number;
+  components: BookingCommissionComponent[];
+  policyVersion: number;
+  status: 'Quoted' | 'Due' | 'Invoiced' | 'Waived';
 }
 
 export type SettlementMilestoneStatus = 'Pending' | 'Released';
@@ -186,6 +218,8 @@ export interface MarketplaceBooking {
   vehicleRegNumber: string;
   /** Final freight amount agreed through negotiation. */
   amount: string;
+  /** Immutable, role-specific fee disclosure calculated from the negotiated freight. */
+  commissionSnapshot?: BookingCommissionSnapshot;
   status: BookingStage;
   timeline: BookingTimelineEvent[];
   ownerDeposit: BookingDeposit;
@@ -204,5 +238,6 @@ export interface BookingDispute {
   reason: string;
   raisedBy: string;
   status: 'Open' | 'Under Review' | 'Resolved';
+  outcome?: 'Refunded' | 'Forfeited' | 'Commission Waived' | 'Commission Due';
   raisedAt: string;
 }

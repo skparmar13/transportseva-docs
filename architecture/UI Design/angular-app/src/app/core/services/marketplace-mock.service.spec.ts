@@ -22,7 +22,21 @@ describe('Marketplace booking negotiation lifecycle', () => {
 
     expect(marketplace.applications().find((application) => application.id === 'a1')?.status).toBe('Accepted');
     expect(marketplace.bookings().length).toBe(initialBookingCount + 1);
+    const acceptedBooking = marketplace.bookings()[0];
+    expect(acceptedBooking.commissionSnapshot?.components.length).toBe(2);
+    expect(acceptedBooking.commissionSnapshot?.components.every((fee) => fee.billedToRole === 'transporter' && fee.billedToName === 'Verma Logistics')).toBeTrue();
     expect(marketplace.getOffersForApplication('a1')().length).toBe(initialOfferCount);
+  });
+
+  it('holds commission invoice creation while an active booking dispute is unresolved', () => {
+    const booking = marketplace.acceptApplication('a1')!;
+    marketplace.raiseDispute(booking.id, 'Freight amount disputed', 'Shipper');
+    marketplace.settleBooking(booking.id);
+    expect(marketplace.bookings().find((item) => item.id === booking.id)?.status).not.toBe('Completed');
+
+    marketplace.resolveDispute(booking.id, false);
+    marketplace.settleBooking(booking.id);
+    expect(marketplace.bookings().find((item) => item.id === booking.id)?.commissionSnapshot?.status).toBe('Waived');
   });
 
   it('rejects nonnumeric freight quotes and counter-offers at the service boundary', () => {

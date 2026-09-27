@@ -60,7 +60,7 @@ export class LocationSearchService {
           postcode: properties.postcode,
           longitude: coordinates[0],
           latitude: coordinates[1],
-          source: 'OpenStreetMap' as const,
+          source: 'geocoder' as const,
           osmId: properties.osm_id ? String(properties.osm_id) : undefined,
         }];
       })),

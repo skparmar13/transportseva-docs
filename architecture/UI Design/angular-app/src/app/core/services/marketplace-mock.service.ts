@@ -12,6 +12,7 @@ import {
   VehicleType,
 } from '../models/marketplace.model';
 import { PaymentMockService } from './payment-mock.service';
+import { CommissionRulesService } from './commission-rules.service';
 
 let idCounter = 100;
 const nextId = (prefix: string) => `${prefix}-${++idCounter}`;
@@ -192,13 +193,14 @@ const INITIAL_BOOKINGS: MarketplaceBooking[] = [
  *   Apply (structured offer, no contact reveal) → Negotiate
  *   (offer/counter-offer thread) → Accept → Booking created
  *   ("Awaiting Deposit") → both sides pay a mutual Booking Security
- *   Deposit into escrow → "Confirmed" (freeform chat unlocks) →
+ *   Provider-processed booking tokens → "Confirmed" (freeform chat unlocks) →
  *   Vehicle Assigned → Driver Assigned → Trip Started → Settlement
- *   (deposits released, commission deducted, remaining freight paid).
+ *   (freight settled net of commission withheld at source).
  */
 @Injectable({ providedIn: 'root' })
 export class MarketplaceMockService {
   private readonly payments = inject(PaymentMockService);
+  private readonly commissionRules = inject(CommissionRulesService);
   private readonly loadsState = signal<Load[]>(INITIAL_LOADS);
   private readonly applicationsState = signal<LoadApplication[]>(INITIAL_APPLICATIONS);
   private readonly offersState = signal<NegotiationOffer[]>(INITIAL_OFFERS);
@@ -379,6 +381,13 @@ export class MarketplaceMockService {
       counterpartyName: application.applicantName,
       vehicleRegNumber: application.vehicleRegNumber,
       amount: finalAmount,
+      commissionSnapshot: this.commissionRules.calculate({
+        freight: finalAmount,
+        ownerRole: load?.postedBy ?? 'shipper',
+        ownerName: load?.postedByName ?? '',
+        providerRole: application.applicantRole,
+        providerName: application.applicantName,
+      }),
       status: 'Awaiting Deposit',
       timeline: buildTimeline('Awaiting Deposit'),
       ownerDeposit: { role: load?.postedBy ?? 'shipper', partyName: load?.postedByName ?? '', amount: DEPOSIT_AMOUNT, status: 'Pending' },
@@ -437,43 +446,55 @@ export class MarketplaceMockService {
   rejectBooking(bookingId: string): void {
     const booking = this.bookingsState().find((b) => b.id === bookingId);
     if (!booking || !['Awaiting Deposit', 'Confirmed'].includes(booking.status)) return;
+    this.recordCancellationCommission(booking);
     this.bookingsState.update((bookings) => bookings.map((b) =>
       b.id === bookingId ? { ...b, status: 'Cancelled', escrowStatus: 'Released' } : b,
     ));
-    const paid = [booking.ownerDeposit, booking.counterpartyDeposit].filter((d) => d.status === 'Paid');
-    for (const deposit of paid) {
-      this.payments.recordLedgerEntry({
-        reference: nextId('REF'), bookingId: booking.bookingId, date: 'Just now', type: 'Refund',
-        direction: 'Refund', amount: deposit.amount, status: 'Processing',
-        description: `Booking token refund initiated for ${deposit.partyName} after transporter rejection`,
-      });
-    }
+    this.recordTokenRefunds(booking, 10_000, 'transporter rejection');
   }
 
   /** Load owner cancellation before dispatch; paid booking tokens become refund records. */
   cancelBooking(bookingId: string): void {
     const booking = this.bookingsState().find((b) => b.id === bookingId);
     if (!booking || !['Awaiting Deposit', 'Confirmed'].includes(booking.status)) return;
+    this.recordCancellationCommission(booking);
     this.bookingsState.update((bookings) => bookings.map((b) =>
       b.id === bookingId ? { ...b, status: 'Cancelled', escrowStatus: 'Released' } : b,
     ));
-    const paid = [booking.ownerDeposit, booking.counterpartyDeposit].filter((d) => d.status === 'Paid');
-    for (const deposit of paid) {
-      this.payments.recordLedgerEntry({
-        reference: nextId('REF'), bookingId: booking.bookingId, date: 'Just now', type: 'Refund',
-        direction: 'Refund', amount: deposit.amount, status: 'Processing',
-        description: `Booking token refund initiated after customer cancellation for ${deposit.partyName}`,
-      });
-    }
+    const snapshot = booking.commissionSnapshot ?? this.commissionRules.calculate({
+      freight: booking.amount, ownerRole: booking.ownerRole, ownerName: booking.ownerName,
+      providerRole: booking.counterpartyRole, providerName: booking.counterpartyName,
+    });
+    this.recordTokenRefunds(booking, snapshot.cancellationRefundRateBps, 'booking cancellation');
   }
 
   /** Opens a support dispute without changing the commercial booking state. */
   raiseDispute(bookingId: string, reason: string, raisedBy: string): void {
     if (!reason.trim()) return;
-    this.bookingsState.update((bookings) => bookings.map((b) => b.id === bookingId && !b.dispute
+    this.bookingsState.update((bookings) => bookings.map((b) => b.id === bookingId && b.status !== 'Completed' && b.status !== 'Cancelled' && !b.dispute
       ? { ...b, dispute: { reference: nextId('DSP'), reason: reason.trim(), raisedBy, status: 'Open' as const, raisedAt: 'Just now' } }
       : b,
     ));
+  }
+
+  resolveDispute(bookingId: string, chargeCommission: boolean): void {
+    const booking = this.bookingsState().find((item) => item.id === bookingId);
+    if (!booking?.dispute || booking.dispute.status === 'Resolved') return;
+    if (chargeCommission) {
+      for (const token of [booking.ownerDeposit, booking.counterpartyDeposit].filter((item) => item.status === 'Paid')) {
+        this.payments.recordTokenForfeiture(booking.bookingId, token, 'invalid cancellation or contract breach');
+      }
+    }
+    this.bookingsState.update((bookings) => bookings.map((booking) => {
+      if (booking.id !== bookingId || !booking.dispute || booking.dispute.status === 'Resolved') return booking;
+      return {
+        ...booking,
+        dispute: { ...booking.dispute, status: 'Resolved', outcome: chargeCommission ? 'Forfeited' : 'Commission Waived' },
+        commissionSnapshot: !chargeCommission && booking.commissionSnapshot
+          ? { ...booking.commissionSnapshot, status: 'Waived' }
+          : booking.commissionSnapshot,
+      };
+    }));
   }
 
   assignVehicle(bookingId: string, input: { mode: 'Own Fleet' | 'Subcontracted'; vehicleRegNumber: string; subcontractedTo?: string }): void {
@@ -555,16 +576,20 @@ export class MarketplaceMockService {
 
   /**
    * Final settlement — releases any still-pending milestones (typically just
-   * "Final Settlement"), deducts TransportSeva's commission from the total
-   * freight, and releases both Booking Security Deposits from escrow.
+   * "Final Settlement"), withholds the snapshotted commission components
+   * from the freight payout, and records them as collected.
    */
-  settleBooking(bookingId: string, commissionPercent = 5): void {
+  settleBooking(bookingId: string): void {
     const booking = this.bookingsState().find((b) => b.id === bookingId);
     if (!booking || booking.status === 'Completed' || booking.status === 'Cancelled') return;
+    if (booking.dispute && booking.dispute.status !== 'Resolved') return;
     const freightNum = parseAmount(booking.amount);
-    const commissionNum = Math.round((freightNum * commissionPercent) / 100);
+    const commissionSnapshot = booking.commissionSnapshot ?? this.commissionRules.calculate({ freight: booking.amount, ownerRole: booking.ownerRole, ownerName: booking.ownerName, providerRole: booking.counterpartyRole, providerName: booking.counterpartyName });
+    const providerCommission = commissionSnapshot.status === 'Waived' ? 0 : commissionSnapshot.components.filter((component) => component.side === 'provider').reduce((sum, component) => sum + component.totalPaise / 100, 0);
+    const shipperCommission = commissionSnapshot.status === 'Waived' ? 0 : commissionSnapshot.components.filter((component) => component.side === 'shipper').reduce((sum, component) => sum + component.totalPaise / 100, 0);
+    const commissionTotal = providerCommission + shipperCommission;
     const alreadyReleased = booking.settlementPlan.filter((m) => m.status === 'Released').reduce((sum, m) => sum + parseAmount(m.amount), 0);
-    const finalPayout = Math.max(freightNum - alreadyReleased - commissionNum, 0);
+    const finalPayout = Math.max(freightNum - providerCommission - alreadyReleased, 0);
     const payoutNum = alreadyReleased + finalPayout;
     this.bookingsState.update((bookings) =>
       bookings.map((b) => {
@@ -581,7 +606,11 @@ export class MarketplaceMockService {
           settlementPlan,
           settlement: {
             freightAmount: b.amount,
-            commission: formatAmount(commissionNum),
+            grossFreightAmount: b.amount,
+            commissionDeducted: formatAmount(providerCommission),
+            shipperCommission: formatAmount(shipperCommission),
+            shipperPayable: formatAmount(freightNum + shipperCommission),
+            totalCommission: formatAmount(commissionTotal),
             payoutAmount: formatAmount(payoutNum),
             depositsReleased: true,
             settledAt: 'Just now',
@@ -592,13 +621,55 @@ export class MarketplaceMockService {
     this.payments.recordLedgerEntry({
       reference: nextId('SET'), bookingId: booking.bookingId, date: 'Just now', type: 'Settlement',
       direction: 'Payable', amount: formatAmount(payoutNum), status: 'Completed',
-      description: `Freight settlement released after ${commissionPercent}% TransportSeva commission`,
+      description: 'Freight settlement recorded net of ' + formatAmount(commissionTotal) + ' TransportSeva commission withheld at source',
     });
-    this.payments.recordLedgerEntry({
-      reference: nextId('COM'), bookingId: booking.bookingId, date: 'Just now', type: 'Commission',
-      direction: 'Receivable', amount: formatAmount(commissionNum), status: 'Completed',
-      description: `TransportSeva commission assessed at ${commissionPercent}% of freight`,
+    if (commissionSnapshot.status !== 'Waived') {
+      for (const component of commissionSnapshot.components) {
+        this.payments.recordCommissionDeduction({ bookingId: booking.bookingId, route: booking.route, component });
+      }
+      this.bookingsState.update((bookings) => bookings.map((b) => b.id === bookingId
+        ? { ...b, commissionSnapshot: { ...commissionSnapshot, status: 'Invoiced' } }
+        : b));
+    }
+  }
+
+  private recordCancellationCommission(booking: MarketplaceBooking): void {
+    const snapshot = booking.commissionSnapshot ?? this.commissionRules.calculate({
+      freight: booking.amount,
+      ownerRole: booking.ownerRole,
+      ownerName: booking.ownerName,
+      providerRole: booking.counterpartyRole,
+      providerName: booking.counterpartyName,
     });
+    const rateBps = snapshot.cancellationRateBps;
+    if (rateBps > 0) {
+      for (const component of snapshot.components) {
+        const feePaise = Math.round(component.feePaise * rateBps / 10_000);
+        const taxPaise = Math.round(feePaise * component.taxRateBps / 10_000);
+        this.payments.recordCommissionInvoice({
+          bookingId: booking.bookingId,
+          route: booking.route,
+          reason: 'cancellation',
+          component: { ...component, feePaise, taxPaise, totalPaise: feePaise + taxPaise },
+        });
+      }
+    }
+    this.bookingsState.update((bookings) => bookings.map((item) => item.id === booking.id
+      ? { ...item, commissionSnapshot: { ...snapshot, status: rateBps > 0 ? 'Invoiced' : 'Waived' } }
+      : item));
+  }
+
+  private recordTokenRefunds(booking: MarketplaceBooking, refundRateBps: number, reason: string): void {
+    for (const token of [booking.ownerDeposit, booking.counterpartyDeposit].filter((item) => item.status === 'Paid')) {
+      const originalPaise = Math.round(parseAmount(token.amount) * 100);
+      const refundPaise = Math.round(originalPaise * refundRateBps / 10_000);
+      if (refundPaise <= 0) continue;
+      this.payments.recordLedgerEntry({
+        reference: nextId('REF'), bookingId: booking.bookingId, date: 'Just now', type: 'Refund',
+        direction: 'Refund', amount: formatAmount(refundPaise / 100), status: 'Processing',
+        description: `${refundRateBps / 100}% booking-token refund initiated for ${token.partyName} after ${reason}`,
+      });
+    }
   }
 
   /** Freeform chat — only meaningful once the application is Accepted (booking exists), i.e. after negotiation closes. */
