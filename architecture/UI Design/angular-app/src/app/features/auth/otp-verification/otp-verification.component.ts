@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { TranslatePipe } from '../../../core/i18n';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiAuthService } from '../../../core/api/api-auth.service';
 
 @Component({
   selector: 'app-otp-verification',
@@ -17,6 +19,7 @@ export class OtpVerificationComponent {
   private readonly auth = inject(AuthMockService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly apiAuth = inject(ApiAuthService);
 
   @ViewChildren('otpInput') private otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
@@ -40,6 +43,17 @@ export class OtpVerificationComponent {
   protected verify(): void {
     if (!this.isOtpComplete()) return;
     this.verifying.set(true);
+    if (API_CONFIG.useBackend && this.route.snapshot.queryParamMap.get('next') === 'signup') {
+      const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as { mobile?: string };
+      this.apiAuth.verifySignupOtp('+91' + (pending.mobile ?? ''), this.digits().join('')).subscribe({
+        next: () => {
+          this.verifying.set(false);
+          this.router.navigate(['/auth/profile-setup']);
+        },
+        error: () => this.verifying.set(false),
+      });
+      return;
+    }
     this.auth.verifyOtp(this.digits().join('')).subscribe(() => {
       this.verifying.set(false);
       const next = this.route.snapshot.queryParamMap.get('next');
@@ -53,6 +67,11 @@ export class OtpVerificationComponent {
   }
 
   protected resend(): void {
+    if (API_CONFIG.useBackend) {
+      const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as { mobile?: string };
+      this.apiAuth.requestSignupOtp('+91' + (pending.mobile ?? '')).subscribe();
+      return;
+    }
     this.auth.sendOtp(this.identifier()).subscribe();
   }
 }

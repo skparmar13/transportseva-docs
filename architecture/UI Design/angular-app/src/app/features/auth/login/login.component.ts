@@ -6,6 +6,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { TranslatePipe } from '../../../core/i18n';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiAuthService } from '../../../core/api/api-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -17,6 +19,7 @@ import { TranslatePipe } from '../../../core/i18n';
 })
 export class LoginComponent {
   private readonly auth = inject(AuthMockService);
+  private readonly apiAuth = inject(ApiAuthService);
   private readonly session = inject(SessionService);
   private readonly router = inject(Router);
 
@@ -32,6 +35,18 @@ export class LoginComponent {
 
   protected submit(): void {
     this.submitting.set(true);
+    if (API_CONFIG.useBackend) {
+      this.apiAuth.login(this.identifier(), this.password()).subscribe({
+        next: ({ user }) => {
+          this.submitting.set(false);
+          const role = this.backendRole(user.role ?? user.roles?.[0] ?? '');
+          this.session.setRole(role);
+          this.router.navigate([this.session.portal().basePath, 'dashboard']);
+        },
+        error: () => this.submitting.set(false),
+      });
+      return;
+    }
     this.auth.login(this.identifier(), this.password()).subscribe((workspaces) => {
       this.submitting.set(false);
       if (workspaces.length > 1) {
@@ -41,5 +56,14 @@ export class LoginComponent {
         this.router.navigate([this.session.portal().basePath, 'dashboard']);
       }
     });
+  }
+
+  private backendRole(value: string): import('../../../core/models/nav.model').PortalRole {
+    const role = value.toLowerCase().replace(/[_\s]/g, '-');
+    if (role.includes('admin') || role.includes('manager') || role.includes('employee')) return 'admin';
+    if (role.includes('transporter')) return 'transporter';
+    if (role.includes('truck') || role.includes('fleet')) return 'truck-owner';
+    if (role.includes('driver')) return 'driver';
+    return 'shipper';
   }
 }

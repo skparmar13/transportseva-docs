@@ -19,6 +19,9 @@
   <div class="card" style="max-width:720px;">
     <div class="card-body">
       <form (ngSubmit)="submit()">
+        @if (submissionError()) {
+          <p class="hint" role="alert">{{ submissionError() | t }}</p>
+        }
         @if (isTransporter()) {
           <div class="field">
             <label>{{ 'postLoad.onBehalfLabel' | t }}</label>

@@ -1,6 +1,8 @@
 ﻿import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
 import { CmsMockService } from '../../../core/services/cms-mock.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -8,6 +10,8 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { Load } from '../../../core/models/marketplace.model';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiLoad, ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
 
 @Component({
   selector: 'app-home',
@@ -22,12 +26,19 @@ export class HomeComponent implements OnInit {
   private readonly cms = inject(CmsMockService);
   private readonly language = inject(LanguageService);
   private readonly marketplace = inject(MarketplaceMockService);
+  private readonly apiMarketplace = inject(ApiMarketplaceService);
+  private readonly backendLoads = toSignal(
+    API_CONFIG.useBackend
+      ? this.apiMarketplace.listRecentLoads(20).pipe(catchError(() => of([] as ApiLoad[])))
+      : of([] as ApiLoad[]),
+    { initialValue: [] as ApiLoad[] },
+  );
   protected readonly sourceQuery = signal('');
   protected readonly destinationQuery = signal('');
   protected readonly vehicleTypeFilter = signal('All');
   protected readonly previewLimit = signal(10);
   protected readonly publicVehicleTypes = computed(() => [...new Set(this.publicLoads().map((load) => load.vehicleType))].sort());
-  protected readonly publicLoads = computed(() => this.marketplace.loads()
+  protected readonly publicLoads = computed(() => (API_CONFIG.useBackend ? this.backendLoads().map((load) => this.mapBackendLoad(load)) : this.marketplace.loads())
     .filter((load) => load.status === 'Open' || load.status === 'Applications Received')
     .sort((a, b) => this.postedMinutesAgo(a.postedAgo) - this.postedMinutesAgo(b.postedAgo)));
   protected readonly visiblePublicLoads = computed(() => {
@@ -100,6 +111,26 @@ export class HomeComponent implements OnInit {
 
   protected setPreviewLimit(value: string): void { this.previewLimit.set(Number(value) === 20 ? 20 : 10); }
   protected loadBudget(load: Load): string { return load.budget; }
+
+  private mapBackendLoad(load: ApiLoad): Load {
+    const status = String(load.status).toLowerCase();
+    return {
+      id: load.uuid,
+      loadId: load.load_id ? `#${load.load_id.replace(/^#/, '')}` : `#${load.uuid.slice(0, 8).toUpperCase()}`,
+      postedBy: 'shipper',
+      postedByName: 'TransportSeva customer',
+      pickupCity: load.pickup_city,
+      dropCity: load.drop_city,
+      material: load.material ?? 'General Cargo',
+      weightTons: load.weight_tons ?? 0,
+      vehicleType: (load.vehicle_type ?? 'Open Body Truck') as Load['vehicleType'],
+      pickupDate: load.pickup_date ?? '',
+      budget: typeof load.budget === 'number' ? `₹${load.budget.toLocaleString('en-IN')}` : '₹0',
+      status: status.includes('application') ? 'Applications Received' : 'Open',
+      applicationsCount: load.applications_count ?? 0,
+      postedAgo: load.created_at ?? 'Recently posted',
+    };
+  }
 
   private postedMinutesAgo(value: string): number {
     if (/just now/i.test(value)) return 0;

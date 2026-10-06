@@ -1,12 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
-import { VehicleType } from '../../../core/models/marketplace.model';
+import { Load, LoadApplication, VehicleType } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiApplication, ApiLoad, ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
+import { catchError, of } from 'rxjs';
 
 const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -37,10 +41,19 @@ export class LoadDetailsComponent {
   protected readonly marketplace = inject(MarketplaceMockService);
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
+  private readonly apiMarketplace = inject(ApiMarketplaceService);
 
   private readonly loadId = this.route.snapshot.paramMap.get('id') ?? '';
-  protected readonly load = this.marketplace.getLoadById(this.loadId);
-  protected readonly applications = this.marketplace.getApplicationsForLoad(this.loadId);
+  private readonly backendLoad = toSignal(
+    API_CONFIG.useBackend ? this.apiMarketplace.getLoad(this.loadId).pipe(catchError(() => of(undefined))) : of(undefined),
+    { initialValue: undefined },
+  );
+  private readonly backendApplications = toSignal(
+    API_CONFIG.useBackend ? this.apiMarketplace.listApplications(this.loadId).pipe(catchError(() => of([] as ApiApplication[]))) : of([] as ApiApplication[]),
+    { initialValue: [] as ApiApplication[] },
+  );
+  protected readonly load = computed<Load | undefined>(() => API_CONFIG.useBackend ? this.mapLoad(this.backendLoad()) : this.marketplace.getLoadById(this.loadId)());
+  protected readonly applications = computed<LoadApplication[]>(() => API_CONFIG.useBackend ? this.backendApplications().map((app) => this.mapApplication(app)) : this.marketplace.getApplicationsForLoad(this.loadId)());
   protected readonly vehicleTypes = VEHICLE_TYPES;
 
   protected statusKey(s: string): string {
@@ -89,6 +102,24 @@ export class LoadDetailsComponent {
     const amount = this.quotedAmount();
     if (!load || !this.vehicleRegNumber().trim() || !this.availability().trim() || amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
     this.applying.set(true);
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.createApplication(this.loadId, {
+        applicant_role: this.session.role() === 'transporter' ? 'transporter' : 'truck-owner',
+        applicant_name: this.session.user().company ?? this.session.user().name,
+        vehicle_reg_number: this.vehicleRegNumber().trim(),
+        vehicle_type: this.vehicleType(),
+        availability: this.availability().trim(),
+        quoted_amount: amount,
+        message: this.applyMessage().trim() || undefined,
+      }).subscribe({
+        next: () => {
+          this.applying.set(false);
+          this.showApplyModal.set(false);
+        },
+        error: () => this.applying.set(false),
+      });
+      return;
+    }
     setTimeout(() => {
       this.marketplace.applyForLoad({
         loadId: this.loadId,
@@ -116,6 +147,15 @@ export class LoadDetailsComponent {
   protected sendCounterOffer(applicationId: string): void {
     const amount = this.counterAmount();
     if (amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.createOffer(applicationId, {
+        by_role: this.isOwner() ? 'owner' : 'applicant',
+        by_name: this.session.user().company ?? this.session.user().name,
+        amount,
+        message: this.counterMessage().trim() || undefined,
+      }).subscribe({ next: () => this.counterMessage.set(''), error: () => undefined });
+      return;
+    }
     this.marketplace.sendCounterOffer({
       applicationId,
       loadId: this.loadId,
@@ -155,6 +195,22 @@ export class LoadDetailsComponent {
   protected confirmActionRun(): void {
     const action = this.confirmAction();
     if (!action) return;
+    if (API_CONFIG.useBackend) {
+      const request = action.type === 'accept'
+        ? this.apiMarketplace.acceptApplication(this.loadId, action.applicationId)
+        : this.apiMarketplace.rejectApplication(this.loadId, action.applicationId);
+      request.subscribe({
+        next: () => {
+          if (action.type === 'accept') {
+            this.apiMarketplace.createMarketplaceBooking(this.loadId, action.applicationId).subscribe({ next: () => this.confirmAction.set(null), error: () => this.confirmAction.set(null) });
+          } else {
+            this.confirmAction.set(null);
+          }
+        },
+        error: () => this.confirmAction.set(null),
+      });
+      return;
+    }
     if (action.type === 'accept') {
       this.marketplace.acceptApplication(action.applicationId);
     } else {
@@ -165,5 +221,28 @@ export class LoadDetailsComponent {
 
   protected viewBooking(): void {
     this.router.navigate([this.session.portal().basePath, 'bookings']);
+  }
+
+  private mapLoad(load: ApiLoad | undefined): Load | undefined {
+    if (!load) return undefined;
+    return {
+      id: load.uuid, loadId: load.load_id ? `#${load.load_id.replace(/^#/, '')}` : `#${load.uuid.slice(0, 8).toUpperCase()}`,
+      postedBy: 'shipper', postedByName: 'TransportSeva customer', pickupCity: load.pickup_city, dropCity: load.drop_city,
+      material: load.material ?? 'General Cargo', weightTons: load.weight_tons ?? 0,
+      vehicleType: (load.vehicle_type ?? 'Open Body Truck') as VehicleType, pickupDate: load.pickup_date ?? '',
+      budget: typeof load.budget === 'number' ? `₹${load.budget.toLocaleString('en-IN')}` : '₹0',
+      status: String(load.status).toLowerCase().includes('application') ? 'Applications Received' : 'Open',
+      applicationsCount: load.applications_count ?? 0, postedAgo: load.created_at ?? 'Recently posted',
+    };
+  }
+
+  private mapApplication(app: ApiApplication): LoadApplication {
+    return {
+      id: app.uuid, loadId: app.load_uuid, applicantRole: app.applicant_role, applicantName: app.applicant_name,
+      vehicleRegNumber: app.vehicle_reg_number, vehicleType: (app.vehicle_type || 'Open Body Truck') as VehicleType,
+      availability: app.availability, quotedAmount: `₹${Number(app.quoted_amount).toLocaleString('en-IN')}`,
+      message: app.message, status: (app.status.charAt(0).toUpperCase() + app.status.slice(1)) as LoadApplication['status'],
+      appliedAgo: app.created_at ?? 'Recently',
+    };
   }
 }

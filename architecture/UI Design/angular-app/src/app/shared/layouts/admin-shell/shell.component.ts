@@ -8,6 +8,8 @@ import { CommunicationMockService } from '../../../core/services/communication-m
 import { NotificationCategory } from '../../../core/models/communication.model';
 import { LanguageService, TranslatePipe } from '../../../core/i18n';
 import { NavItem } from '../../../core/models/nav.model';
+import { ApiAuthService } from '../../../core/api/api-auth.service';
+import { API_CONFIG } from '../../../core/api/api-config';
 
 const CATEGORY_ICON: Record<NotificationCategory, string> = {
   Booking: 'i-box',
@@ -39,6 +41,7 @@ export class ShellComponent {
   constructor(
     private readonly sessionSvc: SessionService,
     private readonly router: Router,
+    private readonly apiAuth: ApiAuthService,
     protected readonly comms: CommunicationMockService,
   ) {}
 
@@ -102,6 +105,12 @@ export class ShellComponent {
     this.closeBellDropdown();
     this.searchTerm.set('');
     const isPlatformStaff = this.sessionSvc.platformStaff() !== null;
+    if (API_CONFIG.useBackend && localStorage.getItem('transportseva.access_token')) {
+      this.apiAuth.logout().subscribe({ error: () => this.apiAuth.clearTokens() });
+    }
+    else if (API_CONFIG.useBackend) {
+      this.apiAuth.clearTokens();
+    }
     this.sessionSvc.clearPlatformStaff();
     this.sessionSvc.setRole('admin');
     this.router.navigate([isPlatformStaff ? '/auth/staff/login' : '/auth/login']);

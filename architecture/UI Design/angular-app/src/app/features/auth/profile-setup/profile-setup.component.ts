@@ -9,6 +9,8 @@ import { BusinessSettingsMockService } from '../../../core/services/business-set
 import { TranslatePipe } from '../../../core/i18n';
 import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
 import { GeoLocation } from '../../../core/models/location.model';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiAuthService } from '../../../core/api/api-auth.service';
 
 @Component({
   selector: 'app-profile-setup',
@@ -23,6 +25,7 @@ export class ProfileSetupComponent {
   private readonly session = inject(SessionService);
   private readonly router = inject(Router);
   private readonly businessSettings = inject(BusinessSettingsMockService);
+  private readonly apiAuth = inject(ApiAuthService);
 
   protected readonly designation = signal('');
   protected readonly address = signal('');
@@ -42,6 +45,25 @@ export class ProfileSetupComponent {
 
   protected submit(): void {
     this.submitting.set(true);
+    if (API_CONFIG.useBackend) {
+      const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as { fullName?: string; email?: string; password?: string };
+      const parts = (pending.fullName ?? '').trim().split(/\s+/).filter(Boolean);
+      const first_name = parts.shift() ?? '';
+      const last_name = parts.join(' ') || first_name;
+      this.apiAuth.completeProfile({
+        first_name, last_name, email: pending.email ?? '', password: pending.password ?? '',
+        password_confirmation: pending.password ?? '',
+      }).subscribe({
+        next: () => {
+          this.submitting.set(false);
+          sessionStorage.removeItem('transportseva.pending_signup');
+          this.goToDashboard();
+          sessionStorage.removeItem('transportseva.pending_signup_role');
+        },
+        error: () => this.submitting.set(false),
+      });
+      return;
+    }
     this.auth
       .completeProfileSetup({
         designation: this.designation(),
@@ -60,7 +82,8 @@ export class ProfileSetupComponent {
   private goToDashboard(): void {
     // SignupRole values map 1:1 onto PortalRole ('shipper' | 'transporter' | 'truck-owner' | 'driver')
     // so the shared shell renders the right portal after onboarding completes.
-    this.session.setRole(this.auth.pendingRole());
+    const backendRole = sessionStorage.getItem('transportseva.pending_signup_role') as 'shipper' | 'transporter' | 'truck-owner' | null;
+    this.session.setRole(API_CONFIG.useBackend && backendRole ? backendRole : this.auth.pendingRole());
     // Apply whichever plan the user signed up for (Starter by default, or Professional if they
     // came from the Pricing page's "Upgrade to Professional" CTA) to their new Business Settings.
     this.businessSettings.initializePlanFromSignup(this.auth.pendingPlanTier());

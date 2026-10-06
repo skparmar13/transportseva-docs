@@ -7,6 +7,8 @@ import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { SignupRole } from '../../../core/models/auth.model';
 import { PlanTier } from '../../../core/data/subscription-plans';
 import { LanguageService, TranslatePipe } from '../../../core/i18n';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiAuthService } from '../../../core/api/api-auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -21,6 +23,7 @@ export class SignupComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly language = inject(LanguageService);
+  private readonly apiAuth = inject(ApiAuthService);
 
   protected readonly roleOptions = this.auth.roleOptions;
   protected readonly selectedRole = signal<SignupRole>('shipper');
@@ -90,6 +93,21 @@ export class SignupComponent {
       return;
     }
     this.submitting.set(true);
+    if (API_CONFIG.useBackend) {
+      sessionStorage.setItem('transportseva.pending_signup', JSON.stringify({
+        fullName: this.fullName().trim(), mobile: this.mobile(), email: this.email().trim(),
+        password: this.password(), role: this.selectedRole(),
+      }));
+      sessionStorage.setItem('transportseva.pending_signup_role', this.selectedRole());
+      this.apiAuth.requestSignupOtp('+91' + this.mobile()).subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.router.navigate(['/auth/otp-verification'], { queryParams: { next: 'signup' } });
+        },
+        error: () => this.submitting.set(false),
+      });
+      return;
+    }
     const identifier = this.email() || `+91${this.mobile()}`;
     this.auth.signup({ identifier, fullName: this.fullName().trim(), mobile: this.mobile(), email: this.email().trim(), password: this.password(), role: this.selectedRole(), planTier: this.planTier() }).subscribe(() => {
       this.submitting.set(false);

@@ -8,6 +8,8 @@ import { VehicleType } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
 import { GeoLocation } from '../../../core/models/location.model';
 import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
 
 const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -28,6 +30,7 @@ export class PostLoadComponent {
   private readonly marketplace = inject(MarketplaceMockService);
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
+  private readonly apiMarketplace = inject(ApiMarketplaceService);
 
   protected readonly vehicleTypes = VEHICLE_TYPES;
   protected readonly isTransporter = computed(() => this.session.role() === 'transporter');
@@ -46,14 +49,42 @@ export class PostLoadComponent {
   protected readonly submitting = signal(false);
   protected readonly submitted = signal(false);
   protected readonly postedLoadId = signal('');
+  protected readonly submissionError = signal('');
 
   protected submit(): void {
+    this.submissionError.set('');
     const budget = this.budget();
     const weight = this.weightTons();
     if (!this.pickupCity().trim() || !this.dropCity().trim() || !this.material().trim()) return;
     if (budget === null || !Number.isFinite(budget) || budget <= 0 || !this.hasAtMostTwoDecimals(budget)) return;
     if (weight !== null && (!Number.isFinite(weight) || weight <= 0 || !this.hasAtMostTwoDecimals(weight))) return;
     this.submitting.set(true);
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.createLoad({
+        pickup_city: this.pickupLocation()?.city ?? this.pickupCity().trim(),
+        drop_city: this.dropLocation()?.city ?? this.dropCity().trim(),
+        pickup_address: this.pickupLocation()?.label ?? this.pickupCity().trim(),
+        drop_address: this.dropLocation()?.label ?? this.dropCity().trim(),
+        material: this.material().trim(),
+        weight_tons: weight ?? 0,
+        vehicle_type: this.vehicleType(),
+        pickup_date: this.pickupDate() || null,
+        budget,
+        notes: this.notes().trim() || null,
+        on_behalf_of_customer: this.isTransporter() ? this.onBehalfOfCustomer().trim() || null : null,
+      }).subscribe({
+        next: (load) => {
+          this.postedLoadId.set(load.load_id ? `#${load.load_id.replace(/^#/, '')}` : load.uuid);
+          this.submitting.set(false);
+          this.submitted.set(true);
+        },
+        error: () => {
+          this.submitting.set(false);
+          this.submissionError.set('postLoad.saveFailed');
+        },
+      });
+      return;
+    }
     setTimeout(() => {
       const load = this.marketplace.postLoad({
         postedBy: this.session.role(),
@@ -85,6 +116,7 @@ export class PostLoadComponent {
   }
 
   protected postAnother(): void {
+    this.submissionError.set('');
     this.submitted.set(false);
     this.onBehalfOfCustomer.set('');
     this.pickupCity.set('');

@@ -7,6 +7,8 @@ import { AuthMockService } from '../../../core/services/auth-mock.service';
 import { TranslatePipe } from '../../../core/i18n';
 import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
 import { GeoLocation } from '../../../core/models/location.model';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiCompanyService } from '../../../core/api/api-company.service';
 
 @Component({
   selector: 'app-business-registration',
@@ -19,9 +21,13 @@ import { GeoLocation } from '../../../core/models/location.model';
 export class BusinessRegistrationComponent {
   private readonly auth = inject(AuthMockService);
   private readonly router = inject(Router);
+  private readonly apiCompany = inject(ApiCompanyService);
+  private readonly signupRole = signal<'shipper' | 'transporter' | 'truck-owner'>(
+    (sessionStorage.getItem('transportseva.pending_signup_role') as 'shipper' | 'transporter' | 'truck-owner') || this.auth.pendingRole(),
+  );
 
   protected readonly businessType = computed<'transporter' | 'truck-owner' | 'company'>(() => {
-    const role = this.auth.pendingRole();
+    const role = this.signupRole();
     return role === 'shipper' ? 'company' : role === 'truck-owner' ? 'truck-owner' : 'transporter';
   });
   protected readonly companyName = signal('');
@@ -56,8 +62,7 @@ export class BusinessRegistrationComponent {
       return;
     }
     this.submitting.set(true);
-    this.auth
-      .completeBusinessRegistration({
+    const payload = {
         businessType: this.businessType(),
         companyName: this.companyName(),
         gstNumber: this.gstNumber(),
@@ -67,10 +72,43 @@ export class BusinessRegistrationComponent {
         city: this.city(),
         state: this.state(),
         pincode: this.pincode(),
-      })
-      .subscribe(() => {
+      };
+
+    if (!API_CONFIG.useBackend) {
+      this.auth.completeBusinessRegistration(payload).subscribe(() => {
         this.submitting.set(false);
         this.router.navigate(['/auth/profile-setup']);
       });
+      return;
+    }
+
+    const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as {
+      fullName?: string; mobile?: string; email?: string;
+    };
+    const registrationNumber = this.gstNumber().trim() || this.panNumber().trim() || `TS-${Date.now()}`;
+    this.apiCompany.create({
+      registration_number: registrationNumber,
+      name: this.companyName().trim(),
+      gst_number: this.gstNumber().trim() || undefined,
+      pan_number: this.panNumber().trim() || undefined,
+      phone: pending.mobile ? `+91${pending.mobile.replace(/\D/g, '').slice(-10)}` : '',
+      email: pending.email?.trim() ?? '',
+      contact_person_name: pending.fullName?.trim(),
+      address: this.address().trim(),
+      city: this.city().trim(),
+      state: this.state().trim(),
+      postal_code: this.pincode().trim(),
+      country: 'India',
+      status: 'active',
+    }).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.router.navigate(['/auth/profile-setup']);
+      },
+      error: () => {
+        this.submitting.set(false);
+        this.validationError.set('businessReg.validation.saveFailed');
+      },
+    });
   }
 }
