@@ -9,6 +9,27 @@ import { PlanTier } from '../../../core/data/subscription-plans';
 import { LanguageService, TranslatePipe } from '../../../core/i18n';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiAuthService } from '../../../core/api/api-auth.service';
+import { apiErrorMessage } from '../../../core/api/api-error';
+
+export interface SignupReadinessInput {
+  formValid: boolean;
+  fullName: string;
+  mobile: string;
+  password: string;
+  confirmPassword: string;
+  agreeTerms: boolean;
+}
+
+/** Single source of truth for the create-account button guard. */
+export function isSignupReady(input: SignupReadinessInput): boolean {
+  return input.formValid
+    && input.fullName.trim().length > 0
+    && /^[6-9]\d{9}$/.test(input.mobile)
+    && input.password.length >= 8
+    && /(?=.*[A-Za-z])(?=.*\d)/.test(input.password)
+    && input.password === input.confirmPassword
+    && input.agreeTerms;
+}
 
 @Component({
   selector: 'app-signup',
@@ -35,6 +56,7 @@ export class SignupComponent {
   protected readonly agreeTerms = signal(false);
   protected readonly submitting = signal(false);
   protected readonly validationError = signal('');
+  protected readonly apiError = signal('');
 
   // Which plan this signup is for — driven by the CTA the user clicked (Pricing page
   // "Get Started Free" → starter, "Upgrade to Professional" → professional). Falls back
@@ -70,8 +92,20 @@ export class SignupComponent {
     }
   }
 
+  protected isFormReady(form: NgForm): boolean {
+    return !this.submitting() && isSignupReady({
+      formValid: form.valid === true,
+      fullName: this.fullName(),
+      mobile: this.mobile(),
+      password: this.password(),
+      confirmPassword: this.confirmPassword(),
+      agreeTerms: this.agreeTerms(),
+    });
+  }
+
   protected submit(form: NgForm): void {
     this.validationError.set('');
+    this.apiError.set('');
     if (form.invalid) {
       form.form.markAllAsTouched();
       return;
@@ -100,11 +134,15 @@ export class SignupComponent {
       }));
       sessionStorage.setItem('transportseva.pending_signup_role', this.selectedRole());
       this.apiAuth.requestSignupOtp('+91' + this.mobile()).subscribe({
-        next: () => {
+        next: (data) => {
+          if (data?.debug_otp) sessionStorage.setItem('transportseva.debug_otp', data.debug_otp);
           this.submitting.set(false);
           this.router.navigate(['/auth/otp-verification'], { queryParams: { next: 'signup' } });
         },
-        error: () => this.submitting.set(false),
+        error: (error) => {
+          this.submitting.set(false);
+          this.apiError.set(apiErrorMessage(error));
+        },
       });
       return;
     }

@@ -1,2 +1,10 @@
 <app-icon-sprite />
+@if (navigating()) {
+  <div class="route-loader" role="status" aria-live="polite">
+    <div class="loading-panel">
+      <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <strong>Loading…</strong>
+    </div>
+  </div>
+}
 <router-outlet />

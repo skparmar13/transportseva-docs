@@ -8,6 +8,7 @@ describe('Payment lifecycle prototype', () => {
   let payments: PaymentMockService;
 
   beforeEach(() => {
+    localStorage.removeItem('transportseva.commission-rules.v1');
     TestBed.configureTestingModule({});
     marketplace = TestBed.inject(MarketplaceMockService);
     payments = TestBed.inject(PaymentMockService);
@@ -19,7 +20,7 @@ describe('Payment lifecycle prototype', () => {
     expect(first.some((e) => e.type === 'Settlement')).toBeTrue();
     expect(first.some((e) => e.type === 'Commission')).toBeTrue();
     expect(first.filter((e) => e.type === 'Commission').length).toBe(2);
-    expect(first.find((e) => e.type === 'Settlement')?.amount).toContain('22,000');
+    expect(first.find((e) => e.type === 'Settlement')?.amount).toContain('21,185');
     marketplace.settleBooking('b1');
     expect(payments.ledgerEntries().filter((e) => e.bookingId === '#TS-48230' && e.type === 'Settlement').length).toBe(1);
   });

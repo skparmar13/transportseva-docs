@@ -6,6 +6,7 @@ export interface BackendLoginUser {
   uuid: string;
   email: string;
   full_name: string;
+  phone?: string;
   role?: string;
   roles?: string[];
   profile_completion_required?: boolean;
@@ -17,6 +18,8 @@ export interface BackendLoginData {
   refresh_token: string;
   expires_in: number;
 }
+
+export interface SignupOtpData { debug_otp?: string; }
 
 @Injectable({ providedIn: 'root' })
 export class ApiAuthService {
@@ -58,12 +61,12 @@ export class ApiAuthService {
     );
   }
 
-  requestSignupOtp(phone: string): Observable<unknown> {
-    return this.api.post<unknown>('auth/signup/request-otp', { phone }).pipe(map((response) => response.data));
+  requestSignupOtp(phone: string): Observable<SignupOtpData | null> {
+    return this.api.post<SignupOtpData | null>('auth/signup/request-otp', { phone }).pipe(map((response) => response.data));
   }
 
-  verifySignupOtp(phone: string, otp: string): Observable<BackendLoginData> {
-    return this.api.post<BackendLoginData>('auth/signup/verify-otp', { phone, otp }).pipe(
+  verifySignupOtp(phone: string, otp: string, role?: string): Observable<BackendLoginData> {
+    return this.api.post<BackendLoginData>('auth/signup/verify-otp', { phone, otp, role }).pipe(
       map((response) => response.data),
       tap((data) => {
         localStorage.setItem('transportseva.access_token', data.access_token);
@@ -74,7 +77,10 @@ export class ApiAuthService {
   }
 
   completeProfile(payload: { first_name: string; last_name: string; email: string; password: string; password_confirmation: string }): Observable<unknown> {
-    return this.api.put<unknown>('auth/profile/complete', payload).pipe(map((response) => response.data));
+    return this.api.put<BackendLoginUser>('auth/profile/complete', payload).pipe(
+      map((response) => response.data),
+      tap((user) => localStorage.setItem('transportseva.api_user', JSON.stringify(user))),
+    );
   }
 
   clearTokens(): void {

@@ -18,16 +18,11 @@
     </div>
 
     <div class="field">
-      <label>{{ 'profileSetup.addressLabel' | t }}</label>
-      <div class="input-wrap">
-        <app-icon name="i-map" [size]="18" />
-        <app-location-picker id="profile-address" name="address" labelKey="profileSetup.addressLabel" placeholderKey="profileSetup.addressPlaceholder" [value]="address()" (valueChange)="address.set($event)" />
-      </div>
+      <app-location-picker id="profile-address" name="address" labelKey="profileSetup.addressLabel" placeholderKey="profileSetup.addressPlaceholder" [value]="address()" (valueChange)="address.set($event)" (locationSelected)="setProfileAddress($event)" />
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
       <div class="field">
-        <label>{{ 'profileSetup.cityLabel' | t }}</label>
         <app-location-picker id="profile-city" name="city" labelKey="profileSetup.cityLabel" placeholderKey="profileSetup.cityLabel" [value]="city()" (valueChange)="city.set($event)" (locationSelected)="setProfileCity($event)" />
       </div>
       <div class="field">
@@ -44,6 +39,10 @@
       <input type="checkbox" [ngModel]="notifySms()" (ngModelChange)="notifySms.set($event)" name="notifySms">
       <span>{{ 'profileSetup.smsUpdates' | t }}</span>
     </label>
+
+    @if (apiError()) {
+      <p class="hint" role="alert">{{ apiError() }}</p>
+    }
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
       <span>{{ (submitting() ? 'profileSetup.saving' : 'profileSetup.finishSetup') | t }}</span>

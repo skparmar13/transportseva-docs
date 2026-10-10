@@ -7,6 +7,11 @@ import { SessionService } from '../../../core/services/session.service';
 import { BookingCommissionComponent, MarketplaceBooking, VehicleAssignmentMode } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
 import { PaymentMockService } from '../../../core/services/payment-mock.service';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
+import { ApiMarketplaceBooking } from '../../../core/api/api-marketplace.service';
+import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
+import { switchMap } from 'rxjs';
 
 /**
  * Bookings — confirmed bookings with the full commercial lifecycle:
@@ -26,9 +31,23 @@ import { PaymentMockService } from '../../../core/services/payment-mock.service'
 export class BookingsComponent {
   private readonly marketplace = inject(MarketplaceMockService);
   private readonly payments = inject(PaymentMockService);
+  private readonly apiMarketplace = inject(ApiMarketplaceService);
+  private readonly cashfreeCheckout = inject(CashfreeCheckoutService);
   protected readonly session = inject(SessionService);
 
-  protected readonly bookings = this.marketplace.bookings;
+  private readonly backendBookings = signal<ApiMarketplaceBooking[]>([]);
+  constructor() {
+    this.reloadBackendBookings();
+  }
+
+  private reloadBackendBookings(): void {
+    if (!API_CONFIG.useBackend) return;
+    this.apiMarketplace.listMarketplaceBookings().subscribe({
+      next: (bookings) => this.backendBookings.set(bookings),
+      error: () => this.backendBookings.set([]),
+    });
+  }
+  protected readonly bookings = computed<MarketplaceBooking[]>(() => API_CONFIG.useBackend ? this.backendBookings().map((booking) => this.mapBackendBooking(booking)) : this.marketplace.bookings());
   protected readonly expandedId = signal<string | null>(null);
   protected readonly disputingBooking = signal<string | null>(null);
   protected readonly disputeReason = signal('');
@@ -108,6 +127,33 @@ export class BookingsComponent {
   protected confirmPayDeposit(): void {
     const target = this.payingBooking();
     if (!target) return;
+    if (API_CONFIG.useBackend) {
+      this.paymentError.set(false);
+      this.processingPayment.set(true);
+      this.apiMarketplace.createTokenOrder(target.id).pipe(
+        switchMap((order) => this.apiMarketplace.createTokenCheckout(target.id, order.uuid)),
+        switchMap((checkout) => API_CONFIG.paymentProvider === 'mock'
+          ? this.apiMarketplace.verifyTokenPayment(target.id, checkout.order.uuid)
+          : this.cashfreeCheckout.open(checkout.payment_session_id).pipe(
+            switchMap(() => this.apiMarketplace.verifyTokenPayment(target.id, checkout.order.uuid)),
+          )),
+      ).subscribe({
+        next: (result) => {
+          this.processingPayment.set(false);
+          const paid = result.order.status === 'paid';
+          if (paid) {
+            this.payingBooking.set(null);
+            this.reloadBackendBookings();
+          }
+          else this.paymentError.set(true);
+        },
+        error: () => {
+          this.processingPayment.set(false);
+          this.paymentError.set(true);
+        },
+      });
+      return;
+    }
     const paymentInputValid = this.payMethod() === 'upi'
       ? /^[^\s@]+@[^\s@]+$/.test(this.upiId().trim())
       : /^\d[\d\s]{11,18}$/.test(this.cardNumber().trim()) && /^\d{2}\/\d{2}$/.test(this.cardExpiry().trim()) && /^\d{3,4}$/.test(this.cardCvv().trim());
@@ -150,6 +196,13 @@ export class BookingsComponent {
   protected confirmAssignVehicle(): void {
     const bookingId = this.assigningVehicleFor();
     if (!bookingId || !this.vehicleRegInput()) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'assign_vehicle', {
+        mode: this.vehicleMode(), vehicle_reg_number: this.vehicleRegInput(),
+        subcontracted_to: this.vehicleMode() === 'Subcontracted' ? this.subcontractedToInput() || undefined : undefined,
+      }).subscribe({ next: () => { this.assigningVehicleFor.set(null); this.reloadBackendBookings(); } });
+      return;
+    }
     this.marketplace.assignVehicle(bookingId, {
       mode: this.vehicleMode(),
       vehicleRegNumber: this.vehicleRegInput(),
@@ -172,20 +225,49 @@ export class BookingsComponent {
   protected confirmAssignDriver(): void {
     const bookingId = this.assigningDriverFor();
     if (!bookingId || !this.driverNameInput()) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'assign_driver', {
+        driver_name: this.driverNameInput(), driver_phone: this.driverPhoneInput() || undefined,
+      }).subscribe({ next: () => { this.assigningDriverFor.set(null); this.reloadBackendBookings(); } });
+      return;
+    }
     this.marketplace.assignDriver(bookingId, { driverName: this.driverNameInput(), driverPhone: this.driverPhoneInput() || undefined });
     this.assigningDriverFor.set(null);
   }
 
   protected startTrip(bookingId: string): void {
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'start_trip').subscribe({ next: () => this.reloadBackendBookings() });
+      return;
+    }
     this.marketplace.startTrip(bookingId);
   }
 
   protected markLoadingCompleted(bookingId: string): void {
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'loading_completed').subscribe({ next: () => this.reloadBackendBookings() });
+      return;
+    }
     this.marketplace.markLoadingCompleted(bookingId);
   }
 
   protected releaseMilestone(bookingId: string, milestoneId: string): void {
+    if (API_CONFIG.useBackend) {
+      const milestone = this.bookings().find((booking) => booking.id === bookingId)?.settlementPlan.find((item) => item.id === milestoneId);
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'release_milestone', { label: milestone?.label ?? milestoneId }).subscribe({ next: () => this.reloadBackendBookings() });
+      return;
+    }
     this.marketplace.releaseMilestone(bookingId, milestoneId);
+  }
+
+  protected completeTrip(bookingId: string): void {
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'complete_trip').pipe(
+        switchMap(() => this.apiMarketplace.createSettlement(bookingId)),
+      ).subscribe({ next: () => this.reloadBackendBookings() });
+      return;
+    }
+    this.marketplace.settleBooking(bookingId);
   }
 
   /** A milestone can only be released once its trigger condition is actually met. Loading Advance needs "Loading Completed"+; everything else (Mid-Trip Payment) can be released any time it's pending. */
@@ -219,8 +301,18 @@ export class BookingsComponent {
   }
 
   protected settle(bookingId: string): void {
+    if (API_CONFIG.useBackend) {
+      this.settlementError.set(false);
+      this.apiMarketplace.createSettlement(bookingId).subscribe({
+        next: () => this.reloadBackendBookings(),
+        error: () => this.settlementError.set(true),
+      });
+      return;
+    }
     this.marketplace.settleBooking(bookingId);
   }
+
+  protected readonly settlementError = signal(false);
 
   protected rejectBooking(bookingId: string): void {
     this.marketplace.rejectBooking(bookingId);
@@ -236,12 +328,27 @@ export class BookingsComponent {
   }
 
   protected resolveDispute(bookingId: string, chargeCommission: boolean): void {
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.resolveBookingDispute(bookingId, chargeCommission ? 'commission_due' : 'commission_waived').subscribe({
+        next: () => this.reloadBackendBookings(),
+      });
+      return;
+    }
     this.marketplace.resolveDispute(bookingId, chargeCommission);
   }
 
   protected submitDispute(): void {
     const bookingId = this.disputingBooking();
     if (!bookingId || !this.disputeReason().trim()) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.raiseDispute(bookingId, this.disputeReason()).subscribe({
+        next: () => {
+          this.disputingBooking.set(null);
+          this.reloadBackendBookings();
+        },
+      });
+      return;
+    }
     this.marketplace.raiseDispute(bookingId, this.disputeReason(), this.session.user()?.name ?? 'Portal user');
     this.disputingBooking.set(null);
   }
@@ -262,5 +369,53 @@ export class BookingsComponent {
 
   private isValidAmount(amount: number | null): amount is number {
     return amount !== null && Number.isFinite(amount) && amount > 0 && Number.isInteger(amount * 100);
+  }
+
+  private mapBackendBooking(booking: ApiMarketplaceBooking): MarketplaceBooking {
+    const owner = booking.viewer_side === 'owner';
+    const workflow = booking.workflow ?? {};
+    const stage: MarketplaceBooking['status'] = booking.status === 'completed'
+      ? 'Completed'
+      : booking.status === 'cancelled'
+        ? 'Cancelled'
+        : booking.status === 'in_transit'
+          ? 'Trip Started'
+          : workflow.loading_completed_at
+            ? 'Loading Completed'
+            : workflow.driver_assignment
+              ? 'Driver Assigned'
+              : workflow.vehicle_assignment
+                ? 'Vehicle Assigned'
+                : booking.status === 'confirmed' ? 'Confirmed' : 'Awaiting Deposit';
+    const amount = `₹${Number(booking.gross_freight).toLocaleString('en-IN')}`;
+    const freight = Number(booking.gross_freight) || 0;
+    const loadingAdvance = Math.round(freight * 0.4);
+    const releasedAt = workflow.released_milestones?.['Loading Advance'];
+    const settlementPlan = [
+      { id: `${booking.uuid}-loading`, label: 'Loading Advance', trigger: 'Released after loading is completed and confirmed by the shipper', amount: `₹${loadingAdvance.toLocaleString('en-IN')}`, status: releasedAt ? 'Released' as const : 'Pending' as const, ...(releasedAt ? { releasedAt } : {}) },
+      { id: `${booking.uuid}-final`, label: 'Final Settlement', trigger: 'Released after POD is uploaded and approved', amount: `₹${Math.max(freight - loadingAdvance, 0).toLocaleString('en-IN')}`, status: 'Pending' as const },
+    ];
+    const timelineIndex = BOOKING_TIMELINE_STAGES.indexOf(stage as typeof BOOKING_TIMELINE_STAGES[number]);
+    return {
+      id: booking.uuid, bookingId: booking.booking_reference, loadId: booking.load_uuid, applicationId: booking.application_uuid,
+      route: 'Marketplace booking', material: 'General Cargo', ownerRole: owner ? this.session.role() : 'shipper', ownerName: owner ? this.session.user().name : 'Shipper',
+      counterpartyRole: owner ? 'transporter' : this.session.role(), counterpartyName: owner ? 'Transport provider' : this.session.user().name,
+      vehicleRegNumber: workflow.vehicle_assignment?.vehicle_reg_number ?? '—', amount, status: stage,
+      timeline: BOOKING_TIMELINE_STAGES.map((timelineStage, index) => ({ stage: timelineStage, completed: index <= timelineIndex, timestamp: index <= timelineIndex ? booking.created_at : undefined })),
+      ownerDeposit: { role: owner ? this.session.role() : 'shipper', partyName: owner ? this.session.user().name : 'Shipper', amount: '₹1,000', status: booking.owner_token_status === 'paid' ? 'Paid' : 'Pending' },
+      counterpartyDeposit: { role: owner ? 'transporter' : this.session.role(), partyName: owner ? 'Transport provider' : this.session.user().name, amount: '₹1,000', status: booking.provider_token_status === 'paid' ? 'Paid' : 'Pending' },
+      escrowStatus: booking.status === 'completed' ? 'Released' : booking.status === 'confirmed' || booking.status === 'in_transit' ? 'Locked' : 'Awaiting Deposits', settlementPlan,
+      vehicleAssignment: workflow.vehicle_assignment ? { mode: workflow.vehicle_assignment.mode, vehicleRegNumber: workflow.vehicle_assignment.vehicle_reg_number, subcontractedTo: workflow.vehicle_assignment.subcontracted_to, assignedAt: workflow.vehicle_assignment.assigned_at ?? booking.created_at ?? 'Just now' } : undefined,
+      driverAssignment: workflow.driver_assignment ? { driverName: workflow.driver_assignment.driver_name, driverPhone: workflow.driver_assignment.driver_phone, assignedAt: workflow.driver_assignment.assigned_at ?? booking.created_at ?? 'Just now' } : undefined,
+      settlement: booking.settlement ? {
+        freightAmount: amount, grossFreightAmount: amount,
+        commissionDeducted: `₹${Number(booking.provider_fee ?? 0).toLocaleString('en-IN')}`,
+        shipperCommission: `₹${Number(booking.shipper_fee ?? 0).toLocaleString('en-IN')}`,
+        shipperPayable: `₹${Number(booking.settlement.shipper_payable ?? 0).toLocaleString('en-IN')}`,
+        totalCommission: `₹${Number((booking.settlement.shipper_fee ?? 0) + (booking.settlement.provider_fee ?? 0)).toLocaleString('en-IN')}`,
+        payoutAmount: `₹${Number(booking.settlement.provider_payout ?? 0).toLocaleString('en-IN')}`,
+        depositsReleased: true, settledAt: booking.settlement.settled_at,
+      } : undefined,
+    };
   }
 }

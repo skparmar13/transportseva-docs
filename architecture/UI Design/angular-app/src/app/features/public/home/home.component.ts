@@ -12,6 +12,7 @@ import { MarketplaceMockService } from '../../../core/services/marketplace-mock.
 import { Load } from '../../../core/models/marketplace.model';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiLoad, ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
+import { formatLoadReference } from '../../../core/utils/load-reference';
 
 @Component({
   selector: 'app-home',
@@ -116,7 +117,7 @@ export class HomeComponent implements OnInit {
     const status = String(load.status).toLowerCase();
     return {
       id: load.uuid,
-      loadId: load.load_id ? `#${load.load_id.replace(/^#/, '')}` : `#${load.uuid.slice(0, 8).toUpperCase()}`,
+      loadId: formatLoadReference(load),
       postedBy: 'shipper',
       postedByName: 'TransportSeva customer',
       pickupCity: load.pickup_city,

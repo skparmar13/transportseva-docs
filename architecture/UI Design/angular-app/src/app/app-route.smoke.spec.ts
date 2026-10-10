@@ -10,6 +10,7 @@ import { DriverMockService } from './core/services/driver-mock.service';
 import { LocationSearchService } from './core/services/location-search.service';
 import { GeoLocation } from './core/models/location.model';
 import { of } from 'rxjs';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('portal route browser smoke checks', () => {
   let locationSearch: jasmine.SpyObj<LocationSearchService>;
@@ -20,6 +21,7 @@ describe('portal route browser smoke checks', () => {
     await TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
+        provideHttpClient(),
         { provide: LocationSearchService, useValue: locationSearch },
       ],
     }).compileComponents();
@@ -180,6 +182,7 @@ describe('portal route browser smoke checks', () => {
 
     for (const [field, value] of [
       ['material', 'Prototype cargo'],
+      ['weightTons', '18'],
       ['budget', '12500'],
     ]) {
       const input = harness.routeNativeElement?.querySelector(`input[name="${field}"]`) as HTMLInputElement;

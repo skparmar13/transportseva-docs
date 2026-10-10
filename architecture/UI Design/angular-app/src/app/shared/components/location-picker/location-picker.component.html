@@ -1,8 +1,9 @@
-<label [for]="id">{{ labelKey | t }}</label>
+<label [for]="id">{{ labelKey | t }} @if (required) { <span aria-hidden="true" style="color:#d32f2f">*</span> }</label>
 <div style="position:relative;">
   <input
     type="text"
     class="input"
+    [class.input-invalid]="invalid"
     [id]="id"
     [name]="name"
     [placeholder]="placeholderKey | t"

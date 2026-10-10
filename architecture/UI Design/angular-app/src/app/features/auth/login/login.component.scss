@@ -1,1 +1,6 @@
 /* Uses global auth classes from src/styles/_auth.scss */
+.required-mark { color: #d32f2f; margin-left: 2px; }
+.password-toggle { display:flex; align-items:center; justify-content:center; width:38px; color:var(--color-text-muted); }
+.password-toggle:hover { color:var(--color-primary); }
+.auth-secondary-link { margin-top: 22px; }
+.auth-staff-link { margin-top: 12px; }

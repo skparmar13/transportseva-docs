@@ -136,6 +136,7 @@ const INITIAL_OFFERS: NegotiationOffer[] = [
   { id: 'o1', loadId: 'l1', applicationId: 'a1', by: 'applicant', byName: 'Verma Logistics', amount: '₹18,000', message: 'Can load today evening.', timestamp: '1 hour ago' },
   { id: 'o2', loadId: 'l1', applicationId: 'a1', by: 'owner', byName: 'Mehta Industries', amount: '₹17,000', message: 'Budget is tight, can you do 17K?', timestamp: '40 minutes ago' },
   { id: 'o3', loadId: 'l1', applicationId: 'a1', by: 'applicant', byName: 'Verma Logistics', amount: '₹17,500', message: 'Best I can do is 17,500.', timestamp: '25 minutes ago' },
+  { id: 'o5', loadId: 'l1', applicationId: 'a2', by: 'applicant', byName: 'Sanjay Yadav', amount: '₹18,500', timestamp: '45 minutes ago' },
   { id: 'o4', loadId: 'l2', applicationId: 'a4', by: 'applicant', byName: 'Sanjay Yadav', amount: '₹22,300', timestamp: '1 day ago' },
 ];
 
@@ -338,20 +339,30 @@ export class MarketplaceMockService {
     if (!/^\d+(?:\.\d{1,2})?$/.test(input.amount) || Number(input.amount) <= 0) return;
     const application = this.applicationsState().find((a) => a.id === input.applicationId);
     if (!application || !['Pending', 'Negotiating'].includes(application.status)) return;
+    const formattedAmount = `₹${Number(input.amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
     this.offersState.update((offers) => [
       ...offers,
-      { id: nextId('o'), ...input, timestamp: 'Just now' },
+      { id: nextId('o'), ...input, amount: formattedAmount, timestamp: 'Just now' },
     ]);
     this.applicationsState.update((apps) =>
-      apps.map((a) => (a.id === input.applicationId ? { ...a, status: 'Negotiating', quotedAmount: input.amount } : a)),
+      // Keep the applicant's original quote immutable. The latest negotiated
+      // amount lives in the offer thread and is used when the booking is
+      // accepted, so a shipper counter-offer must not rewrite the truck
+      // owner's submitted offer.
+      apps.map((a) => (a.id === input.applicationId ? { ...a, status: 'Negotiating' } : a)),
     );
   }
 
   /** Accept the latest negotiated amount — creates the booking awaiting token payment. */
-  acceptApplication(applicationId: string): MarketplaceBooking | undefined {
+  acceptApplication(applicationId: string, acceptingRole: 'owner' | 'applicant' = 'owner'): MarketplaceBooking | undefined {
     const application = this.applicationsState().find((a) => a.id === applicationId);
     if (!application || !['Pending', 'Negotiating'].includes(application.status)) return undefined;
     const latestOffer = this.getLatestOffer(applicationId)();
+    const expectedOfferParty = acceptingRole === 'owner' ? 'applicant' : 'owner';
+    // An applicant must have an explicit owner counter-offer to accept. An
+    // owner may accept the original applicant quote when no thread exists.
+    if (acceptingRole === 'applicant' && (!latestOffer || latestOffer.by !== expectedOfferParty)) return undefined;
+    if (acceptingRole === 'owner' && latestOffer && latestOffer.by !== expectedOfferParty) return undefined;
     const finalAmount = latestOffer?.amount ?? application.quotedAmount;
 
     this.applicationsState.update((apps) =>

@@ -10,7 +10,21 @@
 </div>
 
 <div class="card">
-  @if (loads().length) {
+  @if (loading()) {
+    <div class="page-loading-state" role="status" aria-live="polite">
+      <div class="loading-sheen"></div>
+      <div class="loading-panel">
+        <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <strong>Loading your loads…</strong>
+      </div>
+    </div>
+  } @else if (loadError()) {
+    <div class="card-body page-loading-state" role="alert">
+      <app-icon name="i-info" [size]="30" />
+      <p>{{ loadError() }}</p>
+      <button type="button" class="btn btn-outline btn-sm" (click)="postLoad()">Back to Post Load</button>
+    </div>
+  } @else if (loads().length) {
     <table class="data-table">
       <thead>
         <tr>

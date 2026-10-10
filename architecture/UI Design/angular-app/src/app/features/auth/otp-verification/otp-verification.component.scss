@@ -1,1 +1,6 @@
 /* Uses global auth classes from src/styles/_auth.scss */
+.otp-invalid { border-color:#d32f2f !important; box-shadow:0 0 0 3px rgba(211,47,47,.10); }
+.otp-error { color:#c62828; font-size:12px; margin:8px 0 0; }
+.otp-debug { color:#8a4b08; font-size:12px; margin:8px 0 0; }
+.otp-resend-message { color:#2e7d32; font-size:12px; margin:8px 0 0; }
+.otp-back-link { display:flex; justify-content:center; margin-top:30px; }

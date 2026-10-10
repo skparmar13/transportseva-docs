@@ -112,6 +112,7 @@ export class ShellComponent {
       this.apiAuth.clearTokens();
     }
     this.sessionSvc.clearPlatformStaff();
+    this.sessionSvc.clearBackendUser();
     this.sessionSvc.setRole('admin');
     this.router.navigate([isPlatformStaff ? '/auth/staff/login' : '/auth/login']);
   }

@@ -8,6 +8,7 @@ import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DocumentStatus, VehicleLiveStatus } from '../../../core/models/fleet.model';
 import { VehicleDocument } from '../../../core/models/fleet.model';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 
 type TabId = 'overview' | 'device' | 'documents' | 'maintenance' | 'fuel';
 
@@ -48,7 +49,7 @@ const DOC_STATUS_KEY: Record<DocumentStatus, string> = {
 @Component({
   selector: 'app-vehicle-details',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, DatePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './vehicle-details.component.html',
 })

@@ -23,8 +23,11 @@ export class LocationPickerComponent {
   @Input() placeholderKey = '';
   @Input() value = '';
   @Input() suggestionsAbove = false;
+  @Input() required = false;
+  @Input() invalid = false;
   @Output() readonly valueChange = new EventEmitter<string>();
   @Output() readonly locationSelected = new EventEmitter<GeoLocation | null>();
+  @Output() readonly blurred = new EventEmitter<void>();
 
   protected readonly query = signal('');
   protected readonly suggestions = signal<GeoLocation[]>([]);
@@ -82,5 +85,6 @@ export class LocationPickerComponent {
 
   protected closeSuggestions(): void {
     this.isOpen.set(false);
+    this.blurred.emit();
   }
 }

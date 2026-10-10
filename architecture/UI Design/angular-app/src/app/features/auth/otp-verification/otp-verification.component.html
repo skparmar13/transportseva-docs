@@ -13,6 +13,7 @@
           <input
             #otpInput
             class="otp-box"
+            [class.otp-invalid]="apiError()"
             maxlength="1"
             inputmode="numeric"
             type="text"
@@ -24,7 +25,16 @@
           >
         }
       </div>
-      <p class="hint">{{ 'otp.notReceived' | t }} <button type="button" class="link-button" (click)="resend()">{{ 'otp.resendOtp' | t }}</button></p>
+      <p class="hint">{{ 'otp.notReceived' | t }} <button type="button" class="link-button" [disabled]="resending()" (click)="resend()">{{ (resending() ? 'Sending…' : 'otp.resendOtp') | t }}</button></p>
+      @if (debugOtp()) {
+        <p class="otp-debug">Development OTP: <strong>{{ debugOtp() }}</strong></p>
+      }
+      @if (resendMessage()) {
+        <p class="otp-resend-message">{{ resendMessage() }}</p>
+      }
+      @if (apiError()) {
+        <p class="otp-error" role="alert">{{ apiError() }}</p>
+      }
     </div>
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="verifying() || !isOtpComplete()">
@@ -32,7 +42,7 @@
     </button>
   </form>
 
-  <div class="link-row">
+  <div class="link-row otp-back-link">
     <a routerLink="/auth/login">{{ 'otp.backToLogin' | t }}</a>
   </div>
 </app-auth-shell>

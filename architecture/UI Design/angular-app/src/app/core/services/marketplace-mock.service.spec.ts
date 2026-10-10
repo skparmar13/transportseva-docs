@@ -53,4 +53,59 @@ describe('Marketplace booking negotiation lifecycle', () => {
     expect(marketplace.applications().length).toBe(initialCount);
     expect(marketplace.getOffersForApplication('a1')().length).toBe(initialOffers);
   });
+
+  it('keeps the truck owner quote separate from a shipper counter-offer', () => {
+    const application = marketplace.applications().find((item) => item.id === 'a2')!;
+    const originalQuote = application.quotedAmount;
+    const beforeOffers = marketplace.getOffersForApplication('a2')().length;
+
+    marketplace.sendCounterOffer({
+      applicationId: 'a2', loadId: 'l1', by: 'owner', byName: 'Mehta Industries', amount: '17250',
+    });
+
+    expect(marketplace.applications().find((item) => item.id === 'a2')?.quotedAmount).toBe(originalQuote);
+    expect(marketplace.getOffersForApplication('a2')().length).toBe(beforeOffers + 1);
+    expect(marketplace.getLatestOffer('a2')()?.by).toBe('owner');
+    expect(marketplace.getLatestOffer('a2')()?.amount).toContain('17,250');
+  });
+
+  it('does not let either party accept its own latest offer', () => {
+    expect(marketplace.acceptApplication('a2', 'applicant')).toBeUndefined();
+    marketplace.sendCounterOffer({
+      applicationId: 'a2', loadId: 'l1', by: 'owner', byName: 'Mehta Industries', amount: '17500',
+    });
+    expect(marketplace.acceptApplication('a2', 'owner')).toBeUndefined();
+    expect(marketplace.acceptApplication('a2', 'applicant')).toBeTruthy();
+  });
+
+  it('runs the practical truck-owner flow from counter-offer acceptance to trip completion', () => {
+    marketplace.sendCounterOffer({
+      applicationId: 'a2', loadId: 'l1', by: 'owner', byName: 'Mehta Industries', amount: '17500',
+    });
+
+    const booking = marketplace.acceptApplication('a2', 'applicant');
+    expect(booking?.status).toBe('Awaiting Deposit');
+    expect(booking?.amount).toContain('17,500');
+    expect(marketplace.applications().find((application) => application.id === 'a2')?.status).toBe('Accepted');
+    expect(marketplace.getApplicationsBy('truck-owner')().find((application) => application.id === 'a2')).toEqual(jasmine.objectContaining({ status: 'Accepted', quotedAmount: jasmine.stringContaining('17,500') }));
+    expect(marketplace.applications().find((application) => application.id === 'a3')?.status).toBe('Rejected');
+
+    marketplace.payDeposit(booking!.id, 'owner');
+    marketplace.payDeposit(booking!.id, 'counterparty');
+    expect(marketplace.bookings().find((item) => item.id === booking!.id)?.status).toBe('Confirmed');
+
+    marketplace.assignVehicle(booking!.id, { mode: 'Own Fleet', vehicleRegNumber: 'RJ14GA1234' });
+    marketplace.assignDriver(booking!.id, { driverName: 'Ramesh Kumar' });
+    marketplace.markLoadingCompleted(booking!.id);
+    const loadingAdvance = marketplace.bookings().find((item) => item.id === booking!.id)?.settlementPlan.find((milestone) => milestone.label === 'Loading Advance');
+    expect(loadingAdvance).toBeTruthy();
+    marketplace.releaseMilestone(booking!.id, loadingAdvance!.id);
+    marketplace.startTrip(booking!.id);
+    marketplace.settleBooking(booking!.id);
+
+    const completed = marketplace.bookings().find((item) => item.id === booking!.id);
+    expect(completed?.status).toBe('Completed');
+    expect(completed?.escrowStatus).toBe('Released');
+    expect(completed?.settlement?.payoutAmount).toBeTruthy();
+  });
 });

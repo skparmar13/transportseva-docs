@@ -205,7 +205,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
           <label>{{ 'vehicleDetails.modal.maintenance.date' | t }}</label>
-          <input type="date" class="input" style="padding-left:14px;" [ngModel]="serviceDate()" (ngModelChange)="serviceDate.set($event)" name="serviceDate" />
+          <app-date-picker [value]="serviceDate()" (valueChange)="serviceDate.set($event)" placeholder="DD/MM/YYYY" />
         </div>
         <div class="field">
           <label>{{ 'vehicleDetails.modal.maintenance.odometer' | t }}</label>
@@ -238,7 +238,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="field">
           <label>{{ 'vehicleDetails.modal.fuel.date' | t }}</label>
-          <input type="date" class="input" style="padding-left:14px;" [ngModel]="fuelDate()" (ngModelChange)="fuelDate.set($event)" name="fuelDate" />
+          <app-date-picker [value]="fuelDate()" (valueChange)="fuelDate.set($event)" placeholder="DD/MM/YYYY" />
         </div>
         <div class="field">
           <label>{{ 'vehicleDetails.modal.fuel.liters' | t }}</label>

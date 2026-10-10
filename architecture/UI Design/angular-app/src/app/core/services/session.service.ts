@@ -31,6 +31,31 @@ const MOCK_USERS: Record<PortalRole, MockUser> = {
 export class SessionService {
   private readonly activeRole = signal<PortalRole>('admin');
   private readonly activePlatformStaff = signal<MockPlatformStaff | null>(null);
+  private readonly activeBackendUser = signal<{ full_name?: string; email?: string; phone?: string; role?: string; roles?: string[] } | null>(null);
+
+  constructor() {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        // A cached API user without its access token is stale. Keeping it here
+        // makes the shell look authenticated while every API request is rejected.
+        if (!localStorage.getItem('transportseva.access_token')) {
+          localStorage.removeItem('transportseva.api_user');
+          return;
+        }
+        const stored = localStorage.getItem('transportseva.api_user');
+        if (stored) {
+          const user = JSON.parse(stored) as { role?: string; roles?: string[] };
+          this.activeBackendUser.set(user);
+          const rawRole = (user.role ?? user.roles?.[0] ?? '').toLowerCase().replace(/[_\s]/g, '-');
+          const role = rawRole.includes('admin') || rawRole.includes('manager') || rawRole.includes('employee') ? 'admin'
+            : rawRole.includes('transporter') ? 'transporter'
+              : rawRole.includes('truck') || rawRole.includes('fleet') ? 'truck-owner'
+                : rawRole.includes('driver') ? 'driver' : 'shipper';
+          this.activeRole.set(role);
+        }
+      } catch { /* Ignore stale or malformed session data. */ }
+    }
+  }
 
   readonly role = computed(() => this.activeRole());
   readonly platformStaff = computed(() => this.activePlatformStaff());
@@ -40,6 +65,11 @@ export class SessionService {
       const initials = staff.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
       return { name: staff.name, role: 'admin', roleTag: staff.role, avatarInitials: initials };
     }
+    const backend = this.activeBackendUser();
+    if (backend) {
+      const name = backend.full_name || backend.email || 'TransportSeva user';
+      return { name, role: this.activeRole(), roleTag: this.activeRole(), avatarInitials: name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() };
+    }
     return MOCK_USERS[this.activeRole()];
   });
   readonly portal = computed(() => PORTAL_CONFIGS[this.activeRole()]);
@@ -48,6 +78,9 @@ export class SessionService {
     this.activeRole.set(role);
     if (role !== 'admin') this.activePlatformStaff.set(null);
   }
+
+  setBackendUser(user: { full_name?: string; email?: string; phone?: string; role?: string; roles?: string[] }): void { this.activeBackendUser.set(user); }
+  clearBackendUser(): void { this.activeBackendUser.set(null); }
 
   setPlatformStaff(staff: MockPlatformStaff): void {
     this.activePlatformStaff.set(staff);

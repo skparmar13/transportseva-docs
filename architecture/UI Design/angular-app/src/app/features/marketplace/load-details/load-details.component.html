@@ -1,10 +1,20 @@
-@if (load(); as l) {
+@if (loading()) {
+  <div class="page-loading-state" role="status" aria-live="polite">
+    <div class="loading-sheen"></div>
+    <div class="loading-panel">
+      <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <strong>Loading load details…</strong>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="card-body page-loading-state" role="alert"><app-icon name="i-info" [size]="30" /><strong>{{ loadError() }}</strong></div>
+} @else if (load(); as l) {
   <div class="page-toolbar">
     <div>
       <a [routerLink]="[session.portal().basePath, isOwner() ? 'my-loads' : 'load-board']" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">{{ 'loadDetails.back' | t }}</a>
       <h1 style="margin-top:6px;">{{ l.loadId }} — {{ l.pickupCity }} → {{ l.dropCity }}</h1>
     </div>
-    <span class="status-pill" [class]="l.status === 'Booked' ? 'status-delivered' : l.status === 'Applications Received' ? 'status-transit' : 'status-pending'">{{ statusKey(l.status) | t }}</span>
+     <span class="status-pill" [class]="displayStatus(l) === 'Booked' ? 'status-delivered' : displayStatus(l) === 'Applied' ? 'status-transit' : 'status-pending'">{{ statusKey(displayStatus(l)) | t }}</span>
   </div>
 
   <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
@@ -31,18 +41,20 @@
       @if (isOwner()) {
         <!-- Owner view: applications received, each with a structured negotiation thread -->
         <div class="card">
-          <div class="card-head"><h3>{{ 'loadDetails.applicationsReceivedCount' | t:{ count: applications().length } }}</h3></div>
-          @if (applications().length) {
+          <div class="card-head"><h3>{{ 'loadDetails.applicationsReceivedCount' | t:{ count: applicationsError() ? l.applicationsCount : applications().length } }}</h3></div>
+          @if (applicationsError()) {
+            <div class="inline-error" role="alert" style="margin:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+              <span>{{ applicationsError() }}</span>
+              <button type="button" class="btn btn-outline btn-sm" (click)="retryLoadData()">Retry</button>
+            </div>
+          } @else if (applications().length) {
             <div style="display:flex;flex-direction:column;gap:14px;padding:16px 22px;">
               @for (app of applications(); track app.id) {
                 <div style="border:1px solid var(--color-border);border-radius:12px;padding:16px;">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
                     <div>
                       <b>{{ app.applicantName }}</b>
-                      <div style="font-size:12.5px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · {{ 'loadDetails.app.available' | t }} {{ app.availability }} · {{ 'loadDetails.app.currentOffer' | t }} {{ app.quotedAmount }} · {{ app.appliedAgo }}</div>
-                      @if (app.message) {
-                        <p style="margin-top:6px;font-size:13px;color:var(--color-text);">"{{ app.message }}"</p>
-                      }
+                      <div style="font-size:12.5px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · {{ 'loadDetails.app.available' | t }} {{ app.availability }} · {{ 'loadDetails.app.currentOffer' | t }} {{ latestOfferAmount(app) }} · {{ app.appliedAgo }}</div>
                     </div>
                     <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ statusKey(app.status) | t }}</span>
                   </div>
@@ -52,19 +64,28 @@
                         <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? ('loadDetails.app.hideOffers' | t) : ('loadDetails.app.viewOffers' | t) }}</span>
                       </button>
                       <button type="button" class="btn btn-outline btn-sm" (click)="askReject(app.id, app.applicantName)">{{ 'loadDetails.app.reject' | t }}</button>
-                      <button type="button" class="btn btn-primary btn-sm" (click)="askAccept(app.id, app.applicantName)">{{ 'loadDetails.app.accept' | t:{ amount: app.quotedAmount } }}</button>
+                      @if (canAcceptLatestOffer(app)) {
+                      <button type="button" class="btn btn-primary btn-sm" (click)="askAccept(app.id, app.applicantName)">{{ 'loadDetails.app.accept' | t:{ amount: latestOfferAmount(app) } }}</button>
+                      }
                     } @else if (app.status === 'Accepted') {
+                      <div class="offer-outcome offer-outcome--accepted" role="status">
+                        <span class="offer-outcome__mark">✓</span>
+                        <span><strong>Offer accepted at {{ latestOfferAmount(app) }}</strong><small>Negotiation closed · booking created</small></span>
+                      </div>
                       <button type="button" class="btn btn-outline btn-sm" (click)="openChat(app.id)">
                         <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? ('loadDetails.app.hideChat' | t) : ('loadDetails.app.chat' | t) }}</span>
                       </button>
                     }
                   </div>
 
-                  @if (negotiatingApplicationId() === app.id) {
+                      @if (negotiatingApplicationId() === app.id && canNegotiate(app)) {
                     <div class="chat-thread" style="margin-top:14px;">
-                      @for (offer of marketplace.getOffersForApplication(app.id)(); track offer.id) {
+                      @if (offerErrorFor(app.id)) {
+                        <p role="alert" style="margin:0 0 10px;color:var(--color-danger,#dc2626);font-size:13px;">{{ offerErrorFor(app.id) }}</p>
+                      }
+                      @for (offer of offersFor(app.id); track offer.id) {
                         <div class="chat-bubble" [class.mine]="offer.by === 'owner'" [class.theirs]="offer.by !== 'owner'">
-                          <div><strong>{{ offer.amount }}</strong>@if (offer.message) { <span> — {{ offer.message }}</span> }</div>
+                          <div><strong>{{ offer.amount }}</strong></div>
                           <div class="chat-meta">{{ offer.byName }} · {{ offer.timestamp }}</div>
                         </div>
                       }
@@ -72,18 +93,28 @@
                         <label>{{ 'loadDetails.counter.amountLabel' | t }}</label>
                         <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
                       </div>
-                      <div class="field">
-                        <label>{{ 'loadDetails.counter.message' | t }}</label>
-                        <input type="text" class="input" [placeholder]="'loadDetails.counter.messagePlaceholder' | t" [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
-                      </div>
-                      <button type="button" class="btn btn-outline btn-sm" (click)="sendCounterOffer(app.id)">
-                        <app-icon name="i-send" [size]="15" /><span>{{ 'loadDetails.counter.send' | t }}</span>
+                      @if (counterError()) {
+                        <p role="alert" style="margin:9px 0;color:var(--color-danger,#dc2626);font-size:13px;">{{ counterError() }}</p>
+                      }
+                      @if (counterNotice()) {
+                        <p role="status" style="margin:9px 0;color:var(--color-success,#15803d);font-size:13px;">{{ counterNotice() }}</p>
+                      }
+                      <button type="button" class="btn btn-outline btn-sm" [disabled]="counterSubmitting()" (click)="sendCounterOffer(app.id)">
+                        @if (counterSubmitting()) { <span class="button-loader" aria-hidden="true"></span> }
+                        @else { <app-icon name="i-send" [size]="15" /> }
+                        <span>{{ counterSubmitting() ? 'Sending…' : ('loadDetails.counter.send' | t) }}</span>
                       </button>
                     </div>
                   }
 
                   @if (activeChatApplicationId() === app.id && app.status === 'Accepted') {
                     <div class="chat-thread" style="margin-top:14px;">
+                      @if (chatLoading()) {
+                        <p role="status" style="margin:0 0 10px;color:var(--color-text-muted);font-size:13px;">Loading conversation…</p>
+                      }
+                      @if (chatError()) {
+                        <p role="alert" style="margin:0 0 10px;color:var(--color-danger,#dc2626);font-size:13px;">{{ chatError() }}</p>
+                      }
                       @for (msg of activeChatMessages(); track msg.id) {
                         <div class="chat-bubble" [class.mine]="msg.sender === 'owner'" [class.theirs]="msg.sender !== 'owner'">
                           <div>{{ msg.text }}</div>
@@ -92,8 +123,9 @@
                       }
                       <div class="chat-input-row">
                         <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
-                        <button type="button" class="btn btn-primary btn-sm" (click)="sendChat(app.id)">
-                          <app-icon name="i-send" [size]="15" />
+                        <button type="button" class="btn btn-primary btn-sm" [disabled]="chatSending()" (click)="sendChat(app.id)">
+                          @if (chatSending()) { <span class="button-loader" aria-hidden="true"></span> }
+                          @else { <app-icon name="i-send" [size]="15" /> }
                         </button>
                       </div>
                     </div>
@@ -111,35 +143,61 @@
         </div>
       } @else {
         <!-- Applicant view -->
-        @if (myApplication(); as app) {
+        @if (applicationsError()) {
+          <div class="card">
+            <div class="card-body inline-error" role="alert" style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
+              <span>{{ applicationsError() }}</span>
+              <button type="button" class="btn btn-outline btn-sm" (click)="retryLoadData()">Retry</button>
+            </div>
+          </div>
+        } @else if (myApplication(); as app) {
           <div class="card">
             <div class="card-head"><h3>{{ 'loadDetails.yourApp.title' | t }}</h3></div>
             <div class="card-body">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
                 <div>
-                  <div style="font-size:13px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · {{ 'loadDetails.app.available' | t }} {{ app.availability }} · {{ 'loadDetails.app.currentOffer' | t }} {{ app.quotedAmount }}</div>
-                  @if (app.message) {
-                    <p style="margin-top:6px;font-size:13px;">"{{ app.message }}"</p>
-                  }
+                  <div style="font-size:13px;color:var(--color-text-muted);">{{ app.vehicleRegNumber }} · {{ app.vehicleType }} · {{ 'loadDetails.app.available' | t }} {{ app.availability }} · {{ 'loadDetails.app.currentOffer' | t }} {{ latestOfferAmount(app) }}</div>
                 </div>
                 <span class="status-pill" [class]="app.status === 'Accepted' ? 'status-delivered' : app.status === 'Rejected' ? 'status-cancelled' : app.status === 'Negotiating' ? 'status-transit' : 'status-pending'">{{ statusKey(app.status) | t }}</span>
               </div>
 
+              @if (app.status === 'Accepted') {
+                <div class="offer-outcome offer-outcome--accepted" role="status">
+                  <span class="offer-outcome__mark">✓</span>
+                  <span><strong>Offer accepted at {{ latestOfferAmount(app) }}</strong><small>Negotiation closed · booking created</small></span>
+                </div>
+              } @else if (app.status === 'Rejected') {
+                <div class="offer-outcome offer-outcome--rejected" role="status">
+                  <span class="offer-outcome__mark">×</span>
+                  <span><strong>Offer declined</strong><small>This negotiation is closed.</small></span>
+                </div>
+              }
+
               @if (app.status === 'Pending' || app.status === 'Negotiating') {
-                <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openNegotiation(app.id)">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+                <button type="button" class="btn btn-outline btn-sm" (click)="openNegotiation(app.id)">
                   <app-icon name="i-message" [size]="15" /><span>{{ negotiatingApplicationId() === app.id ? ('loadDetails.app.hideOffers' | t) : ('loadDetails.yourApp.viewNegotiation' | t) }}</span>
                 </button>
+                @if (canAcceptLatestOffer(app)) {
+                  <button type="button" class="btn btn-primary btn-sm" (click)="askAcceptOffer(app.id)">
+                    {{ 'loadDetails.yourApp.acceptOffer' | t:{ amount: latestOfferAmount(app) } }}
+                  </button>
+                }
+                </div>
               } @else if (app.status === 'Accepted') {
                 <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openChat(app.id)">
                   <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? ('loadDetails.app.hideChat' | t) : ('loadDetails.yourApp.chatWithOwner' | t) }}</span>
                 </button>
               }
 
-              @if (negotiatingApplicationId() === app.id) {
+              @if (negotiatingApplicationId() === app.id && canNegotiate(app)) {
                 <div class="chat-thread" style="margin-top:14px;">
-                  @for (offer of marketplace.getOffersForApplication(app.id)(); track offer.id) {
+                  @if (offerErrorFor(app.id)) {
+                    <p role="alert" style="margin:0 0 10px;color:var(--color-danger,#dc2626);font-size:13px;">{{ offerErrorFor(app.id) }}</p>
+                  }
+                  @for (offer of offersFor(app.id); track offer.id) {
                     <div class="chat-bubble" [class.mine]="offer.by === 'applicant'" [class.theirs]="offer.by !== 'applicant'">
-                      <div><strong>{{ offer.amount }}</strong>@if (offer.message) { <span> — {{ offer.message }}</span> }</div>
+                      <div><strong>{{ offer.amount }}</strong></div>
                       <div class="chat-meta">{{ offer.byName }} · {{ offer.timestamp }}</div>
                     </div>
                   }
@@ -147,18 +205,28 @@
                     <label>{{ 'loadDetails.counter.amountLabel' | t }}</label>
                     <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.counter.amountPlaceholder' | t" [ngModel]="counterAmount()" (ngModelChange)="counterAmount.set($event)" name="counterAmount" />
                   </div>
-                  <div class="field">
-                    <label>{{ 'loadDetails.counter.message' | t }}</label>
-                    <input type="text" class="input" [placeholder]="'loadDetails.counter.messagePlaceholderShort' | t" [ngModel]="counterMessage()" (ngModelChange)="counterMessage.set($event)" name="counterMessage" />
-                  </div>
-                  <button type="button" class="btn btn-outline btn-sm" (click)="sendCounterOffer(app.id)">
-                    <app-icon name="i-send" [size]="15" /><span>{{ 'loadDetails.counter.send' | t }}</span>
+                  @if (counterError()) {
+                    <p role="alert" style="margin:9px 0;color:var(--color-danger,#dc2626);font-size:13px;">{{ counterError() }}</p>
+                  }
+                  @if (counterNotice()) {
+                    <p role="status" style="margin:9px 0;color:var(--color-success,#15803d);font-size:13px;">{{ counterNotice() }}</p>
+                  }
+                  <button type="button" class="btn btn-outline btn-sm" [disabled]="counterSubmitting()" (click)="sendCounterOffer(app.id)">
+                    @if (counterSubmitting()) { <span class="button-loader" aria-hidden="true"></span> }
+                    @else { <app-icon name="i-send" [size]="15" /> }
+                    <span>{{ counterSubmitting() ? 'Sending…' : ('loadDetails.counter.send' | t) }}</span>
                   </button>
                 </div>
               }
 
               @if (activeChatApplicationId() === app.id && app.status === 'Accepted') {
                 <div class="chat-thread" style="margin-top:14px;">
+                  @if (chatLoading()) {
+                    <p role="status" style="margin:0 0 10px;color:var(--color-text-muted);font-size:13px;">Loading conversation…</p>
+                  }
+                  @if (chatError()) {
+                    <p role="alert" style="margin:0 0 10px;color:var(--color-danger,#dc2626);font-size:13px;">{{ chatError() }}</p>
+                  }
                   @for (msg of activeChatMessages(); track msg.id) {
                     <div class="chat-bubble" [class.mine]="msg.sender === 'applicant'" [class.theirs]="msg.sender !== 'applicant'">
                       <div>{{ msg.text }}</div>
@@ -167,8 +235,9 @@
                   }
                   <div class="chat-input-row">
                     <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
-                    <button type="button" class="btn btn-primary btn-sm" (click)="sendChat(app.id)">
-                      <app-icon name="i-send" [size]="15" />
+                    <button type="button" class="btn btn-primary btn-sm" [disabled]="chatSending()" (click)="sendChat(app.id)">
+                      @if (chatSending()) { <span class="button-loader" aria-hidden="true"></span> }
+                      @else { <app-icon name="i-send" [size]="15" /> }
                     </button>
                   </div>
                 </div>
@@ -245,29 +314,39 @@
         <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.apply.freightPlaceholder' | t" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
         </div>
       </div>
-      <div class="field">
-        <label>{{ 'loadDetails.apply.messageLabel' | t }}</label>
-        <textarea class="input" style="padding:12px 14px;min-height:70px;resize:vertical;" [placeholder]="'loadDetails.apply.messagePlaceholder' | t" [ngModel]="applyMessage()" (ngModelChange)="applyMessage.set($event)" name="applyMessage"></textarea>
-      </div>
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
         <button type="button" class="btn btn-outline" (click)="showApplyModal.set(false)">{{ 'common.cancel' | t }}</button>
-        <button type="button" class="btn btn-primary" [disabled]="applying()" (click)="submitApplication()">{{ applying() ? ('loadDetails.apply.submitting' | t) : ('loadDetails.apply.submit' | t) }}</button>
+        <button type="button" class="btn btn-primary" [disabled]="applying()" (click)="submitApplication()">
+          @if (applying()) { <span class="button-loader" aria-hidden="true"></span> }
+          <span>{{ applying() ? ('loadDetails.apply.submitting' | t) : ('loadDetails.apply.submit' | t) }}</span>
+        </button>
       </div>
     </app-modal>
   }
 
   @if (confirmAction(); as action) {
-    <app-modal [title]="action.type === 'accept' ? ('loadDetails.confirm.accept.title' | t) : ('loadDetails.confirm.reject.title' | t)" (close)="confirmAction.set(null)">
+    <app-modal [title]="action.type === 'reject' ? ('loadDetails.confirm.reject.title' | t) : (action.type === 'acceptOffer' ? ('loadDetails.confirm.acceptOffer.title' | t) : ('loadDetails.confirm.accept.title' | t))" (close)="confirmAction.set(null)">
       <p>
-        @if (action.type === 'accept') {
+        @if (action.type === 'acceptOffer') {
+          {{ 'loadDetails.confirm.acceptOffer.before' | t }} <b>{{ action.applicantName }}</b>{{ 'loadDetails.confirm.acceptOffer.after' | t }}
+        } @else if (action.type === 'accept') {
           {{ 'loadDetails.confirm.accept.before' | t }} <b>{{ action.applicantName }}</b>{{ 'loadDetails.confirm.accept.after' | t }}
         } @else {
           {{ 'loadDetails.confirm.reject.before' | t }} <b>{{ action.applicantName }}</b>{{ 'loadDetails.confirm.reject.after' | t }}
         }
       </p>
+      @if (actionError()) {
+        <p role="alert" style="margin:10px 0;color:var(--color-danger,#dc2626);font-size:13px;">{{ actionError() }}</p>
+      }
+      @if (action.amount) {
+        <div class="offer-confirm-amount"><span>Agreed freight</span><strong>{{ action.amount }}</strong></div>
+      }
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-        <button type="button" class="btn btn-outline" (click)="confirmAction.set(null)">{{ 'common.cancel' | t }}</button>
-        <button type="button" class="btn btn-primary" (click)="confirmActionRun()">{{ 'loadDetails.confirm.confirm' | t }}</button>
+        <button type="button" class="btn btn-outline" [disabled]="confirmSubmitting()" (click)="confirmAction.set(null)">{{ 'common.cancel' | t }}</button>
+        <button type="button" class="btn btn-primary" [disabled]="confirmSubmitting()" (click)="confirmActionRun()">
+          @if (confirmSubmitting()) { <span class="button-loader" aria-hidden="true"></span> }
+          <span>{{ confirmSubmitting() ? 'Processing…' : ('loadDetails.confirm.confirm' | t) }}</span>
+        </button>
       </div>
     </app-modal>
   }

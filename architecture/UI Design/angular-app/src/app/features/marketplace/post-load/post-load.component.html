@@ -20,7 +20,7 @@
     <div class="card-body">
       <form (ngSubmit)="submit()">
         @if (submissionError()) {
-          <p class="hint" role="alert">{{ submissionError() | t }}</p>
+          <div class="form-error" role="alert"><app-icon name="i-info" [size]="18" /><span>{{ submissionError() }}</span></div>
         }
         @if (isTransporter()) {
           <div class="field">
@@ -35,28 +35,32 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="field">
-            <app-location-picker id="pickup-city" name="pickupCity" labelKey="postLoad.pickupCity" placeholderKey="postLoad.pickupCityPlaceholder" [value]="pickupCity()" (valueChange)="pickupCity.set($event)" (locationSelected)="pickupLocation.set($event)" />
+            <app-location-picker id="pickup-city" name="pickupCity" labelKey="postLoad.pickupCity" placeholderKey="postLoad.pickupCityPlaceholder" [required]="true" [invalid]="!!errorFor('pickup_city', 'pickupCity')" [value]="pickupCity()" (valueChange)="pickupCity.set($event)" (locationSelected)="pickupLocation.set($event)" (blurred)="validateField('pickup_city')" />
+            @if (errorFor('pickup_city', 'pickupCity')) { <p class="field-error" role="alert">{{ errorFor('pickup_city', 'pickupCity') }}</p> }
           </div>
           <div class="field">
-            <app-location-picker id="drop-city" name="dropCity" labelKey="postLoad.dropCity" placeholderKey="postLoad.dropCityPlaceholder" [value]="dropCity()" (valueChange)="dropCity.set($event)" (locationSelected)="dropLocation.set($event)" />
+            <app-location-picker id="drop-city" name="dropCity" labelKey="postLoad.dropCity" placeholderKey="postLoad.dropCityPlaceholder" [required]="true" [invalid]="!!errorFor('drop_city', 'dropCity')" [value]="dropCity()" (valueChange)="dropCity.set($event)" (locationSelected)="dropLocation.set($event)" (blurred)="validateField('drop_city')" />
+            @if (errorFor('drop_city', 'dropCity')) { <p class="field-error" role="alert">{{ errorFor('drop_city', 'dropCity') }}</p> }
           </div>
         </div>
 
         <div class="field">
-          <label>{{ 'postLoad.material' | t }}</label>
+          <label>{{ 'postLoad.material' | t }} <span aria-hidden="true" style="color:#d32f2f">*</span></label>
           <div class="input-wrap">
             <app-icon name="i-box" [size]="18" />
-            <input type="text" class="input" [placeholder]="'postLoad.materialPlaceholder' | t" required [ngModel]="material()" (ngModelChange)="material.set($event)" name="material" />
+            <input type="text" class="input" [class.input-invalid]="!!errorFor('material')" [placeholder]="'postLoad.materialPlaceholder' | t" required [ngModel]="material()" (ngModelChange)="material.set($event)" (blur)="validateField('material')" name="material" />
           </div>
+          @if (errorFor('material')) { <p class="field-error" role="alert">{{ errorFor('material') }}</p> }
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="field">
-            <label>{{ 'postLoad.weight' | t }}</label>
+            <label>{{ 'postLoad.weight' | t }} <span aria-hidden="true" style="color:#d32f2f">*</span></label>
             <div class="input-wrap">
               <app-icon name="i-box" [size]="18" />
-              <input type="number" class="input" min="0.01" step="0.01" [placeholder]="'postLoad.weightPlaceholder' | t" [ngModel]="weightTons()" (ngModelChange)="weightTons.set($event)" name="weightTons" />
+              <input type="number" class="input" [class.input-invalid]="!!errorFor('weight_tons', 'weightTons')" min="0.01" step="0.01" [placeholder]="'postLoad.weightPlaceholder' | t" [ngModel]="weightTons()" (ngModelChange)="weightTons.set($event)" (blur)="validateField('weight_tons')" name="weightTons" />
             </div>
+            @if (errorFor('weight_tons', 'weightTons')) { <p class="field-error" role="alert">{{ errorFor('weight_tons', 'weightTons') }}</p> }
           </div>
           <div class="field">
             <label>{{ 'postLoad.vehicleType' | t }}</label>
@@ -71,17 +75,16 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="field">
             <label>{{ 'postLoad.pickupDate' | t }}</label>
-            <div class="input-wrap">
-              <app-icon name="i-calendar" [size]="18" />
-              <input type="date" class="input" [ngModel]="pickupDate()" (ngModelChange)="pickupDate.set($event)" name="pickupDate" />
-            </div>
+            <div [class.input-invalid]="errorFor('pickup_date', 'pickupDate')"><app-date-picker [value]="pickupDate()" (valueChange)="pickupDate.set($event)" placeholder="DD/MM/YYYY" /></div>
+            @if (errorFor('pickup_date', 'pickupDate')) { <p class="field-error" role="alert">{{ errorFor('pickup_date', 'pickupDate') }}</p> }
           </div>
           <div class="field">
-            <label>{{ 'postLoad.budget' | t }}</label>
+            <label>{{ 'postLoad.budget' | t }} <span aria-hidden="true" style="color:#d32f2f">*</span></label>
             <div class="input-wrap">
               <app-icon name="i-wallet" [size]="18" />
-              <input type="number" class="input" min="0.01" step="0.01" inputmode="decimal" [placeholder]="'postLoad.budgetPlaceholder' | t" required [ngModel]="budget()" (ngModelChange)="budget.set($event)" name="budget" />
+              <input type="number" class="input" [class.input-invalid]="!!errorFor('budget')" min="0.01" step="0.01" inputmode="decimal" [placeholder]="'postLoad.budgetPlaceholder' | t" required [ngModel]="budget()" (ngModelChange)="budget.set($event)" (blur)="validateField('budget')" name="budget" />
             </div>
+            @if (errorFor('budget')) { <p class="field-error" role="alert">{{ errorFor('budget') }}</p> }
           </div>
         </div>
 
@@ -90,7 +93,7 @@
           <textarea class="input" style="padding:12px 14px;min-height:80px;resize:vertical;" [placeholder]="'postLoad.notesPlaceholder' | t" [ngModel]="notes()" (ngModelChange)="notes.set($event)" name="notes"></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting() || !formValid()">
           <span>{{ submitting() ? ('postLoad.submitting' | t) : ('postLoad.submit' | t) }}</span>
           @if (!submitting()) {
             <app-icon name="i-arrow-right" [size]="18" />

@@ -1,54 +1,73 @@
 <h1>{{ 'loadBoard.title' | t }}</h1>
 <p class="desc">{{ 'loadBoard.desc' | t }}</p>
 
-<div class="page-toolbar">
-  <div class="toolbar-filters">
-    <div class="filter-search">
-      <app-icon name="i-search" [size]="16" />
-      <input type="text" [placeholder]="'loadBoard.search.placeholder' | t" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+@if (loading()) {
+  <div class="page-loading-state load-board-loading" role="status" aria-live="polite">
+    <div class="loading-sheen"></div>
+    <div class="loading-panel">
+      <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <strong>Loading available loads...</strong>
     </div>
-    <select class="filter-select" [ngModel]="vehicleFilter()" (ngModelChange)="vehicleFilter.set($event)">
-      <option value="">{{ 'loadBoard.filter.allTypes' | t }}</option>
-      @for (type of vehicleTypes; track type) {
-        <option [value]="type">{{ type }}</option>
-      }
-    </select>
   </div>
-  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ 'loadBoard.available' | t:{ count: filteredLoads().length } }}</span>
-</div>
-
-@if (filteredLoads().length) {
-  <div class="load-grid">
-    @for (load of filteredLoads(); track load.id) {
-      <div class="load-card">
-        <div class="load-card-head">
-          <span class="load-card-id">{{ load.loadId }}</span>
-          <span class="status-pill" [class]="load.status === 'Open' ? 'status-pending' : 'status-progress'">{{ statusKey(load.status) | t }}</span>
-        </div>
-        <div class="load-route">
-          <app-icon name="i-map" [size]="16" />
-          <span>{{ load.pickupCity }} → {{ load.dropCity }}</span>
-        </div>
-        <div class="load-meta-grid">
-          <div>{{ 'loadBoard.card.material' | t }} <strong>{{ load.material }}</strong></div>
-          <div>{{ 'loadBoard.card.weight' | t }} <strong>{{ 'loadBoard.card.weightTons' | t:{ value: load.weightTons } }}</strong></div>
-          <div>{{ 'loadBoard.card.vehicle' | t }} <strong>{{ load.vehicleType }}</strong></div>
-          <div>{{ 'loadBoard.card.pickup' | t }} <strong>{{ load.pickupDate }}</strong></div>
-        </div>
-        <div style="font-size:12px;color:var(--color-text-soft);">
-          {{ 'loadBoard.card.postedBy' | t }} {{ load.postedByName }}{{ load.onBehalfOfCustomer ? ' ' + ('loadBoard.card.onBehalfOf' | t) + ' ' + load.onBehalfOfCustomer : '' }} · {{ load.postedAgo }}
-        </div>
-        <div class="load-card-foot">
-          <span class="load-budget">{{ load.budget }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="viewLoad(load.id)">{{ 'loadBoard.card.viewApply' | t }}</button>
-        </div>
-      </div>
-    }
+} @else if (loadError()) {
+  <div class="page-loading-state load-board-error" role="alert" aria-live="assertive">
+    <div class="loading-panel">
+      <app-icon name="i-info" [size]="30" />
+      <strong>Could not load available loads</strong>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="retry()">Try again</button>
+    </div>
   </div>
 } @else {
-  <div class="empty-state">
-    <app-icon name="i-box" />
-    <h3>{{ 'loadBoard.empty.title' | t }}</h3>
-    <p>{{ 'loadBoard.empty.desc' | t }}</p>
+  <div class="page-toolbar">
+    <div class="toolbar-filters">
+      <div class="filter-search">
+        <app-icon name="i-search" [size]="16" />
+        <input type="text" [placeholder]="'loadBoard.search.placeholder' | t" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      </div>
+      <select class="filter-select" [ngModel]="vehicleFilter()" (ngModelChange)="vehicleFilter.set($event)">
+        <option value="">{{ 'loadBoard.filter.allTypes' | t }}</option>
+        @for (type of vehicleTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </div>
+    <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ 'loadBoard.available' | t:{ count: filteredLoads().length } }}</span>
   </div>
+
+  @if (filteredLoads().length) {
+    <div class="load-grid">
+      @for (load of filteredLoads(); track load.id) {
+        <div class="load-card">
+          <div class="load-card-head">
+            <span class="load-card-id">{{ load.loadId }}</span>
+            <span class="status-pill" [class]="load.viewerApplicationStatus ? 'status-transit' : 'status-pending'">{{ statusKey(cardStatus(load)) | t }}</span>
+          </div>
+          <div class="load-route">
+            <app-icon name="i-map" [size]="16" />
+            <span>{{ load.pickupCity }} &rarr; {{ load.dropCity }}</span>
+          </div>
+          <div class="load-meta-grid">
+            <div>{{ 'loadBoard.card.material' | t }} <strong>{{ load.material }}</strong></div>
+            <div>{{ 'loadBoard.card.weight' | t }} <strong>{{ 'loadBoard.card.weightTons' | t:{ value: load.weightTons } }}</strong></div>
+            <div>{{ 'loadBoard.card.vehicle' | t }} <strong>{{ load.vehicleType }}</strong></div>
+            <div>{{ 'loadBoard.card.pickup' | t }} <strong>{{ load.pickupDate }}</strong></div>
+          </div>
+          <div style="font-size:12px;color:var(--color-text-soft);">
+            {{ 'loadBoard.card.postedBy' | t }} {{ load.postedByName }}{{ load.onBehalfOfCustomer ? ' ' + ('loadBoard.card.onBehalfOf' | t) + ' ' + load.onBehalfOfCustomer : '' }} &middot; {{ load.postedAgo }}
+          </div>
+          <div class="load-card-foot">
+            <span class="load-budget">{{ load.budget }}</span>
+            <button type="button" class="btn btn-primary btn-sm" (click)="viewLoad(load.id)">{{ cardActionKey(load) | t }}</button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state">
+      <app-icon name="i-box" />
+      <h3>{{ 'loadBoard.empty.title' | t }}</h3>
+      <p>{{ 'loadBoard.empty.desc' | t }}</p>
+    </div>
+  }
 }

@@ -42,7 +42,7 @@
 
   <form #signupForm="ngForm" (ngSubmit)="submit(signupForm)">
     <div class="field">
-      <label>{{ 'auth.fullName' | t }}</label>
+      <label>{{ 'auth.fullName' | t }} <span class="required-mark" aria-hidden="true">*</span></label>
       <div class="input-wrap">
         <app-icon name="i-user" [size]="18" />
         <input type="text" class="input" [placeholder]="'signup.fullNamePlaceholder' | t" name="fullName" [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" required>
@@ -50,7 +50,7 @@
     </div>
 
     <div class="field">
-      <label>{{ 'signup.mobileLabel' | t }}</label>
+      <label>{{ 'signup.mobileLabel' | t }} <span class="required-mark" aria-hidden="true">*</span></label>
       <div class="phone-input-wrap">
         <div class="phone-code">+91</div>
         <div class="input-wrap" style="flex:1;">
@@ -69,7 +69,7 @@
     </div>
 
     <div class="field">
-      <label>{{ 'signup.passwordLabel' | t }}</label>
+      <label>{{ 'signup.passwordLabel' | t }} <span class="required-mark" aria-hidden="true">*</span></label>
       <div class="input-wrap">
         <app-icon name="i-lock" [size]="18" />
         <input type="password" class="input" minlength="8" autocomplete="new-password" [placeholder]="'signup.passwordPlaceholder' | t" name="password" [ngModel]="password()" (ngModelChange)="password.set($event)" required>
@@ -77,7 +77,7 @@
     </div>
 
     <div class="field">
-      <label>{{ 'auth.confirmPassword' | t }}</label>
+      <label>{{ 'auth.confirmPassword' | t }} <span class="required-mark" aria-hidden="true">*</span></label>
       <div class="input-wrap">
         <app-icon name="i-lock" [size]="18" />
         <input type="password" class="input" autocomplete="new-password" [placeholder]="'signup.confirmPasswordPlaceholder' | t" name="confirmPassword" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" required>
@@ -92,8 +92,11 @@
     @if (validationError()) {
       <p class="hint" role="alert">{{ validationError() | t }}</p>
     }
+    @if (apiError()) {
+      <p class="hint" role="alert">{{ apiError() }}</p>
+    }
 
-    <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="!isFormReady(signupForm)">
       <span>{{ (submitting() ? 'signup.submitting' : 'signup.submit') | t }}</span>
       @if (!submitting()) {
         <app-icon name="i-arrow-right" [size]="18" />

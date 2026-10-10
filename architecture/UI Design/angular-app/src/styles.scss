@@ -51,4 +51,18 @@ body {
 html, body { height: 100%; }
 body { margin: 0; font-family: var(--font-base); }
 
+/* Shared lazy-page loader. Kept global because routed standalone components
+   are style-scoped and cannot consume styles from app.scss. */
+.page-loading-state { position:relative; min-height:300px; display:grid; place-items:center; overflow:hidden; background:linear-gradient(135deg,rgba(255,250,247,.96),rgba(255,255,255,.98) 50%,rgba(255,247,241,.96)); }
+.route-loader { position:fixed; inset:0; z-index:5000; display:grid; place-items:center; background:rgba(255,255,255,.72); backdrop-filter:blur(6px); }
+.loading-sheen { position:absolute; inset:0; background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.82) 45%,transparent 65%); transform:translateX(-100%); animation:ts-sheen 1.6s ease-in-out infinite; }
+.loading-panel { position:relative; z-index:1; min-width:190px; display:flex; flex-direction:column; align-items:center; gap:14px; padding:24px 28px; border:1px solid rgba(255,91,10,.12); border-radius:20px; background:rgba(255,255,255,.74); box-shadow:0 16px 42px rgba(86,53,32,.10); backdrop-filter:blur(10px); }
+.loading-panel strong { color:#273246; font-size:13px; letter-spacing:.01em; }
+.dot-loader { position:relative; width:54px; height:54px; animation:ts-dot-spin 1.15s linear infinite; }
+.dot-loader span { position:absolute; top:50%; left:50%; width:7px; height:7px; margin:-3.5px; border-radius:50%; background:#ff5b0a; transform:rotate(calc(var(--i, 0) * 45deg)) translateY(-22px); transform-origin:3.5px 22px; opacity:.22; }
+.dot-loader span:nth-child(1){--i:0}.dot-loader span:nth-child(2){--i:1}.dot-loader span:nth-child(3){--i:2}.dot-loader span:nth-child(4){--i:3}.dot-loader span:nth-child(5){--i:4}.dot-loader span:nth-child(6){--i:5}.dot-loader span:nth-child(7){--i:6}.dot-loader span:nth-child(8){--i:7}
+.dot-loader span:nth-child(1){opacity:1}.dot-loader span:nth-child(2){opacity:.88}.dot-loader span:nth-child(3){opacity:.74}.dot-loader span:nth-child(4){opacity:.60}.dot-loader span:nth-child(5){opacity:.48}.dot-loader span:nth-child(6){opacity:.36}.dot-loader span:nth-child(7){opacity:.28}
+@keyframes ts-dot-spin { to { transform:rotate(360deg); } }
+@keyframes ts-sheen { to { transform:translateX(100%); } }
+
 

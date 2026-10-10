@@ -32,6 +32,8 @@ export interface Load {
   budget: string;
   notes?: string;
   status: LoadStatus;
+  /** Applicant-side status for the current viewer; never represents another party's applications. */
+  viewerApplicationStatus?: ApplicationStatus;
   applicationsCount: number;
   postedAgo: string;
 }
@@ -56,6 +58,8 @@ export interface LoadApplication {
   /** Vehicle availability the applicant committed to at the time of applying. */
   availability: string;
   quotedAmount: string;
+  /** Immutable agreed freight once a marketplace booking is created. */
+  acceptedAmount?: string;
   message?: string;
   status: ApplicationStatus;
   appliedAgo: string;

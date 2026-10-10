@@ -11,6 +11,7 @@ import { LocationPickerComponent } from '../../../shared/components/location-pic
 import { GeoLocation } from '../../../core/models/location.model';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiAuthService } from '../../../core/api/api-auth.service';
+import { apiErrorMessage } from '../../../core/api/api-error';
 
 @Component({
   selector: 'app-profile-setup',
@@ -34,9 +35,17 @@ export class ProfileSetupComponent {
   protected readonly notifyEmail = signal(true);
   protected readonly notifySms = signal(true);
   protected readonly submitting = signal(false);
+  protected readonly apiError = signal('');
 
   protected setProfileCity(location: GeoLocation | null): void {
     if (location) this.city.set(location.city);
+  }
+
+  protected setProfileAddress(location: GeoLocation | null): void {
+    if (!location) return;
+    this.address.set(location.label);
+    this.city.set(location.city);
+    if (location.postcode) this.pincode.set(location.postcode);
   }
 
   protected skip(): void {
@@ -44,6 +53,7 @@ export class ProfileSetupComponent {
   }
 
   protected submit(): void {
+    this.apiError.set('');
     this.submitting.set(true);
     if (API_CONFIG.useBackend) {
       const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as { fullName?: string; email?: string; password?: string };
@@ -57,10 +67,15 @@ export class ProfileSetupComponent {
         next: () => {
           this.submitting.set(false);
           sessionStorage.removeItem('transportseva.pending_signup');
+          const backendUser = JSON.parse(localStorage.getItem('transportseva.api_user') ?? 'null');
+          if (backendUser) this.session.setBackendUser(backendUser);
           this.goToDashboard();
           sessionStorage.removeItem('transportseva.pending_signup_role');
         },
-        error: () => this.submitting.set(false),
+        error: (error) => {
+          this.submitting.set(false);
+          this.apiError.set(apiErrorMessage(error));
+        },
       });
       return;
     }

@@ -33,6 +33,9 @@
 .field { margin-bottom: 18px; }
 .field label { display: block; font-size: 13.5px; font-weight: 700; color: var(--color-secondary); margin-bottom: 8px; }
 .field .hint { font-size: 12px; color: var(--color-text-soft); margin-top: 6px; }
+.field-error { font-size: 12px; color: #c62828; margin: 6px 0 0; }
+.input-invalid { border-color: #d32f2f !important; box-shadow: 0 0 0 3px rgba(211, 47, 47, .10); }
+.form-error { display:flex; align-items:center; gap:8px; padding:10px 12px; margin:0 0 16px; border:1px solid #f0b7b7; border-radius:10px; background:#fff5f5; color:#a52222; font-size:13px; }
 .input-wrap { position: relative; display: flex; align-items: center; }
 .input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--color-text-soft); }
 .input, select.input {
@@ -149,7 +152,7 @@
 .auth-shell { min-height: calc(100vh - 76px); display: grid; grid-template-columns: 1.05fr 1fr; }
 .auth-visual {
   position: relative; background: linear-gradient(160deg,#2A1204 0%, #F45B00 55%, #FF8A3D 100%);
-  display: flex; flex-direction: column; justify-content: space-between; padding: 56px; color: #fff; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center; gap:28px; padding: 56px; color: #fff; overflow: hidden;
 }
 .auth-visual::before {
   content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.12), transparent 45%);
@@ -160,7 +163,7 @@
 .auth-visual .headline h2 { font-size: 32px; font-weight: 800; line-height: 1.25; margin-bottom: 14px; }
 .auth-visual .headline p { font-size: 15px; opacity: .92; }
 .auth-visual .truck-img { position: relative; z-index: 1; max-width: 420px; margin-top: 20px; filter: drop-shadow(0 20px 30px rgba(0,0,0,.25)); }
-.auth-visual .stat-strip { position: relative; z-index: 1; display: flex; gap: 28px; }
+.auth-visual .stat-strip { position: relative; z-index: 1; display: flex; gap: 28px; margin-top:8px; }
 .auth-visual .stat-strip div b { display: block; font-size: 22px; font-weight: 800; }
 .auth-visual .stat-strip div span { font-size: 12px; opacity: .85; }
 

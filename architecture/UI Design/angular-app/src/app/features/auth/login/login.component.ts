@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthMockService } from '../../../core/services/auth-mock.service';
@@ -8,6 +8,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { TranslatePipe } from '../../../core/i18n';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiAuthService } from '../../../core/api/api-auth.service';
+import { apiErrorMessage, apiFieldErrors } from '../../../core/api/api-error';
 
 @Component({
   selector: 'app-login',
@@ -22,28 +23,56 @@ export class LoginComponent {
   private readonly apiAuth = inject(ApiAuthService);
   private readonly session = inject(SessionService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly identifier = signal('');
   protected readonly password = signal('');
   protected readonly rememberMe = signal(true);
   protected readonly showPassword = signal(false);
   protected readonly submitting = signal(false);
+  protected readonly apiError = signal('');
+  protected readonly fieldErrors = signal<Record<string, string>>({});
+  protected readonly sessionNotice = signal('');
+
+  constructor() {
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'inactivity') this.sessionNotice.set('You were signed out after 15 minutes of inactivity. Please log in again.');
+    if (reason === 'session-expired') this.sessionNotice.set('Your session expired. Please log in again.');
+  }
 
   protected togglePassword(): void {
     this.showPassword.update((v) => !v);
   }
 
   protected submit(): void {
+    this.apiError.set('');
+    this.fieldErrors.set({});
+    if (!this.identifier().trim() || !this.password()) {
+      this.fieldErrors.set({
+        ...(this.identifier().trim() ? {} : { identifier: 'Email or mobile number is required.' }),
+        ...(this.password() ? {} : { password: 'Password is required.' }),
+      });
+      return;
+    }
     this.submitting.set(true);
     if (API_CONFIG.useBackend) {
       this.apiAuth.login(this.identifier(), this.password()).subscribe({
         next: ({ user }) => {
           this.submitting.set(false);
           const role = this.backendRole(user.role ?? user.roles?.[0] ?? '');
+          this.session.setBackendUser(user);
           this.session.setRole(role);
           this.router.navigate([this.session.portal().basePath, 'dashboard']);
         },
-        error: () => this.submitting.set(false),
+        error: (error) => {
+          this.submitting.set(false);
+          const fields = apiFieldErrors(error);
+          this.fieldErrors.set({
+            identifier: fields['identifier'] ?? fields['email'] ?? fields['mobile'] ?? '',
+            password: fields['password'] ?? '',
+          });
+          if (!Object.values(fields).length) this.apiError.set(apiErrorMessage(error));
+        },
       });
       return;
     }

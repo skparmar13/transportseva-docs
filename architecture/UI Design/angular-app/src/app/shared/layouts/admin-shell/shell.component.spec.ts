@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { ShellComponent } from './shell.component';
 import { SessionService } from '../../../core/services/session.service';
@@ -7,7 +8,7 @@ describe('ShellComponent shared controls', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ShellComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideHttpClient()],
     }).compileComponents();
   });
 
