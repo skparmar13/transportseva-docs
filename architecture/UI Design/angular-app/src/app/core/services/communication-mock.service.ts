@@ -1,8 +1,16 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, interval, of, startWith, switchMap } from 'rxjs';
 import { AppNotification, SupportTicket, TicketMessage } from '../models/communication.model';
+import { ApiNotification, ApiNotificationsService } from '../api/api-notifications.service';
+import { API_CONFIG } from '../api/api-config';
+import { formatDateTime } from '../utils/date-format';
 
 @Injectable({ providedIn: 'root' })
 export class CommunicationMockService {
+  private readonly apiNotifications = inject(ApiNotificationsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private liveUpdatesStarted = false;
   private readonly _notifications = signal<AppNotification[]>([
     { id: 'n1', category: 'Booking', title: 'Booking Confirmed', message: 'Your booking for load LD-1042 (Jaipur → Ahmedabad) has been confirmed by the transporter.', timestamp: '2024-06-18 09:20 AM', read: false },
     { id: 'n2', category: 'Payment', title: 'Payment Received', message: 'Freight payment of ₹42,000 received for trip TRIP-3877.', timestamp: '2024-06-18 08:05 AM', read: false },
@@ -17,12 +25,41 @@ export class CommunicationMockService {
   readonly unreadCount = computed(() => this._notifications().filter((n) => !n.read).length);
   readonly recentNotifications = computed(() => this._notifications().slice(0, 5));
 
+  /** Keep the bell current while the user has the app open. */
+  startLiveUpdates(): void {
+    if (this.liveUpdatesStarted || !API_CONFIG.useBackend) return;
+    this.liveUpdatesStarted = true;
+    this._notifications.set([]);
+    interval(5000).pipe(
+      startWith(0),
+      switchMap(() => this.apiNotifications.list().pipe(catchError(() => of([] as ApiNotification[])))),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((notifications) => this._notifications.set(notifications.map((notification) => this.mapNotification(notification))));
+  }
+
   markNotificationRead(id: string) {
     this._notifications.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    if (API_CONFIG.useBackend) this.apiNotifications.markRead(id).subscribe({ error: () => undefined });
   }
 
   markAllNotificationsRead() {
     this._notifications.update((list) => list.map((n) => ({ ...n, read: true })));
+    if (API_CONFIG.useBackend) this.apiNotifications.markAllRead().subscribe({ error: () => undefined });
+  }
+
+  private mapNotification(notification: ApiNotification): AppNotification {
+    const allowed: AppNotification['category'][] = ['Booking', 'Payment', 'Trip', 'Document', 'System'];
+    const category = allowed.includes(notification.category as AppNotification['category'])
+      ? notification.category as AppNotification['category']
+      : 'System';
+    return {
+      id: notification.id,
+      category,
+      title: notification.title,
+      message: notification.message,
+      timestamp: notification.created_at ? formatDateTime(notification.created_at) : 'Just now',
+      read: !!notification.read_at,
+    };
   }
 
   private readonly _tickets = signal<SupportTicket[]>([

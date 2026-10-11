@@ -41,8 +41,23 @@
       @if (isOwner()) {
         <!-- Owner view: applications received, each with a structured negotiation thread -->
         <div class="card">
-          <div class="card-head"><h3>{{ 'loadDetails.applicationsReceivedCount' | t:{ count: applicationsError() ? l.applicationsCount : applications().length } }}</h3></div>
-          @if (applicationsError()) {
+          <div class="card-head">
+            <h3>{{ applicationsLoading() ? 'Applications Received' : ('loadDetails.applicationsReceivedCount' | t:{ count: applicationsError() || applicationsOutOfSync() ? l.applicationsCount : applications().length }) }}</h3>
+          </div>
+          @if (applicationsLoading()) {
+            <div class="page-loading-state page-loading-state--compact" role="status" aria-live="polite">
+              <div class="loading-sheen"></div>
+              <div class="loading-panel">
+                <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <strong>Loading applications…</strong>
+              </div>
+            </div>
+          } @else if (applicationsOutOfSync()) {
+            <div class="inline-error" role="alert" style="margin:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
+              <span>We found applications for this load, but their details have not synced yet. Please retry.</span>
+              <button type="button" class="btn btn-outline btn-sm" (click)="retryLoadData()">Retry</button>
+            </div>
+          } @else if (applicationsError()) {
             <div class="inline-error" role="alert" style="margin:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;">
               <span>{{ applicationsError() }}</span>
               <button type="button" class="btn btn-outline btn-sm" (click)="retryLoadData()">Retry</button>
@@ -75,6 +90,28 @@
                       <button type="button" class="btn btn-outline btn-sm" (click)="openChat(app.id)">
                         <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? ('loadDetails.app.hideChat' | t) : ('loadDetails.app.chat' | t) }}</span>
                       </button>
+                      @if (backendBookingForApplication(app.id); as acceptedBooking) {
+                        <div class="booking-token-card" role="status" aria-live="polite">
+                          <div class="booking-token-card__copy">
+                            <strong>Booking token</strong>
+                            @if (tokenPaymentState(app.id) === 'paid') {
+                              <span class="booking-token-card__success">Token paid · booking secured</span>
+                            } @else if (tokenPaymentState(app.id) === 'due') {
+                              <span>Pay {{ tokenAmountForApplication(app.id) }} to secure this booking.</span>
+                            } @else {
+                              <span>Token status is being confirmed…</span>
+                            }
+                          </div>
+                          @if (tokenPaymentState(app.id) === 'due') {
+                            <button type="button" class="btn btn-primary btn-sm" [disabled]="tokenSubmittingApplicationId() !== null" (click)="payBookingToken(app.id)">
+                              @if (tokenSubmittingApplicationId() === app.id) { <span class="button-loader" aria-hidden="true"></span> }
+                              <span>{{ tokenSubmittingApplicationId() === app.id ? 'Opening payment…' : 'Pay token' }}</span>
+                            </button>
+                          }
+                          @if (tokenErrorFor(app.id)) { <small class="booking-token-card__error" role="alert">{{ tokenErrorFor(app.id) }}</small> }
+                          @if (tokenNoticeFor(app.id)) { <small class="booking-token-card__success" role="status">{{ tokenNoticeFor(app.id) }}</small> }
+                        </div>
+                      }
                     }
                   </div>
 
@@ -118,7 +155,7 @@
                       @for (msg of activeChatMessages(); track msg.id) {
                         <div class="chat-bubble" [class.mine]="msg.sender === 'owner'" [class.theirs]="msg.sender !== 'owner'">
                           <div>{{ msg.text }}</div>
-                          <div class="chat-meta">{{ msg.senderName }} · {{ msg.timestamp }}</div>
+                          <div class="chat-meta">{{ msg.senderName }} · {{ msg.senderRoleLabel || chatParticipantRole(msg.sender) }} · {{ msg.timestamp }}</div>
                         </div>
                       }
                       <div class="chat-input-row">
@@ -143,7 +180,17 @@
         </div>
       } @else {
         <!-- Applicant view -->
-        @if (applicationsError()) {
+        @if (applicationsLoading()) {
+          <div class="card">
+            <div class="page-loading-state page-loading-state--compact" role="status" aria-live="polite">
+              <div class="loading-sheen"></div>
+              <div class="loading-panel">
+                <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <strong>Loading application…</strong>
+              </div>
+            </div>
+          </div>
+        } @else if (applicationsError()) {
           <div class="card">
             <div class="card-body inline-error" role="alert" style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
               <span>{{ applicationsError() }}</span>
@@ -185,6 +232,28 @@
                 }
                 </div>
               } @else if (app.status === 'Accepted') {
+                @if (backendBookingForApplication(app.id); as acceptedBooking) {
+                  <div class="booking-token-card" role="status" aria-live="polite">
+                    <div class="booking-token-card__copy">
+                      <strong>Booking token</strong>
+                      @if (tokenPaymentState(app.id) === 'paid') {
+                        <span class="booking-token-card__success">Token paid · booking secured</span>
+                      } @else if (tokenPaymentState(app.id) === 'due') {
+                        <span>Pay {{ tokenAmountForApplication(app.id) }} to secure this booking.</span>
+                      } @else {
+                        <span>Token status is being confirmed…</span>
+                      }
+                    </div>
+                    @if (tokenPaymentState(app.id) === 'due') {
+                      <button type="button" class="btn btn-primary btn-sm" [disabled]="tokenSubmittingApplicationId() !== null" (click)="payBookingToken(app.id)">
+                        @if (tokenSubmittingApplicationId() === app.id) { <span class="button-loader" aria-hidden="true"></span> }
+                        <span>{{ tokenSubmittingApplicationId() === app.id ? 'Opening payment…' : 'Pay token' }}</span>
+                      </button>
+                    }
+                    @if (tokenErrorFor(app.id)) { <small class="booking-token-card__error" role="alert">{{ tokenErrorFor(app.id) }}</small> }
+                    @if (tokenNoticeFor(app.id)) { <small class="booking-token-card__success" role="status">{{ tokenNoticeFor(app.id) }}</small> }
+                  </div>
+                }
                 <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openChat(app.id)">
                   <app-icon name="i-message" [size]="15" /><span>{{ activeChatApplicationId() === app.id ? ('loadDetails.app.hideChat' | t) : ('loadDetails.yourApp.chatWithOwner' | t) }}</span>
                 </button>
@@ -230,7 +299,7 @@
                   @for (msg of activeChatMessages(); track msg.id) {
                     <div class="chat-bubble" [class.mine]="msg.sender === 'applicant'" [class.theirs]="msg.sender !== 'applicant'">
                       <div>{{ msg.text }}</div>
-                      <div class="chat-meta">{{ msg.senderName }} · {{ msg.timestamp }}</div>
+                      <div class="chat-meta">{{ msg.senderName }} · {{ msg.senderRoleLabel || chatParticipantRole(msg.sender) }} · {{ msg.timestamp }}</div>
                     </div>
                   }
                   <div class="chat-input-row">

@@ -83,6 +83,7 @@ export interface NegotiationMessage {
   applicationId: string;
   sender: 'owner' | 'applicant';
   senderName: string;
+  senderRoleLabel?: string;
   text: string;
   timestamp: string;
 }

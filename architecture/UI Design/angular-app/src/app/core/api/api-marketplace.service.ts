@@ -77,6 +77,7 @@ export interface ApiChatMessage {
   load_uuid: string;
   application_uuid: string;
   sender_role: 'owner' | 'applicant';
+  sender_role_label?: string;
   sender_name: string;
   message: string;
   created_at?: string;

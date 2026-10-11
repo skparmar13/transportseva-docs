@@ -131,7 +131,7 @@ export class ApplicationsComponent {
         : normalized.includes('application') ? 'Applications Received' : 'Open';
     return {
       id: load.uuid, loadId: load.load_id ? `#${load.load_id.replace(/^#/, '')}` : `#${load.uuid.slice(0, 8).toUpperCase()}`,
-      postedBy: this.session.role(), postedByName: load.posted_by_name ?? 'TransportSeva customer',
+      postedBy: this.session.role(), postedByName: load.posted_by_name ?? 'Shipper',
       pickupCity: load.pickup_city, dropCity: load.drop_city, material: load.material ?? 'General Cargo',
       weightTons: load.weight_tons ?? 0, vehicleType: (load.vehicle_type ?? 'Open Body Truck') as VehicleType,
       pickupDate: formatDate(load.pickup_date), budget: formatCurrencyAmount(load.budget), status,

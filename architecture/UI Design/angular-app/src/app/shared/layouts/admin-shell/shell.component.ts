@@ -43,7 +43,9 @@ export class ShellComponent {
     private readonly router: Router,
     private readonly apiAuth: ApiAuthService,
     protected readonly comms: CommunicationMockService,
-  ) {}
+  ) {
+    this.comms.startLiveUpdates();
+  }
 
   protected readonly portal = computed(() => this.sessionSvc.portal());
   protected readonly user = computed(() => this.sessionSvc.user());

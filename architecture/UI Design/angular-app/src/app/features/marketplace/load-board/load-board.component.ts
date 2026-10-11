@@ -122,7 +122,7 @@ export class LoadBoardComponent {
       id: load.uuid,
       loadId: formatLoadReference(load),
       postedBy: 'shipper',
-      postedByName: 'TransportSeva customer',
+      postedByName: 'Shipper',
       pickupCity: load.pickup_city,
       dropCity: load.drop_city,
       material: load.material ?? 'General Cargo',

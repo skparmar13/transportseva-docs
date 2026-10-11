@@ -25,6 +25,10 @@ export class ApiClientService {
     return this.http.post<ApiEnvelope<T>>(this.url(path), body);
   }
 
+  patch<T>(path: string, body: unknown): Observable<ApiEnvelope<T>> {
+    return this.http.patch<ApiEnvelope<T>>(this.url(path), body);
+  }
+
   put<T>(path: string, body: unknown): Observable<ApiEnvelope<T>> {
     return this.http.put<ApiEnvelope<T>>(this.url(path), body);
   }

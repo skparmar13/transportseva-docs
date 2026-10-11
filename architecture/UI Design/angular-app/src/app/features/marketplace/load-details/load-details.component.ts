@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { interval, of, switchMap } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -8,7 +10,8 @@ import { SessionService } from '../../../core/services/session.service';
 import { Load, LoadApplication, NegotiationMessage, NegotiationOffer, VehicleType } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
 import { API_CONFIG } from '../../../core/api/api-config';
-import { ApiApplication, ApiChatMessage, ApiLoad, ApiMarketplaceBooking, ApiMarketplaceService, ApiOffer } from '../../../core/api/api-marketplace.service';
+import { ApiApplication, ApiChatMessage, ApiLoad, ApiMarketplaceBooking, ApiMarketplaceService, ApiOffer, ApiTokenOrder } from '../../../core/api/api-marketplace.service';
+import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
 import { formatLoadReference } from '../../../core/utils/load-reference';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
@@ -44,6 +47,9 @@ export class LoadDetailsComponent {
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
+  private readonly cashfreeCheckout = inject(CashfreeCheckoutService);
+  private readonly destroyRef = inject(DestroyRef);
+  private chatPollInFlight = false;
 
   private readonly loadId = this.route.snapshot.paramMap.get('id') ?? '';
   private readonly backendLoad = signal<ApiLoad | undefined>(undefined);
@@ -51,15 +57,28 @@ export class LoadDetailsComponent {
   private readonly backendOffers = signal<Record<string, ApiOffer[]>>({});
   private readonly backendOfferErrors = signal<Record<string, string>>({});
   private readonly backendBookings = signal<ApiMarketplaceBooking[]>([]);
+  private readonly backendTokenOrders = signal<Record<string, ApiTokenOrder[]>>({});
   private readonly backendChatMessages = signal<Record<string, ApiChatMessage[]>>({});
   protected readonly loading = signal(API_CONFIG.useBackend);
+  protected readonly applicationsLoading = signal(API_CONFIG.useBackend);
   protected readonly loadError = signal('');
   protected readonly applicationsError = signal('');
+  protected readonly applicationsOutOfSync = computed(() =>
+    API_CONFIG.useBackend
+      && this.isOwner()
+      && !this.applicationsLoading()
+      && !this.applicationsError()
+      && this.applications().length === 0
+      && Number(this.backendLoad()?.applications_count ?? 0) > 0,
+  );
   protected readonly chatError = signal('');
   protected readonly chatLoading = signal(false);
   protected readonly chatSending = signal(false);
   constructor() {
     this.reloadBackendData();
+    if (API_CONFIG.useBackend) {
+      interval(4000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refreshActiveChat());
+    }
   }
 
   private reloadBackendData(): void {
@@ -68,8 +87,10 @@ export class LoadDetailsComponent {
       next: (load) => { this.backendLoad.set(load); this.loading.set(false); },
       error: (error) => { this.backendLoad.set(undefined); this.loading.set(false); this.loadError.set(apiErrorMessage(error, 'We could not load this shipment.')); },
     });
+    this.applicationsLoading.set(true);
     this.apiMarketplace.listApplications(this.loadId).subscribe({
       next: (applications) => {
+        this.applicationsLoading.set(false);
         this.applicationsError.set('');
         this.backendApplications.set(applications);
         this.actionInFlightApplicationId.set(null);
@@ -91,6 +112,7 @@ export class LoadDetailsComponent {
         }
       },
       error: (error) => {
+        this.applicationsLoading.set(false);
         // Never convert an API failure into a misleading "No applications"
         // state. Preserve any previously loaded applications and show the
         // actual error in the section so offers/chats cannot silently vanish.
@@ -99,14 +121,33 @@ export class LoadDetailsComponent {
       },
     });
     this.apiMarketplace.listMarketplaceBookings().subscribe({
-      next: (bookings) => this.backendBookings.set(bookings.filter((booking) => booking.load_uuid === this.loadId)),
+      next: (bookings) => {
+        const loadBookings = bookings.filter((booking) => booking.load_uuid === this.loadId);
+        this.backendBookings.set(loadBookings);
+        // Token orders are scoped to the signed-in party. Fetch them with the
+        // booking so the accepted application always exposes the next action
+        // instead of forcing users to discover it from the Bookings screen.
+        for (const booking of loadBookings) this.loadTokenOrders(booking.uuid);
+      },
       error: () => this.backendBookings.set([]),
     });
   }
   protected retryLoadData(): void {
     if (!API_CONFIG.useBackend) return;
+    this.applicationsLoading.set(true);
     this.applicationsError.set('');
     this.reloadBackendData();
+  }
+
+  private loadTokenOrders(bookingUuid: string): void {
+    if (!API_CONFIG.useBackend) return;
+    this.apiMarketplace.listTokenOrders(bookingUuid).subscribe({
+      next: (orders) => this.backendTokenOrders.update((current) => ({ ...current, [bookingUuid]: orders })),
+      // A token order is created lazily when the user starts payment. An
+      // empty response is therefore expected for a newly accepted booking;
+      // only transport/API errors need to be surfaced at payment time.
+      error: () => this.backendTokenOrders.update((current) => ({ ...current, [bookingUuid]: current[bookingUuid] ?? [] })),
+    });
   }
   protected readonly load = computed<Load | undefined>(() => API_CONFIG.useBackend ? this.mapLoad(this.backendLoad()) : this.marketplace.getLoadById(this.loadId)());
   protected readonly applications = computed<LoadApplication[]>(() => API_CONFIG.useBackend ? this.backendApplications().map((app) => this.mapApplication(app)) : this.marketplace.getApplicationsForLoad(this.loadId)());
@@ -129,6 +170,79 @@ export class LoadDetailsComponent {
   protected readonly booking = computed(() =>
     this.marketplace.bookings().find((b) => b.loadId === this.loadId),
   );
+
+  /** Backend booking created when an offer is accepted, matched to its application. */
+  protected backendBookingForApplication(applicationId: string): ApiMarketplaceBooking | undefined {
+    return this.backendBookings().find((booking) => booking.application_uuid === applicationId);
+  }
+
+  protected tokenOrderForApplication(applicationId: string): ApiTokenOrder | undefined {
+    const booking = this.backendBookingForApplication(applicationId);
+    if (!booking) return undefined;
+    const orders = this.backendTokenOrders()[booking.uuid] ?? [];
+    return orders[0];
+  }
+
+  protected tokenPaymentState(applicationId: string): 'due' | 'paid' | 'waiting' | 'unavailable' {
+    const booking = this.backendBookingForApplication(applicationId);
+    if (!booking) return 'unavailable';
+    const order = this.tokenOrderForApplication(applicationId);
+    if (order?.status === 'paid' || booking.status === 'confirmed') return 'paid';
+    if (['awaiting_tokens', 'awaiting_deposit', 'Awaiting Deposit'].includes(String(booking.status))) return 'due';
+    return 'waiting';
+  }
+
+  protected tokenAmountForApplication(applicationId: string): string {
+    const order = this.tokenOrderForApplication(applicationId);
+    return formatCurrencyAmount(order?.amount ?? 1000);
+  }
+
+  protected readonly tokenSubmittingApplicationId = signal<string | null>(null);
+  protected readonly tokenErrors = signal<Record<string, string>>({});
+  protected readonly tokenNotices = signal<Record<string, string>>({});
+
+  protected tokenErrorFor(applicationId: string): string {
+    return this.tokenErrors()[applicationId] ?? '';
+  }
+
+  protected tokenNoticeFor(applicationId: string): string {
+    return this.tokenNotices()[applicationId] ?? '';
+  }
+
+  protected payBookingToken(applicationId: string): void {
+    const booking = this.backendBookingForApplication(applicationId);
+    if (!booking || this.tokenSubmittingApplicationId() === applicationId) return;
+    if (this.tokenPaymentState(applicationId) !== 'due') return;
+
+    this.tokenErrors.update((current) => ({ ...current, [applicationId]: '' }));
+    this.tokenNotices.update((current) => ({ ...current, [applicationId]: '' }));
+    this.tokenSubmittingApplicationId.set(applicationId);
+    const existingOrder = this.tokenOrderForApplication(applicationId);
+    const orderRequest = existingOrder ? of(existingOrder) : this.apiMarketplace.createTokenOrder(booking.uuid);
+    orderRequest.pipe(
+      switchMap((order) => this.apiMarketplace.createTokenCheckout(booking.uuid, order.uuid)),
+      switchMap((checkout) => API_CONFIG.paymentProvider === 'mock'
+        ? this.apiMarketplace.verifyTokenPayment(booking.uuid, checkout.order.uuid)
+        : this.cashfreeCheckout.open(checkout.payment_session_id).pipe(
+          switchMap(() => this.apiMarketplace.verifyTokenPayment(booking.uuid, checkout.order.uuid)),
+        )),
+    ).subscribe({
+      next: (result) => {
+        this.backendTokenOrders.update((current) => ({ ...current, [booking.uuid]: [result.order] }));
+        this.tokenSubmittingApplicationId.set(null);
+        if (result.order.status === 'paid') {
+          this.tokenNotices.update((current) => ({ ...current, [applicationId]: `Booking token paid successfully (${formatCurrencyAmount(result.order.amount)}).` }));
+          this.reloadBackendData();
+        } else {
+          this.tokenErrors.update((current) => ({ ...current, [applicationId]: 'Payment was not completed. You can safely retry the booking token.' }));
+        }
+      },
+      error: (error) => {
+        this.tokenSubmittingApplicationId.set(null);
+        this.tokenErrors.update((current) => ({ ...current, [applicationId]: apiErrorMessage(error, 'We could not start the token payment. Please retry.' ) }));
+      },
+    });
+  }
 
   // Apply form state
   protected readonly showApplyModal = signal(false);
@@ -385,7 +499,7 @@ export class LoadDetailsComponent {
     if (!load) return undefined;
     return {
       id: load.uuid, loadId: formatLoadReference(load),
-      postedBy: this.toPortalRole(load.posted_by_role), postedByName: load.posted_by_name ?? 'TransportSeva customer', pickupCity: load.pickup_city, dropCity: load.drop_city,
+      postedBy: this.toPortalRole(load.posted_by_role), postedByName: load.posted_by_name ?? 'Shipper', pickupCity: load.pickup_city, dropCity: load.drop_city,
       material: load.material ?? 'General Cargo', weightTons: load.weight_tons ?? 0,
       vehicleType: (load.vehicle_type ?? 'Open Body Truck') as VehicleType, pickupDate: formatDate(load.pickup_date),
       budget: formatCurrencyAmount(load.budget),
@@ -471,16 +585,41 @@ export class LoadDetailsComponent {
     });
   }
 
+  /** Poll only the open conversation so a second participant sees new messages without a reload. */
+  private refreshActiveChat(): void {
+    const applicationId = this.activeChatApplicationId();
+    if (!applicationId || this.chatPollInFlight) return;
+    const booking = this.backendBookings().find((item) => item.application_uuid === applicationId);
+    if (!booking) return;
+    this.chatPollInFlight = true;
+    this.apiMarketplace.listChatMessages(booking.uuid).subscribe({
+      next: (messages) => {
+        this.backendChatMessages.update((current) => ({ ...current, [applicationId]: messages }));
+        this.chatPollInFlight = false;
+      },
+      error: () => { this.chatPollInFlight = false; },
+    });
+  }
+
   private mapChatMessage(message: ApiChatMessage): NegotiationMessage {
+    const storedName = message.sender_name?.trim();
+    const senderName = storedName && !/^transportseva user$/i.test(storedName)
+      ? storedName
+      : (message.sender_role === 'owner' ? 'Load owner' : 'Provider');
     return {
       id: message.uuid,
       loadId: message.load_uuid,
       applicationId: message.application_uuid,
       sender: message.sender_role,
-      senderName: message.sender_name,
+      senderName,
+      senderRoleLabel: message.sender_role_label || (message.sender_role === 'owner' ? 'Load Owner' : 'Provider'),
       text: message.message,
       timestamp: message.created_at ? formatDateTime(message.created_at) : 'Just now',
     };
+  }
+
+  protected chatParticipantRole(sender: NegotiationMessage['sender']): string {
+    return sender === 'owner' ? 'Load owner' : 'Provider';
   }
 
   protected latestOfferFor(applicationId: string): NegotiationOffer | undefined {

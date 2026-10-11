@@ -31,6 +31,7 @@ input, select, textarea { font-family: inherit; }
 .btn-sm { padding: 8px 16px; font-size: 13px; }
 .btn:disabled { cursor: not-allowed; opacity: .68; transform: none; box-shadow: none; }
 .button-loader { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ts-spin .7s linear infinite; display: inline-block; flex: 0 0 auto; }
+.page-loading-state--compact { min-height: 180px; }
 
 /* Negotiation outcome is intentionally explicit: users should never have to
    infer which freight amount was accepted from a status pill alone. */
@@ -42,6 +43,11 @@ input, select, textarea { font-family: inherit; }
 .offer-outcome--accepted .offer-outcome__mark { color: #fff; background: #1ca568; }
 .offer-outcome--rejected { color: #a33c3c; background: #fff4f4; border: 1px solid #f2d3d3; }
 .offer-outcome--rejected .offer-outcome__mark { color: #fff; background: #d45c5c; }
+.booking-token-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; width: 100%; margin-top: 12px; padding: 12px 14px; border: 1px solid #ffd9c6; border-radius: 12px; background: linear-gradient(135deg, #fffaf7, #fff); color: var(--color-text-muted); font-size: 13px; }
+.booking-token-card__copy { display: grid; gap: 3px; min-width: 190px; }
+.booking-token-card__copy strong { color: var(--color-text); font-size: 13.5px; }
+.booking-token-card__success { color: #147a4b; }
+.booking-token-card__error { flex-basis: 100%; color: var(--color-danger, #dc2626); }
 .offer-confirm-amount { display: flex; align-items: center; justify-content: space-between; margin: 14px 0; padding: 12px 14px; border: 1px solid #ffd7c3; border-radius: 10px; background: #fff8f4; color: var(--color-text-muted); font-size: 13px; }
 .offer-confirm-amount strong { color: var(--color-primary); font-size: 17px; }
 

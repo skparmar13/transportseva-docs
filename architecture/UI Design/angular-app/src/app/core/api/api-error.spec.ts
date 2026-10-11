@@ -22,4 +22,12 @@ describe('API error presentation', () => {
     const error = new HttpErrorResponse({ status: 422, error: { message: 'Invalid or expired OTP' } });
     expect(apiErrorMessage(error)).toBe('Invalid or expired OTP');
   });
+
+  it('does not expose database internals in the customer UI', () => {
+    const error = new HttpErrorResponse({
+      status: 500,
+      error: { message: "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'created_by'" },
+    });
+    expect(apiErrorMessage(error, 'Chat could not be sent.')).toBe('Chat could not be sent.');
+  });
 });

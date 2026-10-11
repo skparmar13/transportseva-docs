@@ -67,8 +67,9 @@ export class SessionService {
     }
     const backend = this.activeBackendUser();
     if (backend) {
-      const name = backend.full_name || backend.email || 'TransportSeva user';
-      return { name, role: this.activeRole(), roleTag: this.activeRole(), avatarInitials: name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() };
+      const roleTag = this.roleLabel(this.activeRole());
+      const name = backend.full_name || backend.email || roleTag;
+      return { name, role: this.activeRole(), roleTag, avatarInitials: name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() };
     }
     return MOCK_USERS[this.activeRole()];
   });
@@ -89,5 +90,11 @@ export class SessionService {
 
   clearPlatformStaff(): void {
     this.activePlatformStaff.set(null);
+  }
+
+  private roleLabel(role: PortalRole): string {
+    return role === 'truck-owner' ? 'Truck Owner'
+      : role === 'admin' ? 'Administrator'
+        : role.charAt(0).toUpperCase() + role.slice(1);
   }
 }

@@ -7,10 +7,20 @@ export function apiErrorMessage(error: unknown, fallback = 'Something went wrong
     const payload = body as { message?: unknown; errors?: Record<string, unknown> };
     const fieldMessages = Object.values(payload.errors ?? {}).flatMap((value) => Array.isArray(value) ? value : [value])
       .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
-    if (fieldMessages.length) return fieldMessages.join(' ');
-    if (typeof payload.message === 'string' && payload.message.trim()) return payload.message;
+    if (fieldMessages.length) {
+      const message = fieldMessages.join(' ');
+      return isTechnicalServerError(message) ? fallback : message;
+    }
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+      return isTechnicalServerError(payload.message) ? fallback : payload.message;
+    }
   }
   return fallback;
+}
+
+/** Never render database queries or framework internals in the customer UI. */
+function isTechnicalServerError(message: string): boolean {
+  return /sqlstate|unknown column|insert into|connection:\s*(mysql|pgsql|sqlite)|stack trace/i.test(message);
 }
 
 export function apiFieldErrors(error: unknown): Record<string, string> {
