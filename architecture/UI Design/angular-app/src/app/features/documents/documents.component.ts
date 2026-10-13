@@ -5,6 +5,7 @@ import { DriverMockService } from '../../core/services/driver-mock.service';
 import { TripMockService } from '../../core/services/trip-mock.service';
 import { VehicleDocument } from '../../core/models/fleet.model';
 import { DriverDocument } from '../../core/models/driver.model';
+import { formatDate, formatDateTime } from '../../core/utils/date-format';
 
 type DocumentsTab = 'vehicle' | 'driver' | 'pod';
 
@@ -67,6 +68,14 @@ export class DocumentsComponent {
 
   protected setTab(tab: DocumentsTab): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string | undefined): string {
+    return formatDate(value);
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   protected uploadVehicle(event: Event, doc: VehicleDocRow): void {

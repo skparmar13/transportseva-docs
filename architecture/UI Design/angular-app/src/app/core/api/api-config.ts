@@ -15,7 +15,7 @@ const runtimeConfig: TransportSevaRuntimeConfig = typeof window !== 'undefined'
   : {};
 
 export const API_CONFIG = {
-  baseUrl: runtimeConfig.apiBaseUrl ?? 'http://localhost:8000/api',
+  baseUrl: runtimeConfig.apiBaseUrl ?? 'http://localhost:8080/api',
   /**
    * Keep the prototype on mock services until an individual vertical slice
    * is explicitly enabled. This prevents a partially integrated screen from

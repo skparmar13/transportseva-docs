@@ -5,7 +5,7 @@
   </div>
   <div class="blog-grid">@for (post of visiblePosts(); track post.id || post.titleKey) {
     <div class="blog-card"><div class="blog-thumb"><span class="tag">{{ post.tagKey | t }}</span>@if (post.imageUrl) {<img class="blog-featured-image" [src]="post.imageUrl" [alt]="post.imageAlt || post.titleKey" />} @else {<app-icon name="i-truck" [size]="56" />}</div><div class="blog-body">
-      <div class="blog-meta"><span><app-icon name="i-calendar" [size]="13" />{{ post.date }}</span><span><app-icon name="i-user" [size]="13" />{{ post.authorKey | t }}</span><span><app-icon name="i-clock" [size]="13" />{{ post.readKey | t }}</span></div>
+      <div class="blog-meta"><span><app-icon name="i-calendar" [size]="13" />{{ date(post.date) }}</span><span><app-icon name="i-user" [size]="13" />{{ post.authorKey | t }}</span><span><app-icon name="i-clock" [size]="13" />{{ post.readKey | t }}</span></div>
       <h3>{{ post.titleKey | t }}</h3><p>{{ post.descKey | t }}</p><a routerLink="/blog-post" [queryParams]="post.id ? { id: post.id } : {}" class="blog-readmore"><span>{{ 'blog.readMore' | t }}</span><app-icon name="i-arrow-right" [size]="14" /></a>
     </div></div>
   } @empty {<p class="blog-empty">{{ 'blog.noPosts' | t }}</p>}</div>

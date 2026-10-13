@@ -24,8 +24,8 @@
             <div>{{ 'deviceDetails.meta.oem' | t }}: <strong>{{ d.health?.oem ?? ('common.dash' | t) }}</strong></div>
             <div>{{ 'deviceDetails.meta.sim' | t }}: <strong>{{ d.health?.simNumber ?? ('common.dash' | t) }}</strong></div>
             <div>{{ 'deviceDetails.meta.firmware' | t }}: <strong>{{ d.health?.firmwareVersion ?? ('common.dash' | t) }}</strong></div>
-            <div>{{ 'deviceDetails.meta.installedOn' | t }}: <strong>{{ d.health?.installedOn ?? ('common.dash' | t) }}</strong></div>
-            <div>{{ 'deviceDetails.meta.lastPing' | t }}: <strong>{{ d.health?.lastPingAt ?? ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.installedOn' | t }}: <strong>{{ d.health?.installedOn ? date(d.health?.installedOn) : ('common.dash' | t) }}</strong></div>
+            <div>{{ 'deviceDetails.meta.lastPing' | t }}: <strong>{{ d.health?.lastPingAt ? dateTime(d.health?.lastPingAt) : ('common.dash' | t) }}</strong></div>
             <div>{{ 'deviceDetails.meta.assignedVehicle' | t }}: <strong>{{ d.assignedVehicleRegNumber ?? ('common.notAssigned' | t) }}</strong></div>
           </div>
 
@@ -55,7 +55,7 @@
           @if (d.health; as h) {
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
               <span class="status-pill" [class]="healthClass[h.healthStatus]" style="font-size:13px;padding:6px 14px;">{{ healthKey[h.healthStatus] | t }}</span>
-              <span style="font-size:12.5px;color:var(--color-text-muted);">{{ 'deviceDetails.health.lastUpdated' | t:{ ts: h.lastPingAt } }}</span>
+              <span style="font-size:12.5px;color:var(--color-text-muted);">{{ 'deviceDetails.health.lastUpdated' | t:{ ts: dateTime(h.lastPingAt) } }}</span>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:560px;">
               <div>
@@ -96,7 +96,7 @@
             <div style="border:1px solid var(--color-border);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
               <div>
                 <span class="status-pill" [class]="r.result === 'Passed' ? 'status-delivered' : 'status-cancelled'">{{ (r.result === 'Passed' ? 'status.testResult.passed' : 'status.testResult.failed') | t }}</span>
-                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:6px;">{{ 'deviceDetails.connectivity.summary' | t:{ latency: r.latencyMs, signal: r.signalQuality, ts: r.timestamp } }}</div>
+                <div style="font-size:12.5px;color:var(--color-text-muted);margin-top:6px;">{{ 'deviceDetails.connectivity.summary' | t:{ latency: r.latencyMs, signal: r.signalQuality, ts: dateTime(r.timestamp) } }}</div>
               </div>
             </div>
           }
@@ -109,7 +109,7 @@
               <tbody>
                 @for (test of d.health!.testHistory; track test.timestamp) {
                   <tr>
-                    <td>{{ test.timestamp }}</td>
+                    <td>{{ dateTime(test.timestamp) }}</td>
                     <td><span class="status-pill" [class]="test.result === 'Passed' ? 'status-delivered' : 'status-cancelled'">{{ (test.result === 'Passed' ? 'status.testResult.passed' : 'status.testResult.failed') | t }}</span></td>
                     <td>{{ test.latencyMs }} {{ 'deviceDetails.msUnit' | t }}</td>
                     <td>{{ test.signalQuality }}</td>
@@ -142,7 +142,7 @@
                   <tr>
                     <td><b>{{ alert.type }}</b></td>
                     <td>{{ alert.message }}</td>
-                    <td>{{ alert.timestamp }}</td>
+                    <td>{{ dateTime(alert.timestamp) }}</td>
                     <td>
                       <span class="status-pill" [class]="alert.severity === 'Critical' ? 'status-cancelled' : alert.severity === 'Warning' ? 'status-pending' : 'status-transit'">{{ (alert.severity === 'Critical' ? 'status.severity.critical' : alert.severity === 'Warning' ? 'status.severity.warning' : 'status.severity.info') | t }}</span>
                     </td>

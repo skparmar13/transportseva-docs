@@ -5,6 +5,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { CareersMockService } from '../../../core/services/careers-mock.service';
+import { formatDate } from '../../../core/utils/date-format';
 
 @Component({
   selector: 'app-careers',
@@ -18,7 +19,7 @@ export class CareersComponent implements OnInit {
   private readonly seo = inject(SeoService);
   private readonly careers = inject(CareersMockService);
   protected readonly language = inject(LanguageService);
-  protected readonly jobs = this.careers.publishedJobs;
+  protected readonly jobs = computed(() => this.careers.publishedJobs().map((job) => ({ ...job, closingDate: job.closingDate ? formatDate(job.closingDate) : job.closingDate })));
   protected readonly departmentFilter = signal('All');
   protected readonly locationFilter = signal('All');
   protected readonly departments = computed(() => [...new Set(this.jobs().map((job) => job.department))].sort());

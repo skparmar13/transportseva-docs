@@ -55,7 +55,7 @@
             <td><b>{{ doc.ownerRef }}</b></td>
             <td>{{ doc.type }}@if (doc.fileName) { <small style="display:block;color:var(--color-text-soft);">{{ doc.fileName }}</small> }</td>
             <td>{{ doc.documentNumber }}</td>
-            <td>{{ doc.expiryDate }}</td>
+            <td>{{ doc.expiryDate === 'â€”' ? doc.expiryDate : date(doc.expiryDate) }}</td>
             <td><span class="status-pill" [class]="statusClass[doc.status]">{{ doc.status }}</span></td>
             <td>
               <label class="btn btn-outline btn-sm">
@@ -90,7 +90,7 @@
             <td><b>{{ doc.ownerRef }}</b></td>
             <td>{{ doc.type }}@if (doc.fileName) { <small style="display:block;color:var(--color-text-soft);">{{ doc.fileName }}</small> }</td>
             <td>{{ doc.documentNumber }}</td>
-            <td>{{ doc.expiryDate }}</td>
+            <td>{{ doc.expiryDate === 'â€”' ? doc.expiryDate : date(doc.expiryDate) }}</td>
             <td><span class="status-pill" [class]="statusClass[doc.status]">{{ doc.status }}</span></td>
             <td>
               <label class="btn btn-outline btn-sm">
@@ -127,7 +127,7 @@
               <td>{{ doc.route }}</td>
               <td>{{ doc.podNumber }}</td>
               <td>{{ doc.receivedBy }}</td>
-              <td>{{ doc.uploadedAt }}</td>
+              <td>{{ dateTime(doc.uploadedAt) }}</td>
               <td>
                 <button type="button" class="btn btn-outline btn-sm" (click)="downloadPod(doc)">
                   <app-icon name="i-download" [size]="16" />

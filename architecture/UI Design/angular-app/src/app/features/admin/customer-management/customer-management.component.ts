@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { TranslatePipe } from '../../../core/i18n';
+import { formatDate } from '../../../core/utils/date-format';
 
 interface Customer { name: string; owner: string; segment: string; plan: string; status: 'Active' | 'Pending Review' | 'Suspended'; joined: string; }
 
@@ -15,6 +16,7 @@ export class CustomerManagementComponent {
   protected readonly filtered = computed(() => this.filter() === 'All' ? this.customers() : this.customers().filter((customer) => customer.status === this.filter()));
   protected readonly pending = computed(() => this.customers().filter((customer) => customer.status === 'Pending Review').length);
   protected readonly activeCount = computed(() => this.customers().filter((customer) => customer.status === 'Active').length);
+  protected date(value: string): string { return formatDate(value); }
   protected approve(customer: Customer): void { this.customers.update((items) => items.map((item) => item.name === customer.name ? { ...item, status: 'Active' } : item)); }
   protected toggleSuspend(customer: Customer): void { this.customers.update((items) => items.map((item) => item.name === customer.name ? { ...item, status: item.status === 'Suspended' ? 'Active' : 'Suspended' } : item)); }
   protected remove(customer: Customer): void { this.customers.update((items) => items.filter((item) => item.name !== customer.name)); }

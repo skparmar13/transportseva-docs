@@ -3,6 +3,7 @@ import { UpperCasePipe } from '@angular/common';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { PaymentMockService } from '../../core/services/payment-mock.service';
 import { GstInvoice, GstInvoiceStatus, PaymentStatus, PayoutStatus } from '../../core/models/payment.model';
+import { formatDate, formatDateTime } from '../../core/utils/date-format';
 
 type PaymentsTab = 'freight' | 'commission' | 'gst' | 'payouts';
 
@@ -48,6 +49,14 @@ export class PaymentsComponent {
 
   protected setTab(tab: PaymentsTab): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string): string {
+    return formatDate(value);
+  }
+
+  protected dateTime(value: string): string {
+    return formatDateTime(value);
   }
 
   protected markPaid(id: string): void {

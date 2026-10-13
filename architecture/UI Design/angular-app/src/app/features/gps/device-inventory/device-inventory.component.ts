@@ -9,6 +9,7 @@ import { GpsMockService } from '../../../core/services/gps-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DeviceHealthStatus, OemPartner } from '../../../core/models/gps.model';
 import { DeviceStatus } from '../../../core/models/fleet.model';
+import { formatDateTime } from '../../../core/utils/date-format';
 
 const STATUS_CLASS: Record<DeviceStatus, string> = {
   Available: 'status-delivered',
@@ -63,6 +64,10 @@ export class DeviceInventoryComponent {
   protected readonly healthClass = HEALTH_CLASS;
   protected readonly healthKey = HEALTH_KEY;
   protected readonly oemOptions = OEM_OPTIONS;
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
+  }
 
   protected readonly search = signal('');
   protected readonly statusFilter = signal('');

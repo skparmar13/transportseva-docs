@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { authTokenInterceptor } from './auth-token.interceptor';
+import { API_CONFIG } from './api-config';
 
 describe('authTokenInterceptor', () => {
   let httpClient: HttpClient;
@@ -33,17 +34,17 @@ describe('authTokenInterceptor', () => {
     localStorage.setItem('transportseva.api_user', JSON.stringify({ uuid: 'user-1', full_name: 'Test User', role: 'customer' }));
 
     let response: unknown;
-    httpClient.get('http://localhost:8000/api/loads').subscribe((value) => response = value);
+    httpClient.get(`${API_CONFIG.baseUrl}/loads`).subscribe((value) => response = value);
 
-    const first = http.expectOne('http://localhost:8000/api/loads');
+    const first = http.expectOne(`${API_CONFIG.baseUrl}/loads`);
     expect(first.request.headers.get('Authorization')).toBe('Bearer expired-access');
     first.flush({ success: false, message: 'Invalid or expired token' }, { status: 401, statusText: 'Unauthorized' });
 
-    const refresh = http.expectOne('http://localhost:8000/api/auth/refresh');
+    const refresh = http.expectOne(`${API_CONFIG.baseUrl}/auth/refresh`);
     expect(refresh.request.body).toEqual({ refresh_token: 'refresh-1' });
     refresh.flush({ success: true, data: { access_token: 'access-2', refresh_token: 'refresh-2', expires_in: 900 } });
 
-    const retry = http.expectOne('http://localhost:8000/api/loads');
+    const retry = http.expectOne(`${API_CONFIG.baseUrl}/loads`);
     expect(retry.request.headers.get('Authorization')).toBe('Bearer access-2');
     retry.flush({ success: true, data: [] });
 
@@ -59,9 +60,9 @@ describe('authTokenInterceptor', () => {
     const navigate = spyOn(router, 'navigate').and.resolveTo(true);
     let error: unknown;
 
-    httpClient.get('http://localhost:8000/api/loads').subscribe({ error: (value) => error = value });
-    http.expectOne('http://localhost:8000/api/loads').flush({ success: false }, { status: 401, statusText: 'Unauthorized' });
-    http.expectOne('http://localhost:8000/api/auth/refresh').flush({ success: false, message: 'Invalid or expired refresh token' }, { status: 401, statusText: 'Unauthorized' });
+    httpClient.get(`${API_CONFIG.baseUrl}/loads`).subscribe({ error: (value) => error = value });
+    http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({ success: false }, { status: 401, statusText: 'Unauthorized' });
+    http.expectOne(`${API_CONFIG.baseUrl}/auth/refresh`).flush({ success: false, message: 'Invalid or expired refresh token' }, { status: 401, statusText: 'Unauthorized' });
 
     expect(error).toBeInstanceOf(HttpErrorResponse);
     expect(localStorage.getItem('transportseva.access_token')).toBeNull();

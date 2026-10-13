@@ -1,7 +1,29 @@
-<h1>{{ 'bookings.title' | t }}</h1>
-<p class="desc">{{ 'bookings.desc' | t }}</p>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+  <div>
+    <h1>{{ 'bookings.title' | t }}</h1>
+    <p class="desc">{{ 'bookings.desc' | t }}</p>
+  </div>
+  @if (backendEnabled) {
+    <button type="button" class="btn btn-outline btn-sm" [disabled]="loading()" (click)="retryBookings()" aria-label="Refresh bookings">Refresh</button>
+  }
+</div>
 
-@if (bookings().length) {
+@if (loading()) {
+  <div class="page-loading-state" role="status" aria-live="polite">
+    <div class="loading-sheen"></div>
+    <div class="loading-panel">
+      <div class="dot-loader" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <strong>Loading bookings…</strong>
+    </div>
+  </div>
+} @else if (loadError()) {
+  <div class="card" role="alert">
+    <div class="card-body inline-error" style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
+      <span>{{ loadError() }}</span>
+      <button type="button" class="btn btn-outline btn-sm" (click)="retryBookings()">Retry</button>
+    </div>
+  </div>
+} @else if (bookings().length) {
   <div style="display:flex;flex-direction:column;gap:16px;">
     @for (booking of bookings(); track booking.id) {
       <div class="card">
@@ -78,10 +100,14 @@
                     }
                   }
                   @if (booking.status === 'Awaiting Deposit' && mySide(booking) === 'counterparty') {
-                    <button type="button" class="btn btn-outline btn-sm btn-block" style="margin-top:10px;" (click)="rejectBooking(booking.id)">{{ 'bookings.token.reject' | t }}</button>
+                    <button type="button" class="btn btn-outline btn-sm btn-block workflow-action-button" style="margin-top:10px;" [disabled]="isWorkflowActionPending(booking.id, 'reject')" (click)="rejectBooking(booking.id)">
+                      @if (isWorkflowActionPending(booking.id, 'reject')) { <span class="button-loader" aria-hidden="true"></span><span>Rejecting…</span> } @else { <span>{{ 'bookings.token.reject' | t }}</span> }
+                    </button>
                   }
                   @if ((booking.status === 'Awaiting Deposit' || booking.status === 'Confirmed') && mySide(booking) === 'owner') {
-                    <button type="button" class="btn btn-outline btn-sm btn-block" style="margin-top:10px;" (click)="cancelBooking(booking.id)">{{ 'bookings.token.cancel' | t }}</button>
+                    <button type="button" class="btn btn-outline btn-sm btn-block workflow-action-button" style="margin-top:10px;" [disabled]="isWorkflowActionPending(booking.id, 'cancel')" (click)="cancelBooking(booking.id)">
+                      @if (isWorkflowActionPending(booking.id, 'cancel')) { <span class="button-loader" aria-hidden="true"></span><span>Cancelling…</span> } @else { <span>{{ 'bookings.token.cancel' | t }}</span> }
+                    </button>
                   }
                 </div>
 
@@ -92,7 +118,7 @@
                     @if (booking.vehicleAssignment; as va) {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ va.mode }} · {{ va.vehicleRegNumber }}@if (va.subcontractedTo) { · {{ 'bookings.vehicleAssignment.subTo' | t:{ name: va.subcontractedTo } }} }</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm" (click)="openAssignVehicle(booking)">{{ 'bookings.vehicleAssignment.assign' | t }}</button>
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" (click)="openAssignVehicle(booking)"><app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.vehicleAssignment.assign' | t }}</span></button>
                     } @else {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.vehicleAssignment.awaiting' | t:{ name: booking.counterpartyName } }}</div>
                     }
@@ -106,7 +132,7 @@
                     @if (booking.driverAssignment; as da) {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ da.driverName }}@if (da.driverPhone) { · {{ da.driverPhone }} }</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm" (click)="openAssignDriver(booking)">{{ 'bookings.driverAssignment.assign' | t }}</button>
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" (click)="openAssignDriver(booking)"><app-icon name="i-user" [size]="15" /><span>{{ 'bookings.driverAssignment.assign' | t }}</span></button>
                     } @else {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.driverAssignment.awaiting' | t }}</div>
                     }
@@ -118,9 +144,21 @@
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">{{ 'bookings.loading.title' | t }}</div>
                     @if (booking.status === 'Loading Completed') {
-                      <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.loading.completedNote' | t }}</div>
+                      <div class="workflow-success" role="status" aria-live="polite">
+                        <span class="workflow-success__mark" aria-hidden="true">✓</span>
+                        <span>{{ 'bookings.loading.completedNote' | t }}</span>
+                      </div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm" (click)="markLoadingCompleted(booking.id)">{{ 'bookings.loading.mark' | t }}</button>
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isMarkingLoading(booking.id)" [attr.aria-busy]="isMarkingLoading(booking.id)" (click)="markLoadingCompleted(booking.id)">
+                        @if (isMarkingLoading(booking.id)) {
+                          <span class="button-loader" aria-hidden="true"></span><span>Marking…</span>
+                        } @else {
+                          <app-icon name="i-check" [size]="15" /><span>{{ 'bookings.loading.mark' | t }}</span>
+                        }
+                      </button>
+                      @if (loadingCompletionErrorFor() === booking.id) {
+                        <div class="workflow-action-error" role="alert">{{ 'Loading could not be marked complete. Please retry.' }}</div>
+                      }
                     } @else {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.loading.awaiting' | t }}</div>
                     }
@@ -144,31 +182,49 @@
                         </div>
                         <div style="font-size:12px;color:var(--color-text-soft);margin-top:2px;">{{ m.trigger }}</div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-                          <span class="status-pill" [class]="m.status === 'Released' ? 'status-delivered' : 'status-pending'">{{ statusKey(m.status) | t }}@if (m.releasedAt) { · {{ m.releasedAt }} }</span>
+                          <span class="status-pill" [class]="m.status === 'Released' ? 'status-delivered' : 'status-pending'">{{ statusKey(m.status) | t }}@if (m.releasedAt) { · {{ dateTime(m.releasedAt) }} }</span>
                           @if (m.status === 'Pending' && mySide(booking) === 'owner' && canReleaseMilestone(booking, m.label)) {
-                            <button type="button" class="btn btn-primary btn-sm" (click)="releaseMilestone(booking.id, m.id)">{{ 'bookings.settlement.release' | t }}</button>
+                            <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'release', m.id)" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'release', m.id)" (click)="releaseMilestone(booking.id, m.id)">
+                              @if (isWorkflowActionPending(booking.id, 'release', m.id)) { <span class="button-loader" aria-hidden="true"></span><span>Releasing…</span> } @else { <span>{{ 'bookings.settlement.release' | t }}</span> }
+                            </button>
                           }
                         </div>
+                        @if (workflowActionErrorFor(booking.id, 'release', m.id); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
                       </div>
                     }
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;font-size:13px;">
+                      <span style="font-weight:600;">Remaining freight balance</span>
+                      <strong>{{ remainingFreightBalance(booking) }}</strong>
+                    </div>
                   </div>
                 }
 
                 <!-- Trip -->
                 @if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty') {
-                  <button type="button" class="btn btn-primary btn-sm" (click)="startTrip(booking.id)">
-                    <app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.trip.start' | t }}</span>
+                  <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'start-trip')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'start-trip')" (click)="startTrip(booking.id)">
+                    @if (isWorkflowActionPending(booking.id, 'start-trip')) { <span class="button-loader" aria-hidden="true"></span><span>Starting…</span> } @else { <app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.trip.start' | t }}</span> }
                   </button>
                 }
                 @if (booking.status === 'Trip Started') {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="font-weight:600;font-size:13.5px;margin-bottom:6px;">{{ 'bookings.trip.inProgress.title' | t }}</div>
                     <p style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.trip.inProgress.desc' | t }}</p>
+                    @if ((booking.vehicleAssignment?.vehicleRegNumber ?? booking.vehicleRegNumber) !== '—') {
+                      <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px;" (click)="trackVehicle(booking)">
+                        <app-icon name="i-map" [size]="15" />
+                        <span>Track Assigned Vehicle</span>
+                      </button>
+                    }
                     @if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-primary btn-sm" style="margin-top:8px;" (click)="completeTrip(booking.id)">{{ 'bookings.trip.complete' | t }}</button>
+                      <button type="button" class="btn btn-primary btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="isWorkflowActionPending(booking.id, 'complete-trip')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'complete-trip')" (click)="completeTrip(booking.id)">
+                        @if (isWorkflowActionPending(booking.id, 'complete-trip')) { <span class="button-loader" aria-hidden="true"></span><span>Completing…</span> } @else { <span>{{ 'bookings.trip.complete' | t }}</span> }
+                      </button>
                     }
                     @if (mySide(booking) === 'owner') {
-                      <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px;" [disabled]="booking.dispute && booking.dispute.status !== 'Resolved'" (click)="settle(booking.id)">{{ 'bookings.trip.settle' | t }}</button>
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="(booking.dispute && booking.dispute.status !== 'Resolved') || isWorkflowActionPending(booking.id, 'settle')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'settle')" (click)="settle(booking.id)">
+                        @if (isWorkflowActionPending(booking.id, 'settle')) { <span class="button-loader" aria-hidden="true"></span><span>Settling…</span> } @else { <span>{{ 'bookings.trip.settle' | t }}</span> }
+                      </button>
+                      @if (workflowActionErrorFor(booking.id, 'settle'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
                       @if (settlementError()) {
                         <p style="font-size:12px;color:var(--color-danger);margin:8px 0 0;">Settlement could not be created. Confirm the booking is completed and both token payments are successful.</p>
                       }
@@ -184,7 +240,7 @@
                     <div style="font-size:12px;color:var(--color-text-soft);padding:4px 0;">Shipper pays: {{ s.shipperPayable || s.freightAmount }} (freight {{ s.freightAmount }} + TransportSeva Platform fee {{ s.shipperCommission || '₹0' }})</div>
                     <div style="font-size:12px;color:var(--color-text-soft);padding:4px 0;">Provider-side TransportSeva Platform fee withheld: {{ s.commissionDeducted || '₹0' }}</div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>{{ 'bookings.settlement.totalPayout' | t }}</span><strong>{{ s.payoutAmount }}</strong></div>
-                    <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">{{ 'bookings.settlement.footer' | t:{ date: (s.settledAt || '') } }}</div>
+                    <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">{{ 'bookings.settlement.footer' | t:{ date: dateTime(s.settledAt) } }}</div>
                     @if (mySide(booking) === 'owner') {
                       <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" (click)="openOfflinePayment(booking)">{{ 'bookings.offline.record' | t }}</button>
                     }
@@ -198,8 +254,8 @@
                       <span class="status-pill" [class.status-delivered]="dispute.status === 'Resolved'" [class.status-pending]="dispute.status !== 'Resolved'" style="margin-top:8px;display:inline-block;">{{ statusKey(dispute.status) | t }}</span>
                       @if (session.role() === 'admin' && dispute.status !== 'Resolved') {
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-                        <button type="button" class="btn btn-outline btn-sm" (click)="resolveDispute(booking.id, false)">{{ 'bookings.dispute.waiveCommission' | t }}</button>
-                        <button type="button" class="btn btn-outline btn-sm" (click)="resolveDispute(booking.id, true)">{{ 'bookings.dispute.commissionDue' | t }}</button>
+                        <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'resolve-dispute', 'waive')" (click)="resolveDispute(booking.id, false)">@if (isWorkflowActionPending(booking.id, 'resolve-dispute', 'waive')) { <span class="button-loader" aria-hidden="true"></span><span>Saving…</span> } @else { <span>{{ 'bookings.dispute.waiveCommission' | t }}</span> }</button>
+                        <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'resolve-dispute', 'charge')" (click)="resolveDispute(booking.id, true)">@if (isWorkflowActionPending(booking.id, 'resolve-dispute', 'charge')) { <span class="button-loader" aria-hidden="true"></span><span>Saving…</span> } @else { <span>{{ 'bookings.dispute.commissionDue' | t }}</span> }</button>
                         </div>
                       }
                     </div>
@@ -227,7 +283,7 @@
     <p style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.offline.intro' | t }}</p>
     <div class="field"><label for="offline-amount">{{ 'bookings.offline.amount' | t }}</label><input id="offline-amount" type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [ngModel]="offlineAmount()" (ngModelChange)="offlineAmount.set($event)" name="offlineAmount" /></div>
     <div class="field"><label for="offline-reference">{{ 'bookings.offline.reference' | t }}</label><input id="offline-reference" class="input" [ngModel]="offlineReference()" (ngModelChange)="offlineReference.set($event)" name="offlineReference" /></div>
-    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="offlinePaymentFor.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary" [disabled]="!offlineAmountValid()" (click)="recordOfflinePayment()">{{ 'bookings.offline.submit' | t }}</button></div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" [disabled]="isWorkflowActionPending(booking.id, 'record-payment')" (click)="offlinePaymentFor.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'record-payment') || !offlineAmountValid()" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'record-payment')" (click)="recordOfflinePayment()">@if (isWorkflowActionPending(booking.id, 'record-payment')) { <span class="button-loader" aria-hidden="true"></span><span>Saving…</span> } @else { <span>{{ 'bookings.offline.submit' | t }}</span> }</button></div>
   </app-modal>
 }
 
@@ -239,7 +295,11 @@
     </div>
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
       <button type="button" class="btn btn-outline" (click)="disputingBooking.set(null)">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="btn btn-primary" [disabled]="!disputeReason().trim()" (click)="submitDispute()">{{ 'bookings.dispute.submit' | t }}</button>
+      @if (disputingBooking(); as disputeBookingId) {
+        <button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(disputeBookingId, 'submit-dispute') || !disputeReason().trim()" [attr.aria-busy]="isWorkflowActionPending(disputeBookingId, 'submit-dispute')" (click)="submitDispute()">
+          @if (isWorkflowActionPending(disputeBookingId, 'submit-dispute')) { <span class="button-loader" aria-hidden="true"></span><span>Submitting…</span> } @else { <span>{{ 'bookings.dispute.submit' | t }}</span> }
+        </button>
+      }
     </div>
   </app-modal>
 }
@@ -279,7 +339,9 @@
     }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
       <button type="button" class="btn btn-outline" (click)="payingBooking.set(null)">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="btn btn-primary" [disabled]="processingPayment()" (click)="confirmPayDeposit()">{{ processingPayment() ? ('bookings.pay.processing' | t) : ('bookings.pay.pay' | t:{ amount: p.amount }) }}</button>
+      <button type="button" class="btn btn-primary workflow-action-button" [disabled]="processingPayment()" [attr.aria-busy]="processingPayment()" (click)="confirmPayDeposit()">
+        @if (processingPayment()) { <span class="button-loader" aria-hidden="true"></span><span>{{ 'bookings.pay.processing' | t }}</span> } @else { <span>{{ 'bookings.pay.pay' | t:{ amount: p.amount } }}</span> }
+      </button>
     </div>
   </app-modal>
 }
@@ -295,7 +357,23 @@
     </div>
     <div class="field">
       <label>{{ 'bookings.assignVehicle.regLabel' | t }}</label>
-      <input type="text" class="input" [placeholder]="'bookings.assignVehicle.regPlaceholder' | t" [ngModel]="vehicleRegInput()" (ngModelChange)="vehicleRegInput.set($event)" name="vehicleRegInput" />
+      @if (vehicleMode() === 'Own Fleet') {
+        <select class="input" [ngModel]="vehicleRegInput()" (ngModelChange)="vehicleRegInput.set($event)" name="vehicleRegInput" aria-label="Select a registered vehicle">
+          <option value="">Select a registered vehicle</option>
+          @for (vehicle of registeredVehicles(); track vehicle.id) {
+            <option [value]="vehicle.regNumber" [disabled]="vehicle.status !== 'Idle' && vehicle.status !== 'Offline'">
+              {{ vehicle.regNumber }} · {{ vehicle.vehicleType }} · {{ vehicle.status }}
+            </option>
+          }
+        </select>
+        @if (!registeredVehicles().length) {
+          <small style="display:block;margin-top:6px;color:var(--color-danger);">No registered vehicles found. Add a vehicle under My Vehicles first.</small>
+        } @else if (!assignableVehicles().length) {
+          <small style="display:block;margin-top:6px;color:var(--color-danger);">All registered vehicles are busy or under maintenance.</small>
+        }
+      } @else {
+        <input type="text" class="input" [placeholder]="'bookings.assignVehicle.regPlaceholder' | t" [ngModel]="vehicleRegInput()" (ngModelChange)="vehicleRegInput.set($event)" name="vehicleRegInput" />
+      }
     </div>
     @if (vehicleMode() === 'Subcontracted') {
       <div class="field">
@@ -304,28 +382,45 @@
       </div>
     }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="assigningVehicleFor.set(null)">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="btn btn-primary" (click)="confirmAssignVehicle()">{{ 'bookings.assignVehicle.assign' | t }}</button>
+      <button type="button" class="btn btn-outline" [disabled]="isWorkflowActionPending(bookingId, 'assign-vehicle')" (click)="assigningVehicleFor.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(bookingId, 'assign-vehicle') || !vehicleRegInput() || !canAssignSelectedVehicle()" [attr.aria-busy]="isWorkflowActionPending(bookingId, 'assign-vehicle')" (click)="confirmAssignVehicle()">
+        @if (isWorkflowActionPending(bookingId, 'assign-vehicle')) { <span class="button-loader" aria-hidden="true"></span><span>Assigning…</span> } @else { <span>{{ 'bookings.assignVehicle.assign' | t }}</span> }
+      </button>
     </div>
   </app-modal>
 }
 
 @if (assigningDriverFor(); as bookingId) {
-  <app-modal [title]="'bookings.assignDriver.title' | t" (close)="assigningDriverFor.set(null)">
+    <app-modal [title]="'bookings.assignDriver.title' | t" (close)="assigningDriverFor.set(null)">
     <div class="field">
       <label>{{ 'bookings.assignDriver.name' | t }}</label>
-      <input type="text" class="input" [placeholder]="'bookings.assignDriver.namePlaceholder' | t" [ngModel]="driverNameInput()" (ngModelChange)="driverNameInput.set($event)" name="driverNameInput" />
+      <select class="input" [ngModel]="driverIdInput()" (ngModelChange)="selectDriver($event)" name="driverIdInput" aria-label="Select a registered driver">
+        <option value="">Select a registered driver</option>
+        @for (driver of registeredDrivers(); track driver.id) {
+          <option [value]="driver.id" [disabled]="driver.status !== 'Available' || !!driver.assignedVehicleRegNumber">
+            {{ driver.name }} · {{ driver.phone }} · {{ driver.status }}
+          </option>
+        }
+      </select>
+      @if (!registeredDrivers().length) {
+        <small style="display:block;margin-top:6px;color:var(--color-danger);">No registered drivers found. Add a driver under My Drivers first.</small>
+      } @else if (!assignableDrivers().length) {
+        <small style="display:block;margin-top:6px;color:var(--color-danger);">All registered drivers are busy or unavailable.</small>
+      }
     </div>
     <div class="field">
       <label>{{ 'bookings.assignDriver.phone' | t }}</label>
-      <input type="text" class="input" [placeholder]="'bookings.assignDriver.phonePlaceholder' | t" [ngModel]="driverPhoneInput()" (ngModelChange)="driverPhoneInput.set($event)" name="driverPhoneInput" />
+      <input type="text" class="input" [placeholder]="'bookings.assignDriver.phonePlaceholder' | t" [ngModel]="driverPhoneInput()" name="driverPhoneInput" readonly />
     </div>
-    @if (paymentError()) {
-      <p role="alert" style="margin:10px 0 0;color:var(--color-danger);font-size:13px;">{{ 'bookings.pay.failed' | t }}</p>
+    @if (driverAssignmentError()) {
+      <p role="alert" style="margin:10px 0 0;color:var(--color-danger);font-size:13px;">{{ driverAssignmentError() }}</p>
     }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="assigningDriverFor.set(null)">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="btn btn-primary" (click)="confirmAssignDriver()">{{ 'bookings.assignVehicle.assign' | t }}</button>
+      <button type="button" class="btn btn-outline" [disabled]="assigningDriver()" (click)="assigningDriverFor.set(null)">{{ 'common.cancel' | t }}</button>
+      <button type="button" class="btn btn-primary" [disabled]="assigningDriver() || !canAssignSelectedDriver()" (click)="confirmAssignDriver()">
+        @if (assigningDriver()) { <span class="button-loader" aria-hidden="true"></span> }
+        <span>{{ assigningDriver() ? 'Assigning…' : ('bookings.assignVehicle.assign' | t) }}</span>
+      </button>
     </div>
   </app-modal>
 }
@@ -343,9 +438,14 @@
       <label>{{ 'bookings.midTrip.trigger' | t }}</label>
       <input type="text" class="input" [placeholder]="'bookings.midTrip.triggerPlaceholder' | t" [ngModel]="midTripTrigger()" (ngModelChange)="midTripTrigger.set($event)" name="midTripTrigger" />
     </div>
+    @if (workflowActionErrorFor(bookingId, 'add-milestone'); as actionError) {
+      <div class="workflow-action-error" role="alert">{{ actionError }}</div>
+    }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
       <button type="button" class="btn btn-outline" (click)="addingMilestoneFor.set(null)">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="btn btn-primary" [disabled]="!midTripAmount()" (click)="confirmAddMilestone()">{{ 'bookings.midTrip.add' | t }}</button>
+      <button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(bookingId, 'add-milestone') || !midTripAmount()" [attr.aria-busy]="isWorkflowActionPending(bookingId, 'add-milestone')" (click)="confirmAddMilestone()">
+        @if (isWorkflowActionPending(bookingId, 'add-milestone')) { <span class="button-loader" aria-hidden="true"></span><span>Adding…</span> } @else { <span>{{ 'bookings.midTrip.add' | t }}</span> }
+      </button>
     </div>
   </app-modal>
 }

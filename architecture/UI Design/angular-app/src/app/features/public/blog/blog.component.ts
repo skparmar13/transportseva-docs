@@ -5,6 +5,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
 import { CmsMockService } from '../../../core/services/cms-mock.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { formatDate } from '../../../core/utils/date-format';
 
 interface BlogPostView {
   id?: string;
@@ -70,6 +71,8 @@ export class BlogComponent implements OnInit {
   protected readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / 6)));
   protected readonly pageNumbers = computed(() => Array.from({ length: this.pageCount() }, (_, index) => index + 1));
   protected readonly visiblePosts = computed(() => this.filteredPosts().slice((this.currentPage() - 1) * 6, this.currentPage() * 6));
+
+  protected date(value: string): string { return formatDate(value); }
 
   protected setCategory(category: string): void { this.activeCategory.set(category); this.currentPage.set(1); }
   protected setPage(page: number): void { if (page >= 1 && page <= this.pageCount()) this.currentPage.set(page); }

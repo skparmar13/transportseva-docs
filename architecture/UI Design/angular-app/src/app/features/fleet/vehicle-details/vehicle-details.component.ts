@@ -9,6 +9,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { DocumentStatus, VehicleLiveStatus } from '../../../core/models/fleet.model';
 import { VehicleDocument } from '../../../core/models/fleet.model';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
 type TabId = 'overview' | 'device' | 'documents' | 'maintenance' | 'fuel';
 
@@ -72,6 +73,14 @@ export class VehicleDetailsComponent {
 
   protected setTab(tab: TabId): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string | undefined): string {
+    return formatDate(value);
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   protected attachVehicleDocument(event: Event, type: VehicleDocument['type']): void {

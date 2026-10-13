@@ -9,6 +9,7 @@ import { BillingInvoice, BillingInvoiceStatus, CompanyProfile, StaffUserStatus }
 import { PlanTier, SUBSCRIPTION_PLANS } from '../../core/data/subscription-plans';
 import { LocationPickerComponent } from '../../shared/components/location-picker/location-picker.component';
 import { GeoLocation } from '../../core/models/location.model';
+import { formatDate, formatDateTime } from '../../core/utils/date-format';
 
 type SettingsTab = 'company' | 'branches' | 'users' | 'roles' | 'billing';
 
@@ -51,6 +52,14 @@ export class BusinessSettingsComponent {
   }
   protected setTab(tab: SettingsTab): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string): string {
+    return formatDate(value);
+  }
+
+  protected dateTime(value: string): string {
+    return formatDateTime(value);
   }
 
   // Company profile edit

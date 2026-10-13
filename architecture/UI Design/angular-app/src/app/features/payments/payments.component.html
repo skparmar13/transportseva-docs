@@ -58,7 +58,7 @@
             <td>{{ p.route }}</td>
             <td>{{ p.counterpartyName }}</td>
             <td>{{ p.amount }}</td>
-            <td>{{ p.dueDate }}</td>
+            <td>{{ date(p.dueDate) }}</td>
             <td><span class="status-pill" [class]="paymentStatusClass[p.status]">{{ p.status }}</span></td>
             <td>
               @if (p.status !== 'Paid') {
@@ -94,7 +94,7 @@
             <td>{{ c.freightAmount }}</td>
             <td>{{ c.commissionRate }}</td>
             <td>{{ c.commissionAmount }}</td>
-            <td>{{ c.date }}</td>
+            <td>{{ date(c.date) }}</td>
             <td><span class="status-pill" [class]="paymentStatusClass[c.status]">{{ c.status }}</span></td>
           </tr>
         }
@@ -122,7 +122,7 @@
         @for (g of payments.gstInvoices(); track g.id) {
           <tr>
             <td><b>{{ g.invoiceNumber }}</b></td>
-            <td>{{ g.date }}</td>
+            <td>{{ date(g.date) }}</td>
             <td>{{ g.billedTo }}</td>
             <td>{{ g.taxableAmount }}</td>
             <td>{{ g.gstAmount }}</td>
@@ -165,7 +165,7 @@
             <td>{{ po.payeeRole }}</td>
             <td>{{ po.bankAccountMasked }}</td>
             <td>{{ po.amount }}</td>
-            <td>{{ po.initiatedOn }}</td>
+            <td>{{ dateTime(po.initiatedOn) }}</td>
             <td><span class="status-pill" [class]="payoutStatusClass[po.status]">{{ po.status }}</span></td>
           </tr>
         }

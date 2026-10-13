@@ -53,13 +53,13 @@ export class ApplicationsComponent {
     if (API_CONFIG.useBackend) return this.backendRows();
     const myLoadIds = new Set(this.myLoads().map((l) => l.id));
     return this.marketplace.applications().filter((app) => myLoadIds.has(app.loadId))
-      .map((app) => ({ app, load: this.marketplace.loads().find((l) => l.id === app.loadId) }));
+      .map((app) => ({ app: this.formatApplication(app), load: this.formatLoad(this.marketplace.loads().find((l) => l.id === app.loadId)) }));
   });
 
   protected readonly myApplications = computed(() => {
     if (API_CONFIG.useBackend) return this.backendRows();
     const apps = this.marketplace.getApplicationsBy(this.session.role())();
-    return apps.map((app) => ({ app, load: this.marketplace.loads().find((l) => l.id === app.loadId) }));
+    return apps.map((app) => ({ app: this.formatApplication(app), load: this.formatLoad(this.marketplace.loads().find((l) => l.id === app.loadId)) }));
   });
 
   protected viewLoad(loadId: string): void {
@@ -113,6 +113,14 @@ export class ApplicationsComponent {
       status: this.mapApplicationStatus(application.status),
       appliedAgo: application.created_at ? formatDateTime(application.created_at) : 'Recently',
     };
+  }
+
+  private formatApplication(application: LoadApplication): LoadApplication {
+    return { ...application, appliedAgo: formatDateTime(application.appliedAgo) };
+  }
+
+  private formatLoad(load: Load | undefined): Load | undefined {
+    return load ? { ...load, pickupDate: formatDate(load.pickupDate), postedAgo: formatDateTime(load.postedAgo) } : undefined;
   }
 
   private mapApplicationStatus(status: string): ApplicationStatus {

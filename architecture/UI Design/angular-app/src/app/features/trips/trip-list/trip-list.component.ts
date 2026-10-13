@@ -5,6 +5,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TripMockService } from '../../../core/services/trip-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { Trip, TripStatus } from '../../../core/models/trip.model';
+import { formatDate } from '../../../core/utils/date-format';
 
 const STATUS_CLASS: Record<TripStatus, string> = {
   Planned: 'status-pending',
@@ -78,6 +79,10 @@ export class TripListComponent {
 
   protected setTab(tab: TabFilter): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string): string {
+    return formatDate(value);
   }
 
   protected viewTrip(id: string): void {

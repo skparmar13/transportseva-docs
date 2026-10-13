@@ -62,7 +62,7 @@
             <td>{{ trip.pickupCity }} → {{ trip.dropCity }}<div style="font-size:12px;color:var(--color-text-soft);">{{ trip.material }}</div></td>
             <td>{{ trip.vehicleRegNumber }}<div style="font-size:12px;color:var(--color-text-soft);">{{ trip.driverName }}</div></td>
             <td>{{ trip.customerName }}</td>
-            <td>{{ trip.startDate }}</td>
+            <td>{{ date(trip.startDate) }}</td>
             <td><span class="status-pill" [class]="statusClass[trip.status]">{{ trip.status }}</span></td>
             <td><button type="button" class="btn btn-outline btn-sm" (click)="viewTrip(trip.id)">View</button></td>
           </tr>

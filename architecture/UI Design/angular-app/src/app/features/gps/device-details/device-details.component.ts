@@ -7,6 +7,7 @@ import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ConnectivityTestResult, DeviceHealthStatus } from '../../../core/models/gps.model';
 import { DeviceStatus } from '../../../core/models/fleet.model';
+import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
 type TabId = 'overview' | 'health' | 'connectivity' | 'alerts';
 
@@ -78,6 +79,14 @@ export class DeviceDetailsComponent {
 
   protected setTab(tab: TabId): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string | undefined): string {
+    return formatDate(value);
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   // Connectivity test

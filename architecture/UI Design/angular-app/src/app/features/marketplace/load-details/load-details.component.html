@@ -109,7 +109,10 @@
                             </button>
                           }
                           @if (tokenErrorFor(app.id)) { <small class="booking-token-card__error" role="alert">{{ tokenErrorFor(app.id) }}</small> }
-                          @if (tokenNoticeFor(app.id)) { <small class="booking-token-card__success" role="status">{{ tokenNoticeFor(app.id) }}</small> }
+                           @if (tokenNoticeFor(app.id)) { <small class="booking-token-card__success" role="status">{{ tokenNoticeFor(app.id) }}</small> }
+                           @if (tokenPaymentState(app.id) === 'paid') {
+                             <a class="btn btn-primary btn-sm" [routerLink]="bookingWorkflowPath()">Open booking workflow</a>
+                           }
                         </div>
                       }
                     }
@@ -251,7 +254,10 @@
                       </button>
                     }
                     @if (tokenErrorFor(app.id)) { <small class="booking-token-card__error" role="alert">{{ tokenErrorFor(app.id) }}</small> }
-                    @if (tokenNoticeFor(app.id)) { <small class="booking-token-card__success" role="status">{{ tokenNoticeFor(app.id) }}</small> }
+                     @if (tokenNoticeFor(app.id)) { <small class="booking-token-card__success" role="status">{{ tokenNoticeFor(app.id) }}</small> }
+                     @if (tokenPaymentState(app.id) === 'paid') {
+                       <a class="btn btn-primary btn-sm" [routerLink]="bookingWorkflowPath()">Open booking workflow</a>
+                     }
                   </div>
                 }
                 <button type="button" class="btn btn-outline btn-sm" style="margin-top:12px;" (click)="openChat(app.id)">
@@ -339,7 +345,7 @@
                   <div>
                     <span class="timeline-title">{{ statusKey(event.stage) | t }}</span>
                     @if (event.timestamp) {
-                      <div class="timeline-time">{{ event.timestamp }}</div>
+                      <div class="timeline-time">{{ dateTime(event.timestamp) }}</div>
                     }
                   </div>
                 </div>

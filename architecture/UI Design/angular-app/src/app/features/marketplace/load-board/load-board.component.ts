@@ -45,6 +45,8 @@ export class LoadBoardComponent {
       ? this.backendLoads().map((load) => this.mapLoad(load))
       : this.marketplace.loads().map((load) => ({
         ...load,
+        pickupDate: formatDate(load.pickupDate),
+        postedAgo: formatDateTime(load.postedAgo),
         viewerApplicationStatus: this.marketplace.getApplicationsForLoad(load.id)().find((application) => application.applicantRole === this.session.role())?.status,
       })),
   );

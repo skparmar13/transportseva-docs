@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { FormsModule } from '@angular/forms';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { TranslatePipe } from '../../../core/i18n';
+import { formatDate } from '../../../core/utils/date-format';
 
 interface AdminCompany { name: string; type: string; users: number; plan: string; status: 'Active' | 'Review' | 'Suspended'; joined: string; }
 
@@ -26,6 +27,8 @@ export class CompanyManagementComponent {
   protected readonly userCount = computed(() => this.companies().reduce((total, company) => total + company.users, 0));
   protected readonly editing = signal<AdminCompany | null>(null);
   protected readonly form = signal({ name: '', type: 'Shipper', plan: 'Starter' });
+
+  protected date(value: string): string { return formatDate(value); }
 
   protected openCreate(): void { this.form.set({ name: '', type: 'Shipper', plan: 'Starter' }); this.editing.set({ name: '', type: 'Shipper', users: 0, plan: 'Starter', status: 'Active', joined: 'Just now' }); }
   protected openEdit(company: AdminCompany): void { this.form.set({ name: company.name, type: company.type, plan: company.plan }); this.editing.set(company); }

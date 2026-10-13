@@ -8,6 +8,7 @@ import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { DriverDocStatus, DriverStatus } from '../../../core/models/driver.model';
 import { DriverDocument } from '../../../core/models/driver.model';
+import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
 type TabId = 'profile' | 'documents' | 'assignment' | 'timeline';
 
@@ -63,6 +64,14 @@ export class DriverDetailsComponent {
 
   protected setTab(tab: TabId): void {
     this.activeTab.set(tab);
+  }
+
+  protected date(value: string | undefined): string {
+    return formatDate(value);
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   protected attachDriverDocument(event: Event, type: DriverDocument['type']): void {

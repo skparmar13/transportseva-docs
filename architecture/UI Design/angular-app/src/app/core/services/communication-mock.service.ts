@@ -21,9 +21,9 @@ export class CommunicationMockService {
     { id: 'n7', category: 'Trip', title: 'POD Uploaded', message: 'Proof of Delivery uploaded for trip TRIP-3877.', timestamp: '2024-06-15 07:50 PM', read: true },
     { id: 'n8', category: 'Payment', title: 'Payout Processed', message: 'Payout of ₹18,500 has been processed to your bank account.', timestamp: '2024-06-14 02:10 PM', read: true },
   ]);
-  readonly notifications = this._notifications.asReadonly();
+  readonly notifications = computed(() => this._notifications().map((notification) => ({ ...notification, timestamp: formatDateTime(notification.timestamp) })));
   readonly unreadCount = computed(() => this._notifications().filter((n) => !n.read).length);
-  readonly recentNotifications = computed(() => this._notifications().slice(0, 5));
+  readonly recentNotifications = computed(() => this.notifications().slice(0, 5));
 
   /** Keep the bell current while the user has the app open. */
   startLiveUpdates(): void {
@@ -122,7 +122,12 @@ export class CommunicationMockService {
       ],
     },
   ]);
-  readonly tickets = this._tickets.asReadonly();
+  readonly tickets = computed(() => this._tickets().map((ticket) => ({
+    ...ticket,
+    createdOn: formatDateTime(ticket.createdOn),
+    updatedOn: formatDateTime(ticket.updatedOn),
+    messages: ticket.messages.map((message) => ({ ...message, timestamp: formatDateTime(message.timestamp) })),
+  })));
   readonly openTicketsCount = computed(() => this._tickets().filter((t) => t.status === 'Open' || t.status === 'In Progress').length);
 
   addTicketReply(ticketId: string, message: string) {

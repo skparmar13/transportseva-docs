@@ -82,7 +82,7 @@
                 <span style="color:var(--color-text-soft);font-size:12.5px;">{{ 'common.dash' | t }}</span>
               }
             </td>
-            <td>{{ device.health?.lastPingAt ?? ('common.dash' | t) }}</td>
+            <td>{{ device.health?.lastPingAt ? dateTime(device.health?.lastPingAt) : ('common.dash' | t) }}</td>
             <td><span class="status-pill" [class]="statusClass[device.status]">{{ statusKey[device.status] | t }}</span></td>
             <td><button type="button" class="btn btn-outline btn-sm" (click)="viewDevice(device.imei)">{{ 'common.view' | t }}</button></td>
           </tr>

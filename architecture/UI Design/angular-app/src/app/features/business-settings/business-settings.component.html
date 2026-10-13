@@ -137,7 +137,7 @@
             <td>{{ u.roleName }}</td>
             <td>{{ u.branch }}</td>
             <td><span class="status-pill" [class]="staffStatusClass[u.status]">{{ u.status }}</span></td>
-            <td>{{ u.lastActive }}</td>
+            <td>{{ dateTime(u.lastActive) }}</td>
             <td>
               @if (u.roleName !== 'Owner / Admin') {
                 <button type="button" class="btn btn-outline btn-sm" (click)="toggleStaffStatus(u.id)">
@@ -278,7 +278,7 @@
             <td>{{ inv.planName }}</td>
             <td>{{ inv.period }}</td>
             <td>{{ inv.amount }}</td>
-            <td>{{ inv.dueDate }}</td>
+            <td>{{ date(inv.dueDate) }}</td>
             <td><span class="status-pill" [class]="billingStatusClass[inv.status]">{{ inv.status }}</span></td>
             <td style="display:flex;gap:6px;">
               <button type="button" class="btn btn-outline btn-sm" [title]="'common.download' | t" (click)="downloadInvoice(inv)">

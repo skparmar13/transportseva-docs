@@ -149,12 +149,16 @@ export class LoadDetailsComponent {
       error: () => this.backendTokenOrders.update((current) => ({ ...current, [bookingUuid]: current[bookingUuid] ?? [] })),
     });
   }
-  protected readonly load = computed<Load | undefined>(() => API_CONFIG.useBackend ? this.mapLoad(this.backendLoad()) : this.marketplace.getLoadById(this.loadId)());
-  protected readonly applications = computed<LoadApplication[]>(() => API_CONFIG.useBackend ? this.backendApplications().map((app) => this.mapApplication(app)) : this.marketplace.getApplicationsForLoad(this.loadId)());
+  protected readonly load = computed<Load | undefined>(() => API_CONFIG.useBackend ? this.mapLoad(this.backendLoad()) : this.formatLoad(this.marketplace.getLoadById(this.loadId)()));
+  protected readonly applications = computed<LoadApplication[]>(() => API_CONFIG.useBackend ? this.backendApplications().map((app) => this.mapApplication(app)) : this.marketplace.getApplicationsForLoad(this.loadId)().map((app) => this.formatApplication(app)));
   protected readonly vehicleTypes = VEHICLE_TYPES;
 
   protected statusKey(s: string): string {
     return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   protected displayStatus(load: Load): Load['status'] | 'Applied' {
@@ -207,6 +211,12 @@ export class LoadDetailsComponent {
 
   protected tokenNoticeFor(applicationId: string): string {
     return this.tokenNotices()[applicationId] ?? '';
+  }
+
+  /** Route the accepted party to the booking workflow for its portal. */
+  protected bookingWorkflowPath(): string[] {
+    const basePath = this.session.portal().basePath;
+    return [basePath, this.session.role() === 'transporter' ? 'requests' : 'bookings'];
   }
 
   protected payBookingToken(applicationId: string): void {
@@ -268,7 +278,7 @@ export class LoadDetailsComponent {
     if (API_CONFIG.useBackend) {
       return (this.backendChatMessages()[id] ?? []).map((message) => this.mapChatMessage(message));
     }
-    return this.marketplace.getMessagesForApplication(id)();
+    return this.marketplace.getMessagesForApplication(id)().map((message) => ({ ...message, timestamp: formatDateTime(message.timestamp) }));
   });
 
   // Accept/reject confirm dialog
@@ -525,12 +535,20 @@ export class LoadDetailsComponent {
         ? undefined
         : formatCurrencyAmount(app.accepted_amount),
       status: (app.status.charAt(0).toUpperCase() + app.status.slice(1)) as LoadApplication['status'],
-      appliedAgo: app.created_at ?? 'Recently',
+      appliedAgo: app.created_at ? formatDateTime(app.created_at) : 'Recently',
     };
   }
 
+  private formatApplication(app: LoadApplication): LoadApplication {
+    return { ...app, appliedAgo: formatDateTime(app.appliedAgo) };
+  }
+
+  private formatLoad(load: Load | undefined): Load | undefined {
+    return load ? { ...load, pickupDate: formatDate(load.pickupDate), postedAgo: formatDateTime(load.postedAgo) } : undefined;
+  }
+
   protected offersFor(applicationId: string): NegotiationOffer[] {
-    if (!API_CONFIG.useBackend) return this.marketplace.getOffersForApplication(applicationId)();
+    if (!API_CONFIG.useBackend) return this.marketplace.getOffersForApplication(applicationId)().map((offer) => ({ ...offer, timestamp: formatDateTime(offer.timestamp) }));
     return (this.backendOffers()[applicationId] ?? []).map((offer) => ({
       id: offer.uuid,
       loadId: offer.load_uuid,

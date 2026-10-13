@@ -115,6 +115,7 @@ export interface ApiMarketplaceBooking {
     driver_assignment?: { driver_name: string; driver_phone?: string; assigned_at?: string };
     loading_completed_at?: string;
     released_milestones?: Record<string, string>;
+    mid_trip_milestones?: Array<{ id: string; amount: number | string; trigger: string; created_at: string; released_at?: string }>;
     trip_started_at?: string;
     trip_completed_at?: string;
   };

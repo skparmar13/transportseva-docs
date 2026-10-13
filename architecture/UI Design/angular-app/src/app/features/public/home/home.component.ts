@@ -13,6 +13,7 @@ import { Load } from '../../../core/models/marketplace.model';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiLoad, ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
 import { formatLoadReference } from '../../../core/utils/load-reference';
+import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
 @Component({
   selector: 'app-home',
@@ -125,11 +126,11 @@ export class HomeComponent implements OnInit {
       material: load.material ?? 'General Cargo',
       weightTons: load.weight_tons ?? 0,
       vehicleType: (load.vehicle_type ?? 'Open Body Truck') as Load['vehicleType'],
-      pickupDate: load.pickup_date ?? '',
+      pickupDate: formatDate(load.pickup_date),
       budget: typeof load.budget === 'number' ? `₹${load.budget.toLocaleString('en-IN')}` : '₹0',
       status: status.includes('application') ? 'Applications Received' : 'Open',
       applicationsCount: load.applications_count ?? 0,
-      postedAgo: load.created_at ?? 'Recently posted',
+      postedAgo: load.created_at ? formatDateTime(load.created_at) : 'Recently posted',
     };
   }
 

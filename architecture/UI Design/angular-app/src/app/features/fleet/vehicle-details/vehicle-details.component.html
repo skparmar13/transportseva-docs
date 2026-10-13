@@ -25,7 +25,7 @@
             <div>{{ 'vehicleDetails.meta.liveLocation' | t }}: <strong>{{ v.location }}</strong></div>
             <div>{{ 'vehicleDetails.meta.gpsDevice' | t }}: <strong>{{ v.deviceImei || ('common.notAssigned' | t) }}</strong></div>
             <div>{{ 'vehicleDetails.meta.capacity' | t }}: <strong>{{ v.capacityTons }} {{ 'vehicleDetails.tonsUnit' | t }}</strong></div>
-            <div>{{ 'vehicleDetails.meta.addedOn' | t }}: <strong>{{ v.addedOn }}</strong></div>
+            <div>{{ 'vehicleDetails.meta.addedOn' | t }}: <strong>{{ dateTime(v.addedOn) }}</strong></div>
             <div>{{ 'vehicleDetails.meta.vehicleType' | t }}: <strong>{{ v.vehicleType }}</strong></div>
           </div>
           <div class="empty-state" style="margin-top:20px;">
@@ -82,7 +82,7 @@
               <tr>
                 <td><b>{{ doc.type }}</b>@if (doc.fileName) { <small style="display:block;color:var(--color-text-soft);">{{ doc.fileName }}</small> }</td>
                 <td>{{ doc.documentNumber || ('common.dash' | t) }}</td>
-                <td>{{ doc.expiryDate || ('common.dash' | t) }}</td>
+                <td>{{ doc.expiryDate ? date(doc.expiryDate) : ('common.dash' | t) }}</td>
                 <td><span class="status-pill" [class]="docStatusClass[doc.status]">{{ docStatusKey[doc.status] | t }}</span></td>
                 <td><label class="btn btn-outline btn-sm"><app-icon name="i-upload" [size]="14" /><span>{{ (doc.status === 'Not Uploaded' ? 'common.upload' : 'common.update') | t }}</span><input type="file" accept="application/pdf,image/*" hidden (change)="attachVehicleDocument($event, doc.type)" /></label></td>
               </tr>
@@ -115,7 +115,7 @@
               @for (record of v.maintenance; track record.id) {
                 <tr>
                   <td><b>{{ record.serviceType }}</b>@if (record.notes) {<div style="font-size:12px;color:var(--color-text-muted);">{{ record.notes }}</div>}</td>
-                  <td>{{ record.date }}</td>
+                  <td>{{ date(record.date) }}</td>
                   <td>{{ record.odometer }}</td>
                   <td>{{ record.cost }}</td>
                   <td>{{ record.workshop }}</td>
@@ -155,7 +155,7 @@
             <tbody>
               @for (log of v.fuelLogs; track log.id) {
                 <tr>
-                  <td>{{ log.date }}</td>
+                  <td>{{ date(log.date) }}</td>
                   <td>{{ log.liters }} {{ 'vehicleDetails.fuel.litersUnit' | t }}</td>
                   <td>{{ log.cost }}</td>
                   <td>{{ log.odometer }}</td>

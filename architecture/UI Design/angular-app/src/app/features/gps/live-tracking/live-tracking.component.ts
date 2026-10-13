@@ -7,9 +7,10 @@ import { GpsMockService } from '../../../core/services/gps-mock.service';
 import { LiveVehicle } from '../../../core/models/gps.model';
 import { LocationSearchService } from '../../../core/services/location-search.service';
 import { GeoLocation } from '../../../core/models/location.model';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../core/services/session.service';
 import { TranslatePipe } from '../../../core/i18n';
+import { formatDateTime } from '../../../core/utils/date-format';
 
 const STATUS_DOT_CLASS: Record<LiveVehicle['status'], string> = {
   'On Trip': 'status-transit',
@@ -35,6 +36,7 @@ export class LiveTrackingComponent implements OnInit {
   private readonly locationSearch = inject(LocationSearchService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly session = inject(SessionService);
   protected readonly statusDotClass = STATUS_DOT_CLASS;
 
@@ -42,6 +44,11 @@ export class LiveTrackingComponent implements OnInit {
   protected readonly mapVehicleReg = signal<string | null>(null);
   protected readonly mapLocation = signal<GeoLocation | null>(null);
   protected readonly mapLoading = signal(false);
+  protected readonly requestedVehicleReg = signal<string | null>(null);
+  protected readonly requestedVehicleUnavailable = computed(() => {
+    const regNumber = this.requestedVehicleReg();
+    return !!regNumber && !this.liveVehicles().some((vehicle) => vehicle.regNumber === regNumber);
+  });
   protected readonly mapFrameUrl = computed<SafeResourceUrl | null>(() => {
     const location = this.mapLocation();
     if (!location) return null;
@@ -54,6 +61,11 @@ export class LiveTrackingComponent implements OnInit {
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.route.queryParamMap.pipe(take(1)).subscribe((params) => {
+      const vehicleRegNumber = params.get('vehicle')?.trim().toUpperCase() ?? null;
+      this.requestedVehicleReg.set(vehicleRegNumber);
+      if (vehicleRegNumber) this.selectVehicle(vehicleRegNumber);
+    });
   }
 
   private loadVehicleMap(vehicle: LiveVehicle): void {
@@ -73,13 +85,16 @@ export class LiveTrackingComponent implements OnInit {
   }
 
   protected selectVehicle(regNumber: string): void {
-    const vehicle = this.liveVehicles().find((item) => item.regNumber === regNumber);
+    const normalizedRegNumber = regNumber.trim().toUpperCase();
+    const vehicle = this.liveVehicles().find((item) => item.regNumber.trim().toUpperCase() === normalizedRegNumber);
     if (vehicle) this.loadVehicleMap(vehicle);
   }
 
   protected backToVehicles(): void {
     this.mapVehicleReg.set(null);
     this.mapLocation.set(null);
+    this.requestedVehicleReg.set(null);
+    this.router.navigate([], { relativeTo: this.route, queryParams: { vehicle: null, booking: null }, queryParamsHandling: 'merge' });
   }
 
   protected openGeofences(): void {
@@ -101,6 +116,10 @@ export class LiveTrackingComponent implements OnInit {
 
   protected acknowledgeAll(): void {
     this.gps.acknowledgeAllAlerts();
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
 }

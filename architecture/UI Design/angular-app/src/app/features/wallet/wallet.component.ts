@@ -6,6 +6,7 @@ import { LedgerEntryType } from '../../core/models/payment.model';
 import { SessionService } from '../../core/services/session.service';
 import { CommissionRulesService } from '../../core/services/commission-rules.service';
 import { TranslatePipe } from '../../core/i18n';
+import { formatDateTime } from '../../core/utils/date-format';
 
 type LedgerTab = 'all' | 'tokens' | 'payments' | 'refunds' | 'settlements' | 'commission';
 
@@ -103,6 +104,10 @@ export class WalletComponent {
 
   protected setTab(tab: LedgerTab): void {
     this.activeTab.set(tab);
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   protected completeRefund(id: string): void {

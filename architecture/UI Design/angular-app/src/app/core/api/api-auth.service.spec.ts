@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ApiAuthService } from './api-auth.service';
+import { API_CONFIG } from './api-config';
 
 describe('ApiAuthService', () => {
   let service: ApiAuthService;
@@ -25,7 +26,7 @@ describe('ApiAuthService', () => {
     let result: unknown;
     service.verifySignupOtp('+918505838433', '903744', 'truck-owner').subscribe((data) => result = data);
 
-    const request = http.expectOne('http://localhost:8000/api/auth/signup/verify-otp');
+    const request = http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/verify-otp`);
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ phone: '+918505838433', otp: '903744', role: 'truck-owner' });
     request.flush({
@@ -45,14 +46,14 @@ describe('ApiAuthService', () => {
 
   it('resends OTP to the same signup phone', () => {
     service.requestSignupOtp('+918505838433').subscribe();
-    const request = http.expectOne('http://localhost:8000/api/auth/signup/request-otp');
+    const request = http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/request-otp`);
     expect(request.request.body).toEqual({ phone: '+918505838433' });
     request.flush({ success: true, data: { debug_otp: '903744' } });
   });
 
   it('keeps verification compatible with signup sessions created before role was stored', () => {
     service.verifySignupOtp('+918505838433', '903744').subscribe();
-    const request = http.expectOne('http://localhost:8000/api/auth/signup/verify-otp');
+    const request = http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/verify-otp`);
     expect(request.request.body).toEqual(jasmine.objectContaining({ phone: '+918505838433', otp: '903744' }));
     expect(request.request.body.role).toBeUndefined();
     request.flush({

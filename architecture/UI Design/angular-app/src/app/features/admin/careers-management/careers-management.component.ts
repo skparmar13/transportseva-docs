@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../core/i18n';
 import { CareerJob, CareerStatus, CareersMockService } from '../../../core/services/careers-mock.service';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { formatDate } from '../../../core/utils/date-format';
 
 type CareerForm = Omit<CareerJob, 'id' | 'status' | 'updatedAt'>;
 const emptyForm = (): CareerForm => ({ title: { en: '', hi: '' }, department: '', location: '', employmentType: 'Full-time', summary: { en: '', hi: '' }, description: { en: '', hi: '' }, requirements: { en: '', hi: '' }, applicationUrl: '', closingDate: '' });
@@ -16,7 +17,7 @@ const emptyForm = (): CareerForm => ({ title: { en: '', hi: '' }, department: ''
 })
 export class CareersManagementComponent {
   private readonly careers = inject(CareersMockService);
-  protected readonly jobs = this.careers.jobs;
+  protected readonly jobs = computed(() => this.careers.jobs().map((job) => ({ ...job, updatedAt: formatDate(job.updatedAt) })));
   protected readonly editingId = signal<string | null>(null);
   protected readonly form = signal<CareerForm>(emptyForm());
   protected readonly formError = signal('');

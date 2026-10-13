@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../core/i18n';
 import { NewsletterMockService, NewsletterSubscriber } from '../../../core/services/newsletter-mock.service';
+import { formatDateTime } from '../../../core/utils/date-format';
 
 @Component({
   selector: 'app-newsletter-management',
@@ -22,6 +23,8 @@ export class NewsletterManagementComponent {
     return this.subscribers().filter((subscriber) => (this.statusFilter() === 'All' || subscriber.status === this.statusFilter())
       && (!query || `${subscriber.email} ${subscriber.source}`.toLowerCase().includes(query)));
   });
+
+  protected dateTime(value: string): string { return formatDateTime(value); }
 
   protected toggleStatus(subscriber: NewsletterSubscriber): void {
     this.newsletter.setStatus(subscriber.id, subscriber.status === 'Subscribed' ? 'Unsubscribed' : 'Subscribed');

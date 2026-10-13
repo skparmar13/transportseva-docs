@@ -48,7 +48,7 @@ export class MyLoadsComponent {
 
   protected readonly loads = computed(() => API_CONFIG.useBackend
     ? this.backendLoads().map((load) => this.mapLoad(load))
-    : this.marketplace.getLoadsPostedBy(this.session.role())());
+    : this.marketplace.getLoadsPostedBy(this.session.role())().map((load) => ({ ...load, pickupDate: formatDate(load.pickupDate), postedAgo: formatDateTime(load.postedAgo) })));
   protected readonly statusClass = STATUS_CLASS;
 
   protected statusKey(s: string): string {

@@ -21,7 +21,7 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-top"><div class="kpi-icon"><app-icon name="i-clock" /></div></div>
-      <div class="kpi-value" style="font-size:16px;">{{ t.eta }}</div>
+      <div class="kpi-value" style="font-size:16px;">{{ dateTime(t.eta) }}</div>
       <div class="kpi-label">{{ t.status === 'Planned' || t.status === 'In Transit' ? 'ETA' : 'Delivered On' }}</div>
     </div>
     <div class="kpi-card">
@@ -49,7 +49,7 @@
                 <div>
                   <span class="timeline-title">{{ event.stage }}</span>
                   @if (event.timestamp) {
-                    <div class="timeline-time">{{ event.timestamp }}</div>
+                    <div class="timeline-time">{{ dateTime(event.timestamp) }}</div>
                   }
                 </div>
               </div>
@@ -71,9 +71,9 @@
                   <span class="timeline-title">{{ stop.name }} <span class="status-pill" style="margin-left:6px;font-size:11px;">{{ stop.type }}</span></span>
                   <div class="timeline-time">
                     @if (stop.actualTime) {
-                      Arrived {{ stop.actualTime }}
+                      Arrived {{ dateTime(stop.actualTime) }}
                     } @else {
-                      ETA {{ stop.eta }}
+                      ETA {{ dateTime(stop.eta) }}
                     }
                   </div>
                 </div>
@@ -92,7 +92,7 @@
             <div class="load-meta-grid" style="grid-template-columns:repeat(2,1fr);">
               <div>POD Number: <strong>{{ t.pod.podNumber }}</strong></div>
               <div>Received By: <strong>{{ t.pod.receivedByName }}</strong></div>
-              <div>Uploaded On: <strong>{{ t.pod.uploadedAt }}</strong></div>
+              <div>Uploaded On: <strong>{{ dateTime(t.pod.uploadedAt) }}</strong></div>
               <div>Document: <strong>{{ t.pod.fileName }}</strong></div>
             </div>
             @if (t.pod.remarks) {

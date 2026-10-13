@@ -13,7 +13,7 @@
 <div class="card"><div class="table-scroll"><table class="data-table">
   <thead><tr><th>{{ 'admin.newsletter.email' | t }}</th><th>{{ 'admin.newsletter.date' | t }}</th><th>{{ 'admin.newsletter.source' | t }}</th><th>{{ 'admin.newsletter.status' | t }}</th><th>{{ 'admin.newsletter.actions' | t }}</th></tr></thead>
   <tbody>@for (subscriber of filtered(); track subscriber.id) {
-    <tr><td><b>{{ subscriber.email }}</b></td><td>{{ subscriber.subscribedAt }}</td><td>{{ 'admin.newsletter.publicWebsite' | t }}</td>
+    <tr><td><b>{{ subscriber.email }}</b></td><td>{{ dateTime(subscriber.subscribedAt) }}</td><td>{{ 'admin.newsletter.publicWebsite' | t }}</td>
       <td><span class="status-pill" [class.status-delivered]="subscriber.status === 'Subscribed'" [class.status-cancelled]="subscriber.status === 'Unsubscribed'">{{ (subscriber.status === 'Subscribed' ? 'admin.newsletter.active' : 'admin.newsletter.unsubscribed') | t }}</span></td>
       <td><div style="display:flex;gap:6px;"><button type="button" class="btn btn-outline btn-sm" (click)="toggleStatus(subscriber)">{{ (subscriber.status === 'Subscribed' ? 'admin.newsletter.unsubscribe' : 'admin.newsletter.resubscribe') | t }}</button><button type="button" class="btn btn-outline btn-sm" (click)="remove(subscriber)">{{ 'admin.newsletter.remove' | t }}</button></div></td>
     </tr>

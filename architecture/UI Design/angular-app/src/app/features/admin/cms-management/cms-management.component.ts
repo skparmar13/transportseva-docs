@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { TranslatePipe } from '../../../core/i18n';
 import { CmsContent, CmsContentType, CmsLanguage, CmsMockService } from '../../../core/services/cms-mock.service';
+import { formatDateTime } from '../../../core/utils/date-format';
 
 @Component({ selector: 'app-cms-management', standalone: true, imports: [FormsModule, ModalComponent, TranslatePipe], changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './cms-management.component.html' })
 export class CmsManagementComponent {
   private readonly cms = inject(CmsMockService);
-  protected readonly items = this.cms.content;
+  protected readonly items = computed(() => this.cms.content().map((item) => ({ ...item, updated: formatDateTime(item.updated) })));
   protected readonly typeFilter = signal<'All' | CmsContentType>('All');
   protected readonly statusFilter = signal<'All' | 'Published' | 'Draft'>('All');
   protected readonly languageFilter = signal<'All' | CmsLanguage>('All');

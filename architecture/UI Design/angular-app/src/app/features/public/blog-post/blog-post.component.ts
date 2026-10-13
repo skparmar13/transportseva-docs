@@ -6,6 +6,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SeoService } from '../../../core/seo/seo.service';
 import { CmsMockService } from '../../../core/services/cms-mock.service';
+import { formatDate } from '../../../core/utils/date-format';
 
 interface LoadedPost {
   tagKey: string;
@@ -82,4 +83,6 @@ export class BlogPostComponent implements OnInit {
     { tagKey: 'blog.post4.tag', date: '18 Dec 2025', titleKey: 'blog.post4.title' },
     { tagKey: 'blog.post5.tag', date: '05 Dec 2025', titleKey: 'blog.post5.title' },
   ]);
+
+  protected date(value: string | undefined): string { return formatDate(value); }
 }

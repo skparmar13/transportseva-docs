@@ -18,7 +18,7 @@
           <thead><tr><th>{{ 'liveTracking.alerts.col.vehicle' | t }}</th><th>{{ 'liveTracking.alerts.col.type' | t }}</th><th>{{ 'liveTracking.alerts.col.message' | t }}</th><th>{{ 'liveTracking.alerts.col.timestamp' | t }}</th><th>{{ 'liveTracking.alerts.col.severity' | t }}</th><th></th></tr></thead>
           <tbody>@for (alert of alerts(); track alert.id) {
             <tr>
-              <td><b>{{ alert.vehicleRegNumber }}</b></td><td>{{ alert.type }}</td><td>{{ alert.message }}</td><td>{{ alert.timestamp }}</td>
+              <td><b>{{ alert.vehicleRegNumber }}</b></td><td>{{ alert.type }}</td><td>{{ alert.message }}</td><td>{{ dateTime(alert.timestamp) }}</td>
               <td><span class="status-pill" [class]="alert.severity === 'Critical' ? 'status-cancelled' : alert.severity === 'Warning' ? 'status-pending' : 'status-transit'">{{ alert.severity }}</span></td>
               <td>@if (alert.acknowledged) { <span style="font-size:12px;color:var(--color-text-soft);">{{ 'liveTracking.alerts.acknowledged' | t }}</span> } @else { <button type="button" class="btn btn-outline btn-sm" (click)="acknowledge(alert.id)">{{ 'liveTracking.alerts.markRead' | t }}</button> }</td>
             </tr>
@@ -32,7 +32,9 @@
 @if (mapVehicle(); as vehicle) {
   <div class="page-toolbar" style="margin-bottom:16px;">
     <div><button type="button" class="btn btn-outline btn-sm" (click)="backToVehicles()">← {{ 'liveTracking.backToVehicles' | t }}</button><h2 style="margin:12px 0 2px;">{{ vehicle.regNumber }}</h2><p class="desc">{{ vehicle.driver || ('liveTracking.tracked.noDriver' | t) }} · {{ vehicle.speedKmph }} {{ 'liveTracking.speedUnit' | t }} · {{ vehicle.location }}</p></div>
-    <button type="button" class="btn btn-outline" (click)="openGeofences()"><app-icon name="i-map" [size]="18" /> {{ 'liveTracking.manageGeofences' | t }}</button>
+    @if (session.role() !== 'shipper') {
+      <button type="button" class="btn btn-outline" (click)="openGeofences()"><app-icon name="i-map" [size]="18" /> {{ 'liveTracking.manageGeofences' | t }}</button>
+    }
   </div>
   <div class="card">
     <div class="card-head"><h3>Live map · {{ vehicle.regNumber }}</h3></div>
@@ -49,7 +51,12 @@
   <div class="card">
     <div class="card-head"><h3>{{ 'liveTracking.tracked.title' | t }}</h3></div>
     <div class="card-body" style="padding:0;">
-      @if (liveVehicles().length) {
+      @if (requestedVehicleUnavailable()) {
+        <div class="empty-state" style="text-align:center;padding:32px;color:var(--color-text-muted);">
+          <strong>{{ 'liveTracking.bookingVehicleUnavailable.title' | t }}</strong>
+          <div style="margin-top:6px;">{{ 'liveTracking.bookingVehicleUnavailable.desc' | t:{ vehicle: requestedVehicleReg() ?? '—' } }}</div>
+        </div>
+      } @else if (liveVehicles().length) {
         <table class="data-table">
           <thead><tr><th>{{ 'liveTracking.tracked.col.vehicle' | t }}</th><th>{{ 'liveTracking.tracked.col.speed' | t }}</th><th>{{ 'liveTracking.tracked.col.location' | t }}</th><th>{{ 'liveTracking.tracked.col.status' | t }}</th><th></th></tr></thead>
           <tbody>@for (v of liveVehicles(); track v.regNumber) {

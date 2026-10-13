@@ -5,6 +5,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TripMockService } from '../../../core/services/trip-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { TripStatus } from '../../../core/models/trip.model';
+import { formatDateTime } from '../../../core/utils/date-format';
 
 const STATUS_CLASS: Record<TripStatus, string> = {
   Planned: 'status-pending',
@@ -40,6 +41,10 @@ export class TripDetailsComponent {
 
   protected setTab(tab: TripTab): void {
     this.activeTab.set(tab);
+  }
+
+  protected dateTime(value: string | undefined): string {
+    return formatDateTime(value);
   }
 
   // POD upload form
