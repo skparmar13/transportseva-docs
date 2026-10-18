@@ -364,16 +364,20 @@
         <label>{{ 'loadDetails.apply.regLabel' | t }}</label>
         <div class="input-wrap">
           <app-icon name="i-truck" [size]="18" />
-          <input type="text" class="input" [placeholder]="'loadDetails.apply.regPlaceholder' | t" [ngModel]="vehicleRegNumber()" (ngModelChange)="vehicleRegNumber.set($event)" name="vehicleRegNumber" />
+          <select class="input" [ngModel]="vehicleRegNumber()" (ngModelChange)="selectApplicationVehicle($event)" name="vehicleRegNumber" aria-label="Select one of your registered vehicles">
+            @if (registeredVehicles().length === 0) {
+              <option value="">No registered vehicles available</option>
+            } @else {
+              <option value="" disabled>Select a registered vehicle</option>
+              @for (vehicle of registeredVehicles(); track vehicle.id) {
+                <option [value]="vehicle.regNumber">{{ vehicle.regNumber }} · {{ vehicle.vehicleType }} · {{ vehicle.status }}</option>
+              }
+            }
+          </select>
         </div>
-      </div>
-      <div class="field">
-        <label>{{ 'loadDetails.apply.typeLabel' | t }}</label>
-        <select class="input" style="padding-left:14px;" [ngModel]="vehicleType()" (ngModelChange)="vehicleType.set($event)" name="vehicleType">
-          @for (type of vehicleTypes; track type) {
-            <option [value]="type">{{ type }}</option>
-          }
-        </select>
+        @if (registeredVehicles().length === 0) {
+          <p class="field-error" role="alert">{{ registeredVehiclesError() || 'Register a vehicle in My Vehicles before applying for a load.' }}</p>
+        }
       </div>
       <div class="field">
         <label>{{ 'loadDetails.apply.availabilityLabel' | t }}</label>
@@ -391,7 +395,7 @@
       </div>
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
         <button type="button" class="btn btn-outline" (click)="showApplyModal.set(false)">{{ 'common.cancel' | t }}</button>
-        <button type="button" class="btn btn-primary" [disabled]="applying()" (click)="submitApplication()">
+        <button type="button" class="btn btn-primary" [disabled]="applying() || !vehicleRegNumber() || registeredVehicles().length === 0" (click)="submitApplication()">
           @if (applying()) { <span class="button-loader" aria-hidden="true"></span> }
           <span>{{ applying() ? ('loadDetails.apply.submitting' | t) : ('loadDetails.apply.submit' | t) }}</span>
         </button>

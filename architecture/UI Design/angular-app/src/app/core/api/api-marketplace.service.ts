@@ -42,6 +42,28 @@ export interface CreateApplicationPayload {
   quoted_amount: number;
 }
 
+/** A provider-owned vehicle eligible to be selected in a marketplace application. */
+export interface ApiMarketplaceVehicle {
+  uuid: string;
+  registration_number: string;
+  vehicle_type: string;
+  make: string;
+  model: string;
+  year_of_make?: number | null;
+  capacity_tons: number | string;
+  status: 'available' | 'on_trip' | 'maintenance' | 'inactive';
+  created_at?: string;
+}
+
+export interface CreateMarketplaceVehiclePayload {
+  registration_number: string;
+  vehicle_type: string;
+  make: string;
+  model: string;
+  year_of_make?: number;
+  capacity_tons: number;
+}
+
 export interface ApiApplication {
   uuid: string;
   application_id?: string;
@@ -167,8 +189,16 @@ export class ApiMarketplaceService {
     return this.api.post<ApiLoad>('loads', payload).pipe(map((response) => response.data));
   }
 
-  createApplication(loadUuid: string, payload: CreateApplicationPayload): Observable<unknown> {
-    return this.api.post<unknown>(`loads/${encodeURIComponent(loadUuid)}/applications`, payload).pipe(map((response) => response.data));
+  listMarketplaceVehicles(): Observable<ApiMarketplaceVehicle[]> {
+    return this.api.get<ApiMarketplaceVehicle[]>('marketplace-vehicles').pipe(map((response) => response.data));
+  }
+
+  createMarketplaceVehicle(payload: CreateMarketplaceVehiclePayload): Observable<ApiMarketplaceVehicle> {
+    return this.api.post<ApiMarketplaceVehicle>('marketplace-vehicles', payload).pipe(map((response) => response.data));
+  }
+
+  createApplication(loadUuid: string, payload: CreateApplicationPayload): Observable<ApiApplication> {
+    return this.api.post<ApiApplication>(`loads/${encodeURIComponent(loadUuid)}/applications`, payload).pipe(map((response) => response.data));
   }
 
   listApplications(loadUuid: string): Observable<ApiApplication[]> {

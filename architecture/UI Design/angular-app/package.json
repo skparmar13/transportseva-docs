@@ -8,6 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:e2e": "playwright test --headed",
+    "test:e2e:ci": "PW_HEADLESS=true playwright test",
     "serve:ssr:angular-app": "node dist/angular-app/server/server.mjs"
   },
   "prettier": {
@@ -43,6 +45,7 @@
     "@angular/build": "^20.3.32",
     "@angular/cli": "^20.3.32",
     "@angular/compiler-cli": "^20.3.0",
+    "@playwright/test": "^1.64.1",
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",

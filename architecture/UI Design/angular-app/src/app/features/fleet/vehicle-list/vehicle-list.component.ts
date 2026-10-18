@@ -5,7 +5,10 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { SessionService } from '../../../core/services/session.service';
-import { VehicleCategory, VehicleLiveStatus } from '../../../core/models/fleet.model';
+import { Vehicle, VehicleCategory, VehicleLiveStatus } from '../../../core/models/fleet.model';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { ApiMarketplaceService, ApiMarketplaceVehicle } from '../../../core/api/api-marketplace.service';
+import { apiErrorMessage } from '../../../core/api/api-error';
 
 const VEHICLE_TYPES: VehicleCategory[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -26,6 +29,7 @@ const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
 })
 export class VehicleListComponent {
   private readonly fleet = inject(FleetMockService);
+  private readonly apiMarketplace = inject(ApiMarketplaceService);
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
 
@@ -37,8 +41,27 @@ export class VehicleListComponent {
 
   protected readonly search = signal('');
   protected readonly statusFilter = signal('');
+  private readonly backendVehicles = signal<ApiMarketplaceVehicle[]>([]);
+  protected readonly vehicleError = signal('');
 
-  private readonly myVehicles = computed(() => this.fleet.getVehiclesByOwner(this.session.role())());
+  private readonly myVehicles = computed<Vehicle[]>(() => API_CONFIG.useBackend
+    ? this.backendVehicles().map((vehicle) => this.mapBackendVehicle(vehicle))
+    : this.fleet.getVehiclesByOwner(this.session.role())());
+
+  constructor() {
+    this.reloadBackendVehicles();
+  }
+
+  private reloadBackendVehicles(): void {
+    if (!API_CONFIG.useBackend) return;
+    this.apiMarketplace.listMarketplaceVehicles().subscribe({
+      next: (vehicles) => {
+        this.backendVehicles.set(vehicles);
+        this.vehicleError.set('');
+      },
+      error: (error) => this.vehicleError.set(apiErrorMessage(error, 'Your registered vehicles could not be loaded.')),
+    });
+  }
 
   protected readonly filteredVehicles = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -82,6 +105,27 @@ export class VehicleListComponent {
     if (this.yearOfMake() && (!Number.isInteger(year) || year < 1950 || year > new Date().getFullYear())) return;
     if (!this.regNumber() || !this.make() || !this.model()) return;
     this.saving.set(true);
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.createMarketplaceVehicle({
+        registration_number: this.regNumber().trim().toUpperCase(),
+        vehicle_type: this.vehicleType(),
+        make: this.make().trim(),
+        model: this.model().trim(),
+        year_of_make: this.yearOfMake() ? year : undefined,
+        capacity_tons: capacity,
+      }).subscribe({
+        next: (vehicle) => {
+          this.backendVehicles.update((vehicles) => [vehicle, ...vehicles]);
+          this.saving.set(false);
+          this.closeAdd();
+        },
+        error: (error) => {
+          this.saving.set(false);
+          this.vehicleError.set(apiErrorMessage(error, 'Vehicle could not be registered. Please review the details and try again.'));
+        },
+      });
+      return;
+    }
     setTimeout(() => {
       const vehicle = this.fleet.addVehicle({
         ownerRole: this.session.role(),
@@ -102,5 +146,27 @@ export class VehicleListComponent {
   protected viewVehicle(id: string): void {
     const path = this.session.role() === 'truck-owner' ? 'vehicles' : 'fleet';
     this.router.navigate([this.session.portal().basePath, path, id]);
+  }
+
+  private mapBackendVehicle(vehicle: ApiMarketplaceVehicle): Vehicle {
+    const statusByApi: Record<ApiMarketplaceVehicle['status'], VehicleLiveStatus> = {
+      available: 'Idle', on_trip: 'On Trip', maintenance: 'Maintenance', inactive: 'Offline',
+    };
+    return {
+      id: vehicle.uuid,
+      regNumber: vehicle.registration_number,
+      vehicleType: vehicle.vehicle_type as VehicleCategory,
+      ownerRole: this.session.role(),
+      make: vehicle.make,
+      model: vehicle.model,
+      yearOfMake: vehicle.year_of_make?.toString() ?? '—',
+      capacityTons: Number(vehicle.capacity_tons),
+      status: statusByApi[vehicle.status],
+      location: 'Not tracked yet',
+      addedOn: vehicle.created_at ?? 'Recently',
+      documents: [],
+      maintenance: [],
+      fuelLogs: [],
+    };
   }
 }

@@ -7,6 +7,7 @@ import { TranslatePipe } from '../../../core/i18n';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiAuthService } from '../../../core/api/api-auth.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
+import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-otp-verification',
@@ -21,11 +22,13 @@ export class OtpVerificationComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly apiAuth = inject(ApiAuthService);
+  private readonly session = inject(SessionService);
 
   @ViewChildren('otpInput') private otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   protected readonly digits = signal<string[]>(['', '', '', '', '', '']);
   protected readonly verifying = signal(false);
+  protected readonly verified = signal(false);
   protected readonly apiError = signal('');
   protected readonly debugOtp = signal(sessionStorage.getItem('transportseva.debug_otp') ?? '');
   protected readonly resending = signal(false);
@@ -48,14 +51,20 @@ export class OtpVerificationComponent {
 
   protected verify(): void {
     this.apiError.set('');
-    if (!this.isOtpComplete()) return;
+    if (this.verified() || this.verifying() || !this.isOtpComplete()) return;
     this.verifying.set(true);
     if (API_CONFIG.useBackend && this.route.snapshot.queryParamMap.get('next') === 'signup') {
       const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as { mobile?: string; role?: string };
       this.apiAuth.verifySignupOtp('+91' + (pending.mobile ?? ''), this.digits().join(''), pending.role).subscribe({
-        next: () => {
+        next: (data) => {
+          this.verified.set(true);
           this.verifying.set(false);
-          this.router.navigate(['/auth/profile-setup']);
+          this.session.setBackendUser(data.user);
+          sessionStorage.removeItem('transportseva.debug_otp');
+          this.router.navigateByUrl('/auth/profile-setup').catch(() => {
+            this.verified.set(false);
+            this.apiError.set('OTP was verified, but the next page could not be opened. Please refresh once.');
+          });
         },
         error: (error) => {
           this.verifying.set(false);

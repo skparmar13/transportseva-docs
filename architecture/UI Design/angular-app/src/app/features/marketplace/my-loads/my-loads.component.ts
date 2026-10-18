@@ -63,6 +63,10 @@ export class MyLoadsComponent {
     this.router.navigate([this.session.portal().basePath, 'post-load']);
   }
 
+  protected completeProfile(): void {
+    this.router.navigateByUrl('/auth/profile-setup');
+  }
+
   private mapLoad(load: ApiLoad): Load {
     const status = String(load.status).toLowerCase();
     const normalizedStatus = status.includes('book') ? 'Booked' : status.includes('cancel') ? 'Cancelled' : status.includes('deliver') ? 'Delivered' : status.includes('transit') ? 'In Transit' : status.includes('application') ? 'Applications Received' : 'Open';

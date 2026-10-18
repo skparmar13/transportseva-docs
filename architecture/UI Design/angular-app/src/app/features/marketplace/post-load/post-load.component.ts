@@ -69,6 +69,7 @@ export class PostLoadComponent {
     else if (!this.hasAtMostTwoDecimals(budget)) errors['budget'] = 'Budget can have up to two decimal places.';
     if (!this.isValidAmount(weight)) errors['weight_tons'] = 'Enter a valid weight greater than zero.';
     else if (!this.hasAtMostTwoDecimals(weight!)) errors['weight_tons'] = 'Weight can have up to two decimal places.';
+    if (this.containsContactNumber(this.notes())) errors['notes'] = 'Contact numbers cannot be shared in public load notes.';
     if (Object.keys(errors).length) { this.fieldErrors.set(errors); return; }
     this.submitting.set(true);
     if (API_CONFIG.useBackend) {
@@ -128,6 +129,10 @@ export class PostLoadComponent {
     return value !== null && Number.isFinite(value) && value > 0 && this.hasAtMostTwoDecimals(value);
   }
 
+  private containsContactNumber(value: string): boolean {
+    return /\d(?:[\s-]?\d){8,}/.test(value);
+  }
+
   protected validateField(field: string): void {
     const next = { ...this.fieldErrors() };
     const messages: Record<string, string> = {};
@@ -136,6 +141,7 @@ export class PostLoadComponent {
     if (field === 'material' && !this.material().trim()) messages[field] = 'Material or goods description is required.';
     if (field === 'budget' && !this.isValidAmount(this.budget())) messages[field] = 'Enter a valid budget greater than zero.';
     if (field === 'weight_tons' && !this.isValidAmount(this.weightTons())) messages[field] = 'Enter a valid weight greater than zero.';
+    if (field === 'notes' && this.containsContactNumber(this.notes())) messages[field] = 'Contact numbers cannot be shared in public load notes.';
     if (messages[field]) next[field] = messages[field]; else delete next[field];
     this.fieldErrors.set(next);
   }

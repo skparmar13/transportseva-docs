@@ -147,6 +147,7 @@ export interface BookingDriverAssignment {
 }
 
 export interface BookingSettlement {
+  status?: string;
   freightAmount: string;
   grossFreightAmount?: string;
   /** Provider-side commission withheld from the provider payout. */

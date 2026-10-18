@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, interval, of, startWith, switchMap } from 'rxjs';
+import { catchError, exhaustMap, interval, of, startWith } from 'rxjs';
 import { AppNotification, SupportTicket, TicketMessage } from '../models/communication.model';
 import { ApiNotification, ApiNotificationsService } from '../api/api-notifications.service';
 import { API_CONFIG } from '../api/api-config';
@@ -30,9 +30,14 @@ export class CommunicationMockService {
     if (this.liveUpdatesStarted || !API_CONFIG.useBackend) return;
     this.liveUpdatesStarted = true;
     this._notifications.set([]);
-    interval(5000).pipe(
+    // A local PHP server handles requests serially. Do not start a new bell
+    // poll while the prior one is still in flight; that queues stale requests
+    // and can block marketplace actions from refreshing. Fifteen seconds is
+    // still prompt for the bell, while action screens update immediately from
+    // their successful API response.
+    interval(15_000).pipe(
       startWith(0),
-      switchMap(() => this.apiNotifications.list().pipe(catchError(() => of([] as ApiNotification[])))),
+      exhaustMap(() => this.apiNotifications.list().pipe(catchError(() => of([] as ApiNotification[])))),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((notifications) => this._notifications.set(notifications.map((notification) => this.mapNotification(notification))));
   }

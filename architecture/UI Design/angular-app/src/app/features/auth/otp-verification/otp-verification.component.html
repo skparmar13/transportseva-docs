@@ -37,8 +37,8 @@
       }
     </div>
 
-    <button type="submit" class="btn btn-primary btn-block" [disabled]="verifying() || !isOtpComplete()">
-      {{ (verifying() ? 'otp.verifying' : 'otp.verify') | t }}
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="verified() || verifying() || !isOtpComplete()">
+      {{ (verifying() ? 'otp.verifying' : (verified() ? 'Verified' : 'otp.verify')) | t }}
     </button>
   </form>
 

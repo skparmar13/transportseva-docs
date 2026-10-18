@@ -22,7 +22,11 @@
     <div class="card-body page-loading-state" role="alert">
       <app-icon name="i-info" [size]="30" />
       <p>{{ loadError() }}</p>
-      <button type="button" class="btn btn-outline btn-sm" (click)="postLoad()">Back to Post Load</button>
+      @if (loadError().toLowerCase().includes('profile completion')) {
+        <button type="button" class="btn btn-primary btn-sm" (click)="completeProfile()">Complete Profile</button>
+      } @else {
+        <button type="button" class="btn btn-outline btn-sm" (click)="postLoad()">Back to Post Load</button>
+      }
     </div>
   } @else if (loads().length) {
     <table class="data-table">

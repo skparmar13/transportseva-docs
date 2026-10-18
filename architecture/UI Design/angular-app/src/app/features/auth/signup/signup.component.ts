@@ -57,6 +57,7 @@ export class SignupComponent {
   protected readonly submitting = signal(false);
   protected readonly validationError = signal('');
   protected readonly apiError = signal('');
+  protected readonly duplicateMobile = computed(() => /mobile number already registered|phone.*already registered/i.test(this.apiError()));
 
   // Which plan this signup is for — driven by the CTA the user clicked (Pricing page
   // "Get Started Free" → starter, "Upgrade to Professional" → professional). Falls back
@@ -101,6 +102,15 @@ export class SignupComponent {
       confirmPassword: this.confirmPassword(),
       agreeTerms: this.agreeTerms(),
     });
+  }
+
+  protected updateMobile(value: string): void {
+    this.mobile.set(value.replace(/\D/g, '').slice(0, 10));
+    this.apiError.set('');
+  }
+
+  protected goToLogin(): void {
+    this.router.navigate(['/auth/login'], { queryParams: { identifier: `+91${this.mobile()}` } });
   }
 
   protected submit(form: NgForm): void {

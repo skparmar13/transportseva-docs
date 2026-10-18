@@ -116,6 +116,22 @@ export class BookingsComponent {
     return booking.settlementPlan.find((milestone) => milestone.label === 'Final Settlement')?.amount ?? '₹0';
   }
 
+  protected finalSettlementPayable(booking: MarketplaceBooking): string {
+    const freight = this.amountNumber(this.remainingFreightBalance(booking));
+    const shipperFee = this.amountNumber(booking.settlement?.shipperCommission ?? '₹0');
+    return this.currency(freight + shipperFee);
+  }
+
+  protected platformCommission(booking: MarketplaceBooking): string {
+    const shipperFee = this.amountNumber(booking.settlement?.shipperCommission ?? '₹0');
+    const providerFee = this.amountNumber(booking.settlement?.commissionDeducted ?? '₹0');
+    return this.currency(shipperFee + providerFee);
+  }
+
+  protected releasedMilestones(booking: MarketplaceBooking) {
+    return booking.settlementPlan.filter((milestone) => milestone.label !== 'Final Settlement' && milestone.status === 'Released');
+  }
+
   // Deposit payment modal (simulated payment)
   protected readonly payingBooking = signal<{ id: string; side: 'owner' | 'counterparty'; amount: string } | null>(null);
   protected readonly payMethod = signal<'upi' | 'card'>('upi');
@@ -595,7 +611,7 @@ export class BookingsComponent {
 
   protected openOfflinePayment(booking: MarketplaceBooking): void {
     this.offlinePaymentFor.set(booking);
-    this.offlineAmount.set(booking.settlement?.payoutAmount ? Number(booking.settlement.payoutAmount.replace(/[^0-9.]/g, '')) : null);
+    this.offlineAmount.set(Number(this.finalSettlementPayable(booking).replace(/[^0-9.]/g, '')) || null);
     this.offlineReference.set('');
   }
 
@@ -605,6 +621,17 @@ export class BookingsComponent {
     if (!booking || !this.isValidAmount(amount)) return;
     const actionKey = this.workflowActionKey(booking.id, 'record-payment');
     if (!this.beginWorkflowAction(actionKey)) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(booking.id, 'settle_final_payment', { amount, reference: this.offlineReference().trim() || undefined }).subscribe({
+        next: () => {
+          this.finishWorkflowAction(actionKey);
+          this.offlinePaymentFor.set(null);
+          this.reloadBackendBookings();
+        },
+        error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Final payment could not be settled. Please retry.')),
+      });
+      return;
+    }
     setTimeout(() => {
       this.payments.recordOfflinePayment(booking.bookingId, String(amount), this.offlineReference());
       this.finishWorkflowAction(actionKey);
@@ -619,8 +646,10 @@ export class BookingsComponent {
   private mapBackendBooking(booking: ApiMarketplaceBooking): MarketplaceBooking {
     const owner = booking.viewer_side === 'owner';
     const workflow = booking.workflow ?? {};
-    const stage: MarketplaceBooking['status'] = booking.status === 'completed'
+    const stage: MarketplaceBooking['status'] = booking.status === 'completed' && booking.settlement?.status === 'settled'
       ? 'Completed'
+      : workflow.trip_completed_at || booking.status === 'completed'
+        ? 'Settlement Pending'
       : booking.status === 'cancelled'
         ? 'Cancelled'
         : booking.status === 'in_transit'
@@ -652,18 +681,29 @@ export class BookingsComponent {
       { id: `${booking.uuid}-final`, label: 'Final Settlement', trigger: 'Released after POD is uploaded and approved', amount: `₹${Math.max(freight - loadingAdvance - midTripTotal, 0).toLocaleString('en-IN')}`, status: 'Pending' as const },
     ];
     const timelineIndex = BOOKING_TIMELINE_STAGES.indexOf(stage as typeof BOOKING_TIMELINE_STAGES[number]);
+    const timelineTimestamps: Partial<Record<MarketplaceBooking['status'], string | undefined>> = {
+      'Awaiting Deposit': booking.created_at,
+      Confirmed: booking.created_at,
+      'Vehicle Assigned': workflow.vehicle_assignment?.assigned_at,
+      'Driver Assigned': workflow.driver_assignment?.assigned_at,
+      'Loading Completed': workflow.loading_completed_at,
+      'Trip Started': workflow.trip_started_at,
+      'Settlement Pending': workflow.trip_completed_at,
+      Completed: booking.settlement?.settled_at ?? workflow.trip_completed_at,
+    };
     return {
       id: booking.uuid, bookingId: booking.booking_reference, loadId: booking.load_uuid, applicationId: booking.application_uuid,
       route: 'Marketplace booking', material: 'General Cargo', ownerRole: owner ? this.session.role() : 'shipper', ownerName: owner ? this.session.user().name : 'Shipper',
       counterpartyRole: owner ? 'transporter' : this.session.role(), counterpartyName: owner ? 'Transport provider' : this.session.user().name,
       vehicleRegNumber: workflow.vehicle_assignment?.vehicle_reg_number ?? '—', amount, status: stage,
-      timeline: BOOKING_TIMELINE_STAGES.map((timelineStage, index) => ({ stage: timelineStage, completed: index <= timelineIndex, timestamp: index <= timelineIndex ? formatDateTime(booking.created_at) : undefined })),
+      timeline: BOOKING_TIMELINE_STAGES.map((timelineStage, index) => ({ stage: timelineStage, completed: index <= timelineIndex, timestamp: index <= timelineIndex && timelineTimestamps[timelineStage] ? formatDateTime(timelineTimestamps[timelineStage]) : undefined })),
       ownerDeposit: { role: owner ? this.session.role() : 'shipper', partyName: owner ? this.session.user().name : 'Shipper', amount: '₹1,000', status: booking.owner_token_status === 'paid' ? 'Paid' : 'Pending' },
       counterpartyDeposit: { role: owner ? 'transporter' : this.session.role(), partyName: owner ? 'Transport provider' : this.session.user().name, amount: '₹1,000', status: booking.provider_token_status === 'paid' ? 'Paid' : 'Pending' },
       escrowStatus: booking.status === 'completed' ? 'Released' : booking.status === 'confirmed' || booking.status === 'in_transit' ? 'Locked' : 'Awaiting Deposits', settlementPlan,
       vehicleAssignment: workflow.vehicle_assignment ? { mode: workflow.vehicle_assignment.mode, vehicleRegNumber: workflow.vehicle_assignment.vehicle_reg_number, subcontractedTo: workflow.vehicle_assignment.subcontracted_to, assignedAt: formatDateTime(workflow.vehicle_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
       driverAssignment: workflow.driver_assignment ? { driverName: workflow.driver_assignment.driver_name, driverPhone: workflow.driver_assignment.driver_phone, assignedAt: formatDateTime(workflow.driver_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
       settlement: booking.settlement ? {
+        status: booking.settlement.status,
         freightAmount: amount, grossFreightAmount: amount,
         commissionDeducted: `₹${Number(booking.provider_fee ?? 0).toLocaleString('en-IN')}`,
         shipperCommission: `₹${Number(booking.shipper_fee ?? 0).toLocaleString('en-IN')}`,

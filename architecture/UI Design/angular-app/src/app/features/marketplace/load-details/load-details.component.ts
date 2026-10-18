@@ -10,14 +10,20 @@ import { SessionService } from '../../../core/services/session.service';
 import { Load, LoadApplication, NegotiationMessage, NegotiationOffer, VehicleType } from '../../../core/models/marketplace.model';
 import { TranslatePipe } from '../../../core/i18n';
 import { API_CONFIG } from '../../../core/api/api-config';
-import { ApiApplication, ApiChatMessage, ApiLoad, ApiMarketplaceBooking, ApiMarketplaceService, ApiOffer, ApiTokenOrder } from '../../../core/api/api-marketplace.service';
+import { ApiApplication, ApiChatMessage, ApiLoad, ApiMarketplaceBooking, ApiMarketplaceService, ApiMarketplaceVehicle, ApiOffer, ApiTokenOrder } from '../../../core/api/api-marketplace.service';
 import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
+import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { formatLoadReference } from '../../../core/utils/load-reference';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 import { formatCurrencyAmount } from '../../../core/utils/currency-format';
 
-const VEHICLE_TYPES: VehicleType[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
+interface ApplicationVehicle {
+  id: string;
+  regNumber: string;
+  vehicleType: VehicleType;
+  status: string;
+}
 
 /**
  * Load Details — role-aware single screen:
@@ -45,6 +51,7 @@ export class LoadDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   protected readonly marketplace = inject(MarketplaceMockService);
   protected readonly session = inject(SessionService);
+  private readonly fleet = inject(FleetMockService);
   private readonly router = inject(Router);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
   private readonly cashfreeCheckout = inject(CashfreeCheckoutService);
@@ -59,10 +66,12 @@ export class LoadDetailsComponent {
   private readonly backendBookings = signal<ApiMarketplaceBooking[]>([]);
   private readonly backendTokenOrders = signal<Record<string, ApiTokenOrder[]>>({});
   private readonly backendChatMessages = signal<Record<string, ApiChatMessage[]>>({});
+  private readonly backendRegisteredVehicles = signal<ApiMarketplaceVehicle[]>([]);
   protected readonly loading = signal(API_CONFIG.useBackend);
   protected readonly applicationsLoading = signal(API_CONFIG.useBackend);
   protected readonly loadError = signal('');
   protected readonly applicationsError = signal('');
+  protected readonly registeredVehiclesError = signal('');
   protected readonly applicationsOutOfSync = computed(() =>
     API_CONFIG.useBackend
       && this.isOwner()
@@ -83,11 +92,33 @@ export class LoadDetailsComponent {
 
   private reloadBackendData(): void {
     if (!API_CONFIG.useBackend) return;
-    this.apiMarketplace.getLoad(this.loadId).subscribe({
-      next: (load) => { this.backendLoad.set(load); this.loading.set(false); },
-      error: (error) => { this.backendLoad.set(undefined); this.loading.set(false); this.loadError.set(apiErrorMessage(error, 'We could not load this shipment.')); },
-    });
+    this.loading.set(true);
     this.applicationsLoading.set(true);
+    this.apiMarketplace.getLoad(this.loadId).subscribe({
+      next: (load) => {
+        this.backendLoad.set(load);
+        this.loading.set(false);
+        this.loadError.set('');
+        // Only an applicant needs a selectable vehicle list. Avoid placing
+        // needless provider-only work in front of a shipper's applications.
+        if (!this.isOwner()) this.loadRegisteredVehicles();
+        this.loadBackendApplications();
+      },
+      error: (error) => {
+        this.backendLoad.set(undefined);
+        this.loading.set(false);
+        this.applicationsLoading.set(false);
+        this.loadError.set(apiErrorMessage(error, 'We could not load this shipment.'));
+      },
+    });
+  }
+
+  /**
+   * Request dependent data after the load is available instead of firing four
+   * requests at once. This keeps the page responsive with the single-process
+   * local PHP server and makes the actual failure state visible to the user.
+   */
+  private loadBackendApplications(): void {
     this.apiMarketplace.listApplications(this.loadId).subscribe({
       next: (applications) => {
         this.applicationsLoading.set(false);
@@ -110,6 +141,7 @@ export class LoadDetailsComponent {
             })),
           });
         }
+        this.loadBookingsForAcceptedApplications(applications);
       },
       error: (error) => {
         this.applicationsLoading.set(false);
@@ -120,6 +152,13 @@ export class LoadDetailsComponent {
         this.actionInFlightApplicationId.set(null);
       },
     });
+  }
+
+  private loadBookingsForAcceptedApplications(applications: ApiApplication[]): void {
+    if (!applications.some((application) => application.status === 'accepted')) {
+      this.backendBookings.set([]);
+      return;
+    }
     this.apiMarketplace.listMarketplaceBookings().subscribe({
       next: (bookings) => {
         const loadBookings = bookings.filter((booking) => booking.load_uuid === this.loadId);
@@ -130,6 +169,17 @@ export class LoadDetailsComponent {
         for (const booking of loadBookings) this.loadTokenOrders(booking.uuid);
       },
       error: () => this.backendBookings.set([]),
+    });
+  }
+
+  private loadRegisteredVehicles(): void {
+    if (!API_CONFIG.useBackend) return;
+    this.apiMarketplace.listMarketplaceVehicles().subscribe({
+      next: (vehicles) => {
+        this.backendRegisteredVehicles.set(vehicles);
+        this.registeredVehiclesError.set('');
+      },
+      error: (error) => this.registeredVehiclesError.set(apiErrorMessage(error, 'Your registered vehicles could not be loaded.')),
     });
   }
   protected retryLoadData(): void {
@@ -151,7 +201,22 @@ export class LoadDetailsComponent {
   }
   protected readonly load = computed<Load | undefined>(() => API_CONFIG.useBackend ? this.mapLoad(this.backendLoad()) : this.formatLoad(this.marketplace.getLoadById(this.loadId)()));
   protected readonly applications = computed<LoadApplication[]>(() => API_CONFIG.useBackend ? this.backendApplications().map((app) => this.mapApplication(app)) : this.marketplace.getApplicationsForLoad(this.loadId)().map((app) => this.formatApplication(app)));
-  protected readonly vehicleTypes = VEHICLE_TYPES;
+  /** A load application must be tied to a vehicle registered by this signed-in provider. */
+  protected readonly registeredVehicles = computed<ApplicationVehicle[]>(() => {
+    if (API_CONFIG.useBackend) {
+      return this.backendRegisteredVehicles()
+        .map((vehicle) => ({
+          id: vehicle.uuid,
+          regNumber: vehicle.registration_number,
+          vehicleType: vehicle.vehicle_type as VehicleType,
+          status: vehicle.status.replace(/_/g, ' '),
+        }))
+        .sort((left, right) => left.regNumber.localeCompare(right.regNumber));
+    }
+    return this.fleet.getVehiclesByOwner(this.session.role())()
+      .map((vehicle) => ({ id: vehicle.id, regNumber: vehicle.regNumber, vehicleType: vehicle.vehicleType, status: vehicle.status }))
+      .sort((left, right) => left.regNumber.localeCompare(right.regNumber));
+  });
 
   protected statusKey(s: string): string {
     return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
@@ -289,27 +354,49 @@ export class LoadDetailsComponent {
   protected readonly actionError = signal('');
 
   protected openApply(): void {
+    const selected = this.registeredVehicles().find((vehicle) => vehicle.regNumber === this.vehicleRegNumber())
+      ?? this.registeredVehicles()[0];
+    this.vehicleRegNumber.set(selected?.regNumber ?? '');
+    if (selected) this.vehicleType.set(selected.vehicleType);
     this.showApplyModal.set(true);
+  }
+
+  /** Keeps registration and type inseparable: the registered vehicle is the source of truth. */
+  protected selectApplicationVehicle(registrationNumber: string): void {
+    const vehicle = this.registeredVehicles().find((item) => item.regNumber === registrationNumber);
+    this.vehicleRegNumber.set(vehicle?.regNumber ?? '');
+    if (vehicle) this.vehicleType.set(vehicle.vehicleType);
   }
 
   protected submitApplication(): void {
     const load = this.load();
     const amount = this.quotedAmount();
-    if (!load || !this.vehicleRegNumber().trim() || !this.availability().trim() || amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
+    const selectedVehicle = this.registeredVehicles().find((vehicle) => vehicle.regNumber === this.vehicleRegNumber());
+    if (!load || !selectedVehicle || !this.availability().trim() || amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
+    const selectedVehicleType = selectedVehicle.vehicleType as VehicleType;
     this.applying.set(true);
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.createApplication(this.loadId, {
         applicant_role: this.session.role() === 'transporter' ? 'transporter' : 'truck-owner',
         applicant_name: this.session.user().company ?? this.session.user().name,
-        vehicle_reg_number: this.vehicleRegNumber().trim(),
-        vehicle_type: this.vehicleType(),
+        vehicle_reg_number: selectedVehicle.regNumber,
+        vehicle_type: selectedVehicleType,
         availability: this.availability().trim(),
         quoted_amount: amount,
       }).subscribe({
-        next: () => {
+        next: (application) => {
+          // Keep the applicant view responsive even when the local PHP server
+          // is processing other requests. The API has already confirmed the
+          // application (201), so there is no need to leave the user behind a
+          // second, queued reload just to show their own submission.
+          this.backendApplications.update((applications) => [...applications, application]);
+          this.backendLoad.update((current) => current
+            ? { ...current, applications_count: Number(current.applications_count ?? 0) + 1, viewer_application_status: application.status }
+            : current);
+          this.applicationsLoading.set(false);
+          this.applicationsError.set('');
           this.applying.set(false);
           this.showApplyModal.set(false);
-          this.reloadBackendData();
         },
         error: () => this.applying.set(false),
       });
@@ -320,8 +407,8 @@ export class LoadDetailsComponent {
         loadId: this.loadId,
         applicantRole: this.session.role(),
         applicantName: this.session.user().company ?? this.session.user().name,
-        vehicleRegNumber: this.vehicleRegNumber(),
-        vehicleType: this.vehicleType(),
+        vehicleRegNumber: selectedVehicle.regNumber,
+        vehicleType: selectedVehicleType,
         availability: this.availability(),
         quotedAmount: String(amount),
       });

@@ -55,7 +55,7 @@
         <div class="phone-code">+91</div>
         <div class="input-wrap" style="flex:1;">
           <app-icon name="i-phone" [size]="18" />
-          <input type="tel" class="input" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" [placeholder]="'signup.mobilePlaceholder' | t" name="mobile" [ngModel]="mobile()" (ngModelChange)="mobile.set($event)" required>
+          <input type="tel" class="input" [class.input-error]="duplicateMobile()" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" [placeholder]="'signup.mobilePlaceholder' | t" name="mobile" [ngModel]="mobile()" (ngModelChange)="updateMobile($event)" required>
         </div>
       </div>
     </div>
@@ -92,8 +92,14 @@
     @if (validationError()) {
       <p class="hint" role="alert">{{ validationError() | t }}</p>
     }
-    @if (apiError()) {
-      <p class="hint" role="alert">{{ apiError() }}</p>
+    @if (duplicateMobile()) {
+      <div class="field-error" role="alert" style="margin:14px 0;padding:12px;border:1px solid var(--color-danger);border-radius:10px;background:#fff6f5;">
+        <strong>This mobile number already has an account.</strong><br>
+        <span>Use the existing account instead of creating another one.</span>
+        <button type="button" class="link-button" style="margin-left:6px;font-weight:700;" (click)="goToLogin()">Log in</button>
+      </div>
+    } @else if (apiError()) {
+      <p class="field-error" role="alert">{{ apiError() }}</p>
     }
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="!isFormReady(signupForm)">
