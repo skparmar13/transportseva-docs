@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 09, 2026 at 04:28 PM
+-- Generation Time: Oct 20, 2026 at 05:05 PM
 -- Server version: 10.11.16-MariaDB-log
 -- PHP Version: 8.3.3
 
@@ -59,7 +59,92 @@ INSERT INTO `access_tokens` (`id`, `user_uuid`, `token`, `expires_at`, `revoked`
 (15, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', 'baf4c6cf3a498a5a10fae88fb47f8e76d76e6d84523f1cbf33af6a637f3c1da8', '2026-08-06 10:10:41', 0, '2026-08-06 09:55:42', '2026-08-06 09:55:42'),
 (16, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', '04aec9ac07b76755ec1b468167a38b32d8fce175203b1c972b9b806d0ffaaaf6', '2026-08-06 10:18:00', 0, '2026-08-06 10:03:01', '2026-08-06 10:03:01'),
 (17, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', '66615761bff0dda21798c51bba1d594f1ee758d35d34c2af34e92fdbdc951914', '2026-08-06 10:21:08', 0, '2026-08-06 10:06:08', '2026-08-06 10:06:08'),
-(18, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', 'cb5aef63491f0653f94b5797f31f3acd08a612b9c584699c1fccb1afeff54046', '2026-08-06 10:28:11', 0, '2026-08-06 10:13:12', '2026-08-06 10:13:12');
+(18, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', 'cb5aef63491f0653f94b5797f31f3acd08a612b9c584699c1fccb1afeff54046', '2026-08-06 10:28:11', 0, '2026-08-06 10:13:12', '2026-08-06 10:13:12'),
+(19, 'cc150c5d-89c4-4567-9e98-d2416778504b', '95d8e4660ad3963ffa63dea3e21d3d0167363bfd6da4b5261064364e9b016a7d', '2026-10-18 04:42:31', 0, '2026-10-18 04:27:31', '2026-10-18 04:27:31'),
+(20, 'cc150c5d-89c4-4567-9e98-d2416778504b', '69e6ec9c25caffb617ddda639e34e45f4ac6826e496787046017ae7bf1658628', '2026-10-18 04:43:34', 0, '2026-10-18 04:28:34', '2026-10-18 04:28:34'),
+(21, '417e2f45-cadc-11f1-aeaa-089204f4d30b', 'd280a77c7fea3c3b3289b9efa08314e4eb48903f6842c95dee6debd86e056bbc', '2026-10-18 05:02:49', 1, '2026-10-18 04:47:49', '2026-10-18 04:48:41'),
+(22, 'cc150c5d-89c4-4567-9e98-d2416778504b', '10d651ad928e83f166b906c01d82e767f08cbd5680b1381c51c069b93f7a807a', '2026-10-18 05:04:52', 0, '2026-10-18 04:49:52', '2026-10-18 04:49:52'),
+(23, 'cc150c5d-89c4-4567-9e98-d2416778504b', 'cdc8d5013201ac9fa2b3ccef3b6e13bdac23af954a5f1bc8c9340633b4b8481a', '2026-10-18 05:04:59', 0, '2026-10-18 04:49:59', '2026-10-18 04:49:59'),
+(24, '46347c7e-344b-479b-9ac7-e6eebf62d0ca', '544a28b654630bd9b0b367811107f516017da45206a4870b94667452e43fcf93', '2026-10-18 05:18:12', 0, '2026-10-18 05:03:12', '2026-10-18 05:03:12'),
+(25, 'cc150c5d-89c4-4567-9e98-d2416778504b', '9e8b8819053177e2aaf72e37aaa95d270fbe0af97e946d66faabc407a449e619', '2026-10-18 05:21:34', 0, '2026-10-18 05:06:34', '2026-10-18 05:06:34'),
+(26, '46347c7e-344b-479b-9ac7-e6eebf62d0ca', '9b7f38dd277b0a98e46b5ffc850be3c43a811c5e45e9c33b17ff33096070874c', '2026-10-18 05:33:23', 0, '2026-10-18 05:18:23', '2026-10-18 05:18:23'),
+(27, 'cc150c5d-89c4-4567-9e98-d2416778504b', '6a970da43baec6e7f53b7bbfd5f2a77567083d6722e6cc8eec94a7eb248e5e1e', '2026-10-18 05:36:40', 0, '2026-10-18 05:21:40', '2026-10-18 05:21:40'),
+(28, '96acd69f-64a3-4e44-964c-207074f0390e', '9ba034f284a635b7f1d4c0f596cff8d779e4b8e027ceff26813db3f89859325f', '2026-10-18 06:22:57', 0, '2026-10-18 06:07:57', '2026-10-18 06:07:57'),
+(29, 'e2ab668f-e823-42fd-b0df-8277a3d5aa7e', 'e4a5b8053b54d139f81c3c450bc53bca0754c99f68c8231eb0307f0781de0f34', '2026-10-18 09:41:33', 0, '2026-10-18 09:26:33', '2026-10-18 09:26:33'),
+(30, '3e594e4c-de9c-45c4-9422-e3184a53d745', 'd91c6628b8563f3fa39239a4ca07bc152be57bc50e59d2e6610bef3753239368', '2026-10-18 09:45:52', 0, '2026-10-18 09:30:52', '2026-10-18 09:30:52'),
+(31, '1d3a7d82-8460-48e8-a34e-4b6c0bb53453', '2a8eed0be5a91bff61b772fd40b55fbad16f03114c11ba8a6880aec79acf2616', '2026-10-18 10:35:19', 0, '2026-10-18 10:20:19', '2026-10-18 10:20:19'),
+(32, 'eddc1cf0-ae05-460e-be03-dda7033eb9de', 'c632f8f04d1e4bee39b8c2ec0368ed32bb4a01103090cfefcc1cf6c770e4ecb5', '2026-10-18 10:35:52', 0, '2026-10-18 10:20:52', '2026-10-18 10:20:52'),
+(33, '7112e017-5efe-4a83-a652-f402de648372', '80d4801962d1ffa3fcd2b5d156a7d6790f994ca1dfe2432472a96614dc673709', '2026-10-18 11:02:53', 0, '2026-10-18 10:47:53', '2026-10-18 10:47:53'),
+(34, 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', '8bb72d8e59b523f9f40f696026a737c82cc782857865eb0382c1e80dfb16ce77', '2026-10-18 11:03:26', 0, '2026-10-18 10:48:26', '2026-10-18 10:48:26'),
+(35, 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', '5069c4e32e75a5d7a3a58a78d198c91b225400582a7c459cdeeb42aeaf710dd3', '2026-10-18 11:12:39', 0, '2026-10-18 10:57:39', '2026-10-18 10:57:39'),
+(36, '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', '9f5f14edcc3fe4f7c48c733045c882bb62c1c991bcf10cc87e30d7eb4ef63b27', '2026-10-18 11:13:09', 0, '2026-10-18 10:58:09', '2026-10-18 10:58:09'),
+(37, 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', 'f0b84988ac08fece8862ff7c4d276bde9107cbaa0b96b3139fdf090d33e558a8', '2026-10-18 11:14:26', 0, '2026-10-18 10:59:26', '2026-10-18 10:59:26'),
+(38, 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', 'd442ed39ae47f977cc535188ec749c870eb4693ac77956e74792b6d065723166', '2026-10-18 11:15:27', 0, '2026-10-18 11:00:27', '2026-10-18 11:00:27'),
+(39, '05034569-4ac5-44db-bf71-63c5aaa22a58', 'de1c0c6c0f7e69495fa26cd722c0c16e9fcc6aa080e1f2c5e61d1fb3ff54b91c', '2026-10-18 11:22:22', 0, '2026-10-18 11:07:22', '2026-10-18 11:07:22'),
+(40, '83b11253-04df-4ab4-a64c-6733c372a8f8', 'efefe675cf5b57c092786c4cc8dbd6a2ffc0b827fb4e174d77643b2cd83816f6', '2026-10-18 11:22:53', 0, '2026-10-18 11:07:53', '2026-10-18 11:07:53'),
+(41, '82e16542-3ac8-4360-a400-3e4be3ad6bf7', '8841e16ff5888642b68c4df4eac8d93d9484d6c718be58e835459c3969195f85', '2026-10-18 11:24:05', 0, '2026-10-18 11:09:05', '2026-10-18 11:09:05'),
+(42, '05034569-4ac5-44db-bf71-63c5aaa22a58', '7c11347cec797a0fa6bfe591451d71cdfb8f4c01d1fb3b46338c5db28d093a54', '2026-10-18 11:25:18', 0, '2026-10-18 11:10:18', '2026-10-18 11:10:18'),
+(43, 'c1118800-429c-42b4-bf32-c1df3f596876', '6d3c2379d6fe0f69dde5f68eb7683001a264471b874f8805a2ad972dfa11b061', '2026-10-18 11:29:53', 0, '2026-10-18 11:14:53', '2026-10-18 11:14:53'),
+(44, '5e62b1a3-65cf-409c-ac74-ab360bb917b6', 'cd9c680d5005592841b4afb07f7de230f38e6a5293d0b1923ed4fb9c42bd2990', '2026-10-18 11:30:22', 0, '2026-10-18 11:15:22', '2026-10-18 11:15:22'),
+(45, '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', '368bca10dbc99d42ebf6cd30b10a00cae678726341916da8713b9a8a3f383db5', '2026-10-18 11:31:39', 0, '2026-10-18 11:16:39', '2026-10-18 11:16:39'),
+(46, 'c1118800-429c-42b4-bf32-c1df3f596876', 'feb38a35891cd0965a9392c078e38f4859d9a635f2bbc95c41e6b14eeda52952', '2026-10-18 11:32:43', 0, '2026-10-18 11:17:43', '2026-10-18 11:17:43'),
+(47, 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', 'f99a83aca19086b15f5d295bdff024ae0ce1d25eee9ba098bafa25cd4c95b30a', '2026-10-19 10:20:03', 0, '2026-10-19 10:05:03', '2026-10-19 10:05:03'),
+(48, '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', '8d20bd9a261048957f07ecf66365dc1f30a6c124dd6335c94743aeb7b66b2ef9', '2026-10-19 10:20:33', 0, '2026-10-19 10:05:33', '2026-10-19 10:05:33'),
+(49, 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', 'c54d647dc4cac5ffe372061b4db34e42f1d032d2871d71293283f0020d77dbf4', '2026-10-19 10:21:32', 0, '2026-10-19 10:06:32', '2026-10-19 10:06:32'),
+(50, 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', '48735d913aad0510909ca44813bf8dfd5446704a1e1e3e3d3cd559ec9ea13ec9', '2026-10-19 10:22:23', 0, '2026-10-19 10:07:23', '2026-10-19 10:07:23'),
+(51, '2ee0db53-2745-44af-a775-32f3a1bd0636', '73336ec8b688805daa93db63ae8635775c8400a91b95c243c05e025e854384d2', '2026-10-19 10:40:38', 0, '2026-10-19 10:25:38', '2026-10-19 10:25:38'),
+(52, '5e3e56ce-cee9-41c5-be79-6693595817d3', 'd8b51c502122c1a75b5a84732483033ce38c674d91de800fc2ef6aa5a5bb0a23', '2026-10-19 10:41:09', 0, '2026-10-19 10:26:09', '2026-10-19 10:26:09'),
+(53, '7667ce8e-4595-43e7-a654-0b2b27354a74', '659e986e55d55f7861831beb67d39cde724fce08dea2c75e8b069c78600d7e69', '2026-10-19 10:42:08', 0, '2026-10-19 10:27:08', '2026-10-19 10:27:08'),
+(54, '2ee0db53-2745-44af-a775-32f3a1bd0636', '9e1c924c8be079cf61a3fdab2f12efa424903e5db810866cfef34407acf49918', '2026-10-19 10:42:58', 0, '2026-10-19 10:27:58', '2026-10-19 10:27:58'),
+(55, 'd677ae0d-cae3-4e50-8437-39a021e22638', 'eb90fed7d3e90647182e82f1cce872d25f21f01dab713a1cd6a78d9c495593d8', '2026-10-19 10:51:25', 0, '2026-10-19 10:36:25', '2026-10-19 10:36:25'),
+(56, '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', '037880ad2879b7ada2aa29e1a1574a116d7fc75d415a7e7768effdf21c8f9184', '2026-10-19 10:51:55', 0, '2026-10-19 10:36:55', '2026-10-19 10:36:55'),
+(57, '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', 'ca4f4cad72dad333666da08ef16b4640eb32c02a3994f91c4453f80b74dfbbd2', '2026-10-19 10:53:01', 0, '2026-10-19 10:38:01', '2026-10-19 10:38:01'),
+(58, 'd677ae0d-cae3-4e50-8437-39a021e22638', 'fa867022472e53cad95b5da003f2ba93d9923e37cc85f7e8ff27bfa7d9a88cd3', '2026-10-19 10:53:59', 0, '2026-10-19 10:38:59', '2026-10-19 10:38:59'),
+(59, '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'a7cec990f13af885b4f82aa39ef72e7929a88847b43f0d0698675fd1c492759d', '2026-10-19 10:59:34', 0, '2026-10-19 10:44:34', '2026-10-19 10:44:34'),
+(60, '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'b4ea90f8fe9e307ddc18b9235213f43012a3de88c5fc3081b7b85e28b11cadec', '2026-10-19 11:00:05', 0, '2026-10-19 10:45:05', '2026-10-19 10:45:05'),
+(61, 'c7b0aa04-c8c9-4755-b74b-253ffce91895', '3a950d39030952de600e78c75f39cf3452df262758da91e65168646ac07484c7', '2026-10-19 11:01:27', 0, '2026-10-19 10:46:27', '2026-10-19 10:46:27'),
+(62, '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'b1437523960cc6d5772fc3fd26d76401de676ba7b91644b920f0387480c577e4', '2026-10-19 11:02:33', 0, '2026-10-19 10:47:33', '2026-10-19 10:47:33'),
+(63, '8273a20d-0d51-45c5-9fdf-102e9c35698a', '513ab197df47d56535e8fc0d02c088e615b8282a8bc09286539d062cc35631ca', '2026-10-19 11:06:00', 0, '2026-10-19 10:51:00', '2026-10-19 10:51:00'),
+(64, '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'dfa37904f2e8458bdf8da83a079cea844bd8618a22004a8f06361d292cc016fc', '2026-10-19 11:12:10', 0, '2026-10-19 10:57:10', '2026-10-19 10:57:10'),
+(65, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '22cbb62949012ece000384d738c2af935704338d1c0da9da35c472c8ee33cd88', '2026-10-19 11:14:08', 0, '2026-10-19 10:59:08', '2026-10-19 10:59:08'),
+(66, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '38431441d1b1419a277754d3d701c047a250de0831c60f917baf7497129f7da0', '2026-10-19 11:14:46', 0, '2026-10-19 10:59:46', '2026-10-19 10:59:46'),
+(67, 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', '4b04d4a6f2c8a9b828f18ca656192982a8a144c729224f4f5cf7fcbd026a6d26', '2026-10-19 11:16:14', 0, '2026-10-19 11:01:14', '2026-10-19 11:01:14'),
+(68, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '9126bdaeb99bf949a5395e21f4fb53dbfae0dd3f8a4d5e28c27667a3aaeb5bc7', '2026-10-19 11:17:41', 0, '2026-10-19 11:02:41', '2026-10-19 11:02:41'),
+(69, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '75f2b87d81cfe1b0d4eaf586408e01ba06c7ee13bf6af2c83dba3d9938ace20e', '2026-10-19 11:20:35', 0, '2026-10-19 11:05:35', '2026-10-19 11:05:35'),
+(70, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '6e9d614bf1c51a9521aa33591197d59f7bc32825d35315c237c087fe40ba6e79', '2026-10-20 04:48:44', 0, '2026-10-20 04:33:44', '2026-10-20 04:33:44'),
+(71, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'aa3b62176bbdaec15a1986ddc2d0dc5650d2ca804b8fe57ab2414856bed1d8fc', '2026-10-20 04:49:16', 0, '2026-10-20 04:34:16', '2026-10-20 04:34:16'),
+(72, 'a890b149-4c0c-4408-a158-3d00b62ff401', '627076c6aa578e468faa0a4f982a7cf7a0d44b177d882a2e5f36414dbde92e6f', '2026-10-20 04:50:18', 0, '2026-10-20 04:35:18', '2026-10-20 04:35:18'),
+(73, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'a296aa1e63247bafd95d9c19b2ad2b1179911be67098247da5290eeacce97fb7', '2026-10-20 04:51:12', 0, '2026-10-20 04:36:12', '2026-10-20 04:36:12'),
+(74, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '2d2925354c6fac9c446f6f662f560557f68454322ddf584a15ab07be6d84085a', '2026-10-20 04:53:28', 0, '2026-10-20 04:38:28', '2026-10-20 04:38:28'),
+(75, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '5a507331303f3f76497958097cec6e8374d7560655f75cb15bf1ca4900b45e2c', '2026-10-20 04:58:51', 0, '2026-10-20 04:43:51', '2026-10-20 04:43:51'),
+(76, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '9680fb34d00e005b041c685b49ef768dceef0039b30872c488ff7cc9e4888bd9', '2026-10-20 05:32:34', 0, '2026-10-20 05:17:34', '2026-10-20 05:17:34'),
+(77, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '9fac11121fc2b41c33abac851bbd771e30f51e85e5e18325f936158a7fc839b0', '2026-10-20 05:49:18', 0, '2026-10-20 05:34:19', '2026-10-20 05:34:19'),
+(78, 'a890b149-4c0c-4408-a158-3d00b62ff401', '31f5fec86fa51f54627902d83f8bbc1b39df1e90aa6edddd189094b91bd3680a', '2026-10-20 05:49:36', 0, '2026-10-20 05:34:36', '2026-10-20 05:34:36'),
+(79, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '6da2673b04baef9f15642513bbbf9f98d51e067a1cc034dc0463c60caa11faae', '2026-10-20 05:55:36', 0, '2026-10-20 05:40:36', '2026-10-20 05:40:36'),
+(80, 'a890b149-4c0c-4408-a158-3d00b62ff401', '31ce5f3699307d489382e5e4aaaf9b65fc0b33f600094b6b1c8298fb41fce121', '2026-10-20 05:55:53', 0, '2026-10-20 05:40:53', '2026-10-20 05:40:53'),
+(81, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '2ada194b94260a586244ec155926d91beeecb54f40022ec665f0db5ddfa960ab', '2026-10-20 06:13:04', 0, '2026-10-20 05:58:04', '2026-10-20 05:58:04'),
+(82, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '01179a0132f2152de7761cf2a128041ad557abecca870f259677f054b7f3ee81', '2026-10-20 06:13:58', 0, '2026-10-20 05:58:58', '2026-10-20 05:58:58'),
+(83, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '621e3782374fcacf851be8e432468622ad8755bfd43a8d32fad0287cef027c68', '2026-10-20 06:14:45', 0, '2026-10-20 05:59:46', '2026-10-20 05:59:46'),
+(84, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '9f35b6f5298dab44235ec27f1e141139fde30cca49e7108aa72e0bbbd29bf3a5', '2026-10-20 06:20:57', 0, '2026-10-20 06:05:57', '2026-10-20 06:05:57'),
+(85, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '2c15f04b8ffc73d6fb0a747aac2e4172764b96da4804feaf66899a504798b6de', '2026-10-20 10:01:32', 0, '2026-10-20 09:46:32', '2026-10-20 09:46:32'),
+(86, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '6b76cfca28dd2010e7d2e1fc53a91fd4b0b823207488f68817c7e7a9e6d78e94', '2026-10-20 10:10:57', 0, '2026-10-20 09:55:57', '2026-10-20 09:55:57'),
+(87, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '6ef12306e2e3503f0e3c5163a1c468ab21329f19c6861db3d2df877e6ed575c6', '2026-10-20 10:11:27', 0, '2026-10-20 09:56:27', '2026-10-20 09:56:27'),
+(88, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'b42ed0977d5a24a634c05819f04ef915fbe9a49cc338074b14ac91b2ed4fffd7', '2026-10-20 10:18:34', 0, '2026-10-20 10:03:35', '2026-10-20 10:03:35'),
+(89, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'a4d7a4c531e7d11109d12dbdb9a8d778809d0c0d92a96497484dd51bc7a4835d', '2026-10-20 10:18:44', 0, '2026-10-20 10:03:44', '2026-10-20 10:03:44'),
+(90, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '18e74c6ab8622d826d97b56e210dcba84ad854811bc8083083b2e11f68abb8a2', '2026-10-20 10:27:35', 0, '2026-10-20 10:12:35', '2026-10-20 10:12:35'),
+(91, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'cad7fba657a03430cd5bf409a0ed87b32a2113f44bc4f4a76256d5daad83f530', '2026-10-20 10:27:47', 0, '2026-10-20 10:12:47', '2026-10-20 10:12:47'),
+(92, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'eb3dff6f942ba7e972d0e886bf074d521b5627c896756a5a314981f76c1ae2b4', '2026-10-20 10:31:24', 0, '2026-10-20 10:16:24', '2026-10-20 10:16:24'),
+(93, 'a890b149-4c0c-4408-a158-3d00b62ff401', '6f8a65d7dbb5224b250128b1f837784f3b9203d98d4daa38e16cc54cddced543', '2026-10-20 10:31:41', 0, '2026-10-20 10:16:41', '2026-10-20 10:16:41'),
+(94, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'f46ed7fb781d4185f7937890a25f3ee2ac40ad5b1326bb335d06a56dcb42de4c', '2026-10-20 10:32:18', 0, '2026-10-20 10:17:18', '2026-10-20 10:17:18'),
+(95, 'a890b149-4c0c-4408-a158-3d00b62ff401', 'cd1fea0fbd82e6dfdd2baf53c157b4f5cd07568871e3e3414788d66efb49a8ae', '2026-10-20 10:32:52', 0, '2026-10-20 10:17:52', '2026-10-20 10:17:52'),
+(96, 'a890b149-4c0c-4408-a158-3d00b62ff401', 'ffd4903e7e45a2e93803650caafb185d0262de7b3a2ade73a338be4754a2ca93', '2026-10-20 10:38:37', 0, '2026-10-20 10:23:37', '2026-10-20 10:23:37'),
+(97, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '4132de9611c0bae38d977b06456536e1c8fd1c4fd5b20c42722f82aae034902c', '2026-10-20 10:39:44', 0, '2026-10-20 10:24:44', '2026-10-20 10:24:44'),
+(98, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '74b3be522895b4832ad30e602d95caa34321f621413f99114b66d522df3359f7', '2026-10-20 10:50:25', 0, '2026-10-20 10:35:25', '2026-10-20 10:35:25'),
+(99, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '7c8ad1574ac36d9dc3a09c6b5b3f60dce046f40acf7828a56b6f695035a02a5d', '2026-10-20 10:53:38', 0, '2026-10-20 10:38:38', '2026-10-20 10:38:38'),
+(100, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '6bccaf9fbb4914c8baaadc01c68fb30c8edb9fdc2b4be7423c1182c6436ac697', '2026-10-20 11:42:59', 0, '2026-10-20 11:27:59', '2026-10-20 11:27:59'),
+(101, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '5328858b70f6865e38e6eb1364477cd918b8ba6b1856f4fc5f1b04bd4b5d09c2', '2026-10-20 11:43:11', 0, '2026-10-20 11:28:11', '2026-10-20 11:28:11'),
+(102, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'edd1ba14afaaf6f94d0477caddb3414af48ed901dab98eec10bd92a054b80c2d', '2026-10-20 11:43:28', 0, '2026-10-20 11:28:29', '2026-10-20 11:28:29'),
+(103, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '0fc01237a782a42d15034a408ae22fa6d7ab74aa7948059115169e1b8bde4338', '2026-10-20 11:46:17', 0, '2026-10-20 11:31:17', '2026-10-20 11:31:17');
 
 -- --------------------------------------------------------
 
@@ -340,6 +425,17 @@ CREATE TABLE `booking_token_orders` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `booking_token_orders`
+--
+
+INSERT INTO `booking_token_orders` (`id`, `uuid`, `booking_uuid`, `party_uuid`, `party_role`, `amount`, `currency`, `status`, `provider_order_id`, `provider_refund_id`, `refund_amount`, `created_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, '0fada140-324b-49b9-8976-18a608729736', '747314bc-a824-452c-b595-c9e3ebbae520', '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'owner', '1000.00', 'INR', 'paid', 'TS_TOKEN_D8GMQZETVZLXY4U1', NULL, NULL, '615e4b76-ddfe-4f64-81bb-1b1433559f32', '2026-10-19 10:49:38', '2026-10-19 10:50:02', NULL),
+(2, '46e3b4be-9817-45cc-865a-76a89d0c41e1', '794d8e99-1fd2-4589-9a4d-6d28c813b924', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', 'owner', '1000.00', 'INR', 'paid', 'TS_TOKEN_FKELWIPQNARSXWY5', NULL, NULL, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '2026-10-19 11:04:40', '2026-10-19 11:04:54', NULL),
+(3, '8d2669b7-05ba-42d5-8c0e-2b1a180ef7ca', '794d8e99-1fd2-4589-9a4d-6d28c813b924', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'provider', '1000.00', 'INR', 'paid', 'TS_TOKEN_NJ716TD8FLMGSBMK', NULL, NULL, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '2026-10-19 11:06:36', '2026-10-19 11:06:50', NULL),
+(4, 'e9029238-e7f0-4820-a247-853f791c1fcf', '346c7138-9071-4698-886c-37ba3e80c85e', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'owner', '1000.00', 'INR', 'paid', 'TS_TOKEN_WRI7KYIUZTWTLCXP', NULL, NULL, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '2026-10-20 04:37:32', '2026-10-20 04:37:44', NULL),
+(5, '02a9102e-2c2f-466e-b15f-9d0361ceaa8d', '346c7138-9071-4698-886c-37ba3e80c85e', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'provider', '1000.00', 'INR', 'paid', 'TS_TOKEN_NIAT9WIMUNB66M5I', NULL, NULL, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '2026-10-20 04:39:13', '2026-10-20 04:39:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -2240,6 +2336,27 @@ CREATE TABLE `loads` (
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `loads`
+--
+
+INSERT INTO `loads` (`id`, `uuid`, `load_reference`, `posted_by_uuid`, `posted_by_role`, `posted_by_name`, `on_behalf_of_customer`, `pickup_city`, `drop_city`, `pickup_address`, `drop_address`, `material`, `weight_tons`, `vehicle_type`, `pickup_date`, `budget`, `notes`, `status`, `applications_count`, `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'cff7ae22-96b3-4935-b66c-09ca0e50fa5c', 'LD-000001', 'cc150c5d-89c4-4567-9e98-d2416778504b', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi, India', 'Navi Mumbai, Maharashtra, India', 'Goods', '16.00', '32ft Trailer', '2026-10-19', '20000.00', 'I need to deliver today 908098098', 'open', 0, 'cc150c5d-89c4-4567-9e98-d2416778504b', NULL, '2026-10-18 04:58:36', '2026-10-18 04:58:36', NULL),
+(2, '4feec15c-a7a9-4197-a0f3-ace32bf5f85b', 'LD-000002', '3e594e4c-de9c-45c4-9422-e3184a53d745', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'open', 0, '3e594e4c-de9c-45c4-9422-e3184a53d745', NULL, '2026-10-18 09:31:12', '2026-10-18 09:31:12', NULL),
+(3, '6cb5e06c-0593-404f-a40f-b1b472f314df', 'LD-000003', '1d3a7d82-8460-48e8-a34e-4b6c0bb53453', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'open', 0, '1d3a7d82-8460-48e8-a34e-4b6c0bb53453', NULL, '2026-10-18 10:20:36', '2026-10-18 10:20:36', NULL),
+(4, '24fb6470-557c-43a1-b13c-784636af0a08', 'LD-000004', '7112e017-5efe-4a83-a652-f402de648372', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 1, '7112e017-5efe-4a83-a652-f402de648372', NULL, '2026-10-18 10:48:10', '2026-10-18 10:49:26', NULL),
+(5, 'ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17', 'LD-000005', 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 2, 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', NULL, '2026-10-18 10:57:54', '2026-10-18 11:00:21', NULL),
+(6, '376ce87b-bfcd-46b0-8e54-02073dff504f', 'LD-000006', '05034569-4ac5-44db-bf71-63c5aaa22a58', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 2, '05034569-4ac5-44db-bf71-63c5aaa22a58', NULL, '2026-10-18 11:07:38', '2026-10-18 11:10:11', NULL),
+(7, 'a3ee7720-dc20-4d0f-ab27-fb2a6627520a', 'LD-000007', 'c1118800-429c-42b4-bf32-c1df3f596876', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 2, 'c1118800-429c-42b4-bf32-c1df3f596876', NULL, '2026-10-18 11:15:08', '2026-10-18 11:17:37', NULL),
+(8, '3289c4ed-4145-4b16-8838-d444633d776f', 'LD-000008', 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 2, 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', NULL, '2026-10-19 10:05:19', '2026-10-19 10:07:18', NULL),
+(9, 'd073c286-afca-4abb-9793-60187ac46fae', 'LD-000009', '2ee0db53-2745-44af-a775-32f3a1bd0636', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 2, '2ee0db53-2745-44af-a775-32f3a1bd0636', NULL, '2026-10-19 10:25:55', '2026-10-19 10:27:53', NULL),
+(10, '81bffce1-738c-459b-b3f9-501c3360121a', 'LD-000010', 'd677ae0d-cae3-4e50-8437-39a021e22638', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'booked', 2, 'd677ae0d-cae3-4e50-8437-39a021e22638', NULL, '2026-10-19 10:36:41', '2026-10-19 10:39:34', NULL),
+(11, 'fe98177f-ddd8-4758-9dd2-c3adeb9c16b5', 'LD-000011', '615e4b76-ddfe-4f64-81bb-1b1433559f32', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'booked', 2, '615e4b76-ddfe-4f64-81bb-1b1433559f32', NULL, '2026-10-19 10:44:51', '2026-10-19 10:48:26', NULL),
+(12, '0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535', 'LD-000012', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'booked', 2, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', NULL, '2026-10-19 10:59:30', '2026-10-19 11:03:33', NULL),
+(13, '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', 'LD-000013', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'booked', 2, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, '2026-10-20 04:34:01', '2026-10-20 04:36:49', NULL),
+(14, '231fc0fb-af9e-496a-aade-84b62b3fce4d', 'LD-000014', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'booked', 1, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, '2026-10-20 10:16:35', '2026-10-20 10:24:10', NULL),
+(15, '760b5114-c4d0-4ef4-a42e-13db37300d3e', 'LD-000015', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, NULL, NULL, 'Delhi', 'Navi Mumbai', 'Delhi', 'Navi Mumbai', 'E2E steel coils', '16.00', '32ft Trailer', NULL, '20000.00', NULL, 'applications_received', 1, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, '2026-10-20 11:28:23', '2026-10-20 11:32:08', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -2267,6 +2384,33 @@ CREATE TABLE `load_applications` (
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `load_applications`
+--
+
+INSERT INTO `load_applications` (`id`, `uuid`, `application_reference`, `load_uuid`, `applicant_uuid`, `applicant_role`, `applicant_name`, `vehicle_reg_number`, `vehicle_type`, `availability`, `quoted_amount`, `message`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'e7182096-93a1-44b6-b64f-9b0e71b508bb', 'APP-XK0EVIUG', '24fb6470-557c-43a1-b13c-784636af0a08', 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE40254896A', '32ft Trailer', 'Available today', '18500.00', NULL, 'pending', 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', NULL, '2026-10-18 10:49:26', '2026-10-18 10:49:26', NULL),
+(2, '05ee4f7d-1b22-4295-8f65-275a4bb184d8', 'APP-OI70SO19', 'ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17', '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE40839478A', '32ft Trailer', 'Available today', '18500.00', NULL, 'pending', '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', NULL, '2026-10-18 10:59:11', '2026-10-18 10:59:11', NULL),
+(3, '5c9fbb73-15bf-4e2c-956a-c0fe4d0da799', 'APP-NUR0CBVQ', 'ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17', 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE40839478B', '32ft Trailer', 'Available today', '18000.00', NULL, 'pending', 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', NULL, '2026-10-18 11:00:21', '2026-10-18 11:00:21', NULL),
+(4, '41d2adfa-2587-42c7-b524-cd9229e4695b', 'APP-L98C84R4', '376ce87b-bfcd-46b0-8e54-02073dff504f', '83b11253-04df-4ab4-a64c-6733c372a8f8', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE41422112A', '32ft Trailer', 'Available today', '18500.00', NULL, 'pending', '83b11253-04df-4ab4-a64c-6733c372a8f8', NULL, '2026-10-18 11:08:50', '2026-10-18 11:08:50', NULL),
+(5, 'c635ca31-f39c-43dc-864d-7708c6cb1ab6', 'APP-Q8G5ZK6H', '376ce87b-bfcd-46b0-8e54-02073dff504f', '82e16542-3ac8-4360-a400-3e4be3ad6bf7', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE41422112B', '32ft Trailer', 'Available today', '18000.00', NULL, 'pending', '82e16542-3ac8-4360-a400-3e4be3ad6bf7', NULL, '2026-10-18 11:10:11', '2026-10-18 11:10:11', NULL),
+(6, '4520ad57-b8a5-4b6f-b8f6-72802623a809', 'APP-RUDRBI82', 'a3ee7720-dc20-4d0f-ab27-fb2a6627520a', '5e62b1a3-65cf-409c-ac74-ab360bb917b6', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE41875660A', '32ft Trailer', 'Available today', '18500.00', NULL, 'pending', '5e62b1a3-65cf-409c-ac74-ab360bb917b6', NULL, '2026-10-18 11:16:25', '2026-10-18 11:16:25', NULL),
+(7, '91c0581b-b882-4cf6-aba8-8dd29eabb4f3', 'APP-JWVJ0VHU', 'a3ee7720-dc20-4d0f-ab27-fb2a6627520a', '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE41875660B', '32ft Trailer', 'Available today', '18000.00', NULL, 'pending', '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', NULL, '2026-10-18 11:17:37', '2026-10-18 11:17:37', NULL),
+(8, '7c32aa83-cd6e-467a-90d0-91a294f4bf27', 'APP-BGE0BU5Y', '3289c4ed-4145-4b16-8838-d444633d776f', '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE24084066A', '32ft Trailer', 'Available today', '18500.00', NULL, 'pending', '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', NULL, '2026-10-19 10:06:19', '2026-10-19 10:06:19', NULL),
+(9, '63497ce3-69e3-4df4-bd5f-4cf3aa01a1a3', 'APP-NU829M1A', '3289c4ed-4145-4b16-8838-d444633d776f', 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE24084066B', '32ft Trailer', 'Available today', '18000.00', NULL, 'pending', 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', NULL, '2026-10-19 10:07:18', '2026-10-19 10:07:18', NULL),
+(10, 'f29ba50f-587b-423e-873e-c0bed00e50fb', 'APP-JAC6SATO', 'd073c286-afca-4abb-9793-60187ac46fae', '5e3e56ce-cee9-41c5-be79-6693595817d3', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE25319679A', '32ft Trailer', 'Available today', '18500.00', NULL, 'pending', '5e3e56ce-cee9-41c5-be79-6693595817d3', NULL, '2026-10-19 10:26:54', '2026-10-19 10:26:54', NULL),
+(11, '9d8977f9-7092-4a78-9660-994243abeb70', 'APP-UUSYBLUF', 'd073c286-afca-4abb-9793-60187ac46fae', '7667ce8e-4595-43e7-a654-0b2b27354a74', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE25319679B', '32ft Trailer', 'Available today', '18000.00', NULL, 'pending', '7667ce8e-4595-43e7-a654-0b2b27354a74', NULL, '2026-10-19 10:27:53', '2026-10-19 10:27:53', NULL),
+(12, '9d040a37-bdd8-4629-946b-936c366d3f6c', 'APP-R57NNXNA', '81bffce1-738c-459b-b3f9-501c3360121a', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE25967494A', '32ft Trailer', 'Available today', '18500.00', NULL, 'accepted', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', NULL, '2026-10-19 10:37:47', '2026-10-19 10:39:34', NULL),
+(13, '6b20d235-53a9-4652-be3a-f8ee36b9508a', 'APP-NNZL4VXN', '81bffce1-738c-459b-b3f9-501c3360121a', '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE25967494B', '32ft Trailer', 'Available today', '18000.00', NULL, 'rejected', '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', NULL, '2026-10-19 10:38:52', '2026-10-19 10:39:34', NULL),
+(14, '2b267518-0d7b-4dd7-b2ab-55dd17834351', 'APP-7BHZ7NNZ', 'fe98177f-ddd8-4758-9dd2-c3adeb9c16b5', '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE26454413A', '32ft Trailer', 'Available today', '18500.00', NULL, 'accepted', '8273a20d-0d51-45c5-9fdf-102e9c35698a', NULL, '2026-10-19 10:46:10', '2026-10-19 10:48:26', NULL),
+(15, 'f2e06b82-fbea-417a-9a71-2cfe816eb638', 'APP-BI01NU8T', 'fe98177f-ddd8-4758-9dd2-c3adeb9c16b5', 'c7b0aa04-c8c9-4755-b74b-253ffce91895', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE26454413B', '32ft Trailer', 'Available today', '18000.00', NULL, 'rejected', 'c7b0aa04-c8c9-4755-b74b-253ffce91895', NULL, '2026-10-19 10:47:27', '2026-10-19 10:48:26', NULL),
+(16, '2f16128e-baf0-4f23-b655-dc6a59a64cae', 'APP-3LRQBJEN', '0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE27320654A', '32ft Trailer', 'Available today', '18500.00', NULL, 'accepted', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', NULL, '2026-10-19 11:00:57', '2026-10-19 11:03:33', NULL),
+(17, 'd15a4213-042d-4a01-a00d-fe632b64d57e', 'APP-KEFVEWYP', '0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535', 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE27320654B', '32ft Trailer', 'Available today', '18000.00', NULL, 'rejected', 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', NULL, '2026-10-19 11:02:32', '2026-10-19 11:03:33', NULL),
+(18, 'f6deabd1-dc64-4977-8924-fd58f8e512a6', 'APP-PGGVHJ35', '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE90594444A', '32ft Trailer', 'Available today', '18500.00', NULL, 'accepted', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', NULL, '2026-10-20 04:35:04', '2026-10-20 04:36:49', NULL),
+(19, '415df8d8-b278-4cf0-8104-3ccb075353f9', 'APP-GXI1FMV1', '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', 'a890b149-4c0c-4408-a158-3d00b62ff401', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE90594444B', '32ft Trailer', 'Available today', '18000.00', NULL, 'rejected', 'a890b149-4c0c-4408-a158-3d00b62ff401', NULL, '2026-10-20 04:36:07', '2026-10-20 04:36:49', NULL),
+(20, 'b0949298-9b62-4ab4-86dc-871da67b0846', 'APP-NOBJJXVX', '231fc0fb-af9e-496a-aade-84b62b3fce4d', 'a890b149-4c0c-4408-a158-3d00b62ff401', 'truck-owner', 'Marketplace Fleet Owner 3', 'TSE90594444B', '32ft Trailer', 'Available today', '18000.00', NULL, 'accepted', 'a890b149-4c0c-4408-a158-3d00b62ff401', NULL, '2026-10-20 10:17:12', '2026-10-20 10:24:10', NULL),
+(21, '33d8aa7e-0238-4b97-9735-6eb8789cd21c', 'APP-EIGN40SI', '760b5114-c4d0-4ef4-a42e-13db37300d3e', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'truck-owner', 'Marketplace Fleet Owner 2', 'TSE90594444A', '32ft Trailer', 'Available today', '18000.00', NULL, 'pending', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', NULL, '2026-10-20 11:32:08', '2026-10-20 11:32:08', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -2289,11 +2433,53 @@ CREATE TABLE `marketplace_bookings` (
   `provider_payout` decimal(14,2) DEFAULT NULL,
   `commission_policy_version` int(10) UNSIGNED DEFAULT NULL,
   `status` enum('awaiting_tokens','confirmed','in_transit','completed','cancelled','disputed') NOT NULL DEFAULT 'awaiting_tokens',
+  `workflow` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`workflow`)),
   `created_by` char(36) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `marketplace_bookings`
+--
+
+INSERT INTO `marketplace_bookings` (`id`, `uuid`, `booking_reference`, `load_uuid`, `application_uuid`, `owner_uuid`, `provider_uuid`, `gross_freight`, `shipper_fee`, `provider_fee`, `total_commission`, `shipper_payable`, `provider_payout`, `commission_policy_version`, `status`, `workflow`, `created_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, '2f9f1bfa-22a4-454e-9a80-d5b90023e37c', 'TS-UUZMSJMLLM', '81bffce1-738c-459b-b3f9-501c3360121a', '9d040a37-bdd8-4629-946b-936c366d3f6c', 'd677ae0d-cae3-4e50-8437-39a021e22638', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', '18500.00', '1091.50', '1091.50', '2183.00', '19591.50', '17408.50', 1, 'awaiting_tokens', NULL, 'd677ae0d-cae3-4e50-8437-39a021e22638', '2026-10-19 10:39:40', '2026-10-19 10:39:40', NULL),
+(2, '747314bc-a824-452c-b595-c9e3ebbae520', 'TS-F24HZFG1RF', 'fe98177f-ddd8-4758-9dd2-c3adeb9c16b5', '2b267518-0d7b-4dd7-b2ab-55dd17834351', '615e4b76-ddfe-4f64-81bb-1b1433559f32', '8273a20d-0d51-45c5-9fdf-102e9c35698a', '18500.00', '1091.50', '1091.50', '2183.00', '19591.50', '17408.50', 1, 'awaiting_tokens', NULL, '615e4b76-ddfe-4f64-81bb-1b1433559f32', '2026-10-19 10:48:35', '2026-10-19 10:48:35', NULL),
+(3, '794d8e99-1fd2-4589-9a4d-6d28c813b924', 'TS-DAWSYFXCDF', '0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535', '2f16128e-baf0-4f23-b655-dc6a59a64cae', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '18500.00', '1091.50', '1091.50', '2183.00', '19591.50', '17408.50', 1, 'confirmed', NULL, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '2026-10-19 11:03:38', '2026-10-19 11:06:50', NULL),
+(4, '346c7138-9071-4698-886c-37ba3e80c85e', 'TS-SXIFZM3X1R', '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', 'f6deabd1-dc64-4977-8924-fd58f8e512a6', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '18500.00', '1091.50', '1091.50', '2183.00', '19591.50', '17408.50', 1, 'completed', '{\"vehicle_assignment\":{\"mode\":\"Own Fleet\",\"vehicle_reg_number\":\"TSE90594444A\",\"subcontracted_to\":null,\"assigned_at\":\"2026-10-20T10:14:20+00:00\"},\"driver_assignment\":{\"driver_uuid\":\"08fee3ce-820d-4c1c-ab48-eb9d89c5b5ee\",\"driver_name\":\"Marketplace Driver 93244132\",\"driver_phone\":\"8093244132\",\"assigned_at\":\"2026-10-20T10:48:30+00:00\"},\"loading_completed_at\":\"2026-10-20T11:28:35+00:00\",\"released_milestones\":{\"Loading Advance\":\"2026-10-20T11:29:27+00:00\"},\"trip_started_at\":\"2026-10-20T11:30:15+00:00\",\"mid_trip_milestones\":[{\"id\":\"b9b29899-d69c-4a6d-adbe-039c11660a09\",\"amount\":2000,\"trigger\":\"Test manual release\",\"created_at\":\"2026-10-20T15:17:13+00:00\",\"released_at\":\"2026-10-20T15:17:19+00:00\"}],\"trip_completed_at\":\"2026-10-20T15:26:18+00:00\",\"final_payment\":{\"freight_amount\":9100,\"shipper_platform_fee\":1091.5,\"total_amount\":10191.5,\"reference\":\"E2E-TEST-ONLY-NO-PAYMENT\",\"settled_at\":\"2026-10-20T15:27:01+00:00\"}}', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '2026-10-20 04:36:55', '2026-10-20 09:57:02', NULL),
+(5, '852fc26e-0db4-4523-9b03-25816a743717', 'TS-Z8MYGAZ75E', '231fc0fb-af9e-496a-aade-84b62b3fce4d', 'b0949298-9b62-4ab4-86dc-871da67b0846', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'a890b149-4c0c-4408-a158-3d00b62ff401', '17000.00', '1003.00', '1003.00', '2006.00', '18003.00', '15997.00', 1, 'awaiting_tokens', NULL, 'a890b149-4c0c-4408-a158-3d00b62ff401', '2026-10-20 10:24:18', '2026-10-20 10:24:18', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `marketplace_chat_messages`
+--
+
+CREATE TABLE `marketplace_chat_messages` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` char(36) NOT NULL,
+  `booking_uuid` char(36) NOT NULL,
+  `load_uuid` char(36) NOT NULL,
+  `application_uuid` char(36) NOT NULL,
+  `sender_uuid` char(36) NOT NULL,
+  `sender_role` varchar(20) NOT NULL,
+  `sender_name` varchar(200) NOT NULL,
+  `message` text NOT NULL,
+  `created_by` char(36) DEFAULT NULL,
+  `updated_by` char(36) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `marketplace_chat_messages`
+--
+
+INSERT INTO `marketplace_chat_messages` (`id`, `uuid`, `booking_uuid`, `load_uuid`, `application_uuid`, `sender_uuid`, `sender_role`, `sender_name`, `message`, `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'fd3489b9-eabb-433c-95de-e2955fc720e3', '346c7138-9071-4698-886c-37ba3e80c85e', '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', 'f6deabd1-dc64-4977-8924-fd58f8e512a6', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'owner', 'Marketplace Shipper 11', 'E2E chat test 10945507', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', NULL, '2026-10-20 10:14:49', '2026-10-20 10:14:49', NULL);
 
 -- --------------------------------------------------------
 
@@ -2319,6 +2505,35 @@ CREATE TABLE `marketplace_disputes` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `marketplace_drivers`
+--
+
+CREATE TABLE `marketplace_drivers` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` char(36) NOT NULL,
+  `owner_uuid` char(36) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `phone` varchar(10) NOT NULL,
+  `license_number` varchar(40) NOT NULL,
+  `license_expiry` date DEFAULT NULL,
+  `experience_years` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
+  `address` varchar(500) DEFAULT NULL,
+  `status` enum('available','inactive') NOT NULL DEFAULT 'available',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `marketplace_drivers`
+--
+
+INSERT INTO `marketplace_drivers` (`id`, `uuid`, `owner_uuid`, `name`, `phone`, `license_number`, `license_expiry`, `experience_years`, `address`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, '08fee3ce-820d-4c1c-ab48-eb9d89c5b5ee', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Marketplace Driver 93244132', '8093244132', 'TSE-93244132', NULL, 0, NULL, 'available', '2026-10-20 05:17:49', '2026-10-20 05:17:49', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `marketplace_settlements`
 --
 
@@ -2338,6 +2553,62 @@ CREATE TABLE `marketplace_settlements` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `marketplace_settlements`
+--
+
+INSERT INTO `marketplace_settlements` (`id`, `uuid`, `booking_uuid`, `gross_freight`, `shipper_fee`, `provider_fee`, `shipper_payable`, `provider_payout`, `status`, `settled_at`, `created_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'ef08809b-e7ca-4631-88cf-31b310bae83e', '346c7138-9071-4698-886c-37ba3e80c85e', '18500.00', '1091.50', '1091.50', '19591.50', '17408.50', 'settled', '2026-10-20 09:57:01', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '2026-10-20 09:56:48', '2026-10-20 09:57:01', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `marketplace_vehicles`
+--
+
+CREATE TABLE `marketplace_vehicles` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` char(36) NOT NULL,
+  `owner_uuid` char(36) NOT NULL,
+  `registration_number` varchar(32) NOT NULL,
+  `vehicle_type` varchar(64) NOT NULL,
+  `make` varchar(100) NOT NULL,
+  `model` varchar(100) NOT NULL,
+  `year_of_make` smallint(5) UNSIGNED DEFAULT NULL,
+  `capacity_tons` decimal(10,2) NOT NULL,
+  `status` enum('available','on_trip','maintenance','inactive') NOT NULL DEFAULT 'available',
+  `created_by` char(36) DEFAULT NULL,
+  `updated_by` char(36) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `marketplace_vehicles`
+--
+
+INSERT INTO `marketplace_vehicles` (`id`, `uuid`, `owner_uuid`, `registration_number`, `vehicle_type`, `make`, `model`, `year_of_make`, `capacity_tons`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'da1c33f3-90c3-40cc-96ad-feddbd9fb5ea', 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', 'TSE40254896A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', NULL, '2026-10-18 10:48:44', '2026-10-18 10:48:44', NULL),
+(2, 'a352cccf-d33f-448f-a744-8f31ca00b291', '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', 'TSE40839478A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', NULL, '2026-10-18 10:58:28', '2026-10-18 10:58:28', NULL),
+(3, '2ac7f4bf-dc82-461e-885b-651df32ac7ef', 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', 'TSE40839478B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', NULL, '2026-10-18 10:59:42', '2026-10-18 10:59:42', NULL),
+(4, 'e693577d-7a91-44e8-ba64-de51851b32ea', '83b11253-04df-4ab4-a64c-6733c372a8f8', 'TSE41422112A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '83b11253-04df-4ab4-a64c-6733c372a8f8', NULL, '2026-10-18 11:08:12', '2026-10-18 11:08:12', NULL),
+(5, '42b6f5d1-b825-4f42-9fae-e32d4b3b2ac1', '82e16542-3ac8-4360-a400-3e4be3ad6bf7', 'TSE41422112B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '82e16542-3ac8-4360-a400-3e4be3ad6bf7', NULL, '2026-10-18 11:09:24', '2026-10-18 11:09:24', NULL),
+(6, '9a5e04dc-bb2a-46c1-9411-0540e8707215', '5e62b1a3-65cf-409c-ac74-ab360bb917b6', 'TSE41875660A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '5e62b1a3-65cf-409c-ac74-ab360bb917b6', NULL, '2026-10-18 11:15:42', '2026-10-18 11:15:42', NULL),
+(7, '82c176c5-2517-4eee-97fe-5d1a9449a721', '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', 'TSE41875660B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', NULL, '2026-10-18 11:16:58', '2026-10-18 11:16:58', NULL),
+(8, '33c1274b-f9d8-41ce-b053-d7b09c2bfcdc', '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', 'TSE24084066A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', NULL, '2026-10-19 10:05:52', '2026-10-19 10:05:52', NULL),
+(9, '8ef4a21d-49cd-486c-8d75-8b216b43cc69', 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', 'TSE24084066B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', NULL, '2026-10-19 10:06:52', '2026-10-19 10:06:52', NULL),
+(10, 'af9728fd-3937-4a89-abde-0c67f3a6b441', '5e3e56ce-cee9-41c5-be79-6693595817d3', 'TSE25319679A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '5e3e56ce-cee9-41c5-be79-6693595817d3', NULL, '2026-10-19 10:26:28', '2026-10-19 10:26:28', NULL),
+(11, '8a8a2339-c164-482b-88c8-6e18ea599da5', '7667ce8e-4595-43e7-a654-0b2b27354a74', 'TSE25319679B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '7667ce8e-4595-43e7-a654-0b2b27354a74', NULL, '2026-10-19 10:27:27', '2026-10-19 10:27:27', NULL),
+(12, '0a0bc505-2a40-4889-a961-b4ba96efebc0', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', 'TSE25967494A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', NULL, '2026-10-19 10:37:18', '2026-10-19 10:37:18', NULL),
+(13, 'cb5f686e-4681-4a5c-9a2f-8d93302e6475', '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', 'TSE25967494B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', NULL, '2026-10-19 10:38:22', '2026-10-19 10:38:22', NULL),
+(14, 'b37c7726-37f7-4e9c-a9d4-c7438b9fc0e0', '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'TSE26454413A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '8273a20d-0d51-45c5-9fdf-102e9c35698a', NULL, '2026-10-19 10:45:24', '2026-10-19 10:45:24', NULL),
+(15, '202f9970-2907-4502-8aaa-4f444252d707', 'c7b0aa04-c8c9-4755-b74b-253ffce91895', 'TSE26454413B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', 'c7b0aa04-c8c9-4755-b74b-253ffce91895', NULL, '2026-10-19 10:46:47', '2026-10-19 10:46:47', NULL),
+(16, 'af29b527-934b-4bca-b981-6d1b6169d1d2', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'TSE27320654A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', NULL, '2026-10-19 11:00:08', '2026-10-19 11:00:08', NULL),
+(17, '4c1a30ba-a424-49d9-b52c-62777471a963', 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', 'TSE27320654B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', NULL, '2026-10-19 11:01:43', '2026-10-19 11:01:43', NULL),
+(18, 'bf58ac75-61f8-416c-968e-fb40f7156b37', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'TSE90594444A', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', NULL, '2026-10-20 04:34:36', '2026-10-20 04:34:36', NULL),
+(19, 'f8ecab57-6c5c-427e-a981-4bb0a232714c', 'a890b149-4c0c-4408-a158-3d00b62ff401', 'TSE90594444B', '32ft Trailer', 'Tata', 'Signa E2E', 2024, '24.00', 'available', 'a890b149-4c0c-4408-a158-3d00b62ff401', NULL, '2026-10-20 04:35:38', '2026-10-20 04:35:38', NULL);
 
 -- --------------------------------------------------------
 
@@ -2453,7 +2724,14 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (98, 'create_notifications_table', 5),
 (99, '2026100608_add_commission_snapshot_to_marketplace_bookings_table', 6),
 (100, '2026100609_create_marketplace_settlements_table', 7),
-(101, '2026100610_create_marketplace_disputes_table', 8);
+(101, '2026100610_create_marketplace_disputes_table', 8),
+(102, '2026100611_add_workflow_to_marketplace_bookings_table', 9),
+(103, '20261010100000_add_truck_owner_user_type', 9),
+(104, '2026101010_create_marketplace_chat_messages_table', 9),
+(105, '2026101110_add_audit_columns_to_marketplace_chat_messages_table', 9),
+(106, '2026_10_11_000001_create_user_notifications_table', 9),
+(107, '2026_10_18_120000_create_marketplace_vehicles_table', 9),
+(108, '2026_10_20_120000_create_marketplace_drivers_table', 10);
 
 -- --------------------------------------------------------
 
@@ -2519,6 +2797,34 @@ CREATE TABLE `negotiation_offers` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `negotiation_offers`
+--
+
+INSERT INTO `negotiation_offers` (`id`, `uuid`, `application_uuid`, `load_uuid`, `by_role`, `by_uuid`, `by_name`, `amount`, `message`, `created_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'a4371c5c-7bbd-4e57-b00d-0ebdad6fe90e', 'e7182096-93a1-44b6-b64f-9b0e71b508bb', '24fb6470-557c-43a1-b13c-784636af0a08', 'applicant', 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', 'Marketplace Fleet Owner 2', '18500.00', NULL, 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', '2026-10-18 10:49:26', '2026-10-18 10:49:26', NULL),
+(2, '8bb6ab49-715c-4f65-b37a-9e1ec2ed490d', '05ee4f7d-1b22-4295-8f65-275a4bb184d8', 'ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17', 'applicant', '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', 'Marketplace Fleet Owner 2', '18500.00', NULL, '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', '2026-10-18 10:59:11', '2026-10-18 10:59:11', NULL),
+(3, '57919dfd-cb03-4ac8-b24c-6351b300546d', '5c9fbb73-15bf-4e2c-956a-c0fe4d0da799', 'ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17', 'applicant', 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', 'Marketplace Fleet Owner 3', '18000.00', NULL, 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', '2026-10-18 11:00:21', '2026-10-18 11:00:21', NULL),
+(4, '1a24fa40-f418-41dc-b1f3-91a8a68d3a90', '41d2adfa-2587-42c7-b524-cd9229e4695b', '376ce87b-bfcd-46b0-8e54-02073dff504f', 'applicant', '83b11253-04df-4ab4-a64c-6733c372a8f8', 'Marketplace Fleet Owner 2', '18500.00', NULL, '83b11253-04df-4ab4-a64c-6733c372a8f8', '2026-10-18 11:08:50', '2026-10-18 11:08:50', NULL),
+(5, '799b815c-91a4-4617-a9c9-9f17855e5b06', 'c635ca31-f39c-43dc-864d-7708c6cb1ab6', '376ce87b-bfcd-46b0-8e54-02073dff504f', 'applicant', '82e16542-3ac8-4360-a400-3e4be3ad6bf7', 'Marketplace Fleet Owner 3', '18000.00', NULL, '82e16542-3ac8-4360-a400-3e4be3ad6bf7', '2026-10-18 11:10:11', '2026-10-18 11:10:11', NULL),
+(6, 'e70a29bd-4e03-4b67-af05-4636bc1f7eac', '4520ad57-b8a5-4b6f-b8f6-72802623a809', 'a3ee7720-dc20-4d0f-ab27-fb2a6627520a', 'applicant', '5e62b1a3-65cf-409c-ac74-ab360bb917b6', 'Marketplace Fleet Owner 2', '18500.00', NULL, '5e62b1a3-65cf-409c-ac74-ab360bb917b6', '2026-10-18 11:16:25', '2026-10-18 11:16:25', NULL),
+(7, '3d02fd83-e619-44ae-b8c8-2ea997e09186', '91c0581b-b882-4cf6-aba8-8dd29eabb4f3', 'a3ee7720-dc20-4d0f-ab27-fb2a6627520a', 'applicant', '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', 'Marketplace Fleet Owner 3', '18000.00', NULL, '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', '2026-10-18 11:17:37', '2026-10-18 11:17:37', NULL),
+(8, '0a709f45-7a68-4e45-ab66-89e4328d2773', '7c32aa83-cd6e-467a-90d0-91a294f4bf27', '3289c4ed-4145-4b16-8838-d444633d776f', 'applicant', '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', 'Marketplace Fleet Owner 2', '18500.00', NULL, '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', '2026-10-19 10:06:19', '2026-10-19 10:06:19', NULL),
+(9, 'b718315b-a19d-4617-b74a-ada1943471e8', '63497ce3-69e3-4df4-bd5f-4cf3aa01a1a3', '3289c4ed-4145-4b16-8838-d444633d776f', 'applicant', 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', 'Marketplace Fleet Owner 3', '18000.00', NULL, 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', '2026-10-19 10:07:18', '2026-10-19 10:07:18', NULL),
+(10, '0015899e-9030-4670-8a69-7072c8d4ab52', 'f29ba50f-587b-423e-873e-c0bed00e50fb', 'd073c286-afca-4abb-9793-60187ac46fae', 'applicant', '5e3e56ce-cee9-41c5-be79-6693595817d3', 'Marketplace Fleet Owner 2', '18500.00', NULL, '5e3e56ce-cee9-41c5-be79-6693595817d3', '2026-10-19 10:26:54', '2026-10-19 10:26:54', NULL),
+(11, '100bbf59-bca4-4ea1-acef-1d59c3f89811', '9d8977f9-7092-4a78-9660-994243abeb70', 'd073c286-afca-4abb-9793-60187ac46fae', 'applicant', '7667ce8e-4595-43e7-a654-0b2b27354a74', 'Marketplace Fleet Owner 3', '18000.00', NULL, '7667ce8e-4595-43e7-a654-0b2b27354a74', '2026-10-19 10:27:53', '2026-10-19 10:27:53', NULL),
+(12, '92337314-d74c-46e3-a5b0-ef09efb9c629', '9d040a37-bdd8-4629-946b-936c366d3f6c', '81bffce1-738c-459b-b3f9-501c3360121a', 'applicant', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', 'Marketplace Fleet Owner 2', '18500.00', NULL, '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', '2026-10-19 10:37:47', '2026-10-19 10:37:47', NULL),
+(13, 'e111c300-5966-4a33-8aaf-f99f03224baf', '6b20d235-53a9-4652-be3a-f8ee36b9508a', '81bffce1-738c-459b-b3f9-501c3360121a', 'applicant', '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', 'Marketplace Fleet Owner 3', '18000.00', NULL, '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', '2026-10-19 10:38:52', '2026-10-19 10:38:52', NULL),
+(14, '6a31cc52-b082-4a15-8305-636f4de487ef', '2b267518-0d7b-4dd7-b2ab-55dd17834351', 'fe98177f-ddd8-4758-9dd2-c3adeb9c16b5', 'applicant', '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'Marketplace Fleet Owner 2', '18500.00', NULL, '8273a20d-0d51-45c5-9fdf-102e9c35698a', '2026-10-19 10:46:10', '2026-10-19 10:46:10', NULL),
+(15, '0632192d-a81e-4df0-b1a6-1dfe3350fc60', 'f2e06b82-fbea-417a-9a71-2cfe816eb638', 'fe98177f-ddd8-4758-9dd2-c3adeb9c16b5', 'applicant', 'c7b0aa04-c8c9-4755-b74b-253ffce91895', 'Marketplace Fleet Owner 3', '18000.00', NULL, 'c7b0aa04-c8c9-4755-b74b-253ffce91895', '2026-10-19 10:47:27', '2026-10-19 10:47:27', NULL),
+(16, '1e853f26-e972-4c2a-8fbd-28dd012f8c87', '2f16128e-baf0-4f23-b655-dc6a59a64cae', '0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535', 'applicant', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'Marketplace Fleet Owner 2', '18500.00', NULL, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '2026-10-19 11:00:57', '2026-10-19 11:00:57', NULL),
+(17, '6737cf7e-f6d9-4c2a-b844-83fb699b03b9', 'd15a4213-042d-4a01-a00d-fe632b64d57e', '0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535', 'applicant', 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', 'Marketplace Fleet Owner 3', '18000.00', NULL, 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', '2026-10-19 11:02:32', '2026-10-19 11:02:32', NULL),
+(18, 'f660a807-6217-4435-8a10-37361282d8b5', 'f6deabd1-dc64-4977-8924-fd58f8e512a6', '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', 'applicant', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Marketplace Fleet Owner 2', '18500.00', NULL, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '2026-10-20 04:35:04', '2026-10-20 04:35:04', NULL),
+(19, '48920a87-d6ff-4cd6-8169-5fd656a9e5fc', '415df8d8-b278-4cf0-8104-3ccb075353f9', '7aa9c4d6-5c83-429c-a8e7-83ee1a508764', 'applicant', 'a890b149-4c0c-4408-a158-3d00b62ff401', 'Marketplace Fleet Owner 3', '18000.00', NULL, 'a890b149-4c0c-4408-a158-3d00b62ff401', '2026-10-20 04:36:07', '2026-10-20 04:36:07', NULL),
+(20, '276eb72e-d203-4354-bb90-1662f828cecb', 'b0949298-9b62-4ab4-86dc-871da67b0846', '231fc0fb-af9e-496a-aade-84b62b3fce4d', 'applicant', 'a890b149-4c0c-4408-a158-3d00b62ff401', 'Marketplace Fleet Owner 3', '18000.00', NULL, 'a890b149-4c0c-4408-a158-3d00b62ff401', '2026-10-20 10:17:12', '2026-10-20 10:17:12', NULL),
+(21, '80a4e1bb-2124-4553-9d5e-1a540864ae6e', 'b0949298-9b62-4ab4-86dc-871da67b0846', '231fc0fb-af9e-496a-aade-84b62b3fce4d', 'owner', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Marketplace Shipper 11', '17000.00', NULL, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '2026-10-20 10:17:46', '2026-10-20 10:17:46', NULL),
+(22, '2e1d086f-d963-4f01-a920-499002ffecd5', '33d8aa7e-0238-4b97-9735-6eb8789cd21c', '760b5114-c4d0-4ef4-a42e-13db37300d3e', 'applicant', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Marketplace Fleet Owner 2', '18000.00', NULL, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '2026-10-20 11:32:08', '2026-10-20 11:32:08', NULL);
 
 -- --------------------------------------------------------
 
@@ -2631,15 +2937,15 @@ CREATE TABLE `notification_templates` (
 --
 
 INSERT INTO `notification_templates` (`uuid`, `company_uuid`, `key`, `channel`, `name`, `subject`, `body`, `variables`, `is_active`, `priority`, `description`, `created_by`, `updated_by`, `deleted_by`, `created_at`, `updated_at`, `deleted_at`) VALUES
-('04f2d068-e6f1-46df-b75b-a614ffda15b5', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_received', 'email', 'Payment Received Email', 'Payment Confirmation - Booking #{{booking_id}}', 'Payment of ₹{{amount}} has been received for booking #{{booking_id}}. Your receipt: {{receipt_url}}', '[\"amount\",\"booking_id\",\"receipt_url\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
+('04f2d068-e6f1-46df-b75b-a614ffda15b5', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_received', 'email', 'Payment Received Email', 'Payment Confirmation - Booking #{{booking_id}}', 'Payment of ?{{amount}} has been received for booking #{{booking_id}}. Your receipt: {{receipt_url}}', '[\"amount\",\"booking_id\",\"receipt_url\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
 ('22dc7eba-8b73-450a-ba25-ce06f915a7b0', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'booking_created', 'whatsapp', 'Booking Created WhatsApp', NULL, 'Booking #{{booking_id}} confirmed! Pickup: {{pickup_location}}', '[\"booking_id\",\"pickup_location\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
-('287373b7-3744-4b55-9a58-2c9611e56d7e', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_reminder', 'email', 'Payment Reminder Email', 'Payment Reminder - Invoice {{invoice_id}}', 'Your invoice {{invoice_id}} for ₹{{amount}} is due on {{due_date}}.', '[\"invoice_id\",\"amount\",\"due_date\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
+('287373b7-3744-4b55-9a58-2c9611e56d7e', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_reminder', 'email', 'Payment Reminder Email', 'Payment Reminder - Invoice {{invoice_id}}', 'Your invoice {{invoice_id}} for ?{{amount}} is due on {{due_date}}.', '[\"invoice_id\",\"amount\",\"due_date\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
 ('430a3c2f-a894-495d-8d97-218c8fb15a1c', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'booking_created', 'sms', 'Booking Created SMS', NULL, 'Hi {{customer_name}}, your booking #{{booking_id}} has been created. Pickup: {{pickup_location}}, Drop: {{drop_location}}', '[\"customer_name\",\"booking_id\",\"pickup_location\",\"drop_location\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
-('48fbc42c-ef8c-41da-ac56-b364a1d669d9', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_reminder', 'sms', 'Payment Reminder SMS', NULL, 'Reminder: Invoice {{invoice_id}} for ₹{{amount}} is due. Pay now', '[\"invoice_id\",\"amount\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
+('48fbc42c-ef8c-41da-ac56-b364a1d669d9', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_reminder', 'sms', 'Payment Reminder SMS', NULL, 'Reminder: Invoice {{invoice_id}} for ?{{amount}} is due. Pay now', '[\"invoice_id\",\"amount\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
 ('4a9142ad-4405-4ed9-a4ac-9cbbe65f52fc', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'driver_assigned', 'sms', 'Driver Assigned SMS', NULL, 'Driver {{driver_name}} assigned to your booking. Contact: {{driver_phone}}', '[\"driver_name\",\"driver_phone\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
 ('6028b4f2-495f-47be-98ad-79b08e54761b', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'booking_created', 'push', 'Booking Created Push', 'Booking Confirmed', 'Your booking #{{booking_id}} is confirmed', '[\"booking_id\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
 ('798a7820-06cd-4d82-a025-3e68bf7477a2', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'booking_created', 'email', 'Booking Created Email', 'Booking Confirmation #{{booking_id}}', 'Dear {{customer_name}},\\n\\nYour booking #{{booking_id}} has been confirmed.\\n\\nPickup: {{pickup_location}}\\nDrop: {{drop_location}}\\nEstimated Cost: {{estimated_cost}}\\n\\nThank you!', '[\"customer_name\",\"booking_id\",\"pickup_location\",\"drop_location\",\"estimated_cost\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
-('a2aa812b-3756-4030-8bc7-a51a6fec0e7b', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_received', 'sms', 'Payment Received SMS', NULL, 'Payment of ₹{{amount}} received for booking #{{booking_id}}. Thank you!', '[\"amount\",\"booking_id\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
+('a2aa812b-3756-4030-8bc7-a51a6fec0e7b', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'payment_received', 'sms', 'Payment Received SMS', NULL, 'Payment of ?{{amount}} received for booking #{{booking_id}}. Thank you!', '[\"amount\",\"booking_id\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL),
 ('fa7a3e17-edb9-4ce8-8f82-1f199869828b', 'cc73de5e-0a55-4d2f-98df-4ab0083559a1', 'driver_assigned', 'push', 'Driver Assigned Push', 'Driver Assigned', '{{driver_name}} is heading to pickup', '[\"driver_name\"]', 1, 0, NULL, NULL, NULL, NULL, '2026-07-30 13:21:15', '2026-07-30 13:21:15', NULL);
 
 -- --------------------------------------------------------
@@ -2977,7 +3283,92 @@ INSERT INTO `refresh_tokens` (`id`, `user_uuid`, `token`, `expires_at`, `revoked
 (15, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', '1a879e25c4145d802cad80735a7dbe83a6335487beb927ee3a1ccb93e7afe902', '2026-08-13 09:55:42', 0, '2026-08-06 09:55:42', '2026-08-06 09:55:42'),
 (16, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', '15e3489d6ce56c9920798edd6cfac62b6437654ea19e935196f2a0b48318e545', '2026-08-13 10:03:01', 0, '2026-08-06 10:03:01', '2026-08-06 10:03:01'),
 (17, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', '874d528dcb575b4affd7d07b26d2f0202fc6377aee0ef1f957605abe9af71a1d', '2026-08-13 10:06:08', 0, '2026-08-06 10:06:08', '2026-08-06 10:06:08'),
-(18, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', 'f13d3bc963c932d740343799f8892ae4097f21d6d0788bb6d5f30f046af19798', '2026-08-13 10:13:12', 0, '2026-08-06 10:13:12', '2026-08-06 10:13:12');
+(18, 'ddf20522-1558-4c80-ae1b-22b6c8860bd0', 'f13d3bc963c932d740343799f8892ae4097f21d6d0788bb6d5f30f046af19798', '2026-08-13 10:13:12', 0, '2026-08-06 10:13:12', '2026-08-06 10:13:12'),
+(19, 'cc150c5d-89c4-4567-9e98-d2416778504b', 'fa1e46979e8c1b7ad28392b60125101aa69a71565a6d6e04ee43581e2a4832ff', '2026-10-25 04:27:31', 0, '2026-10-18 04:27:31', '2026-10-18 04:27:31'),
+(20, 'cc150c5d-89c4-4567-9e98-d2416778504b', '174f87763c9059e65e3e109b48c90cfe68cd34591c4dac310ee15e01637aac87', '2026-10-25 04:28:34', 0, '2026-10-18 04:28:34', '2026-10-18 04:28:34'),
+(21, '417e2f45-cadc-11f1-aeaa-089204f4d30b', '682cb9688dda2411b07e1704772bab236105cb7e83f429af830358466468b49c', '2026-10-25 04:47:49', 1, '2026-10-18 04:47:49', '2026-10-18 04:48:41'),
+(22, 'cc150c5d-89c4-4567-9e98-d2416778504b', '9159b343b1fec2bf6a37324e543cd83bf5e948c02496de89ea0a7b23bd7b186b', '2026-10-25 04:49:52', 1, '2026-10-18 04:49:52', '2026-10-18 04:49:59'),
+(23, 'cc150c5d-89c4-4567-9e98-d2416778504b', '12b462b9252bd6475cf77245f158c3be927bd36c2dd00a17dcd4365cfdba5252', '2026-10-25 04:49:59', 1, '2026-10-18 04:49:59', '2026-10-18 05:06:34'),
+(24, '46347c7e-344b-479b-9ac7-e6eebf62d0ca', 'a4902c8e729508c1699fc0e3604f31e2ebde5f2168a9829f7aeef445d934a795', '2026-10-25 05:03:12', 1, '2026-10-18 05:03:12', '2026-10-18 05:18:23'),
+(25, 'cc150c5d-89c4-4567-9e98-d2416778504b', '56de638d4daf615c4eaf4bd44f7d4ba2941fb8cca644fd60c0f1886560781645', '2026-10-25 05:06:34', 1, '2026-10-18 05:06:34', '2026-10-18 05:21:40'),
+(26, '46347c7e-344b-479b-9ac7-e6eebf62d0ca', '2ae8e9722d930bdb11f5968b67e765fb91678676facb8ebbc2022b929ba4b85e', '2026-10-25 05:18:23', 0, '2026-10-18 05:18:23', '2026-10-18 05:18:23'),
+(27, 'cc150c5d-89c4-4567-9e98-d2416778504b', 'fab33ef6c77bbb324889c660494a32c850a98274eddea5d57598b3b80efc0c9a', '2026-10-25 05:21:40', 0, '2026-10-18 05:21:40', '2026-10-18 05:21:40'),
+(28, '96acd69f-64a3-4e44-964c-207074f0390e', 'a28ba6d054c197e52d81f07762abe9d401afce243f10f44dafa282c7cdefccba', '2026-10-25 06:07:57', 0, '2026-10-18 06:07:57', '2026-10-18 06:07:57'),
+(29, 'e2ab668f-e823-42fd-b0df-8277a3d5aa7e', '2e2a8e015e0d37279efe5ca943141c6217213c3d5dc162b594bd6639444dcc30', '2026-10-25 09:26:33', 0, '2026-10-18 09:26:33', '2026-10-18 09:26:33'),
+(30, '3e594e4c-de9c-45c4-9422-e3184a53d745', 'd58cc5b52ca0b365734590d32c0a732f9943db9a63938a62fcc12497b584eb4f', '2026-10-25 09:30:52', 0, '2026-10-18 09:30:52', '2026-10-18 09:30:52'),
+(31, '1d3a7d82-8460-48e8-a34e-4b6c0bb53453', '5b75c6723cb94ffe30fe4a9eb3435c63a5dcae49af806f74f5bfe7526e2ebf84', '2026-10-25 10:20:19', 0, '2026-10-18 10:20:19', '2026-10-18 10:20:19'),
+(32, 'eddc1cf0-ae05-460e-be03-dda7033eb9de', '6bf93d03319806c3d9dd0b7e17a81596708a5ce698f9f2514981a3c67525fa8c', '2026-10-25 10:20:52', 0, '2026-10-18 10:20:52', '2026-10-18 10:20:52'),
+(33, '7112e017-5efe-4a83-a652-f402de648372', 'bcdaef5e237c04972c1fb9c7f4bbbc27ff431de0d4c7f4808992b4500f2ac93f', '2026-10-25 10:47:53', 0, '2026-10-18 10:47:53', '2026-10-18 10:47:53'),
+(34, 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', '996dcb1e4e30e1e2082f4e41a5fcda5fe775b63b2719dde72e8c53f906716a89', '2026-10-25 10:48:26', 0, '2026-10-18 10:48:26', '2026-10-18 10:48:26'),
+(35, 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', '8d6f9b60995e4b60bd16f40e317a643d325e533bddb4f80ccd42bb1907d1f15d', '2026-10-25 10:57:39', 0, '2026-10-18 10:57:39', '2026-10-18 10:57:39'),
+(36, '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', '628cfa2425e278e10caf2bf6168cb779c3fd1854c48678d2831a332ad19f2a22', '2026-10-25 10:58:09', 0, '2026-10-18 10:58:09', '2026-10-18 10:58:09'),
+(37, 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', 'd769e46933a44590b0a57cee18dafba7bef68c7365512535554ca64f753d846e', '2026-10-25 10:59:26', 0, '2026-10-18 10:59:26', '2026-10-18 10:59:26'),
+(38, 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', '035999187a8280e0a20b47e87016e8b0465f0f626f644c83a80d0e61589409a2', '2026-10-25 11:00:27', 0, '2026-10-18 11:00:27', '2026-10-18 11:00:27'),
+(39, '05034569-4ac5-44db-bf71-63c5aaa22a58', '32b4161659a595724f8814a2a9b3fb64ab50e277b9fea7f62256702a41f0a77f', '2026-10-25 11:07:22', 0, '2026-10-18 11:07:22', '2026-10-18 11:07:22'),
+(40, '83b11253-04df-4ab4-a64c-6733c372a8f8', '4b3611a90f0ce784a15473ee6aa13c06c3d30a6d95e37fd51bac6585e125cce9', '2026-10-25 11:07:53', 0, '2026-10-18 11:07:53', '2026-10-18 11:07:53'),
+(41, '82e16542-3ac8-4360-a400-3e4be3ad6bf7', '087d3d090d7860ec7c37e9600d4b6318b3f1ab1182708aaf67d6f2acf5c9dd2a', '2026-10-25 11:09:05', 0, '2026-10-18 11:09:05', '2026-10-18 11:09:05'),
+(42, '05034569-4ac5-44db-bf71-63c5aaa22a58', 'a7c15db8400c12aac67fa8901e4f77cc22f4ff1a7a89ee23bc08d16cf5acf6c0', '2026-10-25 11:10:18', 0, '2026-10-18 11:10:18', '2026-10-18 11:10:18'),
+(43, 'c1118800-429c-42b4-bf32-c1df3f596876', '85a4d881d7d73c5b61aede3d2a18e75336454e10a3a9abf9f5f365c3f202ce0f', '2026-10-25 11:14:53', 0, '2026-10-18 11:14:53', '2026-10-18 11:14:53'),
+(44, '5e62b1a3-65cf-409c-ac74-ab360bb917b6', '6829a0437c0de128f9e4b62e3498aa9ed2d534167742c3410930dff292d77f23', '2026-10-25 11:15:22', 0, '2026-10-18 11:15:22', '2026-10-18 11:15:22'),
+(45, '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', 'e13e694e6e6c09955bcad9bae581e653092f1f15a59868b99ca5932bd4272e64', '2026-10-25 11:16:39', 0, '2026-10-18 11:16:39', '2026-10-18 11:16:39'),
+(46, 'c1118800-429c-42b4-bf32-c1df3f596876', '473b26dbbef6f7b590902c5e6d799434f4120a5ae473407e7b5d20f96a408f93', '2026-10-25 11:17:43', 0, '2026-10-18 11:17:43', '2026-10-18 11:17:43'),
+(47, 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', '7c9654ef57883b7ef3e29cfa513f9e589f71e4af06e8b93ba51e92a065fec973', '2026-10-26 10:05:03', 0, '2026-10-19 10:05:03', '2026-10-19 10:05:03'),
+(48, '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', 'f0bafcb0ff04daca6629e8478875bab21a09af4f3418f88798c74202ff7d4cfa', '2026-10-26 10:05:33', 0, '2026-10-19 10:05:33', '2026-10-19 10:05:33'),
+(49, 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', 'aa514d1bc58792e07eb48fd1c0a4ea4705e03acbd1927eb13de77b678803e38c', '2026-10-26 10:06:32', 0, '2026-10-19 10:06:32', '2026-10-19 10:06:32'),
+(50, 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', 'e0bd12a997fd7c790051d1d7ff8b6398ebc88a62919818ec9552a2b7be9769ff', '2026-10-26 10:07:23', 0, '2026-10-19 10:07:23', '2026-10-19 10:07:23'),
+(51, '2ee0db53-2745-44af-a775-32f3a1bd0636', '14580c2d8e89c3271040f3eb75f5f5ee624c6e5f4b46829338e4d6430a2a57b6', '2026-10-26 10:25:38', 0, '2026-10-19 10:25:38', '2026-10-19 10:25:38'),
+(52, '5e3e56ce-cee9-41c5-be79-6693595817d3', '7a5b2c601cc42da1c1bd8854bc9ea70bf1d05c803c9729c21176e255ff0239e8', '2026-10-26 10:26:09', 0, '2026-10-19 10:26:09', '2026-10-19 10:26:09'),
+(53, '7667ce8e-4595-43e7-a654-0b2b27354a74', 'e98141a316e1a31685f5eeda492bbbafb9cff0dfda018db457cdaddc419d3f01', '2026-10-26 10:27:08', 0, '2026-10-19 10:27:08', '2026-10-19 10:27:08'),
+(54, '2ee0db53-2745-44af-a775-32f3a1bd0636', 'c7b8dbf61d3fac278a9be713b8fa2154fe464d6cf8b66fc103504025ed7cb4eb', '2026-10-26 10:27:58', 0, '2026-10-19 10:27:58', '2026-10-19 10:27:58'),
+(55, 'd677ae0d-cae3-4e50-8437-39a021e22638', '44f0433630407af593a7b485455ecd60701c2ae43c024bf33c3f2a86a97d8499', '2026-10-26 10:36:25', 0, '2026-10-19 10:36:25', '2026-10-19 10:36:25'),
+(56, '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', '3cc7b43916d4dc760565d17c2eab773603ff6a4eca17130b270d3f8f7ba33d2b', '2026-10-26 10:36:55', 0, '2026-10-19 10:36:55', '2026-10-19 10:36:55'),
+(57, '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', 'd4181f67c02fa8d9bc7c1f25b1495cd8603b1ad5d7d83bc3bed7ae1c4f62180b', '2026-10-26 10:38:01', 0, '2026-10-19 10:38:01', '2026-10-19 10:38:01'),
+(58, 'd677ae0d-cae3-4e50-8437-39a021e22638', 'e45cb7063f9a40bbe3c87d9f9544eaf071a670ecf4ebe23a6aafbf594e54cd82', '2026-10-26 10:38:59', 0, '2026-10-19 10:38:59', '2026-10-19 10:38:59'),
+(59, '615e4b76-ddfe-4f64-81bb-1b1433559f32', '78a3a2b2a3422ce8f4f6fe3ec8e76720a562de87c5dc089d23e68638b01bff36', '2026-10-26 10:44:34', 0, '2026-10-19 10:44:34', '2026-10-19 10:44:34'),
+(60, '8273a20d-0d51-45c5-9fdf-102e9c35698a', '4579633f41c2fa25b1e6d8d1987339aeca77f4cf2e6a0be7f5ad738f60dfc445', '2026-10-26 10:45:05', 0, '2026-10-19 10:45:05', '2026-10-19 10:45:05'),
+(61, 'c7b0aa04-c8c9-4755-b74b-253ffce91895', 'e1c094480767b30bdd18cd2b8de0a07df19e595ef8ed9e39e8f8c9f94598e4b3', '2026-10-26 10:46:27', 0, '2026-10-19 10:46:27', '2026-10-19 10:46:27'),
+(62, '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'a33154062800fbe7a5174b6e991f8323f7c3029d758e49450e0c921ac825f8ec', '2026-10-26 10:47:33', 0, '2026-10-19 10:47:33', '2026-10-19 10:47:33'),
+(63, '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'c4d3a0d68c8f3e72d98984e816eab082f8ec23d943ff09bdd99b16f76420e1c2', '2026-10-26 10:51:00', 0, '2026-10-19 10:51:00', '2026-10-19 10:51:00'),
+(64, '8273a20d-0d51-45c5-9fdf-102e9c35698a', '32172abb05496ee9f1805b4116e3086654ea322a3aafe2613303e70e664a6183', '2026-10-26 10:57:10', 0, '2026-10-19 10:57:10', '2026-10-19 10:57:10'),
+(65, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', 'f034ec00cc46f0c22cfda102ec47331065445519bd0639b57ce07fb3adbd075e', '2026-10-26 10:59:08', 0, '2026-10-19 10:59:08', '2026-10-19 10:59:08'),
+(66, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '982b0155c40d3ce99aa368e13394725f9eb75cc49f3e349f68b62f09754c6347', '2026-10-26 10:59:46', 0, '2026-10-19 10:59:46', '2026-10-19 10:59:46'),
+(67, 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', 'cfac179d2e2299ac03dc072d5473e02a32dd8960b0a7bc66530661432af1e4ef', '2026-10-26 11:01:14', 0, '2026-10-19 11:01:14', '2026-10-19 11:01:14'),
+(68, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '5f89aba75b0f12f13bd6e01da5af362a487b037593d9b9d000733c09e6bca924', '2026-10-26 11:02:41', 0, '2026-10-19 11:02:41', '2026-10-19 11:02:41'),
+(69, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'b0646f797cb587dba9e040fc813ba3c0b4c5452bc2daa9436d6e9d8f8edadcb6', '2026-10-26 11:05:35', 0, '2026-10-19 11:05:35', '2026-10-19 11:05:35'),
+(70, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '5a593b0638069b3fd7e15562c41355d6628e52d493f44bb80f299f7c79bb829e', '2026-10-27 04:33:44', 0, '2026-10-20 04:33:44', '2026-10-20 04:33:44'),
+(71, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'a7250d7c13025f2fcd82241e69315065c4810e2deb77bbdf6a0a04d3bd1239f1', '2026-10-27 04:34:16', 0, '2026-10-20 04:34:16', '2026-10-20 04:34:16'),
+(72, 'a890b149-4c0c-4408-a158-3d00b62ff401', 'ff8abb85a20a9a4d67f8db7ca429ae35739eb6fe34e2f60e61290adc4502f1f2', '2026-10-27 04:35:18', 0, '2026-10-20 04:35:18', '2026-10-20 04:35:18'),
+(73, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '49e8bd8d4fb3bae90c5500ba26d46064d1ead1194d7ef94afff69953697b0cd0', '2026-10-27 04:36:12', 0, '2026-10-20 04:36:12', '2026-10-20 04:36:12'),
+(74, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '5ade81e982d847fe365583e29bd3f0c6907d51a04a5435e3b8205784408da0c5', '2026-10-27 04:38:28', 0, '2026-10-20 04:38:28', '2026-10-20 04:38:28'),
+(75, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '4e838b531dc15934dff7755d5ae25eec23ef3d6ba18e4186cc7dfe864fa79cb1', '2026-10-27 04:43:51', 0, '2026-10-20 04:43:51', '2026-10-20 04:43:51'),
+(76, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'd7c00f0b862948b70db241977ed610294f46f6a03e90356bf7f1a918e65f6a83', '2026-10-27 05:17:34', 0, '2026-10-20 05:17:34', '2026-10-20 05:17:34'),
+(77, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '1df9baf2f739795a52d4698de2f6a4f60a1c27a337eaac0ab177db9591db3ce2', '2026-10-27 05:34:19', 0, '2026-10-20 05:34:19', '2026-10-20 05:34:19'),
+(78, 'a890b149-4c0c-4408-a158-3d00b62ff401', '2209b330cb313b3ee41c023462cdd5dc46b8b62a1bf1895dffd562002d55ddac', '2026-10-27 05:34:36', 0, '2026-10-20 05:34:36', '2026-10-20 05:34:36'),
+(79, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'cf23c8fb99c40f9d6774dbdf54f3c6b50a5ef79fdc502a47c9b485fef663bf7c', '2026-10-27 05:40:36', 0, '2026-10-20 05:40:36', '2026-10-20 05:40:36'),
+(80, 'a890b149-4c0c-4408-a158-3d00b62ff401', '322bd70fe2a8c3460a28609786cb770022d009c787c758421df13fe901ef5e23', '2026-10-27 05:40:53', 0, '2026-10-20 05:40:53', '2026-10-20 05:40:53'),
+(81, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '60c1746f8ec988b1741b16df4e0beb44f96630409a1b2822e85a45b6aa56be22', '2026-10-27 05:58:04', 0, '2026-10-20 05:58:04', '2026-10-20 05:58:04'),
+(82, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '225d03d237b192a427f5165434f623a8b980b01216370ea8d64b60dbb1ae2a84', '2026-10-27 05:58:58', 0, '2026-10-20 05:58:58', '2026-10-20 05:58:58'),
+(83, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '5223a8517adf118c9d139ade9156364bd8c149cef353afb652c5cf713aecbd65', '2026-10-27 05:59:46', 0, '2026-10-20 05:59:46', '2026-10-20 05:59:46'),
+(84, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'dae469bfab8000484d38527043bfc908bac6d6eb2a4b842cf1eff8e1b5227bc9', '2026-10-27 06:05:57', 0, '2026-10-20 06:05:57', '2026-10-20 06:05:57'),
+(85, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'fb888661db2f9bf9c3843f05c58440dcc3152ba38ea4043fd1b847ab6f1a8e9e', '2026-10-27 09:46:32', 0, '2026-10-20 09:46:32', '2026-10-20 09:46:32'),
+(86, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '1583d17135a24a72b4c8b5831440795e85044d2f3655375dfa4338c995c7f483', '2026-10-27 09:55:57', 0, '2026-10-20 09:55:57', '2026-10-20 09:55:57'),
+(87, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'd53bab0939356940e4635aca272f64640e15d981f5684ca7d2c79165f6c9d1ed', '2026-10-27 09:56:27', 0, '2026-10-20 09:56:27', '2026-10-20 09:56:27'),
+(88, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '96129823d5c59fcf55ad72ab18504bbe3e1367189f6068b9b5a96c537577846b', '2026-10-27 10:03:35', 0, '2026-10-20 10:03:35', '2026-10-20 10:03:35'),
+(89, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'dd4e6c708bf28077c64942a788f87cb1c26a073c08211f8cca217038bb57e61a', '2026-10-27 10:03:44', 0, '2026-10-20 10:03:44', '2026-10-20 10:03:44'),
+(90, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'bc1f936c1ac475c597aa8dec11a07158ede5b5f728cdc0edd7bb11ad3dde4ec6', '2026-10-27 10:12:35', 0, '2026-10-20 10:12:35', '2026-10-20 10:12:35'),
+(91, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'a0c329e623cd6b97d606f0dd79357849deffd4c91cf094d933fef23da53a2589', '2026-10-27 10:12:47', 0, '2026-10-20 10:12:47', '2026-10-20 10:12:47'),
+(92, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '6e976a4accf1122fd59b714add94f07c9cc2d232bf18698bb795e5d01383f965', '2026-10-27 10:16:24', 0, '2026-10-20 10:16:24', '2026-10-20 10:16:24'),
+(93, 'a890b149-4c0c-4408-a158-3d00b62ff401', '5eeabbc94e02787fa470312f1909d181a3b2f985313104ba52a0626595bb74cc', '2026-10-27 10:16:41', 0, '2026-10-20 10:16:41', '2026-10-20 10:16:41'),
+(94, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'e540e3f5409c0a8d8be1393122e46cb2f07a5e0704755fd9237b93b960221494', '2026-10-27 10:17:18', 0, '2026-10-20 10:17:18', '2026-10-20 10:17:18'),
+(95, 'a890b149-4c0c-4408-a158-3d00b62ff401', '501b3cf78cc1268ce0d8723acc6aee2014ae4698b134a73fc3481c1fe2ed599d', '2026-10-27 10:17:52', 0, '2026-10-20 10:17:52', '2026-10-20 10:17:52'),
+(96, 'a890b149-4c0c-4408-a158-3d00b62ff401', 'e8eae56082e6964a1b4c5964867948e31f64e95187b2046dead5aa5e029543ae', '2026-10-27 10:23:37', 0, '2026-10-20 10:23:37', '2026-10-20 10:23:37'),
+(97, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '81e2f73e7e994f876e4e5b593bc982d881fb63ca814e4c6620e52e7ed968c5b4', '2026-10-27 10:24:44', 0, '2026-10-20 10:24:44', '2026-10-20 10:24:44'),
+(98, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '8e1f15163efb9ba030420ab6951a11a86f147ecc50d3ea4c0e750d5118ef118e', '2026-10-27 10:35:25', 0, '2026-10-20 10:35:25', '2026-10-20 10:35:25'),
+(99, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'c463f6a45fd7d193891d15814bb4e6b8b79b7f59fddbc9c431b91e1848fc4e29', '2026-10-27 10:38:38', 0, '2026-10-20 10:38:38', '2026-10-20 10:38:38'),
+(100, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'ddc61e6c8fdbf1ba9a624d01fa628b8a353e61f65658b0cc730ae8c4df696851', '2026-10-27 11:27:59', 0, '2026-10-20 11:27:59', '2026-10-20 11:27:59'),
+(101, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '82cdc2315bfdd756e427074bf4d8a7f6b0743187221e7b66b9fbf277e24dd776', '2026-10-27 11:28:11', 0, '2026-10-20 11:28:11', '2026-10-20 11:28:11'),
+(102, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'ba9eec943731a6a4e55b7fdb22de04a6fb6957674189860d17dd597f9aa7c7ea', '2026-10-27 11:28:29', 0, '2026-10-20 11:28:29', '2026-10-20 11:28:29'),
+(103, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '5f98a91d50c7c50a99fc89028221459b2db989eaf01ebf63877df5ba0e1413a7', '2026-10-27 11:31:17', 0, '2026-10-20 11:31:17', '2026-10-20 11:31:17');
 
 -- --------------------------------------------------------
 
@@ -2998,6 +3389,55 @@ CREATE TABLE `registration_otps` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `registration_otps`
+--
+
+INSERT INTO `registration_otps` (`id`, `phone`, `otp_hash`, `expires_at`, `attempts`, `max_attempts`, `verified_at`, `used_at`, `user_uuid`, `created_at`, `updated_at`) VALUES
+(2, '+918505838435', '$2y$12$X6FirBInVMtr1EUyCCZqbea15qrVJJD6..fiNFK2w6M2/1hAx4Fzq', '2026-10-18 04:36:48', 0, 5, '2026-10-18 04:27:31', '2026-10-18 04:27:31', 'cc150c5d-89c4-4567-9e98-d2416778504b', '2026-10-18 04:26:48', '2026-10-18 04:27:31'),
+(3, '+918505838435', '$2y$12$JeedZIBQxqmKehfJzd/nSeYzEKINMLQ0Lx6glSK21RoR14Yg8aeDO', '2026-10-18 04:38:02', 0, 5, '2026-10-18 04:28:34', '2026-10-18 04:28:34', 'cc150c5d-89c4-4567-9e98-d2416778504b', '2026-10-18 04:28:02', '2026-10-18 04:28:34'),
+(4, '+918505838435', '$2y$12$ucVFJLs6SLq.eTowu3qR4O54Ww4bCBSy/wUGkj2QOJdsadw50L2te', '2026-10-18 04:59:32', 0, 5, '2026-10-18 04:49:52', '2026-10-18 04:49:52', 'cc150c5d-89c4-4567-9e98-d2416778504b', '2026-10-18 04:49:32', '2026-10-18 04:49:52'),
+(5, '+918505838455', '$2y$12$FIc8bq7LVCFvnUx9WXyFReO1CmepQEVR7F5AJ1Uisgd0YuxjQysSG', '2026-10-18 05:12:52', 0, 5, '2026-10-18 05:03:12', '2026-10-18 05:03:12', '46347c7e-344b-479b-9ac7-e6eebf62d0ca', '2026-10-18 05:02:52', '2026-10-18 05:03:12'),
+(6, '+916022642164', '$2y$12$mMfIKysVeIqR.KMolM.Nx.Zftmin/m39vmneyscZIIIQl9nqyaoQy', '2026-10-18 06:04:16', 0, 5, NULL, NULL, NULL, '2026-10-18 05:54:16', '2026-10-18 05:54:16'),
+(7, '+916022912694', '$2y$12$aqJObYNhVKN8UBUn.jGvaOkULJ1h9EYOrOvImMwTRAGMBteMHeS2O', '2026-10-18 06:08:43', 0, 5, NULL, NULL, NULL, '2026-10-18 05:58:43', '2026-10-18 05:58:43'),
+(8, '+916023130875', '$2y$12$rWETyvdenRZySX5MJHGYV.xcqORnLKjctVDrcO37/YV2XvQwOUtZq', '2026-10-18 06:12:22', 0, 5, NULL, NULL, NULL, '2026-10-18 06:02:22', '2026-10-18 06:02:22'),
+(9, '+916023460088', '$2y$12$wXLWkuTjw.cod1R3ipt0T.M/3GEFS1Dcy3dQC6ack6sazHsKQQgOK', '2026-10-18 06:17:50', 0, 5, '2026-10-18 06:07:57', '2026-10-18 06:07:57', '96acd69f-64a3-4e44-964c-207074f0390e', '2026-10-18 06:07:50', '2026-10-18 06:07:57'),
+(10, '+916035374291', '$2y$12$6oWtLoKjbUWBYpbMfCgwEeap6DARUzdMj1IpeQYr1eBLl1KArC5D2', '2026-10-18 09:36:25', 0, 5, '2026-10-18 09:26:33', '2026-10-18 09:26:33', 'e2ab668f-e823-42fd-b0df-8277a3d5aa7e', '2026-10-18 09:26:25', '2026-10-18 09:26:33'),
+(11, '+916035633497', '$2y$12$bN9A9jY3CTEz0gGOdVrQ6e6zQbz6SXpJdKW1fSgeO0XX1TBpVsyBK', '2026-10-18 09:40:43', 0, 5, '2026-10-18 09:30:52', '2026-10-18 09:30:52', '3e594e4c-de9c-45c4-9422-e3184a53d745', '2026-10-18 09:30:43', '2026-10-18 09:30:52'),
+(12, '+916038601216', '$2y$12$2Rpwg8yAFpaqnVqlgXxTge2gMgtgSQD90RKH2XM4AnGOxThhRkpcq', '2026-10-18 10:30:11', 0, 5, '2026-10-18 10:20:19', '2026-10-18 10:20:19', '1d3a7d82-8460-48e8-a34e-4b6c0bb53453', '2026-10-18 10:20:11', '2026-10-18 10:20:19'),
+(13, '+916038601207', '$2y$12$Y2vYCMqTJGrXWATz9H5EDOyJGoJZ7bQmcry5ZF.815OsQAyLvL1sC', '2026-10-18 10:30:44', 0, 5, '2026-10-18 10:20:52', '2026-10-18 10:20:52', 'eddc1cf0-ae05-460e-be03-dda7033eb9de', '2026-10-18 10:20:44', '2026-10-18 10:20:52'),
+(14, '+916040254907', '$2y$12$M6LtvD0k4umH6yHhybDFqOZjweaJe4pI0hBlaKobO9TcRb7dToEQO', '2026-10-18 10:57:45', 0, 5, '2026-10-18 10:47:53', '2026-10-18 10:47:53', '7112e017-5efe-4a83-a652-f402de648372', '2026-10-18 10:47:45', '2026-10-18 10:47:53'),
+(15, '+916040254898', '$2y$12$JSkZGJcAK7Uc5AwZvQnO0egR0qCYfjS3XODz3OvU9CTcpapfmNxH6', '2026-10-18 10:58:18', 0, 5, '2026-10-18 10:48:26', '2026-10-18 10:48:26', 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', '2026-10-18 10:48:18', '2026-10-18 10:48:26'),
+(16, '+916040839489', '$2y$12$S0U5kLxVnX3UUymqKF5rceOG0cDUfg/./hLQJfBHglvgax1ONBcZa', '2026-10-18 11:07:31', 0, 5, '2026-10-18 10:57:39', '2026-10-18 10:57:39', 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', '2026-10-18 10:57:31', '2026-10-18 10:57:39'),
+(17, '+916040839480', '$2y$12$4cfbJHh0OzGFD26WEAMia.vbvLwMcNH/VZvv4ceRCFRBusCZNLa96', '2026-10-18 11:08:01', 0, 5, '2026-10-18 10:58:09', '2026-10-18 10:58:09', '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', '2026-10-18 10:58:01', '2026-10-18 10:58:09'),
+(18, '+916040839481', '$2y$12$7TGb49s.ONi8sEcDvQXx6uEFSvA51g29riS2HFF1vavzAsjAhXP02', '2026-10-18 11:09:18', 0, 5, '2026-10-18 10:59:26', '2026-10-18 10:59:26', 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', '2026-10-18 10:59:18', '2026-10-18 10:59:26'),
+(19, '+916041422123', '$2y$12$8xqnlBX6ACxL8/rhA582.u8BIFHL1M7e6vRxNYKAcJlYRe/Jot8Za', '2026-10-18 11:17:13', 0, 5, '2026-10-18 11:07:22', '2026-10-18 11:07:22', '05034569-4ac5-44db-bf71-63c5aaa22a58', '2026-10-18 11:07:13', '2026-10-18 11:07:22'),
+(20, '+916041422114', '$2y$12$8B9lMEcJ2UbkpuDexIVP4ug0Y8XuCGIKu9FTBgOr6boC70XF9CJxK', '2026-10-18 11:17:45', 0, 5, '2026-10-18 11:07:53', '2026-10-18 11:07:53', '83b11253-04df-4ab4-a64c-6733c372a8f8', '2026-10-18 11:07:45', '2026-10-18 11:07:53'),
+(21, '+916041422115', '$2y$12$nCqeyPGxUTioH6TQA8y4wO5U/5meo5BXHTiT5.fiOE/WvMmUEcoci', '2026-10-18 11:18:57', 0, 5, '2026-10-18 11:09:05', '2026-10-18 11:09:05', '82e16542-3ac8-4360-a400-3e4be3ad6bf7', '2026-10-18 11:08:57', '2026-10-18 11:09:05'),
+(22, '+916041875671', '$2y$12$Lj./TGGIn5aU5djOMgVW/eYrXN0VaQfl/nI2rXiM.bGcA.Bbf.ll.', '2026-10-18 11:24:46', 0, 5, '2026-10-18 11:14:53', '2026-10-18 11:14:53', 'c1118800-429c-42b4-bf32-c1df3f596876', '2026-10-18 11:14:46', '2026-10-18 11:14:53'),
+(23, '+916041875662', '$2y$12$I.gLcO/OJUXEzWZAiqyBSOz7mru/ZMeTP0G.SOegA6sdCplS7tb2m', '2026-10-18 11:25:14', 0, 5, '2026-10-18 11:15:22', '2026-10-18 11:15:22', '5e62b1a3-65cf-409c-ac74-ab360bb917b6', '2026-10-18 11:15:14', '2026-10-18 11:15:22'),
+(24, '+916041875663', '$2y$12$yfGO7wUkZ3qQzxh5T.cs1.X76fbWTyKGyP08bxcn2gvlpPqMexnoK', '2026-10-18 11:26:31', 0, 5, '2026-10-18 11:16:39', '2026-10-18 11:16:39', '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', '2026-10-18 11:16:31', '2026-10-18 11:16:39'),
+(25, '+916023469601', '$2y$12$WaSGDIkVeIjBZXlJxrGkBOAtJ8i2x/raAc/qEh1TarvcRSB1Vw0Xm', '2026-10-19 10:04:47', 0, 5, NULL, NULL, NULL, '2026-10-19 09:54:47', '2026-10-19 09:54:47'),
+(26, '+916997192865', '$2y$12$8J4XbpjRAMab5PY.Jrlei.LrfWxwGpTO32Gtwccj3fram8D2Cdkcq', '2026-10-19 10:10:03', 0, 5, NULL, NULL, NULL, '2026-10-19 10:00:03', '2026-10-19 10:00:03'),
+(27, '+916024084077', '$2y$12$5J8IvZyoltprcriz96Tt/ezwWtanwBwHfEjUFp.Cqxrgt3.TqfOye', '2026-10-19 10:14:55', 0, 5, '2026-10-19 10:05:03', '2026-10-19 10:05:03', 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', '2026-10-19 10:04:55', '2026-10-19 10:05:03'),
+(28, '+916024084068', '$2y$12$5fw4gnBWzdT2voXt.MuE..4mdASKDTpaiJJb.XZo.ytcQO5L7O94i', '2026-10-19 10:15:26', 0, 5, '2026-10-19 10:05:33', '2026-10-19 10:05:33', '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', '2026-10-19 10:05:26', '2026-10-19 10:05:33'),
+(29, '+916024084069', '$2y$12$kALOgpbOQMYPVVLvIRjGweO68Rg5y7bh0/2c5aWIrcWsRos4U2vEq', '2026-10-19 10:16:25', 0, 5, '2026-10-19 10:06:32', '2026-10-19 10:06:32', 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', '2026-10-19 10:06:25', '2026-10-19 10:06:32'),
+(30, '+916025319690', '$2y$12$Wp/H4YOIoPC9/M9tgoYd0eWhkGaitpFlgGOVljkGkN4aKbd1PcB9q', '2026-10-19 10:35:30', 0, 5, '2026-10-19 10:25:38', '2026-10-19 10:25:38', '2ee0db53-2745-44af-a775-32f3a1bd0636', '2026-10-19 10:25:30', '2026-10-19 10:25:38'),
+(31, '+916025319681', '$2y$12$I2X4mwYBtoifqY..hsNp..sCOGYAEB4sDIOG5Wm34jrqEv8PQSlk.', '2026-10-19 10:36:02', 0, 5, '2026-10-19 10:26:09', '2026-10-19 10:26:09', '5e3e56ce-cee9-41c5-be79-6693595817d3', '2026-10-19 10:26:02', '2026-10-19 10:26:09'),
+(32, '+916025319682', '$2y$12$1EGfLyJdFpIsbM2UCmx4wupN39sWuAl1rB0QiAQ3rkNjWIR/gpYA2', '2026-10-19 10:37:00', 0, 5, '2026-10-19 10:27:08', '2026-10-19 10:27:08', '7667ce8e-4595-43e7-a654-0b2b27354a74', '2026-10-19 10:27:00', '2026-10-19 10:27:08'),
+(33, '+916025967505', '$2y$12$Kosk0QGmPxww1wv.RuPiOuruJLCBmqGf8BeuJ5EcjUNUauNq.78E.', '2026-10-19 10:46:18', 0, 5, '2026-10-19 10:36:25', '2026-10-19 10:36:25', 'd677ae0d-cae3-4e50-8437-39a021e22638', '2026-10-19 10:36:18', '2026-10-19 10:36:25'),
+(34, '+916025967496', '$2y$12$/t3S9O8GIIZ/9KeksO19D.YmELI1Y.gz6cSAtUh.gw6aK4I.7nGiS', '2026-10-19 10:46:48', 0, 5, '2026-10-19 10:36:55', '2026-10-19 10:36:55', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', '2026-10-19 10:36:48', '2026-10-19 10:36:55'),
+(35, '+916025967497', '$2y$12$dkPS3MC.UD3jfU00DK65AuReagA5kN9JzLpl9CBY0nF/LvIyXeePG', '2026-10-19 10:47:54', 0, 5, '2026-10-19 10:38:01', '2026-10-19 10:38:01', '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', '2026-10-19 10:37:54', '2026-10-19 10:38:01'),
+(36, '+916026454424', '$2y$12$ng1pPrjuSaXJluYr32Z7UuiFHnrcI93MRv32JxGaDD/Aqdg8Le2jy', '2026-10-19 10:54:26', 0, 5, '2026-10-19 10:44:34', '2026-10-19 10:44:34', '615e4b76-ddfe-4f64-81bb-1b1433559f32', '2026-10-19 10:44:26', '2026-10-19 10:44:34'),
+(37, '+916026454415', '$2y$12$nWhkwQtG4cUg65YmUOxLNefxhMYCD4voh2xWASY6JSWtWSMf69Wtq', '2026-10-19 10:54:58', 0, 5, '2026-10-19 10:45:05', '2026-10-19 10:45:05', '8273a20d-0d51-45c5-9fdf-102e9c35698a', '2026-10-19 10:44:58', '2026-10-19 10:45:05'),
+(38, '+916026454416', '$2y$12$X1qJSj.ezUxmRaYSR1fKJ.d.gBSB/uzh4sX0tb46orbmSa9gcvvam', '2026-10-19 10:56:18', 0, 5, '2026-10-19 10:46:27', '2026-10-19 10:46:27', 'c7b0aa04-c8c9-4755-b74b-253ffce91895', '2026-10-19 10:46:18', '2026-10-19 10:46:27'),
+(39, '+916027320665', '$2y$12$5mEqiOD/Kp6lTbzpZ0Fq3ePaB5obUr27wM8b6XPi5szLnpIk.51ay', '2026-10-19 11:08:58', 0, 5, '2026-10-19 10:59:08', '2026-10-19 10:59:08', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', '2026-10-19 10:58:58', '2026-10-19 10:59:08'),
+(40, '+916027320656', '$2y$12$MrZYZ3i4WWTbqaLQgbVfQeg4p85hmYpTfAUaES7mn6923RteEXZpG', '2026-10-19 11:09:38', 0, 5, '2026-10-19 10:59:46', '2026-10-19 10:59:46', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', '2026-10-19 10:59:38', '2026-10-19 10:59:46'),
+(41, '+916027320657', '$2y$12$iCo83wSS4DeuhdMewt8wxucqA9yBA9Pt0uFg0o076oXJ8THcEEQLe', '2026-10-19 11:11:06', 0, 5, '2026-10-19 11:01:14', '2026-10-19 11:01:14', 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', '2026-10-19 11:01:06', '2026-10-19 11:01:14'),
+(42, '+916090594455', '$2y$12$9F3UA5PFRlFeIK80gCjTseoPORM3V2ly4O6hNecNf8vi6biYS/d.i', '2026-10-20 04:43:35', 0, 5, '2026-10-20 04:33:44', '2026-10-20 04:33:44', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', '2026-10-20 04:33:35', '2026-10-20 04:33:44'),
+(43, '+916090594446', '$2y$12$TCwUrhcaBo3sA./bbp0INOt/guqmyBJTVLZ9EFP4esBr7avwIULIi', '2026-10-20 04:44:08', 0, 5, '2026-10-20 04:34:16', '2026-10-20 04:34:16', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', '2026-10-20 04:34:08', '2026-10-20 04:34:16'),
+(44, '+916090594447', '$2y$12$eTHSiLVXXitwH81wVqF/iO5SGfS3XlbnS/pa64x1OMkktXmCcDomi', '2026-10-20 04:45:11', 0, 5, '2026-10-20 04:35:18', '2026-10-20 04:35:18', 'a890b149-4c0c-4408-a158-3d00b62ff401', '2026-10-20 04:35:11', '2026-10-20 04:35:18');
 
 -- --------------------------------------------------------
 
@@ -3196,6 +3636,56 @@ CREATE TABLE `sms_messages` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sms_messages`
+--
+
+INSERT INTO `sms_messages` (`id`, `message_id`, `phone`, `recipient_number`, `message`, `message_type`, `purpose`, `provider`, `status`, `provider_status`, `event_type`, `provider_timestamp`, `retryable`, `retry_count`, `last_error`, `sandbox`, `context`, `provider_response`, `delivery_report`, `webhook_payload`, `sent_at`, `delivered_at`, `failed_at`, `created_at`, `updated_at`) VALUES
+(1, NULL, '+918505838435', NULL, 'Your TransportSeva verification OTP is 830478 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"830478\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 04:26:20', NULL, NULL, '2026-10-18 04:26:20', '2026-10-18 04:26:20'),
+(2, NULL, '+918505838435', NULL, 'Your TransportSeva verification OTP is 959809 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"959809\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 04:26:48', NULL, NULL, '2026-10-18 04:26:48', '2026-10-18 04:26:48'),
+(3, NULL, '+918505838435', NULL, 'Your TransportSeva verification OTP is 534239 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"534239\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 04:28:02', NULL, NULL, '2026-10-18 04:28:02', '2026-10-18 04:28:02'),
+(4, NULL, '+918505838435', NULL, 'Your TransportSeva verification OTP is 897348 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"897348\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 04:49:32', NULL, NULL, '2026-10-18 04:49:32', '2026-10-18 04:49:32'),
+(5, NULL, '+918505838455', NULL, 'Your TransportSeva verification OTP is 571847 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"571847\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 05:02:52', NULL, NULL, '2026-10-18 05:02:52', '2026-10-18 05:02:52'),
+(6, NULL, '+916022642164', NULL, 'Your TransportSeva verification OTP is 642226 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"642226\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 05:54:16', NULL, NULL, '2026-10-18 05:54:16', '2026-10-18 05:54:16'),
+(7, NULL, '+916022912694', NULL, 'Your TransportSeva verification OTP is 679757 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"679757\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 05:58:43', NULL, NULL, '2026-10-18 05:58:43', '2026-10-18 05:58:43'),
+(8, NULL, '+916023130875', NULL, 'Your TransportSeva verification OTP is 273751 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"273751\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 06:02:22', NULL, NULL, '2026-10-18 06:02:22', '2026-10-18 06:02:22'),
+(9, NULL, '+916023460088', NULL, 'Your TransportSeva verification OTP is 927788 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"927788\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 06:07:50', NULL, NULL, '2026-10-18 06:07:50', '2026-10-18 06:07:50'),
+(10, NULL, '+916035374291', NULL, 'Your TransportSeva verification OTP is 876215 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"876215\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 09:26:25', NULL, NULL, '2026-10-18 09:26:25', '2026-10-18 09:26:25'),
+(11, NULL, '+916035633497', NULL, 'Your TransportSeva verification OTP is 945443 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"945443\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 09:30:43', NULL, NULL, '2026-10-18 09:30:43', '2026-10-18 09:30:43'),
+(12, NULL, '+916038601216', NULL, 'Your TransportSeva verification OTP is 179746 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"179746\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:20:11', NULL, NULL, '2026-10-18 10:20:11', '2026-10-18 10:20:11'),
+(13, NULL, '+916038601207', NULL, 'Your TransportSeva verification OTP is 533478 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"533478\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:20:44', NULL, NULL, '2026-10-18 10:20:44', '2026-10-18 10:20:44'),
+(14, NULL, '+916040254907', NULL, 'Your TransportSeva verification OTP is 529357 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"529357\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:47:45', NULL, NULL, '2026-10-18 10:47:45', '2026-10-18 10:47:45'),
+(15, NULL, '+916040254898', NULL, 'Your TransportSeva verification OTP is 662291 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"662291\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:48:18', NULL, NULL, '2026-10-18 10:48:18', '2026-10-18 10:48:18'),
+(16, NULL, '+916040839489', NULL, 'Your TransportSeva verification OTP is 899508 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"899508\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:57:31', NULL, NULL, '2026-10-18 10:57:31', '2026-10-18 10:57:31'),
+(17, NULL, '+916040839480', NULL, 'Your TransportSeva verification OTP is 194168 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"194168\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:58:01', NULL, NULL, '2026-10-18 10:58:01', '2026-10-18 10:58:01'),
+(18, NULL, '+916040839481', NULL, 'Your TransportSeva verification OTP is 393650 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"393650\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 10:59:18', NULL, NULL, '2026-10-18 10:59:18', '2026-10-18 10:59:18'),
+(19, NULL, '+916041422123', NULL, 'Your TransportSeva verification OTP is 540500 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"540500\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 11:07:14', NULL, NULL, '2026-10-18 11:07:14', '2026-10-18 11:07:14'),
+(20, NULL, '+916041422114', NULL, 'Your TransportSeva verification OTP is 274545 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"274545\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 11:07:45', NULL, NULL, '2026-10-18 11:07:45', '2026-10-18 11:07:45'),
+(21, NULL, '+916041422115', NULL, 'Your TransportSeva verification OTP is 598176 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"598176\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 11:08:57', NULL, NULL, '2026-10-18 11:08:57', '2026-10-18 11:08:57'),
+(22, NULL, '+916041875671', NULL, 'Your TransportSeva verification OTP is 821472 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"821472\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 11:14:46', NULL, NULL, '2026-10-18 11:14:46', '2026-10-18 11:14:46'),
+(23, NULL, '+916041875662', NULL, 'Your TransportSeva verification OTP is 170241 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"170241\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 11:15:15', NULL, NULL, '2026-10-18 11:15:15', '2026-10-18 11:15:15'),
+(24, NULL, '+916041875663', NULL, 'Your TransportSeva verification OTP is 817220 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"817220\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-18 11:16:31', NULL, NULL, '2026-10-18 11:16:31', '2026-10-18 11:16:31'),
+(25, NULL, '+916023469601', NULL, 'Your TransportSeva verification OTP is 344670 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"344670\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 09:54:47', NULL, NULL, '2026-10-19 09:54:47', '2026-10-19 09:54:47'),
+(26, NULL, '+916997192865', NULL, 'Your TransportSeva verification OTP is 403008 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"403008\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:00:03', NULL, NULL, '2026-10-19 10:00:03', '2026-10-19 10:00:03'),
+(27, NULL, '+916024084077', NULL, 'Your TransportSeva verification OTP is 581961 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"581961\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:04:55', NULL, NULL, '2026-10-19 10:04:55', '2026-10-19 10:04:55'),
+(28, NULL, '+916024084068', NULL, 'Your TransportSeva verification OTP is 929401 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"929401\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:05:26', NULL, NULL, '2026-10-19 10:05:26', '2026-10-19 10:05:26'),
+(29, NULL, '+916024084069', NULL, 'Your TransportSeva verification OTP is 625910 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"625910\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:06:25', NULL, NULL, '2026-10-19 10:06:25', '2026-10-19 10:06:25'),
+(30, NULL, '+916025319690', NULL, 'Your TransportSeva verification OTP is 246772 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"246772\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:25:30', NULL, NULL, '2026-10-19 10:25:30', '2026-10-19 10:25:30'),
+(31, NULL, '+916025319681', NULL, 'Your TransportSeva verification OTP is 265216 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"265216\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:26:02', NULL, NULL, '2026-10-19 10:26:02', '2026-10-19 10:26:02'),
+(32, NULL, '+916025319682', NULL, 'Your TransportSeva verification OTP is 526875 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"526875\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:27:01', NULL, NULL, '2026-10-19 10:27:01', '2026-10-19 10:27:01'),
+(33, NULL, '+916025967505', NULL, 'Your TransportSeva verification OTP is 834319 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"834319\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:36:18', NULL, NULL, '2026-10-19 10:36:18', '2026-10-19 10:36:18'),
+(34, NULL, '+916025967496', NULL, 'Your TransportSeva verification OTP is 196880 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"196880\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:36:48', NULL, NULL, '2026-10-19 10:36:48', '2026-10-19 10:36:48'),
+(35, NULL, '+916025967497', NULL, 'Your TransportSeva verification OTP is 485953 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"485953\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:37:54', NULL, NULL, '2026-10-19 10:37:54', '2026-10-19 10:37:54'),
+(36, NULL, '+916026454424', NULL, 'Your TransportSeva verification OTP is 332470 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"332470\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:44:26', NULL, NULL, '2026-10-19 10:44:26', '2026-10-19 10:44:26'),
+(37, NULL, '+916026454415', NULL, 'Your TransportSeva verification OTP is 465290 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"465290\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:44:58', NULL, NULL, '2026-10-19 10:44:58', '2026-10-19 10:44:58'),
+(38, NULL, '+916026454416', NULL, 'Your TransportSeva verification OTP is 851304 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"851304\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:46:18', NULL, NULL, '2026-10-19 10:46:18', '2026-10-19 10:46:18'),
+(39, NULL, '+916027320665', NULL, 'Your TransportSeva verification OTP is 367378 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"367378\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:58:58', NULL, NULL, '2026-10-19 10:58:58', '2026-10-19 10:58:58'),
+(40, NULL, '+916027320656', NULL, 'Your TransportSeva verification OTP is 668281 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"668281\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 10:59:38', NULL, NULL, '2026-10-19 10:59:38', '2026-10-19 10:59:38'),
+(41, NULL, '+916027320657', NULL, 'Your TransportSeva verification OTP is 410548 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"410548\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-19 11:01:06', NULL, NULL, '2026-10-19 11:01:06', '2026-10-19 11:01:06'),
+(42, NULL, '+916090594455', NULL, 'Your TransportSeva verification OTP is 598804 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"598804\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-20 04:33:36', NULL, NULL, '2026-10-20 04:33:36', '2026-10-20 04:33:36'),
+(43, NULL, '+916090594446', NULL, 'Your TransportSeva verification OTP is 309305 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"309305\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-20 04:34:08', NULL, NULL, '2026-10-20 04:34:08', '2026-10-20 04:34:08'),
+(44, NULL, '+916090594447', NULL, 'Your TransportSeva verification OTP is 678066 and is valid for 10 minutes.', 'otp', 'signup', 'smslocal', 'sandbox', NULL, NULL, NULL, 0, 0, NULL, 1, '{\"purpose\":\"signup\",\"expiry_minutes\":10,\"otp\":\"678066\",\"message_type\":\"otp\"}', NULL, NULL, NULL, '2026-10-20 04:35:11', NULL, NULL, '2026-10-20 04:35:11', '2026-10-20 04:35:11');
 
 -- --------------------------------------------------------
 
@@ -3490,7 +3980,7 @@ CREATE TABLE `users` (
   `first_name` varchar(50) DEFAULT NULL,
   `last_name` varchar(50) DEFAULT NULL,
   `phone` varchar(20) DEFAULT NULL,
-  `user_type` enum('driver','customer','transporter','admin') NOT NULL DEFAULT 'customer',
+  `user_type` enum('driver','customer','transporter','truck-owner','admin') NOT NULL DEFAULT 'customer',
   `password` varchar(255) NOT NULL,
   `mpin` varchar(255) DEFAULT NULL,
   `mpin_updated_at` timestamp NULL DEFAULT NULL,
@@ -3528,7 +4018,118 @@ INSERT INTO `users` (`id`, `uuid`, `email`, `first_name`, `last_name`, `phone`, 
 (17, '4618dca0-522f-48ac-97f1-378fa63a5027', 'employee@transportseva.com', 'Employee', 'User', '9876543212', 'customer', '$2y$12$eOocZ0YocYYMvjeG9LHLaOVorc9P5ToqViEe9gAwsgl8Pmksk9sDu', NULL, NULL, 'active', 0, NULL, '2026-08-05 10:36:05', '2026-08-05 10:36:05', NULL, NULL, NULL),
 (18, '4e0731c6-b4da-4c2a-ab87-bbf00365cdb5', 'driver@transportseva.com', 'Driver', 'User', '9876543213', 'customer', '$2y$12$vy6B75zcX7xlZRdqhQ8Jfe1156hKbhM49PKwzphFsspaFrwIbmg5O', NULL, NULL, 'active', 1, NULL, '2026-08-05 10:36:06', '2026-08-05 10:36:06', NULL, NULL, NULL),
 (19, '7a0d6868-fa31-4b2f-84b1-94fe1ac13d9a', 'test.admin@transportseva.com', 'Test', 'Admin', '9876543214', 'customer', '$2y$12$vbRo6Ye5osJN8InQU3RgEOjbAKqp9sAdBleMtS8h3Qou5pMEBe55y', NULL, NULL, 'active', 1, NULL, '2026-08-05 10:36:06', '2026-08-05 10:36:06', NULL, NULL, NULL),
-(20, 'f2b4cbd7-1a6c-4eb0-9add-96715a485d3f', 'test.manager@transportseva.com', 'Test', 'Manager', '9876543215', 'customer', '$2y$12$8CFAlmqjFLWND3kNnZWd.ORI3bSfbz6xlwygryPOrhdmHTd4Y2xcK', NULL, NULL, 'active', 1, NULL, '2026-08-05 10:36:06', '2026-08-05 10:36:06', NULL, NULL, NULL);
+(20, 'f2b4cbd7-1a6c-4eb0-9add-96715a485d3f', 'test.manager@transportseva.com', 'Test', 'Manager', '9876543215', 'customer', '$2y$12$8CFAlmqjFLWND3kNnZWd.ORI3bSfbz6xlwygryPOrhdmHTd4Y2xcK', NULL, NULL, 'active', 1, NULL, '2026-08-05 10:36:06', '2026-08-05 10:36:06', NULL, NULL, NULL),
+(21, 'cc150c5d-89c4-4567-9e98-d2416778504b', 'shipper@yopmail.com', 'Shipper', 'Test', '+918505838435', 'customer', '$2y$12$nGZ4FSUyI/gC0fk510cK1eB1EK/AgvSNGVW1cu/jScmESfL1sQ/Ti', NULL, NULL, 'active', 1, NULL, '2026-10-18 04:27:31', '2026-10-18 04:56:01', NULL, NULL, NULL),
+(22, '417e2f45-cadc-11f1-aeaa-089204f4d30b', 'e2e.shipper@transportseva.local', 'E2E', 'Shipper', '9000001001', 'customer', '$2y$10$1bbVmDDss.iRCKgYJMM9g.CTrIYs1IIj4Gwpllu1xZCUILkos/kOm', NULL, NULL, 'active', 1, '2026-10-18 04:47:49', '2026-10-18 10:11:08', '2026-10-18 04:47:49', NULL, NULL, NULL),
+(23, '417ea35e-cadc-11f1-aeaa-089204f4d30b', 'e2e.truckowner1@transportseva.local', 'E2E', 'Truckowner One', '9000001002', 'truck-owner', '$2y$10$1bbVmDDss.iRCKgYJMM9g.CTrIYs1IIj4Gwpllu1xZCUILkos/kOm', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:11:08', '2026-10-18 10:11:08', NULL, NULL, NULL),
+(24, '417ea500-cadc-11f1-aeaa-089204f4d30b', 'e2e.truckowner2@transportseva.local', 'E2E', 'Truckowner Two', '9000001003', 'truck-owner', '$2y$10$1bbVmDDss.iRCKgYJMM9g.CTrIYs1IIj4Gwpllu1xZCUILkos/kOm', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:11:08', '2026-10-18 10:11:08', NULL, NULL, NULL),
+(25, '417ea57a-cadc-11f1-aeaa-089204f4d30b', 'e2e.driver@transportseva.local', 'E2E', 'Driver', '9000001004', 'driver', '$2y$10$1bbVmDDss.iRCKgYJMM9g.CTrIYs1IIj4Gwpllu1xZCUILkos/kOm', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:11:08', '2026-10-18 10:11:08', NULL, NULL, NULL),
+(26, '417ea640-cadc-11f1-aeaa-089204f4d30b', 'e2e.transporter@transportseva.local', 'E2E', 'Transporter', '9000001005', 'transporter', '$2y$10$1bbVmDDss.iRCKgYJMM9g.CTrIYs1IIj4Gwpllu1xZCUILkos/kOm', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:11:08', '2026-10-18 10:11:08', NULL, NULL, NULL),
+(27, '417ea688-cadc-11f1-aeaa-089204f4d30b', 'e2e.admin@transportseva.local', 'E2E', 'Admin', '9000001006', 'admin', '$2y$10$1bbVmDDss.iRCKgYJMM9g.CTrIYs1IIj4Gwpllu1xZCUILkos/kOm', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:11:08', '2026-10-18 10:11:08', NULL, NULL, NULL),
+(28, '46347c7e-344b-479b-9ac7-e6eebf62d0ca', 'fleet.owner@yopmail.com', 'Fleet', 'Owner', '+918505838455', 'truck-owner', '$2y$12$pudX0vG2zY.3mlJ.2.x5XuFh5y6WG.H.ifyD20s70IbceLucmN3kW', NULL, NULL, 'active', 1, NULL, '2026-10-18 05:03:12', '2026-10-18 05:03:39', NULL, NULL, NULL),
+(29, '96acd69f-64a3-4e44-964c-207074f0390e', 'e2e-shipper-23460087-1@transportseva.test', 'Marketplace', 'Shipper 1', '+916023460088', 'customer', '$2y$12$A..t7KhnsTNru.Qng1i67.Kwat3e1Sp8JFbNortkripRY3qxAWK8q', NULL, NULL, 'active', 1, NULL, '2026-10-18 06:07:57', '2026-10-18 06:08:01', NULL, NULL, NULL),
+(30, 'e2ab668f-e823-42fd-b0df-8277a3d5aa7e', 'e2e-shipper-35374280-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916035374291', 'customer', '$2y$12$69jZ4GOrbnvcjoTaAo1UtuaXjYpERuFIeThkpmaPT0bjcvUAJCsS.', NULL, NULL, 'active', 1, NULL, '2026-10-18 09:26:33', '2026-10-18 09:26:39', NULL, NULL, NULL),
+(31, '3e594e4c-de9c-45c4-9422-e3184a53d745', 'e2e-shipper-35633486-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916035633497', 'customer', '$2y$12$SHmFcr.6Yjk7kxMFNzY0pui4AMv6WV0LVKN9NVmVLDeZt80gRVzNG', NULL, NULL, 'active', 1, NULL, '2026-10-18 09:30:52', '2026-10-18 09:30:57', NULL, NULL, NULL),
+(32, '1d3a7d82-8460-48e8-a34e-4b6c0bb53453', 'e2e-shipper-38601205-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916038601216', 'customer', '$2y$12$KVnxw6pRJi99hXULcfpSFuwJSy95btU/91FPpc4rfcbDeyFiyKllS', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:20:19', '2026-10-18 10:20:23', NULL, NULL, NULL),
+(33, 'eddc1cf0-ae05-460e-be03-dda7033eb9de', 'e2e-truck-owner-38601205-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916038601207', 'truck-owner', '$2y$12$Miwkm0HhUYnCadZ91Exe0.ODSolSpkFHM95C55zm9e5FqX90k5hbq', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:20:52', '2026-10-18 10:20:58', NULL, NULL, NULL),
+(34, '7112e017-5efe-4a83-a652-f402de648372', 'e2e-shipper-40254896-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916040254907', 'customer', '$2y$12$LIbJoEap6i1MzwWWogsgfukFAlHt62F4sQdRNY5boYQySDvAZlpk.', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:47:53', '2026-10-18 10:47:58', NULL, NULL, NULL),
+(35, 'd9b117c4-80cf-4e3d-adba-d14f853d15b2', 'e2e-truck-owner-40254896-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916040254898', 'truck-owner', '$2y$12$djZI548eV4Yspw8dHmJMCOfFKJ6oIo/miC/4Cjr1Ja4bPdYCfDQ5.', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:48:26', '2026-10-18 10:48:30', NULL, NULL, NULL),
+(36, 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', 'e2e-shipper-40839478-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916040839489', 'customer', '$2y$12$PN8Ar2O52BJvv6W9Nk3rUu8d05xHdULjaIUexIrRJV0pDSwSTqO82', NULL, NULL, 'active', 1, '2026-10-18 11:00:27', '2026-10-18 10:57:39', '2026-10-18 11:00:27', NULL, NULL, NULL),
+(37, '3b2a38f0-5e8d-4d51-83f6-8f91addcdc24', 'e2e-truck-owner-40839478-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916040839480', 'truck-owner', '$2y$12$7TINnLL/6eCNdCNOaovDbOCbF65my.GCC2Xd0JhIdd.QALo9DoeHK', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:58:09', '2026-10-18 10:58:14', NULL, NULL, NULL),
+(38, 'd3c3b927-bd85-462f-8234-6aceccdc1f5f', 'e2e-truck-owner-40839478-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916040839481', 'truck-owner', '$2y$12$sUPIrMRGs.p8cxecmwD4..CBfB8VTJE3gKOyBwysIEBmB9ZQuA9O6', NULL, NULL, 'active', 1, NULL, '2026-10-18 10:59:26', '2026-10-18 10:59:31', NULL, NULL, NULL),
+(39, '05034569-4ac5-44db-bf71-63c5aaa22a58', 'e2e-shipper-41422112-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916041422123', 'customer', '$2y$12$Jw/Gnmbbg7uYAZORAoz9ZOxe5oLP4fu4YIDlhK5aysCp9hSIZm3ya', NULL, NULL, 'active', 1, '2026-10-18 11:10:18', '2026-10-18 11:07:22', '2026-10-18 11:10:18', NULL, NULL, NULL),
+(40, '83b11253-04df-4ab4-a64c-6733c372a8f8', 'e2e-truck-owner-41422112-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916041422114', 'truck-owner', '$2y$12$OdM9c.Bg.n3z7K4CGAkglu.fngRgLYQU2vFNMrdtWbEn05NKaqqFu', NULL, NULL, 'active', 1, NULL, '2026-10-18 11:07:53', '2026-10-18 11:07:58', NULL, NULL, NULL),
+(41, '82e16542-3ac8-4360-a400-3e4be3ad6bf7', 'e2e-truck-owner-41422112-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916041422115', 'truck-owner', '$2y$12$/wALYmoQCL7l3O4zHbrbHuHL6QSfFGdHmpE9.jLV9PARdgztI7Leq', NULL, NULL, 'active', 1, NULL, '2026-10-18 11:09:05', '2026-10-18 11:09:10', NULL, NULL, NULL),
+(42, 'c1118800-429c-42b4-bf32-c1df3f596876', 'e2e-shipper-41875660-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916041875671', 'customer', '$2y$12$URwQ4wyxSNkEhlIWoxDSQOjSM5OGj4vFDt2Vz2.Kany1JhlGmdlXe', NULL, NULL, 'active', 1, '2026-10-18 11:17:43', '2026-10-18 11:14:53', '2026-10-18 11:17:43', NULL, NULL, NULL),
+(43, '5e62b1a3-65cf-409c-ac74-ab360bb917b6', 'e2e-truck-owner-41875660-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916041875662', 'truck-owner', '$2y$12$Rc7etgQW3.ZXVRMGPsRGXumdHXT7JhYT7FcUgqEzqnIgivxNevzCy', NULL, NULL, 'active', 1, NULL, '2026-10-18 11:15:22', '2026-10-18 11:15:26', NULL, NULL, NULL),
+(44, '9faab2a6-8a46-4a0e-8e7b-519975c10d6d', 'e2e-truck-owner-41875660-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916041875663', 'truck-owner', '$2y$12$qag5B3I.8sSMd7MBPtHrHuQ7WEEKs3mAsWOcmFFdUcDQfncccYXva', NULL, NULL, 'active', 1, NULL, '2026-10-18 11:16:39', '2026-10-18 11:16:44', NULL, NULL, NULL),
+(45, 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', 'e2e-shipper-24084066-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916024084077', 'customer', '$2y$12$h3KZGZGWPyu1Q/HTW9nuQ.O1wws3O1uvzoEIo7aBPxuzGS6KWtpmG', NULL, NULL, 'active', 1, '2026-10-19 10:07:23', '2026-10-19 10:05:03', '2026-10-19 10:07:23', NULL, NULL, NULL),
+(46, '140b6ca4-bf76-42d0-91d6-9e419dbcdacf', 'e2e-truck-owner-24084066-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916024084068', 'truck-owner', '$2y$12$Vlsy.Vg7dNzZH/x0NObczu2nYmWrheVcG6EU.aC9jTN6toI75HfJK', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:05:33', '2026-10-19 10:05:38', NULL, NULL, NULL),
+(47, 'e0a02773-7963-4d2b-9bf7-d479a7bd4b06', 'e2e-truck-owner-24084066-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916024084069', 'truck-owner', '$2y$12$nHAKtDuOlHLn4hM8OpS2wOd6JaOS26TAtTLo.PNpLdn//e4OkPePm', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:06:32', '2026-10-19 10:06:37', NULL, NULL, NULL),
+(48, '2ee0db53-2745-44af-a775-32f3a1bd0636', 'e2e-shipper-25319679-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916025319690', 'customer', '$2y$12$oymgj7nr/dVbQf8Eh3EjweP3Vg7D9BpBGU5byWWDHmsUOKJm.JxOi', NULL, NULL, 'active', 1, '2026-10-19 10:27:58', '2026-10-19 10:25:38', '2026-10-19 10:27:58', NULL, NULL, NULL),
+(49, '5e3e56ce-cee9-41c5-be79-6693595817d3', 'e2e-truck-owner-25319679-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916025319681', 'truck-owner', '$2y$12$QwjuhLcFP4G8mDlFJDX/6eQs0MsVZW5acwrYkHCNuqKOlv6SXImN.', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:26:09', '2026-10-19 10:26:14', NULL, NULL, NULL),
+(50, '7667ce8e-4595-43e7-a654-0b2b27354a74', 'e2e-truck-owner-25319679-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916025319682', 'truck-owner', '$2y$12$v9j1DjjQjK8oLS9VQBR4v.uCKRYgioUUyJOFGya4Vut2SkaYWPHU6', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:27:08', '2026-10-19 10:27:12', NULL, NULL, NULL),
+(51, 'd677ae0d-cae3-4e50-8437-39a021e22638', 'e2e-shipper-25967494-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916025967505', 'customer', '$2y$12$VeibXj35oHvM4Rj8J.cXEe1x8rS8//Yg0j45VKcpdIl5Vm0jNkK.6', NULL, NULL, 'active', 1, '2026-10-19 10:38:59', '2026-10-19 10:36:25', '2026-10-19 10:38:59', NULL, NULL, NULL),
+(52, '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', 'e2e-truck-owner-25967494-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916025967496', 'truck-owner', '$2y$12$.TOyqeDK6645txm8g6kt6.sDWd08o40OoJJXNzopr0OrkQqxtOhAW', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:36:55', '2026-10-19 10:36:59', NULL, NULL, NULL),
+(53, '1dcac5a7-5fb3-4dca-9065-6bcf0506f4cf', 'e2e-truck-owner-25967494-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916025967497', 'truck-owner', '$2y$12$e2K0GvhuHitpnxMdKY1G2.uWv3OHadBOi96sFyfZmUvEWrBl8MU/y', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:38:01', '2026-10-19 10:38:06', NULL, NULL, NULL),
+(54, '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'e2e-shipper-26454413-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916026454424', 'customer', '$2y$12$FRl0qcVZOY2au2DD4iCW1OSkV2RlddMTt0/qWZWWyGNSEal9UWc4y', NULL, NULL, 'active', 1, '2026-10-19 10:47:33', '2026-10-19 10:44:34', '2026-10-19 10:47:33', NULL, NULL, NULL),
+(55, '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'e2e-truck-owner-26454413-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916026454415', 'truck-owner', '$2y$12$QWl1ECDOlsRe53vFe.SKneJMLETRswV6rys8Wu5pGpr0.8DsGuDta', NULL, NULL, 'active', 1, '2026-10-19 10:57:09', '2026-10-19 10:45:05', '2026-10-19 10:57:09', NULL, NULL, NULL),
+(56, 'c7b0aa04-c8c9-4755-b74b-253ffce91895', 'e2e-truck-owner-26454413-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916026454416', 'truck-owner', '$2y$12$3vWNWJLEoaT/pKOsEuMu2.thMhzUS9GcgpaOIMoMvsqbsDOptlaSm', NULL, NULL, 'active', 1, NULL, '2026-10-19 10:46:27', '2026-10-19 10:46:32', NULL, NULL, NULL),
+(57, 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', 'e2e-shipper-27320654-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916027320665', 'customer', '$2y$12$vBeLXCJIeI9F31T.IMTjausUAnd/lQvFzJllXx6dfwZ/UQYjgpVZq', NULL, NULL, 'active', 1, '2026-10-19 11:02:41', '2026-10-19 10:59:08', '2026-10-19 11:02:41', NULL, NULL, NULL),
+(58, '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'e2e-truck-owner-27320654-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916027320656', 'truck-owner', '$2y$12$DLkPxFDDZvgaBWrJ7HOvCuJhTdFNxRhs6R.DRxhk/5FAwgfjKWx4K', NULL, NULL, 'active', 1, '2026-10-19 11:05:35', '2026-10-19 10:59:46', '2026-10-19 11:05:35', NULL, NULL, NULL),
+(59, 'e8b3c748-acc0-4472-b3bc-63ed188e44bc', 'e2e-truck-owner-27320654-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916027320657', 'truck-owner', '$2y$12$vfvOqc.UZZwJK1eZ4j2ZVOxHPlcFO6jeoUM1VZDt7CURx1SGWS/n2', NULL, NULL, 'active', 1, NULL, '2026-10-19 11:01:14', '2026-10-19 11:01:21', NULL, NULL, NULL),
+(60, '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'e2e-shipper-90594444-11@transportseva.test', 'Marketplace', 'Shipper 11', '+916090594455', 'customer', '$2y$12$w59hWtZZVM.lW.PKFQpSIebzW1vZqPOV2XsXOCyjWULXQh/L3J6xm', NULL, NULL, 'active', 1, '2026-10-20 11:28:11', '2026-10-20 04:33:44', '2026-10-20 11:28:11', NULL, NULL, NULL),
+(61, '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'e2e-truck-owner-90594444-2@transportseva.test', 'Marketplace', 'Fleet Owner 2', '+916090594446', 'truck-owner', '$2y$12$c48A/uQbDwdzsUPnJKGsv.1reJPLeG5PSLfjbQQNuuvyoc.ONZZUG', NULL, NULL, 'active', 1, '2026-10-20 11:31:17', '2026-10-20 04:34:16', '2026-10-20 11:31:17', NULL, NULL, NULL),
+(62, 'a890b149-4c0c-4408-a158-3d00b62ff401', 'e2e-truck-owner-90594444-3@transportseva.test', 'Marketplace', 'Fleet Owner 3', '+916090594447', 'truck-owner', '$2y$12$HybsX99Bq9Dy4JxbkFKeZuCujn81OyI9Qu/qmwXFxPX9/GbasfV02', NULL, NULL, 'active', 1, '2026-10-20 10:23:37', '2026-10-20 04:35:18', '2026-10-20 10:23:37', NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_notifications`
+--
+
+CREATE TABLE `user_notifications` (
+  `uuid` char(36) NOT NULL,
+  `user_uuid` char(36) NOT NULL,
+  `category` varchar(30) NOT NULL DEFAULT 'System',
+  `title` varchar(160) NOT NULL,
+  `message` text NOT NULL,
+  `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`data`)),
+  `action_url` varchar(255) DEFAULT NULL,
+  `action_label` varchar(80) DEFAULT NULL,
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_notifications`
+--
+
+INSERT INTO `user_notifications` (`uuid`, `user_uuid`, `category`, `title`, `message`, `data`, `action_url`, `action_label`, `read_at`, `created_at`, `updated_at`) VALUES
+('04ce38e4-343b-4b8e-aa77-30a160085c12', 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000008.', '{\"load_uuid\":\"3289c4ed-4145-4b16-8838-d444633d776f\",\"application_uuid\":\"63497ce3-69e3-4df4-bd5f-4cf3aa01a1a3\"}', NULL, NULL, NULL, '2026-10-19 10:07:18', '2026-10-19 10:07:18'),
+('110eecbe-fb5b-4efb-afe6-0e4573740e16', '05034569-4ac5-44db-bf71-63c5aaa22a58', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000006.', '{\"load_uuid\":\"376ce87b-bfcd-46b0-8e54-02073dff504f\",\"application_uuid\":\"c635ca31-f39c-43dc-864d-7708c6cb1ab6\"}', NULL, NULL, NULL, '2026-10-18 11:10:11', '2026-10-18 11:10:11'),
+('111a5bb0-453d-4e71-9b2d-0c91f6f1babe', 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000005.', '{\"load_uuid\":\"ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17\",\"application_uuid\":\"5c9fbb73-15bf-4e2c-956a-c0fe4d0da799\"}', NULL, NULL, NULL, '2026-10-18 11:00:21', '2026-10-18 11:00:21'),
+('120d860a-d3a0-45d2-9b23-3be890f32c46', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Payment', 'Booking token paid', 'The owner booking token was paid for booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"order_uuid\":\"e9029238-e7f0-4820-a247-853f791c1fcf\"}', NULL, NULL, NULL, '2026-10-20 04:37:44', '2026-10-20 04:37:44'),
+('161ee213-c3b4-4c29-8a9f-6b3511dffb74', 'e0946fcd-a20a-454a-b8a0-f1349f4e11c2', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000005.', '{\"load_uuid\":\"ea58f8b9-62fc-4b1c-aa1f-d2b3a07b1c17\",\"application_uuid\":\"05ee4f7d-1b22-4295-8f65-275a4bb184d8\"}', NULL, NULL, NULL, '2026-10-18 10:59:11', '2026-10-18 10:59:11'),
+('21d6a2c1-2a0d-451b-9c07-adbebbeb8f4d', '4f1dcf0c-dd2b-47b7-a3b4-9476fccd6a98', 'Booking', 'Offer accepted', 'The offer for load LD-000010 was accepted at ₹18,500.00.', '{\"load_uuid\":\"81bffce1-738c-459b-b3f9-501c3360121a\",\"application_uuid\":\"9d040a37-bdd8-4629-946b-936c366d3f6c\",\"amount\":\"18500.00\"}', NULL, NULL, NULL, '2026-10-19 10:39:34', '2026-10-19 10:39:34'),
+('22ef0abb-eac8-4fd3-a857-2d40b738808f', 'c0aab7d1-c2a1-480f-a8e9-e976509d2076', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000008.', '{\"load_uuid\":\"3289c4ed-4145-4b16-8838-d444633d776f\",\"application_uuid\":\"7c32aa83-cd6e-467a-90d0-91a294f4bf27\"}', NULL, NULL, NULL, '2026-10-19 10:06:19', '2026-10-19 10:06:19'),
+('24daf5d6-5f5d-40ce-af01-d8b684e68ba4', 'c1118800-429c-42b4-bf32-c1df3f596876', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000007.', '{\"load_uuid\":\"a3ee7720-dc20-4d0f-ab27-fb2a6627520a\",\"application_uuid\":\"91c0581b-b882-4cf6-aba8-8dd29eabb4f3\"}', NULL, NULL, NULL, '2026-10-18 11:17:37', '2026-10-18 11:17:37'),
+('348e8534-fb98-4c71-a673-a05a662e9c24', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Trip', 'Trip started', 'Your shipment trip is now in transit. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"start_trip\"}', NULL, NULL, NULL, '2026-10-20 06:00:15', '2026-10-20 06:00:15'),
+('3da3fbf9-d4ff-4f90-841b-dc5a2306139e', 'd677ae0d-cae3-4e50-8437-39a021e22638', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000010.', '{\"load_uuid\":\"81bffce1-738c-459b-b3f9-501c3360121a\",\"application_uuid\":\"6b20d235-53a9-4652-be3a-f8ee36b9508a\"}', NULL, NULL, NULL, '2026-10-19 10:38:52', '2026-10-19 10:38:52'),
+('43fdb734-ce34-4e3c-9145-a7a9ebc7001f', '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000011.', '{\"load_uuid\":\"fe98177f-ddd8-4758-9dd2-c3adeb9c16b5\",\"application_uuid\":\"2b267518-0d7b-4dd7-b2ab-55dd17834351\"}', NULL, NULL, NULL, '2026-10-19 10:46:10', '2026-10-19 10:46:10'),
+('4ae2e212-23b2-4e6a-9852-bb2dba951b58', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Trip', 'Payment milestone released', 'A payment milestone was released for your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"release_milestone\"}', NULL, NULL, NULL, '2026-10-20 09:47:19', '2026-10-20 09:47:19'),
+('4e632272-7b90-4e78-9ed8-726f6c2d6c5b', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000015.', '{\"load_uuid\":\"760b5114-c4d0-4ef4-a42e-13db37300d3e\",\"application_uuid\":\"33d8aa7e-0238-4b97-9735-6eb8789cd21c\"}', NULL, NULL, NULL, '2026-10-20 11:32:08', '2026-10-20 11:32:08'),
+('4ef83da1-6d5f-420c-933f-7e106f47d805', '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'Booking', 'Offer accepted', 'The offer for load LD-000011 was accepted at ₹18,500.00.', '{\"load_uuid\":\"fe98177f-ddd8-4758-9dd2-c3adeb9c16b5\",\"application_uuid\":\"2b267518-0d7b-4dd7-b2ab-55dd17834351\",\"amount\":\"18500.00\"}', NULL, NULL, NULL, '2026-10-19 10:48:26', '2026-10-19 10:48:26'),
+('53fc5f91-9c2a-4052-b9c4-1752a185d4f2', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Trip', 'Driver assigned', 'A driver was assigned to your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"assign_driver\"}', NULL, NULL, NULL, '2026-10-20 05:18:30', '2026-10-20 05:18:30'),
+('673231b9-d3d2-4f4c-8222-34ba94a08409', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Trip', 'Payment milestone released', 'A payment milestone was released for your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"release_milestone\"}', NULL, NULL, NULL, '2026-10-20 05:59:27', '2026-10-20 05:59:27'),
+('6d7e8b83-98f4-4284-b348-338f37abb62d', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000013.', '{\"load_uuid\":\"7aa9c4d6-5c83-429c-a8e7-83ee1a508764\",\"application_uuid\":\"415df8d8-b278-4cf0-8104-3ccb075353f9\"}', NULL, NULL, NULL, '2026-10-20 04:36:07', '2026-10-20 04:36:07'),
+('791d3dbd-59ad-4af6-b602-e853b0fc5838', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Trip', 'Mid-trip payment added', 'A mid-trip payment milestone was added to your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"add_mid_trip_milestone\"}', NULL, NULL, NULL, '2026-10-20 09:47:13', '2026-10-20 09:47:13'),
+('7d4e0242-2eb1-41de-808d-f819c0eccdae', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000013.', '{\"load_uuid\":\"7aa9c4d6-5c83-429c-a8e7-83ee1a508764\",\"application_uuid\":\"f6deabd1-dc64-4977-8924-fd58f8e512a6\"}', NULL, NULL, NULL, '2026-10-20 04:35:04', '2026-10-20 04:35:04'),
+('7ec5be65-9477-4544-b52f-e393cc30294f', '8273a20d-0d51-45c5-9fdf-102e9c35698a', 'Payment', 'Booking token paid', 'The owner booking token was paid for booking TS-F24HZFG1RF.', '{\"booking_uuid\":\"747314bc-a824-452c-b595-c9e3ebbae520\",\"order_uuid\":\"0fada140-324b-49b9-8976-18a608729736\"}', NULL, NULL, NULL, '2026-10-19 10:50:03', '2026-10-19 10:50:03'),
+('824bec5a-a6ad-4f6b-8091-8cdf78c48fcd', 'd677ae0d-cae3-4e50-8437-39a021e22638', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000010.', '{\"load_uuid\":\"81bffce1-738c-459b-b3f9-501c3360121a\",\"application_uuid\":\"9d040a37-bdd8-4629-946b-936c366d3f6c\"}', NULL, NULL, NULL, '2026-10-19 10:37:47', '2026-10-19 10:37:47'),
+('8294ec84-865b-470d-ad06-065b7ae5e95d', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000014.', '{\"load_uuid\":\"231fc0fb-af9e-496a-aade-84b62b3fce4d\",\"application_uuid\":\"b0949298-9b62-4ab4-86dc-871da67b0846\"}', NULL, NULL, NULL, '2026-10-20 10:17:12', '2026-10-20 10:17:12'),
+('8a71aa12-6ece-4cca-9e7b-c8b1b766f810', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Trip', 'Final settlement completed', 'The final freight payment has been settled for your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"settle_final_payment\"}', NULL, NULL, NULL, '2026-10-20 09:57:02', '2026-10-20 09:57:02'),
+('8cb20993-4576-4f9d-b4d5-c1bc47454df9', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Booking', 'Offer accepted', 'The offer for load LD-000014 was accepted at ₹17,000.00.', '{\"load_uuid\":\"231fc0fb-af9e-496a-aade-84b62b3fce4d\",\"application_uuid\":\"b0949298-9b62-4ab4-86dc-871da67b0846\",\"amount\":\"17000.00\"}', NULL, NULL, NULL, '2026-10-20 10:24:10', '2026-10-20 10:24:10'),
+('97a0fcf6-166d-49e6-9727-7055aeb35073', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'Payment', 'Booking token paid', 'The owner booking token was paid for booking TS-DAWSYFXCDF.', '{\"booking_uuid\":\"794d8e99-1fd2-4589-9a4d-6d28c813b924\",\"order_uuid\":\"46e3b4be-9817-45cc-865a-76a89d0c41e1\"}', NULL, NULL, NULL, '2026-10-19 11:04:54', '2026-10-19 11:04:54'),
+('a1d71966-c3ad-4807-8b7c-dffeb52e3292', '615e4b76-ddfe-4f64-81bb-1b1433559f32', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000011.', '{\"load_uuid\":\"fe98177f-ddd8-4758-9dd2-c3adeb9c16b5\",\"application_uuid\":\"f2e06b82-fbea-417a-9a71-2cfe816eb638\"}', NULL, NULL, NULL, '2026-10-19 10:47:27', '2026-10-19 10:47:27'),
+('a38d66f1-9454-4173-a20f-deb0269d5085', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000012.', '{\"load_uuid\":\"0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535\",\"application_uuid\":\"2f16128e-baf0-4f23-b655-dc6a59a64cae\"}', NULL, NULL, NULL, '2026-10-19 11:00:57', '2026-10-19 11:00:57'),
+('b08cb046-a3d8-4b4e-b4ad-0d91e56e9d24', '5044afc2-1d0c-4ce3-bac9-96c1d4f154cc', 'Booking', 'Offer accepted', 'The offer for load LD-000012 was accepted at ₹18,500.00.', '{\"load_uuid\":\"0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535\",\"application_uuid\":\"2f16128e-baf0-4f23-b655-dc6a59a64cae\",\"amount\":\"18500.00\"}', NULL, NULL, NULL, '2026-10-19 11:03:33', '2026-10-19 11:03:33'),
+('b3dcddcf-3a11-4dfa-8041-5470f559a2ce', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Booking', 'New booking message', 'Marketplace Shipper 11 sent you a message about booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"application_uuid\":\"f6deabd1-dc64-4977-8924-fd58f8e512a6\",\"message_uuid\":\"fd3489b9-eabb-433c-95de-e2955fc720e3\"}', NULL, NULL, NULL, '2026-10-20 10:14:49', '2026-10-20 10:14:49'),
+('c654f5f4-daf1-4289-b797-5fd935c90dbf', '05034569-4ac5-44db-bf71-63c5aaa22a58', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000006.', '{\"load_uuid\":\"376ce87b-bfcd-46b0-8e54-02073dff504f\",\"application_uuid\":\"41d2adfa-2587-42c7-b524-cd9229e4695b\"}', NULL, NULL, NULL, '2026-10-18 11:08:50', '2026-10-18 11:08:50'),
+('cbca343e-ef67-472d-a5f4-39cb9b36180e', 'a890b149-4c0c-4408-a158-3d00b62ff401', 'Booking', 'New counter-offer received', 'Marketplace Shipper 11 sent a counter-offer of ₹17,000.00 for load LD-000014.', '{\"load_uuid\":\"231fc0fb-af9e-496a-aade-84b62b3fce4d\",\"application_uuid\":\"b0949298-9b62-4ab4-86dc-871da67b0846\",\"offer_uuid\":\"80a4e1bb-2124-4553-9d5e-1a540864ae6e\",\"amount\":\"17000.00\"}', NULL, NULL, NULL, '2026-10-20 10:17:46', '2026-10-20 10:17:46'),
+('cc7929d1-7894-4c3f-9116-3df02a3e5f8b', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Trip', 'Trip completed', 'Your shipment trip has been marked completed. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"complete_trip\"}', NULL, NULL, NULL, '2026-10-20 09:56:18', '2026-10-20 09:56:18'),
+('d0333071-7ece-4fa8-ac46-9cce25c8bb7f', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Trip', 'Vehicle assigned', 'A vehicle was assigned to your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"assign_vehicle\"}', NULL, NULL, NULL, '2026-10-20 04:44:20', '2026-10-20 04:44:20'),
+('d5508e04-6aed-4481-b071-07a2f991c1f9', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Trip', 'Loading completed', 'Loading has been marked complete for your booking. Booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"action\":\"loading_completed\"}', NULL, NULL, NULL, '2026-10-20 05:58:35', '2026-10-20 05:58:35'),
+('d7fc8cff-dc55-4c99-8b77-e78730b129e3', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000012.', '{\"load_uuid\":\"0eb1607e-1f4f-4ff2-a01f-8d28a3c4f535\",\"application_uuid\":\"d15a4213-042d-4a01-a00d-fe632b64d57e\"}', NULL, NULL, NULL, '2026-10-19 11:02:32', '2026-10-19 11:02:32'),
+('e9b70ca7-65dc-4ccc-af92-c717b170fe07', 'c1118800-429c-42b4-bf32-c1df3f596876', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000007.', '{\"load_uuid\":\"a3ee7720-dc20-4d0f-ab27-fb2a6627520a\",\"application_uuid\":\"4520ad57-b8a5-4b6f-b8f6-72802623a809\"}', NULL, NULL, NULL, '2026-10-18 11:16:25', '2026-10-18 11:16:25'),
+('ea94afff-8c73-4d0a-a438-cc0c6366991f', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Booking', 'Offer accepted', 'The offer for load LD-000013 was accepted at ₹18,500.00.', '{\"load_uuid\":\"7aa9c4d6-5c83-429c-a8e7-83ee1a508764\",\"application_uuid\":\"f6deabd1-dc64-4977-8924-fd58f8e512a6\",\"amount\":\"18500.00\"}', NULL, NULL, NULL, '2026-10-20 04:36:49', '2026-10-20 04:36:49'),
+('ebb61203-cd25-44cb-ad93-21faba1b4368', 'ef0b07ca-ac11-46e0-bbc3-157a851a010c', 'Payment', 'Booking token paid', 'The provider booking token was paid for booking TS-DAWSYFXCDF.', '{\"booking_uuid\":\"794d8e99-1fd2-4589-9a4d-6d28c813b924\",\"order_uuid\":\"8d2669b7-05ba-42d5-8c0e-2b1a180ef7ca\"}', NULL, NULL, NULL, '2026-10-19 11:06:50', '2026-10-19 11:06:50'),
+('ed0fb798-79c1-48fa-870a-6e66b7be5fd0', '7e1a9b50-de85-4bf6-aadf-c16f97bcb5e2', 'Payment', 'Booking token paid', 'The provider booking token was paid for booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"order_uuid\":\"02a9102e-2c2f-466e-b15f-9d0361ceaa8d\"}', NULL, NULL, NULL, '2026-10-20 04:39:24', '2026-10-20 04:39:24'),
+('ee00461d-7df5-4d12-a761-2c32fbf5efe5', '4f0cc5cf-1e18-4011-a718-b0384f6a00d6', 'Payment', 'Settlement created', 'Settlement processing has started for booking TS-SXIFZM3X1R.', '{\"booking_uuid\":\"346c7138-9071-4698-886c-37ba3e80c85e\",\"settlement_uuid\":\"ef08809b-e7ca-4631-88cf-31b310bae83e\"}', NULL, NULL, NULL, '2026-10-20 09:56:48', '2026-10-20 09:56:48'),
+('f2e4cb72-336a-4173-ad6a-4d1a8e6d84ff', '7112e017-5efe-4a83-a652-f402de648372', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000004.', '{\"load_uuid\":\"24fb6470-557c-43a1-b13c-784636af0a08\",\"application_uuid\":\"e7182096-93a1-44b6-b64f-9b0e71b508bb\"}', NULL, NULL, NULL, '2026-10-18 10:49:26', '2026-10-18 10:49:26'),
+('f6fddd39-f895-4531-be26-0008e66829e3', '2ee0db53-2745-44af-a775-32f3a1bd0636', 'Booking', 'New application received', 'Marketplace Fleet Owner 2 applied to load LD-000009.', '{\"load_uuid\":\"d073c286-afca-4abb-9793-60187ac46fae\",\"application_uuid\":\"f29ba50f-587b-423e-873e-c0bed00e50fb\"}', NULL, NULL, NULL, '2026-10-19 10:26:54', '2026-10-19 10:26:54'),
+('f8d25902-baec-4977-8fec-f47b5a6d95e4', '2ee0db53-2745-44af-a775-32f3a1bd0636', 'Booking', 'New application received', 'Marketplace Fleet Owner 3 applied to load LD-000009.', '{\"load_uuid\":\"d073c286-afca-4abb-9793-60187ac46fae\",\"application_uuid\":\"9d8977f9-7092-4a78-9660-994243abeb70\"}', NULL, NULL, NULL, '2026-10-19 10:27:53', '2026-10-19 10:27:53');
 
 -- --------------------------------------------------------
 
@@ -4243,6 +4844,14 @@ ALTER TABLE `marketplace_bookings`
   ADD KEY `marketplace_bookings_owner_uuid_provider_uuid_index` (`owner_uuid`,`provider_uuid`);
 
 --
+-- Indexes for table `marketplace_chat_messages`
+--
+ALTER TABLE `marketplace_chat_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `marketplace_chat_messages_uuid_unique` (`uuid`),
+  ADD KEY `marketplace_chat_messages_booking_uuid_created_at_id_index` (`booking_uuid`,`created_at`,`id`);
+
+--
 -- Indexes for table `marketplace_disputes`
 --
 ALTER TABLE `marketplace_disputes`
@@ -4251,12 +4860,30 @@ ALTER TABLE `marketplace_disputes`
   ADD KEY `marketplace_disputes_booking_uuid_status_index` (`booking_uuid`,`status`);
 
 --
+-- Indexes for table `marketplace_drivers`
+--
+ALTER TABLE `marketplace_drivers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `marketplace_drivers_owner_uuid_phone_unique` (`owner_uuid`,`phone`),
+  ADD UNIQUE KEY `marketplace_drivers_uuid_unique` (`uuid`),
+  ADD KEY `marketplace_drivers_owner_uuid_index` (`owner_uuid`);
+
+--
 -- Indexes for table `marketplace_settlements`
 --
 ALTER TABLE `marketplace_settlements`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `marketplace_settlements_uuid_unique` (`uuid`),
   ADD UNIQUE KEY `marketplace_settlements_booking_uuid_unique` (`booking_uuid`);
+
+--
+-- Indexes for table `marketplace_vehicles`
+--
+ALTER TABLE `marketplace_vehicles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `marketplace_vehicles_uuid_unique` (`uuid`),
+  ADD UNIQUE KEY `marketplace_vehicles_registration_number_unique` (`registration_number`),
+  ADD KEY `marketplace_vehicles_owner_uuid_index` (`owner_uuid`);
 
 --
 -- Indexes for table `migrations`
@@ -4585,6 +5212,15 @@ ALTER TABLE `users`
   ADD KEY `users_user_type_index` (`user_type`);
 
 --
+-- Indexes for table `user_notifications`
+--
+ALTER TABLE `user_notifications`
+  ADD PRIMARY KEY (`uuid`),
+  ADD KEY `user_notifications_user_uuid_index` (`user_uuid`),
+  ADD KEY `user_notifications_category_index` (`category`),
+  ADD KEY `user_notifications_read_at_index` (`read_at`);
+
+--
 -- Indexes for table `vehicles`
 --
 ALTER TABLE `vehicles`
@@ -4671,7 +5307,7 @@ ALTER TABLE `wallet_transactions`
 -- AUTO_INCREMENT for table `access_tokens`
 --
 ALTER TABLE `access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- AUTO_INCREMENT for table `activity_log`
@@ -4689,7 +5325,7 @@ ALTER TABLE `bookings`
 -- AUTO_INCREMENT for table `booking_token_orders`
 --
 ALTER TABLE `booking_token_orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `branches`
@@ -4773,19 +5409,25 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `loads`
 --
 ALTER TABLE `loads`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `load_applications`
 --
 ALTER TABLE `load_applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `marketplace_bookings`
 --
 ALTER TABLE `marketplace_bookings`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `marketplace_chat_messages`
+--
+ALTER TABLE `marketplace_chat_messages`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `marketplace_disputes`
@@ -4794,16 +5436,28 @@ ALTER TABLE `marketplace_disputes`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `marketplace_drivers`
+--
+ALTER TABLE `marketplace_drivers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `marketplace_settlements`
 --
 ALTER TABLE `marketplace_settlements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `marketplace_vehicles`
+--
+ALTER TABLE `marketplace_vehicles`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT for table `mpin_reset_otps`
@@ -4815,7 +5469,7 @@ ALTER TABLE `mpin_reset_otps`
 -- AUTO_INCREMENT for table `negotiation_offers`
 --
 ALTER TABLE `negotiation_offers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `payment_webhook_events`
@@ -4851,13 +5505,13 @@ ALTER TABLE `receipts`
 -- AUTO_INCREMENT for table `refresh_tokens`
 --
 ALTER TABLE `refresh_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- AUTO_INCREMENT for table `registration_otps`
 --
 ALTER TABLE `registration_otps`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -4881,7 +5535,7 @@ ALTER TABLE `role_user`
 -- AUTO_INCREMENT for table `sms_messages`
 --
 ALTER TABLE `sms_messages`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `spatie_permissions_backup`
@@ -4917,7 +5571,7 @@ ALTER TABLE `trackings`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `vehicles`
