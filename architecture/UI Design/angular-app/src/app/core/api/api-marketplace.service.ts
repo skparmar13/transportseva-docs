@@ -64,6 +64,28 @@ export interface CreateMarketplaceVehiclePayload {
   capacity_tons: number;
 }
 
+export interface ApiMarketplaceDriver {
+  uuid: string;
+  name: string;
+  phone: string;
+  license_number: string;
+  license_expiry?: string | null;
+  experience_years: number;
+  address?: string | null;
+  status: 'available' | 'inactive';
+  is_busy?: boolean;
+  assigned_vehicle_reg_number?: string | null;
+}
+
+export interface CreateMarketplaceDriverPayload {
+  name: string;
+  phone: string;
+  license_number: string;
+  license_expiry?: string;
+  experience_years?: number;
+  address?: string;
+}
+
 export interface ApiApplication {
   uuid: string;
   application_id?: string;
@@ -195,6 +217,14 @@ export class ApiMarketplaceService {
 
   createMarketplaceVehicle(payload: CreateMarketplaceVehiclePayload): Observable<ApiMarketplaceVehicle> {
     return this.api.post<ApiMarketplaceVehicle>('marketplace-vehicles', payload).pipe(map((response) => response.data));
+  }
+
+  listMarketplaceDrivers(): Observable<ApiMarketplaceDriver[]> {
+    return this.api.get<ApiMarketplaceDriver[]>('marketplace-drivers').pipe(map((response) => response.data));
+  }
+
+  createMarketplaceDriver(payload: CreateMarketplaceDriverPayload): Observable<ApiMarketplaceDriver> {
+    return this.api.post<ApiMarketplaceDriver>('marketplace-drivers', payload).pipe(map((response) => response.data));
   }
 
   createApplication(loadUuid: string, payload: CreateApplicationPayload): Observable<ApiApplication> {

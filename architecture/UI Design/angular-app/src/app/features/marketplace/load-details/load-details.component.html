@@ -7,7 +7,10 @@
     </div>
   </div>
 } @else if (loadError()) {
-  <div class="card-body page-loading-state" role="alert"><app-icon name="i-info" [size]="30" /><strong>{{ loadError() }}</strong></div>
+  <div class="card-body page-loading-state" role="alert">
+    <app-icon name="i-info" [size]="30" /><strong>{{ loadError() }}</strong>
+    <button type="button" class="btn btn-outline btn-sm" (click)="retryLoadData()">Retry</button>
+  </div>
 } @else if (load(); as l) {
   <div class="page-toolbar">
     <div>

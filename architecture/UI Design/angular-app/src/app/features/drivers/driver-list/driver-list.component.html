@@ -25,6 +25,7 @@
     <select class="filter-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
       <option value="">{{ 'driverList.filter.allStatus' | t }}</option>
       <option value="Available">{{ 'status.available' | t }}</option>
+      <option value="Assigned">{{ 'status.assigned' | t }}</option>
       <option value="On Trip">{{ 'status.onTrip' | t }}</option>
       <option value="Off Duty">{{ 'status.offDuty' | t }}</option>
       <option value="Suspended">{{ 'status.suspended' | t }}</option>
@@ -34,7 +35,11 @@
 </div>
 
 <div class="card">
-  @if (filteredDrivers().length) {
+  @if (loadingDrivers()) {
+    <div class="card-body" role="status">Loading registered drivers…</div>
+  } @else if (driverLoadError()) {
+    <div class="card-body" role="alert">{{ driverLoadError() }} <button type="button" class="btn btn-outline btn-sm" (click)="reloadDrivers()">Retry</button></div>
+  } @else if (filteredDrivers().length) {
     <table class="data-table">
       <thead>
         <tr>
@@ -62,7 +67,7 @@
             </td>
             <td>⭐ {{ driver.rating || '—' }}</td>
             <td><span class="status-pill" [class]="statusClass[driver.status]">{{ statusKey(driver.status) | t }}</span></td>
-            <td><button type="button" class="btn btn-outline btn-sm" (click)="viewDriver(driver.id)">{{ 'myLoads.view' | t }}</button></td>
+            <td>@if (!backendEnabled) { <button type="button" class="btn btn-outline btn-sm" (click)="viewDriver(driver.id)">{{ 'myLoads.view' | t }}</button> }</td>
           </tr>
         }
       </tbody>
@@ -112,6 +117,7 @@
         <app-location-picker id="driver-address" name="address" labelKey="driverList.modal.address" placeholderKey="driverList.modal.addressPlaceholder" [value]="address()" [suggestionsAbove]="true" (valueChange)="address.set($event)" />
       </div>
     </div>
+    @if (driverSaveError()) { <p role="alert" style="color:var(--color-danger);">{{ driverSaveError() }}</p> }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
       <button type="button" class="btn btn-outline" (click)="closeAdd()">{{ 'common.cancel' | t }}</button>
       <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ saving() ? ('driverList.modal.saving' | t) : ('driverList.modal.submit' | t) }}</button>

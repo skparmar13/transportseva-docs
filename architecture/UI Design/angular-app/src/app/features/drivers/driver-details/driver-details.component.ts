@@ -12,9 +12,11 @@ import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
 type TabId = 'profile' | 'documents' | 'assignment' | 'timeline';
 
+// Keep every directory status represented on the driver profile as well.
 const STATUS_CLASS: Record<DriverStatus, string> = {
   'On Trip': 'status-transit',
   Available: 'status-delivered',
+  Assigned: 'status-transit',
   'Off Duty': 'status-pending',
   Suspended: 'status-cancelled',
 };

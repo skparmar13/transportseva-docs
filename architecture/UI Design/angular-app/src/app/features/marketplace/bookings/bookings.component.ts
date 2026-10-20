@@ -10,13 +10,21 @@ import { PaymentMockService } from '../../../core/services/payment-mock.service'
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { API_CONFIG } from '../../../core/api/api-config';
-import { ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
-import { ApiMarketplaceBooking } from '../../../core/api/api-marketplace.service';
+import { ApiMarketplaceBooking, ApiMarketplaceDriver, ApiMarketplaceService, ApiMarketplaceVehicle } from '../../../core/api/api-marketplace.service';
 import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
 import { switchMap } from 'rxjs';
 import { Router } from '@angular/router';
+
+/** A provider vehicle shown in the booking-assignment selector. */
+interface AssignmentVehicleOption {
+  id: string;
+  regNumber: string;
+  vehicleType: string;
+  /** Reuses the legacy labels so the mock and API paths share the same UI. */
+  status: 'Idle' | 'Offline' | 'Inactive' | 'On Trip' | 'Maintenance';
+}
 
 /**
  * Bookings — confirmed bookings with the full commercial lifecycle:
@@ -44,6 +52,8 @@ export class BookingsComponent {
   protected readonly session = inject(SessionService);
 
   private readonly backendBookings = signal<ApiMarketplaceBooking[]>([]);
+  /** API-backed fleet records belonging to the signed-in provider only. */
+  private readonly backendVehicles = signal<ApiMarketplaceVehicle[]>([]);
   // Retained only for backwards-compatible in-memory bookings; API bookings
   // now persist their own milestones in the workflow payload.
   private readonly backendMidTripMilestones = signal<Record<string, SettlementMilestone[]>>({});
@@ -52,6 +62,7 @@ export class BookingsComponent {
   protected readonly loadError = signal('');
   constructor() {
     this.reloadBackendBookings();
+    this.reloadBackendVehicles();
   }
 
   private reloadBackendBookings(): void {
@@ -72,6 +83,17 @@ export class BookingsComponent {
   }
   protected retryBookings(): void {
     this.reloadBackendBookings();
+    this.reloadBackendVehicles();
+  }
+
+  private reloadBackendVehicles(): void {
+    if (!API_CONFIG.useBackend) return;
+    this.apiMarketplace.listMarketplaceVehicles().subscribe({
+      next: (vehicles) => this.backendVehicles.set(vehicles),
+      // The booking page still renders an explicit empty-state message in the
+      // selector if the provider has not registered a vehicle yet.
+      error: () => this.backendVehicles.set([]),
+    });
   }
   protected readonly bookings = computed<MarketplaceBooking[]>(() => API_CONFIG.useBackend
     ? this.backendBookings().map((booking) => this.mapBackendBooking(booking))
@@ -114,6 +136,11 @@ export class BookingsComponent {
 
   protected remainingFreightBalance(booking: MarketplaceBooking): string {
     return booking.settlementPlan.find((milestone) => milestone.label === 'Final Settlement')?.amount ?? '₹0';
+  }
+
+  protected freightNotRecordedReleased(booking: MarketplaceBooking): string {
+    const released = this.releasedMilestones(booking).reduce((total, milestone) => total + this.amountNumber(milestone.amount), 0);
+    return this.currency(Math.max(this.amountNumber(booking.amount) - released, 0));
   }
 
   protected finalSettlementPayable(booking: MarketplaceBooking): string {
@@ -288,7 +315,26 @@ export class BookingsComponent {
   protected readonly vehicleMode = signal<VehicleAssignmentMode>('Own Fleet');
   protected readonly vehicleRegInput = signal('');
   protected readonly subcontractedToInput = signal('');
-  protected readonly registeredVehicles = computed(() => this.fleet.vehicles().filter((vehicle) => vehicle.ownerRole === this.session.role()));
+  protected readonly registeredVehicles = computed<AssignmentVehicleOption[]>(() => {
+    if (!API_CONFIG.useBackend) {
+      return this.fleet.vehicles()
+        .filter((vehicle) => vehicle.ownerRole === this.session.role())
+        .map((vehicle) => ({
+          id: vehicle.id,
+          regNumber: vehicle.regNumber,
+          vehicleType: vehicle.vehicleType,
+          status: vehicle.status === 'Offline' ? 'Offline' : vehicle.status === 'On Trip' ? 'On Trip' : vehicle.status === 'Maintenance' ? 'Maintenance' : 'Idle',
+        }));
+    }
+    return this.backendVehicles().map((vehicle) => ({
+      id: vehicle.uuid,
+      regNumber: vehicle.registration_number,
+      vehicleType: vehicle.vehicle_type,
+      status: vehicle.status === 'available' ? 'Idle'
+        : vehicle.status === 'inactive' ? 'Inactive'
+          : vehicle.status === 'on_trip' ? 'On Trip' : 'Maintenance',
+    }));
+  });
   protected readonly assignableVehicles = computed(() => this.registeredVehicles().filter((vehicle) => vehicle.status === 'Idle' || vehicle.status === 'Offline'));
 
   protected canAssignSelectedVehicle(): boolean {
@@ -297,6 +343,7 @@ export class BookingsComponent {
   }
 
   protected openAssignVehicle(booking: MarketplaceBooking): void {
+    this.reloadBackendVehicles();
     this.assigningVehicleFor.set(booking.id);
     this.vehicleMode.set('Own Fleet');
     const currentVehicle = this.registeredVehicles().find((vehicle) => vehicle.regNumber === booking.vehicleRegNumber);
@@ -335,7 +382,12 @@ export class BookingsComponent {
   protected readonly assigningDriverFor = signal<string | null>(null);
   protected readonly assigningDriver = signal(false);
   protected readonly driverAssignmentError = signal('');
-  protected readonly registeredDrivers = computed(() => this.drivers.drivers().filter((driver) => driver.employerRole === this.session.role()));
+  protected readonly loadingRegisteredDrivers = signal(false);
+  protected readonly registeredDriversError = signal('');
+  private readonly backendDrivers = signal<ApiMarketplaceDriver[]>([]);
+  protected readonly registeredDrivers = computed(() => this.backendEnabled
+    ? this.backendDrivers().map((driver) => ({ id: driver.uuid, name: driver.name, phone: driver.phone, status: driver.status !== 'available' ? 'Off Duty' : driver.is_busy ? 'Assigned' : 'Available', assignedVehicleRegNumber: undefined as string | undefined }))
+    : this.drivers.drivers().filter((driver) => driver.employerRole === this.session.role()));
   protected readonly assignableDrivers = computed(() => this.registeredDrivers().filter((driver) => driver.status === 'Available' && !driver.assignedVehicleRegNumber));
   protected readonly driverIdInput = signal('');
   protected readonly driverNameInput = signal('');
@@ -345,10 +397,26 @@ export class BookingsComponent {
     this.assigningDriverFor.set(booking.id);
     this.assigningDriver.set(false);
     this.driverAssignmentError.set('');
+    if (this.backendEnabled) {
+      this.driverIdInput.set('');
+      this.driverNameInput.set('');
+      this.driverPhoneInput.set('');
+      this.reloadRegisteredDrivers();
+      return;
+    }
     const driver = this.assignableDrivers()[0];
     this.driverIdInput.set(driver?.id ?? '');
     this.driverNameInput.set(driver?.name ?? '');
     this.driverPhoneInput.set(driver?.phone ?? '');
+  }
+
+  protected reloadRegisteredDrivers(): void {
+    this.loadingRegisteredDrivers.set(true);
+    this.registeredDriversError.set('');
+    this.apiMarketplace.listMarketplaceDrivers().subscribe({
+      next: (drivers) => { this.backendDrivers.set(drivers); this.loadingRegisteredDrivers.set(false); },
+      error: (error) => { this.backendDrivers.set([]); this.loadingRegisteredDrivers.set(false); this.registeredDriversError.set(apiErrorMessage(error, 'Drivers could not be loaded. Please retry.')); },
+    });
   }
 
   protected selectDriver(driverId: string): void {
@@ -369,7 +437,7 @@ export class BookingsComponent {
     this.assigningDriver.set(true);
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'assign_driver', {
-        driver_name: this.driverNameInput(), driver_phone: this.driverPhoneInput() || undefined,
+        driver_uuid: this.driverIdInput(),
       }).subscribe({
         next: () => { this.assigningDriver.set(false); this.assigningDriverFor.set(null); this.reloadBackendBookings(); },
         error: (error) => { this.assigningDriver.set(false); this.driverAssignmentError.set(apiErrorMessage(error, 'Driver could not be assigned. Please retry.')); },
@@ -663,7 +731,7 @@ export class BookingsComponent {
                 : booking.status === 'confirmed' ? 'Confirmed' : 'Awaiting Deposit';
     const amount = `₹${Number(booking.gross_freight).toLocaleString('en-IN')}`;
     const freight = Number(booking.gross_freight) || 0;
-    const loadingAdvance = Math.round(freight * 0.4);
+    const loadingAdvance = Math.round(freight * 0.4 * 100) / 100;
     const releasedAt = workflow.released_milestones?.['Loading Advance'];
     const displayReleasedAt = releasedAt ? formatDateTime(releasedAt) : undefined;
     const midTripMilestones = (workflow.mid_trip_milestones ?? []).map((milestone) => ({
@@ -676,7 +744,7 @@ export class BookingsComponent {
     }));
     const midTripTotal = (workflow.mid_trip_milestones ?? []).reduce((total, milestone) => total + Number(milestone.amount || 0), 0);
     const settlementPlan = [
-      { id: `${booking.uuid}-loading`, label: 'Loading Advance', trigger: 'Released after loading is completed and confirmed by the shipper', amount: `₹${loadingAdvance.toLocaleString('en-IN')}`, status: releasedAt ? 'Released' as const : 'Pending' as const, ...(releasedAt ? { releasedAt } : {}) },
+      { id: `${booking.uuid}-loading`, label: 'Loading Advance', trigger: 'Can be recorded after the provider marks loading complete', amount: `₹${loadingAdvance.toLocaleString('en-IN')}`, status: releasedAt ? 'Released' as const : 'Pending' as const, ...(releasedAt ? { releasedAt } : {}) },
       ...midTripMilestones,
       { id: `${booking.uuid}-final`, label: 'Final Settlement', trigger: 'Released after POD is uploaded and approved', amount: `₹${Math.max(freight - loadingAdvance - midTripTotal, 0).toLocaleString('en-IN')}`, status: 'Pending' as const },
     ];

@@ -174,6 +174,9 @@
                         <button type="button" class="btn btn-outline btn-sm" (click)="openAddMilestone(booking)">{{ 'bookings.settlement.addMidTrip' | t }}</button>
                       }
                     </div>
+                    @if (backendEnabled) {
+                      <p role="note" style="font-size:12px;color:var(--color-text-muted);margin:0 0 8px;">{{ 'bookings.settlement.plan.statusOnly' | t }}</p>
+                    }
                     @for (m of booking.settlementPlan; track m.id) {
                       <div style="padding:8px 0;border-bottom:1px solid var(--color-border);">
                         <div style="display:flex;justify-content:space-between;font-size:13px;">
@@ -193,8 +196,12 @@
                       </div>
                     }
                     <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;font-size:13px;">
-                      <span style="font-weight:600;">Remaining freight balance</span>
+                      <span style="font-weight:600;">Final settlement after planned milestones</span>
                       <strong>{{ remainingFreightBalance(booking) }}</strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;font-size:13px;">
+                      <span>Freight not recorded as released</span>
+                      <strong>{{ freightNotRecordedReleased(booking) }}</strong>
                     </div>
                   </div>
                 }
@@ -220,15 +227,18 @@
                         @if (isWorkflowActionPending(booking.id, 'complete-trip')) { <span class="button-loader" aria-hidden="true"></span><span>Completing…</span> } @else { <span>{{ 'bookings.trip.complete' | t }}</span> }
                       </button>
                     }
-                    @if (mySide(booking) === 'owner') {
-                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="(booking.dispute && booking.dispute.status !== 'Resolved') || isWorkflowActionPending(booking.id, 'settle')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'settle')" (click)="settle(booking.id)">
-                        @if (isWorkflowActionPending(booking.id, 'settle')) { <span class="button-loader" aria-hidden="true"></span><span>Settling…</span> } @else { <span>{{ 'bookings.trip.settle' | t }}</span> }
-                      </button>
-                      @if (workflowActionErrorFor(booking.id, 'settle'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
-                      @if (settlementError()) {
-                        <p style="font-size:12px;color:var(--color-danger);margin:8px 0 0;">Settlement could not be created. Confirm the booking is completed and both token payments are successful.</p>
-                      }
-                    }
+                    @if (mySide(booking) === 'owner') { <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">Settlement can be prepared after the fleet owner marks the trip completed.</p> }
+                  </div>
+                }
+
+                @if (booking.status === 'Settlement Pending' && !booking.settlement && mySide(booking) === 'owner') {
+                  <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
+                    <div style="font-weight:600;font-size:13.5px;">Trip completed · Settlement pending</div>
+                    <p style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">Create the settlement record to review the final balance.</p>
+                    <button type="button" class="btn btn-outline btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="(booking.dispute && booking.dispute.status !== 'Resolved') || isWorkflowActionPending(booking.id, 'settle')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'settle')" (click)="settle(booking.id)">
+                      @if (isWorkflowActionPending(booking.id, 'settle')) { <span class="button-loader" aria-hidden="true"></span><span>Preparing…</span> } @else { <span>Prepare Settlement</span> }
+                    </button>
+                    @if (workflowActionErrorFor(booking.id, 'settle'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
                   </div>
                 }
 
@@ -247,8 +257,9 @@
                     <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>Shipper platform fee</span><strong>{{ s.shipperCommission || '₹0' }}</strong></div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="font-weight:600;">Final payment due from shipper</span><strong>{{ finalSettlementPayable(booking) }}</strong></div>
                     <div style="font-size:12px;color:var(--color-text-soft);padding:4px 0;">Provider-side TransportSeva Platform fee withheld: {{ s.commissionDeducted || '₹0' }}</div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--color-border);"><span style="font-weight:600;">{{ s.status === 'settled' ? 'TransportSeva commission collected' : 'TransportSeva commission due on final payment' }}</span><strong style="color:var(--color-success);">{{ platformCommission(booking) }}</strong></div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>Total provider payout</span><strong>{{ s.payoutAmount }}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--color-border);"><span style="font-weight:600;">{{ s.status === 'settled' ? 'TransportSeva commission recorded' : 'TransportSeva commission due on final payment' }}</span><strong style="color:var(--color-success);">{{ platformCommission(booking) }}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>Calculated provider payout</span><strong>{{ s.payoutAmount }}</strong></div>
+                    <div style="font-size:12px;color:var(--color-text-muted);padding:4px 0;">Settlement status does not verify that money was charged or transferred.</div>
                     <div style="font-size:12px;color:var(--color-text-soft);padding:6px 0;">Booking security tokens: Shipper ₹1,000 + Fleet owner ₹1,000 = ₹2,000. They are held separately from freight and commission; release or refund is governed by the booking/dispute policy.</div>
                     <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">@if (s.status === 'settled') { {{ 'bookings.settlement.footer' | t:{ date: dateTime(s.settledAt) } }} } @else { Final payout will be released after final payment is settled. }</div>
                     @if (mySide(booking) === 'owner') {
@@ -292,12 +303,12 @@
 
 @if (offlinePaymentFor(); as booking) {
   <app-modal title="Settle Final Payment" (close)="offlinePaymentFor.set(null)">
-    <p style="font-size:13px;color:var(--color-text-muted);">Confirm the final charge. It includes the remaining freight and the shipper-side TransportSeva platform fee.</p>
+    <p style="font-size:13px;color:var(--color-text-muted);">This records a settlement status only. It does not charge, transfer or verify receipt of money. Use it only after confirming payment outside this screen.</p>
     <div style="font-size:13px;background:var(--color-muted-bg);border-radius:10px;padding:10px;margin-bottom:12px;">Remaining freight: <strong>{{ remainingFreightBalance(booking) }}</strong><br />Platform fee: <strong>{{ booking.settlement?.shipperCommission || '₹0' }}</strong><br /><span style="font-weight:700;">Total payable: {{ finalSettlementPayable(booking) }}</span></div>
     <div class="field"><label for="offline-amount">Final payment amount</label><input id="offline-amount" type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [ngModel]="offlineAmount()" (ngModelChange)="offlineAmount.set($event)" name="offlineAmount" /></div>
     <div class="field"><label for="offline-reference">Receipt or reference (optional)</label><input id="offline-reference" class="input" [ngModel]="offlineReference()" (ngModelChange)="offlineReference.set($event)" name="offlineReference" /></div>
     @if (workflowActionErrorFor(booking.id, 'record-payment'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
-    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" [disabled]="isWorkflowActionPending(booking.id, 'record-payment')" (click)="offlinePaymentFor.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'record-payment') || !offlineAmountValid()" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'record-payment')" (click)="recordOfflinePayment()">@if (isWorkflowActionPending(booking.id, 'record-payment')) { <span class="button-loader" aria-hidden="true"></span><span>Settling…</span> } @else { <span>Confirm Final Payment</span> }</button></div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" [disabled]="isWorkflowActionPending(booking.id, 'record-payment')" (click)="offlinePaymentFor.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'record-payment') || !offlineAmountValid()" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'record-payment')" (click)="recordOfflinePayment()">@if (isWorkflowActionPending(booking.id, 'record-payment')) { <span class="button-loader" aria-hidden="true"></span><span>Recording…</span> } @else { <span>Record Payment Status</span> }</button></div>
   </app-modal>
 }
 
@@ -416,7 +427,11 @@
           </option>
         }
       </select>
-      @if (!registeredDrivers().length) {
+      @if (loadingRegisteredDrivers()) {
+        <small role="status">Loading registered drivers…</small>
+      } @else if (registeredDriversError()) {
+        <small role="alert" style="color:var(--color-danger);">{{ registeredDriversError() }} <button type="button" class="btn btn-outline btn-sm" (click)="reloadRegisteredDrivers()">Retry</button></small>
+      } @else if (!registeredDrivers().length) {
         <small style="display:block;margin-top:6px;color:var(--color-danger);">No registered drivers found. Add a driver under My Drivers first.</small>
       } @else if (!assignableDrivers().length) {
         <small style="display:block;margin-top:6px;color:var(--color-danger);">All registered drivers are busy or unavailable.</small>

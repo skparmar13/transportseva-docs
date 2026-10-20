@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval, of, switchMap } from 'rxjs';
+import { interval, of, switchMap, timeout, TimeoutError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -94,7 +94,7 @@ export class LoadDetailsComponent {
     if (!API_CONFIG.useBackend) return;
     this.loading.set(true);
     this.applicationsLoading.set(true);
-    this.apiMarketplace.getLoad(this.loadId).subscribe({
+    this.apiMarketplace.getLoad(this.loadId).pipe(timeout(30_000)).subscribe({
       next: (load) => {
         this.backendLoad.set(load);
         this.loading.set(false);
@@ -108,7 +108,9 @@ export class LoadDetailsComponent {
         this.backendLoad.set(undefined);
         this.loading.set(false);
         this.applicationsLoading.set(false);
-        this.loadError.set(apiErrorMessage(error, 'We could not load this shipment.'));
+        this.loadError.set(error instanceof TimeoutError
+          ? 'Loading this shipment took too long. Please try again.'
+          : apiErrorMessage(error, 'We could not load this shipment.'));
       },
     });
   }
@@ -119,7 +121,7 @@ export class LoadDetailsComponent {
    * local PHP server and makes the actual failure state visible to the user.
    */
   private loadBackendApplications(): void {
-    this.apiMarketplace.listApplications(this.loadId).subscribe({
+    this.apiMarketplace.listApplications(this.loadId).pipe(timeout(30_000)).subscribe({
       next: (applications) => {
         this.applicationsLoading.set(false);
         this.applicationsError.set('');
@@ -148,7 +150,9 @@ export class LoadDetailsComponent {
         // Never convert an API failure into a misleading "No applications"
         // state. Preserve any previously loaded applications and show the
         // actual error in the section so offers/chats cannot silently vanish.
-        this.applicationsError.set(apiErrorMessage(error, 'Applications could not be loaded. Please retry.'));
+        this.applicationsError.set(error instanceof TimeoutError
+          ? 'Loading applications took too long. Please retry.'
+          : apiErrorMessage(error, 'Applications could not be loaded. Please retry.'));
         this.actionInFlightApplicationId.set(null);
       },
     });

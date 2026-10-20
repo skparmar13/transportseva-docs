@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../core/services/session.service';
 import { TranslatePipe } from '../../../core/i18n';
 import { formatDateTime } from '../../../core/utils/date-format';
+import { API_CONFIG } from '../../../core/api/api-config';
 
 const STATUS_DOT_CLASS: Record<LiveVehicle['status'], string> = {
   'On Trip': 'status-transit',
@@ -40,7 +41,9 @@ export class LiveTrackingComponent implements OnInit {
   protected readonly session = inject(SessionService);
   protected readonly statusDotClass = STATUS_DOT_CLASS;
 
-  protected readonly liveVehicles = this.gps.liveVehicles;
+  protected readonly backendEnabled = API_CONFIG.useBackend;
+  // Demo coordinates must never be displayed as real GPS data for API bookings.
+  protected readonly liveVehicles = computed(() => this.backendEnabled ? [] : this.gps.liveVehicles());
   protected readonly mapVehicleReg = signal<string | null>(null);
   protected readonly mapLocation = signal<GeoLocation | null>(null);
   protected readonly mapLoading = signal(false);

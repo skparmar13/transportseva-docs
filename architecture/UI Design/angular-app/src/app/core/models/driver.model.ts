@@ -6,7 +6,7 @@
  */
 import { PortalRole } from './nav.model';
 
-export type DriverStatus = 'Available' | 'On Trip' | 'Off Duty' | 'Suspended';
+export type DriverStatus = 'Available' | 'Assigned' | 'On Trip' | 'Off Duty' | 'Suspended';
 
 export type DriverDocStatus = 'Valid' | 'Expiring Soon' | 'Expired' | 'Not Uploaded';
 
