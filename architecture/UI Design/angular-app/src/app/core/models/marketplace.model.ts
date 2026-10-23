@@ -244,6 +244,7 @@ export interface BookingDispute {
   reason: string;
   raisedBy: string;
   status: 'Open' | 'Under Review' | 'Resolved';
-  outcome?: 'Refunded' | 'Forfeited' | 'Commission Waived' | 'Commission Due';
+  outcome?: 'Refunded' | 'Forfeited' | 'Commission Waived' | 'Commission Due' | 'Continue' | 'Cancel';
+  decision?: { ownerToken: string; providerToken: string; commission: string; summary: string };
   raisedAt: string;
 }

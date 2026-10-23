@@ -68,6 +68,7 @@ export class LoadDetailsComponent {
   private readonly backendChatMessages = signal<Record<string, ApiChatMessage[]>>({});
   private readonly backendRegisteredVehicles = signal<ApiMarketplaceVehicle[]>([]);
   protected readonly loading = signal(API_CONFIG.useBackend);
+  protected readonly backendEnabled = API_CONFIG.useBackend;
   protected readonly applicationsLoading = signal(API_CONFIG.useBackend);
   protected readonly loadError = signal('');
   protected readonly applicationsError = signal('');
@@ -84,6 +85,10 @@ export class LoadDetailsComponent {
   protected readonly chatLoading = signal(false);
   protected readonly chatSending = signal(false);
   constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.openRequestedChat();
+      this.openRequestedOffers();
+    });
     this.reloadBackendData();
     if (API_CONFIG.useBackend) {
       interval(4000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refreshActiveChat());
@@ -126,6 +131,8 @@ export class LoadDetailsComponent {
         this.applicationsLoading.set(false);
         this.applicationsError.set('');
         this.backendApplications.set(applications);
+        this.openRequestedChat();
+        this.openRequestedOffers();
         this.actionInFlightApplicationId.set(null);
         for (const application of applications) {
           this.apiMarketplace.listOffers(application.uuid).subscribe({
@@ -156,6 +163,22 @@ export class LoadDetailsComponent {
         this.actionInFlightApplicationId.set(null);
       },
     });
+  }
+
+  private openRequestedChat(): void {
+    const requested = this.route.snapshot.queryParamMap.get('chat');
+    if (!requested || this.activeChatApplicationId() === requested) return;
+    if (this.backendApplications().some((application) => application.uuid === requested && application.status === 'accepted')) {
+      this.openChat(requested);
+    }
+  }
+
+  private openRequestedOffers(): void {
+    const requested = this.route.snapshot.queryParamMap.get('offers');
+    if (!requested || this.negotiatingApplicationId() === requested) return;
+    if (this.applications().some((application) => application.id === requested && this.canNegotiate(application))) {
+      this.openNegotiation(requested);
+    }
   }
 
   private loadBookingsForAcceptedApplications(applications: ApiApplication[]): void {
@@ -325,6 +348,7 @@ export class LoadDetailsComponent {
 
   // Apply form state
   protected readonly showApplyModal = signal(false);
+  protected readonly applicationSubmissionError = signal('');
   protected readonly vehicleRegNumber = signal('');
   protected readonly vehicleType = signal<VehicleType>('Open Body Truck');
   protected readonly availability = signal('');
@@ -358,6 +382,7 @@ export class LoadDetailsComponent {
   protected readonly actionError = signal('');
 
   protected openApply(): void {
+    this.applicationSubmissionError.set('');
     const selected = this.registeredVehicles().find((vehicle) => vehicle.regNumber === this.vehicleRegNumber())
       ?? this.registeredVehicles()[0];
     this.vehicleRegNumber.set(selected?.regNumber ?? '');
@@ -378,6 +403,7 @@ export class LoadDetailsComponent {
     const selectedVehicle = this.registeredVehicles().find((vehicle) => vehicle.regNumber === this.vehicleRegNumber());
     if (!load || !selectedVehicle || !this.availability().trim() || amount === null || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount * 100)) return;
     const selectedVehicleType = selectedVehicle.vehicleType as VehicleType;
+    this.applicationSubmissionError.set('');
     this.applying.set(true);
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.createApplication(this.loadId, {
@@ -402,7 +428,10 @@ export class LoadDetailsComponent {
           this.applying.set(false);
           this.showApplyModal.set(false);
         },
-        error: () => this.applying.set(false),
+        error: (error) => {
+          this.applying.set(false);
+          this.applicationSubmissionError.set(apiErrorMessage(error, 'We could not submit your application. Please try again.'));
+        },
       });
       return;
     }
@@ -524,6 +553,11 @@ export class LoadDetailsComponent {
     this.chatText.set('');
   }
 
+  protected retryChat(applicationId: string): void {
+    // Keep typed text intact while reloading a conversation after an error.
+    if (API_CONFIG.useBackend && !this.chatLoading()) this.loadChatMessages(applicationId);
+  }
+
   protected askAccept(applicationId: string, applicantName: string): void {
     this.actionError.set('');
     const application = this.applications().find((item) => item.id === applicationId);
@@ -598,15 +632,26 @@ export class LoadDetailsComponent {
 
   private mapLoad(load: ApiLoad | undefined): Load | undefined {
     if (!load) return undefined;
+    const rawStatus = String(load.status).toLowerCase();
+    const status: Load['status'] = rawStatus === 'booked' ? 'Booked'
+      : rawStatus === 'in_transit' ? 'In Transit'
+      : rawStatus === 'delivered' || rawStatus === 'completed' ? 'Delivered'
+      : rawStatus === 'cancelled' ? 'Cancelled'
+      : rawStatus === 'applications_received' ? 'Applications Received' : 'Open';
     return {
       id: load.uuid, loadId: formatLoadReference(load),
       postedBy: this.toPortalRole(load.posted_by_role), postedByName: load.posted_by_name ?? 'Shipper', pickupCity: load.pickup_city, dropCity: load.drop_city,
       material: load.material ?? 'General Cargo', weightTons: load.weight_tons ?? 0,
       vehicleType: (load.vehicle_type ?? 'Open Body Truck') as VehicleType, pickupDate: formatDate(load.pickup_date),
       budget: formatCurrencyAmount(load.budget),
-      status: String(load.status).toLowerCase().includes('application') ? 'Applications Received' : 'Open',
+      status,
       applicationsCount: load.applications_count ?? 0, postedAgo: load.created_at ? formatDateTime(load.created_at) : 'Recently posted',
     };
+  }
+
+  protected canApplyToLoad(load: Load): boolean {
+    if (API_CONFIG.useBackend) return ['open', 'applications_received'].includes(String(this.backendLoad()?.status).toLowerCase());
+    return load.status === 'Open' || load.status === 'Applications Received';
   }
 
   private toPortalRole(role: string | undefined): Load['postedBy'] {

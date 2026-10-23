@@ -13,6 +13,8 @@ export interface AppNotification {
   message: string;
   timestamp: string;
   read: boolean;
+  data?: Record<string, unknown>;
+  actionUrl?: string | null;
 }
 
 export type TicketStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';

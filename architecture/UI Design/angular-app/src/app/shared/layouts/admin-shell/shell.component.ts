@@ -5,7 +5,8 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { IconComponent } from '../../components/icon/icon.component';
 import { SessionService } from '../../../core/services/session.service';
 import { CommunicationMockService } from '../../../core/services/communication-mock.service';
-import { NotificationCategory } from '../../../core/models/communication.model';
+import { AppNotification, NotificationCategory } from '../../../core/models/communication.model';
+import { NotificationNavigationService } from '../../../core/services/notification-navigation.service';
 import { LanguageService, TranslatePipe } from '../../../core/i18n';
 import { NavItem } from '../../../core/models/nav.model';
 import { ApiAuthService } from '../../../core/api/api-auth.service';
@@ -37,6 +38,7 @@ const CATEGORY_ICON: Record<NotificationCategory, string> = {
 })
 export class ShellComponent {
   protected readonly language = inject(LanguageService);
+  private readonly notificationNavigation = inject(NotificationNavigationService);
 
   constructor(
     private readonly sessionSvc: SessionService,
@@ -115,6 +117,7 @@ export class ShellComponent {
     }
     this.sessionSvc.clearPlatformStaff();
     this.sessionSvc.clearBackendUser();
+    this.comms.clearNotifications();
     this.sessionSvc.setRole('admin');
     this.router.navigate([isPlatformStaff ? '/auth/staff/login' : '/auth/login']);
   }
@@ -127,8 +130,20 @@ export class ShellComponent {
     this.showBellDropdown.set(false);
   }
 
-  protected markRead(id: string): void {
-    this.comms.markNotificationRead(id);
+  protected openNotification(notification: AppNotification): void {
+    const destination = this.notificationNavigation.destination(notification);
+    this.closeBellDropdown();
+    if (!destination) {
+      this.comms.markNotificationRead(notification.id);
+      this.viewAllNotifications();
+    } else if (this.router.url === this.router.serializeUrl(destination) && typeof window !== 'undefined') {
+      // The user may already be looking at this load; reload it to show the
+      // event rather than leaving the old application state on screen.
+      this.comms.markNotificationRead(notification.id, () => window.location.reload());
+    } else {
+      this.comms.markNotificationRead(notification.id);
+      void this.router.navigateByUrl(destination);
+    }
   }
 
   protected viewAllNotifications(): void {

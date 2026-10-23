@@ -69,7 +69,7 @@
             </div>
             @if (comms.recentNotifications().length) {
               @for (n of comms.recentNotifications(); track n.id) {
-                <button type="button" class="notif-dropdown-item" [class.unread]="!n.read" (click)="markRead(n.id)">
+                <button type="button" class="notif-dropdown-item" [attr.data-notification-id]="n.id" [class.unread]="!n.read" (click)="openNotification(n)">
                   <div class="notif-icon"><app-icon [name]="categoryIcon[n.category]" [size]="14" /></div>
                   <div>
                     <b>{{ n.title }}</b>

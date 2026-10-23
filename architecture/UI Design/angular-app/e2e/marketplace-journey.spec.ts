@@ -60,10 +60,10 @@ async function signUpAndCompleteProfile(
   await expect(page).toHaveURL(new RegExp(`/${user.role === 'shipper' ? 'shipper' : 'truck-owner'}/dashboard`));
 }
 
-async function login(page: Page, user: ReturnType<typeof testUser>): Promise<void> {
+async function login(page: Page, user: ReturnType<typeof testUser> | { role: 'admin'; name: string; email: string; mobile: string }, userPassword = password): Promise<void> {
   await page.goto('/auth/login');
   await page.locator('input[name="identifier"]').fill(user.email);
-  await page.locator('input[name="password"]').fill(password);
+  await page.locator('input[name="password"]').fill(userPassword);
   const loginResponse = page.waitForResponse((candidate) =>
     candidate.request().method() === 'POST'
       && new URL(candidate.url()).pathname.endsWith('/api/auth/login'),
@@ -71,7 +71,18 @@ async function login(page: Page, user: ReturnType<typeof testUser>): Promise<voi
   );
   await page.getByRole('button', { name: /^log in$/i }).click();
   expect((await loginResponse).status()).toBe(200);
-  await expect(page).toHaveURL(new RegExp(`/${user.role === 'shipper' ? 'shipper' : 'truck-owner'}/dashboard`), { timeout: 45_000 });
+  const portal = user.role === 'shipper' ? 'shipper' : user.role === 'truck-owner' ? 'truck-owner' : 'admin';
+  await expect(page).toHaveURL(new RegExp(`/${portal}/dashboard`), { timeout: 45_000 });
+}
+
+async function waitForLoadNotification(page: Page, title: string, loadUuid: string): Promise<string> {
+  const response = await page.waitForResponse(async (candidate) => {
+    if (candidate.request().method() !== 'GET' || !new URL(candidate.url()).pathname.endsWith('/api/notifications') || !candidate.ok()) return false;
+    const payload = await candidate.json().catch(() => null) as { data?: { id: string; title: string; data?: { load_uuid?: string } }[] } | null;
+    return !!payload?.data?.some((item) => item.title === title && item.data?.load_uuid === loadUuid);
+  }, { timeout: 90_000 });
+  const payload = await response.json() as { data: { id: string; title: string; data?: { load_uuid?: string } }[] };
+  return payload.data.find((item) => item.title === title && item.data?.load_uuid === loadUuid)!.id;
 }
 
 async function postLoad(page: Page): Promise<string> {
@@ -130,7 +141,7 @@ async function applyForLoad(page: Page, loadUuid: string, registrationNumber: st
   await expect(page.getByText(/your application/i)).toBeVisible();
 }
 
-async function acceptApplicationAndCreateBooking(page: Page, quote: string): Promise<{ uuid: string; booking_reference: string }> {
+async function acceptApplicationAndCreateBooking(page: Page, quote: string, waitForAcceptedDisplay = true): Promise<{ uuid: string; booking_reference: string }> {
   const formattedQuote = new Intl.NumberFormat('en-IN').format(Number(quote));
   const acceptButton = page.getByRole('button', {
     name: new RegExp(`accept\\s*₹${formattedQuote}`, 'i'),
@@ -156,7 +167,7 @@ async function acceptApplicationAndCreateBooking(page: Page, quote: string): Pro
   const bookingData = (await bookingResponse.json() as { data: { uuid: string; booking_reference: string } }).data;
   expect(bookingData.uuid).toBeTruthy();
   expect(bookingData.booking_reference).toBeTruthy();
-  await expect(page.getByText(new RegExp(`offer accepted at\\s*₹${formattedQuote}`, 'i'))).toBeVisible({ timeout: 45_000 });
+  if (waitForAcceptedDisplay) await expect(page.getByText(new RegExp(`offer accepted at\\s*₹${formattedQuote}`, 'i'))).toBeVisible({ timeout: 45_000 });
   return bookingData;
 }
 
@@ -202,6 +213,54 @@ test.describe('Marketplace browser journey', () => {
   test('signup, OTP verification, and profile completion redirect to the correct portal', async ({ page }) => {
     await signUpAndCompleteProfile(page, testUser('shipper', 1));
     await expect(page.getByText(/Marketplace Shipper 1/i)).toBeVisible();
+  });
+
+  test('a repeated successful signup OTP verification returns to profile setup instead of reporting an invalid OTP', async ({ page }) => {
+    test.setTimeout(180_000);
+    const user = testUser('shipper', 81);
+    await page.goto('/auth/signup');
+    await page.locator('.role-card').filter({ hasText: /Shipper/i }).click();
+    await page.locator('input[name="fullName"]').fill(user.name);
+    await page.locator('input[name="mobile"]').fill(user.mobile);
+    await page.locator('input[name="email"]').fill(user.email);
+    await page.locator('input[name="password"]').fill(password);
+    await page.locator('input[name="confirmPassword"]').fill(password);
+    await page.locator('input[name="agreeTerms"]').check();
+    const requested = page.waitForResponse((response) => response.request().method() === 'POST'
+      && new URL(response.url()).pathname.endsWith('/api/auth/signup/request-otp'), { timeout: 45_000 });
+    await page.getByRole('button', { name: /create account/i }).click();
+    expect((await requested).status()).toBe(200);
+    await expect(page).toHaveURL(/\/auth\/otp-verification\?next=signup/, { timeout: 45_000 });
+    const otp = await page.locator('.otp-debug strong').innerText();
+    expect(otp).toMatch(/^\d{6}$/);
+
+    const enterOtp = async () => {
+      const inputs = page.locator('.otp-box');
+      for (const [index, digit] of [...otp].entries()) {
+        await inputs.nth(index).click();
+        await inputs.nth(index).press(digit);
+      }
+    };
+    await enterOtp();
+    const firstVerification = page.waitForResponse((response) => response.request().method() === 'POST'
+      && new URL(response.url()).pathname.endsWith('/api/auth/signup/verify-otp'), { timeout: 45_000 });
+    await page.getByRole('button', { name: /verify otp/i }).click();
+    expect((await firstVerification).status()).toBe(200);
+    await expect(page).toHaveURL(/\/auth\/profile-setup/, { timeout: 45_000 });
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/auth\/otp-verification\?next=signup/, { timeout: 45_000 });
+    await enterOtp();
+    const retriedVerification = page.waitForResponse((response) => response.request().method() === 'POST'
+      && new URL(response.url()).pathname.endsWith('/api/auth/signup/verify-otp'), { timeout: 45_000 });
+    await page.getByRole('button', { name: /verify otp/i }).click();
+    expect((await retriedVerification).status()).toBe(200);
+    await expect(page).toHaveURL(/\/auth\/profile-setup/, { timeout: 45_000 });
+    await expect(page.getByText(/invalid or expired otp/i)).toHaveCount(0);
+
+    await page.locator('input[name="designation"]').fill('Repeated OTP E2E tester');
+    await page.getByRole('button', { name: /finish setup/i }).click();
+    await expect(page).toHaveURL(/\/shipper\/dashboard/, { timeout: 45_000 });
   });
 
   test('two fleet owners apply, then the selected offer creates a booking and both parties pay tokens', async ({ page }) => {
@@ -537,6 +596,64 @@ test.describe('Marketplace browser journey', () => {
     await expect(card.getByText('TransportSeva commission recorded', { exact: true })).toBeVisible();
   });
 
+  test('duplicate vehicle registration shows an inline error', async ({ page }) => {
+    const ownerEmail = process.env.E2E_OWNER_EMAIL;
+    const registration = process.env.E2E_VEHICLE_REGISTRATION;
+    test.skip(!ownerEmail || !registration, 'Provide an existing test fleet owner and vehicle.');
+    test.setTimeout(180_000);
+    await login(page, { role: 'truck-owner', name: '', email: ownerEmail!, mobile: '' });
+    await page.goto('/truck-owner/vehicles');
+    await expect(page.getByText(registration!, { exact: true })).toBeVisible({ timeout: 45_000 });
+    await page.getByRole('button', { name: /add vehicle/i }).first().click();
+    const input = page.locator('input[name="regNumber"]');
+    const variant = `${registration!.slice(0, 3).toLowerCase()} - ${registration!.slice(3).toLowerCase()}`;
+    await input.fill(variant);
+    await page.locator('input[name="make"]').fill('Tata');
+    await page.locator('input[name="model"]').fill('E2E duplicate test');
+    await page.locator('input[name="capacityTons"]').fill('24');
+    const submitted = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith('/api/marketplace-vehicles'), { timeout: 45_000 });
+    await page.getByRole('button', { name: /^add vehicle$/i }).last().click();
+    expect((await submitted).status()).toBe(422);
+    await expect(page.getByRole('alert').getByText('This registration number is already registered.')).toBeVisible();
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await input.fill('TESTNEWVEHICLE');
+    await expect(page.getByText('This registration number is already registered.')).toHaveCount(0);
+    await page.getByRole('button', { name: /^cancel$/i }).click();
+    await expect(page.getByText(registration!, { exact: true })).toHaveCount(1);
+  });
+
+  test('duplicate application shows an error and booked load hides apply', async ({ page }) => {
+    const ownerEmail = process.env.E2E_OWNER_EMAIL;
+    const appliedLoad = process.env.E2E_APPLIED_LOAD_UUID;
+    const bookedLoad = process.env.E2E_BOOKED_LOAD_UUID;
+    const vehicle = process.env.E2E_VEHICLE_REGISTRATION;
+    test.skip(!ownerEmail || !appliedLoad || !bookedLoad || !vehicle, 'Provide an owner, owned vehicle, applied load and booked load.');
+    test.setTimeout(240_000);
+    await login(page, { role: 'truck-owner', name: '', email: ownerEmail!, mobile: '' });
+    // Simulate a stale client which has not yet learned about an existing application.
+    const appsRoute = `**/api/loads/${appliedLoad}/applications**`;
+    await page.route(appsRoute, async (route) => {
+      if (route.request().method() === 'GET') await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: [], meta: { total: 0 } }) });
+      else await route.continue();
+    });
+    await page.goto(`/truck-owner/load-board/${appliedLoad}`);
+    await page.getByRole('button', { name: /apply for this load/i }).click({ timeout: 45_000 });
+    await page.locator('select[name="vehicleRegNumber"]').selectOption(vehicle!);
+    await page.locator('input[name="availability"]').fill('Available today');
+    await page.locator('input[name="quotedAmount"]').fill('18000');
+    const submitted = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith(`/api/loads/${appliedLoad}/applications`), { timeout: 45_000 });
+    await page.getByRole('button', { name: /submit application/i }).click();
+    expect((await submitted).status()).toBe(422);
+    await expect(page.getByRole('alert').getByText('You have already applied to this load.')).toBeVisible();
+    await page.unroute(appsRoute);
+    await page.goto(`/truck-owner/load-board/${bookedLoad}`);
+    await expect(page.getByText('This load is no longer accepting applications.')).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByRole('button', { name: /apply for this load/i })).toHaveCount(0);
+    await expect(page.getByText('Booked', { exact: true })).toBeVisible();
+  });
+
   test('public load notes reject contact numbers before submission', async ({ page }) => {
     const shipperEmail = process.env.E2E_SHIPPER_EMAIL;
     test.skip(!shipperEmail, 'Provide a test shipper.');
@@ -704,24 +821,459 @@ test.describe('Marketplace browser journey', () => {
       await login(shipperPage, { role: 'shipper', name: '', email: shipperEmail!, mobile: '' });
       await login(ownerPage, { role: 'truck-owner', name: '', email: ownerEmail!, mobile: '' });
       await shipperPage.goto(`/shipper/load-board/${loadUuid}`);
-      await shipperPage.getByRole('button', { name: /^chat$/i }).click({ timeout: 90_000 });
       await ownerPage.goto(`/truck-owner/load-board/${loadUuid}`);
       await ownerPage.getByRole('button', { name: /chat with owner/i }).click({ timeout: 90_000 });
+      await shipperPage.getByRole('button', { name: /^chat$/i }).click({ timeout: 90_000 });
       await expect(ownerPage.getByPlaceholder(/type a message/i)).toBeVisible();
       const message = `E2E chat test ${runId}`;
       const posted = shipperPage.waitForResponse((candidate) => candidate.request().method() === 'POST'
         && /\/api\/marketplace-bookings\/[^/]+\/messages$/.test(new URL(candidate.url()).pathname), { timeout: 45_000 });
       await shipperPage.getByPlaceholder(/type a message/i).fill(message);
       await shipperPage.getByPlaceholder(/type a message/i).press('Enter');
-      expect((await posted).status()).toBe(201);
+      const messageResponse = await posted;
+      expect(messageResponse.status()).toBe(201);
+      const messageUuid = (await messageResponse.json() as { data: { uuid: string } }).data.uuid;
       await expect(ownerPage.getByText(message, { exact: true })).toBeVisible({ timeout: 60_000 });
       await expect(ownerPage.locator('.chat-bubble').filter({ hasText: message })).toContainText(/Marketplace Shipper 11.*Load Owner/i);
       await ownerPage.getByRole('button', { name: 'Notifications', exact: true }).click();
       await expect(ownerPage.locator('.notif-dropdown').getByText('New booking message', { exact: true }).first()).toBeVisible({ timeout: 60_000 });
       await expect(ownerPage.locator('.notif-dropdown').getByText(new RegExp(bookingReference!)).first()).toBeVisible();
+      const notificationResponse = await ownerPage.waitForResponse(async (candidate) => {
+        if (candidate.request().method() !== 'GET' || !new URL(candidate.url()).pathname.endsWith('/api/notifications') || !candidate.ok()) return false;
+        const body = await candidate.json().catch(() => null) as { data?: { data?: { message_uuid?: string } }[] } | null;
+        return !!body?.data?.some((item) => item.data?.message_uuid === messageUuid);
+      }, { timeout: 90_000 });
+      const notificationBody = await notificationResponse.json() as { data: { id: string; data?: { message_uuid?: string } }[] };
+      const notificationId = notificationBody.data.find((item) => item.data?.message_uuid === messageUuid)!.id;
+      const notification = ownerPage.locator(`[data-notification-id="${notificationId}"]`);
+      const readResponse = ownerPage.waitForResponse((candidate) => candidate.request().method() === 'PATCH'
+        && /\/api\/notifications\/[^/]+\/read$/.test(new URL(candidate.url()).pathname), { timeout: 45_000 });
+      await notification.click();
+      expect((await readResponse).status()).toBe(200);
+      await expect(ownerPage).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}\\?chat=`), { timeout: 45_000 });
+      await expect(ownerPage.getByPlaceholder(/type a message/i)).toBeVisible({ timeout: 60_000 });
+      await expect(ownerPage.getByText(message, { exact: true })).toBeVisible({ timeout: 60_000 });
     } finally {
       await shipperContext.close();
       await ownerContext.close();
     }
+  });
+
+  test('bell notifications follow application and competing acceptance events', async ({ browser }) => {
+    const shipperEmail = process.env.E2E_SHIPPER_EMAIL;
+    const firstEmail = process.env.E2E_OWNER_EMAIL;
+    const secondEmail = process.env.E2E_SECOND_OWNER_EMAIL;
+    const firstVehicle = process.env.E2E_OWNER_VEHICLE;
+    const secondVehicle = process.env.E2E_SECOND_OWNER_VEHICLE;
+    test.skip(!shipperEmail || !firstEmail || !secondEmail || !firstVehicle || !secondVehicle, 'Provide existing marketplace test participants and vehicles.');
+    test.setTimeout(600_000);
+    const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:4300';
+    const contexts = await Promise.all([browser.newContext({ baseURL }), browser.newContext({ baseURL }), browser.newContext({ baseURL })]);
+    try {
+      const [shipper, first, second] = await Promise.all(contexts.map((context) => context.newPage()));
+      await login(shipper, { role: 'shipper', name: '', email: shipperEmail!, mobile: '' });
+      const loadUuid = await postLoad(shipper);
+      console.log(`Notification test load: ${loadUuid}; shipper: ${shipperEmail}; owners: ${firstEmail}, ${secondEmail}`);
+      await login(first, { role: 'truck-owner', name: '', email: firstEmail!, mobile: '' });
+      await applyForLoad(first, loadUuid, firstVehicle!, '18500');
+      const applicationNoticeId = await waitForLoadNotification(shipper, 'New application received', loadUuid);
+      await shipper.getByRole('button', { name: 'Notifications', exact: true }).click();
+      const applicationNotice = shipper.locator(`[data-notification-id="${applicationNoticeId}"]`);
+      await expect(applicationNotice).toBeVisible({ timeout: 60_000 });
+      await applicationNotice.click();
+      await expect(shipper).toHaveURL(new RegExp(`/shipper/load-board/${loadUuid}`), { timeout: 45_000 });
+      await expect(shipper.getByText(firstVehicle!)).toBeVisible({ timeout: 60_000 });
+      await login(second, { role: 'truck-owner', name: '', email: secondEmail!, mobile: '' });
+      await applyForLoad(second, loadUuid, secondVehicle!, '18000');
+      await shipper.goto(`/shipper/load-board/${loadUuid}`);
+      await expect(shipper.getByText(secondVehicle!)).toBeVisible({ timeout: 60_000 });
+      const booking = await acceptApplicationAndCreateBooking(shipper, '18500');
+      console.log(`Notification test booking: ${booking.booking_reference} (${booking.uuid})`);
+      const acceptedId = await waitForLoadNotification(first, 'Offer accepted', loadUuid);
+      await first.getByRole('button', { name: 'Notifications', exact: true }).click();
+      const accepted = first.locator(`[data-notification-id="${acceptedId}"]`);
+      await expect(accepted).toBeVisible({ timeout: 60_000 });
+      await accepted.click();
+      await expect(first).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}`), { timeout: 45_000 });
+      const declinedId = await waitForLoadNotification(second, 'Application declined', loadUuid);
+      await second.getByRole('button', { name: 'Notifications', exact: true }).click();
+      const declined = second.locator(`[data-notification-id="${declinedId}"]`);
+      await expect(declined).toBeVisible({ timeout: 60_000 });
+      await declined.click();
+      await expect(second).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}`), { timeout: 45_000 });
+      await expect(second.getByText(/rejected|declined/i).first()).toBeVisible({ timeout: 60_000 });
+    } finally {
+      await Promise.all(contexts.map((context) => context.close()));
+    }
+  });
+
+  test('existing acceptance notifications open the selected and declined application', async ({ page }) => {
+    const firstEmail = process.env.E2E_OWNER_EMAIL;
+    const secondEmail = process.env.E2E_SECOND_OWNER_EMAIL;
+    const loadUuid = process.env.E2E_NOTIFICATION_LOAD_UUID;
+    test.skip(!firstEmail || !secondEmail || !loadUuid, 'Provide both owners and a load with a selected and a declined application.');
+    test.setTimeout(300_000);
+    for (const [email, title] of [[firstEmail!, 'Offer accepted'], [secondEmail!, 'Application declined']]) {
+      await login(page, { role: 'truck-owner', name: '', email, mobile: '' });
+      const id = await waitForLoadNotification(page, title, loadUuid!);
+      await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+      const item = page.locator(`[data-notification-id="${id}"]`);
+      await expect(item).toBeVisible({ timeout: 60_000 });
+      const markedRead = page.waitForResponse((response) => response.request().method() === 'PATCH'
+        && new URL(response.url()).pathname.endsWith(`/api/notifications/${id}/read`), { timeout: 45_000 });
+      await item.click();
+      expect((await markedRead).status()).toBe(200);
+      await expect(page).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}`), { timeout: 45_000 });
+      console.log(`Verified ${title} notification ${id} for ${email}, load ${loadUuid}`);
+    }
+  });
+
+  test('booking workflow notification opens its specific booking', async ({ page }) => {
+    const email = process.env.E2E_SHIPPER_EMAIL;
+    const bookingUuid = process.env.E2E_BOOKING_UUID;
+    const reference = process.env.E2E_BOOKING_REFERENCE;
+    test.skip(!email || !bookingUuid || !reference, 'Provide a shipper and an existing booking with workflow notifications.');
+    test.setTimeout(180_000);
+    await login(page, { role: 'shipper', name: '', email: email!, mobile: '' });
+    const response = await page.waitForResponse(async (candidate) => {
+      if (candidate.request().method() !== 'GET' || !new URL(candidate.url()).pathname.endsWith('/api/notifications') || !candidate.ok()) return false;
+      const body = await candidate.json().catch(() => null) as { data?: { title: string; data?: { booking_uuid?: string } }[] } | null;
+      return !!body?.data?.some((item) => item.title === 'Trip started' && item.data?.booking_uuid === bookingUuid);
+    }, { timeout: 90_000 });
+    const body = await response.json() as { data: { id: string; title: string; data?: { booking_uuid?: string } }[] };
+    const notification = body.data.find((item) => item.title === 'Trip started' && item.data?.booking_uuid === bookingUuid)!;
+    await page.goto('/shipper/notifications');
+    const row = page.locator(`.notif-row[data-notification-id="${notification.id}"]`);
+    await expect(row).toBeVisible({ timeout: 45_000 });
+    await row.getByRole('button', { name: 'Open', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/shipper/bookings\\?booking=${bookingUuid}`), { timeout: 45_000 });
+    const card = page.locator('.card').filter({ hasText: reference! }).first();
+    await expect(card).toBeVisible({ timeout: 60_000 });
+    await expect(card.getByRole('button', { name: /hide details/i })).toBeVisible();
+    console.log(`Verified booking notification ${notification.id}, booking ${reference} (${bookingUuid})`);
+  });
+
+  test('chat notification opens the specific conversation', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const loadUuid = process.env.E2E_NOTIFICATION_LOAD_UUID;
+    test.skip(!shipper || !owner || !loadUuid, 'Provide test participants and an accepted load.');
+    test.setTimeout(300_000);
+    await login(page, { role: 'shipper', name: '', email: shipper!, mobile: '' });
+    await page.goto(`/shipper/load-board/${loadUuid}`);
+    await page.getByRole('button', { name: /^chat$/i }).click({ timeout: 90_000 });
+    const message = `Notification chat check ${runId}`;
+    await expect(page.getByPlaceholder(/type a message/i)).toBeEnabled({ timeout: 90_000 });
+    await page.getByPlaceholder(/type a message/i).fill(message);
+    await expect(page.getByRole('button', { name: 'Send message' })).toBeEnabled({ timeout: 90_000 });
+    const sent = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && /\/api\/marketplace-bookings\/[^/]+\/messages$/.test(new URL(candidate.url()).pathname), { timeout: 45_000 });
+    await page.getByRole('button', { name: 'Send message' }).click();
+    const sentResponse = await sent;
+    expect(sentResponse.status()).toBe(201);
+    const messageUuid = (await sentResponse.json() as { data: { uuid: string } }).data.uuid;
+    await login(page, { role: 'truck-owner', name: '', email: owner!, mobile: '' });
+    const notificationResponse = await page.waitForResponse(async (candidate) => {
+      if (candidate.request().method() !== 'GET' || !new URL(candidate.url()).pathname.endsWith('/api/notifications') || !candidate.ok()) return false;
+      const body = await candidate.json().catch(() => null) as { data?: { data?: { message_uuid?: string } }[] } | null;
+      return !!body?.data?.some((item) => item.data?.message_uuid === messageUuid);
+    }, { timeout: 90_000 });
+    const body = await notificationResponse.json() as { data: { id: string; data?: { message_uuid?: string } }[] };
+    const id = body.data.find((item) => item.data?.message_uuid === messageUuid)!.id;
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+    await page.locator(`[data-notification-id="${id}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}\\?chat=`), { timeout: 45_000 });
+    await expect(page.getByPlaceholder(/type a message/i)).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText(message, { exact: true })).toBeVisible({ timeout: 60_000 });
+    console.log(`Verified chat notification ${id}, load ${loadUuid}`);
+  });
+
+  test('dispute notification opens its specific booking and dispute', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const vehicle = process.env.E2E_OWNER_VEHICLE;
+    test.skip(!shipper || !owner || !vehicle, 'Provide test participants and an owned test vehicle.');
+    test.setTimeout(600_000);
+    const shipperUser = { role: 'shipper' as const, name: '', email: shipper!, mobile: '' };
+    const ownerUser = { role: 'truck-owner' as const, name: '', email: owner!, mobile: '' };
+    await login(page, shipperUser);
+    const loadUuid = await postLoad(page);
+    console.log(`Dispute test load: ${loadUuid}; shipper ${shipper}; owner ${owner}`);
+    await login(page, ownerUser);
+    await applyForLoad(page, loadUuid, vehicle!, '18500');
+    await login(page, shipperUser);
+    await page.goto(`/shipper/load-board/${loadUuid}`);
+    const booking = await acceptApplicationAndCreateBooking(page, '18500', false);
+    console.log(`Dispute test booking: ${booking.booking_reference} (${booking.uuid})`);
+    await page.goto(`/shipper/bookings?booking=${booking.uuid}`);
+    const card = page.locator('.card').filter({ hasText: booking.booking_reference }).first();
+    await expect(card).toBeVisible({ timeout: 90_000 });
+    await card.getByRole('button', { name: /raise a dispute/i }).click({ timeout: 90_000 });
+    const reason = `Notification test dispute ${runId}`;
+    await page.locator('#dispute-reason').fill(reason);
+    const submitted = page.waitForResponse((response) => response.request().method() === 'POST'
+      && new URL(response.url()).pathname.endsWith(`/api/marketplace-bookings/${booking.uuid}/disputes`), { timeout: 45_000 });
+    await page.getByRole('button', { name: /submit to support/i }).click();
+    const submittedResponse = await submitted;
+    expect(submittedResponse.status()).toBe(201);
+    const disputeUuid = (await submittedResponse.json() as { data: { uuid: string } }).data.uuid;
+    console.log(`Open test dispute: ${disputeUuid}, booking ${booking.booking_reference}`);
+    await expect(card.getByText(reason, { exact: true })).toBeVisible({ timeout: 90_000 });
+    await login(page, ownerUser);
+    const notificationResponse = await page.waitForResponse(async (response) => {
+      if (response.request().method() !== 'GET' || !new URL(response.url()).pathname.endsWith('/api/notifications') || !response.ok()) return false;
+      const body = await response.json().catch(() => null) as { data?: { title: string; data?: { booking_uuid?: string; dispute_uuid?: string } }[] } | null;
+      return !!body?.data?.some((item) => item.title === 'Dispute raised' && item.data?.booking_uuid === booking.uuid && item.data?.dispute_uuid === disputeUuid);
+    }, { timeout: 90_000 });
+    const body = await notificationResponse.json() as { data: { id: string; title: string; data?: { booking_uuid?: string; dispute_uuid?: string } }[] };
+    const id = body.data.find((item) => item.title === 'Dispute raised' && item.data?.booking_uuid === booking.uuid && item.data?.dispute_uuid === disputeUuid)!.id;
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+    const markedRead = page.waitForResponse((response) => response.request().method() === 'PATCH'
+      && new URL(response.url()).pathname.endsWith(`/api/notifications/${id}/read`), { timeout: 45_000 });
+    await page.locator(`[data-notification-id="${id}"]`).click();
+    expect((await markedRead).status()).toBe(200);
+    await expect(page).toHaveURL(new RegExp(`/truck-owner/bookings\\?booking=${booking.uuid}`), { timeout: 45_000 });
+    const ownerCard = page.locator('.card').filter({ hasText: booking.booking_reference }).first();
+    await expect(ownerCard.getByText(reason, { exact: true })).toBeVisible({ timeout: 90_000 });
+    await expect(ownerCard.getByText('Open', { exact: true })).toBeVisible();
+    console.log(`Verified dispute notification ${id}; load ${loadUuid}; booking ${booking.booking_reference} (${booking.uuid}); dispute ${disputeUuid}`);
+  });
+
+  test('open dispute hides the token payment action', async ({ page }) => {
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const bookingUuid = process.env.E2E_DISPUTE_BOOKING_UUID;
+    const reference = process.env.E2E_DISPUTE_BOOKING_REFERENCE;
+    test.skip(!owner || !bookingUuid || !reference, 'Provide a test owner and existing disputed booking.');
+    test.setTimeout(180_000);
+    await login(page, { role: 'truck-owner', name: '', email: owner!, mobile: '' });
+    await page.goto(`/truck-owner/bookings?booking=${bookingUuid}`);
+    const card = page.locator('.card').filter({ hasText: reference! }).first();
+    await expect(card.getByText('Open', { exact: true })).toBeVisible({ timeout: 90_000 });
+    await expect(card.getByRole('button', { name: /pay booking token/i })).toHaveCount(0);
+  });
+
+  test('resolved dispute shows the recorded outcome without claiming a payment occurred', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const bookingUuid = process.env.E2E_DISPUTE_BOOKING_UUID;
+    const reference = process.env.E2E_DISPUTE_BOOKING_REFERENCE;
+    test.skip(!shipper || !bookingUuid || !reference, 'Provide a test shipper and existing disputed booking.');
+    test.setTimeout(180_000);
+    // Optional test-only proxy for a second local frontend port. No server CORS
+    // configuration is changed; application requests still reach the local API.
+    const proxyOrigin = process.env.E2E_TEST_CORS_PROXY === 'true' ? process.env.E2E_BASE_URL : undefined;
+    if (proxyOrigin) {
+      await page.route('http://localhost:8080/api/**', async (route) => {
+        if (route.request().method() === 'OPTIONS') {
+          await route.fulfill({ status: 204, headers: { 'access-control-allow-origin': proxyOrigin, 'access-control-allow-credentials': 'true', 'access-control-allow-methods': 'GET, POST, PATCH, DELETE, OPTIONS', 'access-control-allow-headers': 'authorization, content-type, accept' } });
+          return;
+        }
+        const response = await route.fetch({ headers: { ...route.request().headers(), origin: 'http://localhost:4300' } });
+        await route.fulfill({ response, headers: { ...response.headers(), 'access-control-allow-origin': proxyOrigin, 'access-control-allow-credentials': 'true' } });
+      });
+    }
+    await login(page, { role: 'shipper', name: '', email: shipper!, mobile: '' });
+    // Simulate only the read response: the actual test dispute remains open in the database.
+    await page.route(/\/api\/marketplace-bookings(?:\?.*)?$/, async (route) => {
+      if (route.request().method() !== 'GET') { await route.fallback(); return; }
+      const response = await route.fetch(proxyOrigin ? { headers: { ...route.request().headers(), origin: 'http://localhost:4300' } } : {});
+      const body = await response.json() as { data: Array<{ uuid: string; dispute?: { status: string; resolution?: string } }> };
+      const booking = body.data.find((item) => item.uuid === bookingUuid);
+      if (booking?.dispute) booking.dispute = { ...booking.dispute, status: 'resolved', resolution: 'refunded' };
+      await route.fulfill({ response, json: body, ...(proxyOrigin ? { headers: { ...response.headers(), 'access-control-allow-origin': proxyOrigin, 'access-control-allow-credentials': 'true' } } : {}) });
+    });
+    await page.goto(`/shipper/bookings?booking=${bookingUuid}`);
+    const card = page.locator('.card').filter({ hasText: reference! }).first();
+    await expect(card.getByText('Resolved', { exact: true })).toBeVisible({ timeout: 90_000 });
+    await expect(card.getByText(/refund requested; payment-provider processing may still be pending/i)).toBeVisible();
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+  });
+
+  test('admin phone-call decision notifies both parties and records no payment', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const bookingUuid = process.env.E2E_DISPUTE_BOOKING_UUID;
+    const reference = process.env.E2E_DISPUTE_BOOKING_REFERENCE;
+    test.skip(!shipper || !owner || !bookingUuid || !reference, 'Provide existing open-dispute test data.');
+    test.setTimeout(300_000);
+    await login(page, { role: 'admin', name: 'Admin', email: 'admin@test.local', mobile: '' }, 'password123');
+    await page.goto(`/admin/bookings?booking=${bookingUuid}`);
+    const adminCard = page.locator('.card').filter({ hasText: reference! }).first();
+    await expect(adminCard.getByRole('button', { name: /record decision after call/i })).toBeVisible({ timeout: 90_000 });
+    await adminCard.getByRole('button', { name: /record decision after call/i }).click();
+    await page.locator('#decision-booking').selectOption('cancel');
+    await page.locator('#decision-owner-token').selectOption('no_action');
+    await page.locator('#decision-provider-token').selectOption('no_action');
+    await page.locator('#decision-commission').selectOption('no_action');
+    const summary = `Browser phone-call decision ${runId}: cancel without payment action.`;
+    await page.locator('#decision-summary').fill(summary);
+    const resolved = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/marketplace-disputes\/[^/]+\/resolve$/.test(new URL(response.url()).pathname), { timeout: 45_000 });
+    await page.getByRole('button', { name: /record decision after call/i }).last().click();
+    expect((await resolved).status()).toBe(200);
+    await expect(adminCard.getByText(/cancel booking/i)).toBeVisible({ timeout: 90_000 });
+    await expect(adminCard.getByText(summary)).toBeVisible();
+    for (const participant of [
+      { role: 'shipper' as const, name: '', email: shipper!, mobile: '' },
+      { role: 'truck-owner' as const, name: '', email: owner!, mobile: '' },
+    ]) {
+      await login(page, participant);
+      const notificationResponse = await page.waitForResponse(async (response) => {
+        if (response.request().method() !== 'GET' || !new URL(response.url()).pathname.endsWith('/api/notifications') || !response.ok()) return false;
+        const body = await response.json().catch(() => null) as { data?: { title: string; data?: { booking_uuid?: string } }[] } | null;
+        return !!body?.data?.some((item) => item.title === 'Dispute resolved' && item.data?.booking_uuid === bookingUuid);
+      }, { timeout: 90_000 });
+      const body = await notificationResponse.json() as { data: { id: string; title: string; data?: { booking_uuid?: string } }[] };
+      const id = body.data.find((item) => item.title === 'Dispute resolved' && item.data?.booking_uuid === bookingUuid)!.id;
+      await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+      await page.locator(`[data-notification-id="${id}"]`).click();
+      await expect(page).toHaveURL(new RegExp(`/${participant.role}/bookings\\?booking=${bookingUuid}`), { timeout: 45_000 });
+      const participantCard = page.locator('.card').filter({ hasText: reference! }).first();
+      await expect(participantCard.getByText(/cancel booking/i)).toBeVisible({ timeout: 90_000 });
+      await expect(participantCard.getByText(summary)).toBeVisible();
+    }
+  });
+
+  test('recorded phone-call decision notification opens the cancelled booking for both parties', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const bookingUuid = process.env.E2E_DISPUTE_BOOKING_UUID;
+    const reference = process.env.E2E_DISPUTE_BOOKING_REFERENCE;
+    const summary = process.env.E2E_DISPUTE_DECISION_SUMMARY;
+    test.skip(!shipper || !owner || !bookingUuid || !reference || !summary, 'Provide the recorded decision test data.');
+    test.setTimeout(240_000);
+    for (const participant of [
+      { role: 'shipper' as const, name: '', email: shipper!, mobile: '' },
+      { role: 'truck-owner' as const, name: '', email: owner!, mobile: '' },
+    ]) {
+      await login(page, participant);
+      const notificationResponse = await page.waitForResponse(async (response) => {
+        if (response.request().method() !== 'GET' || !new URL(response.url()).pathname.endsWith('/api/notifications') || !response.ok()) return false;
+        const body = await response.json().catch(() => null) as { data?: { title: string; data?: { booking_uuid?: string } }[] } | null;
+        return !!body?.data?.some((item) => item.title === 'Dispute resolved' && item.data?.booking_uuid === bookingUuid);
+      }, { timeout: 90_000 });
+      const body = await notificationResponse.json() as { data: { id: string; title: string; data?: { booking_uuid?: string } }[] };
+      const id = body.data.find((item) => item.title === 'Dispute resolved' && item.data?.booking_uuid === bookingUuid)!.id;
+      await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+      await page.locator(`[data-notification-id="${id}"]`).click();
+      await expect(page).toHaveURL(new RegExp(`/${participant.role}/bookings\\?booking=${bookingUuid}`), { timeout: 45_000 });
+      const participantCard = page.locator('.card').filter({ hasText: reference! }).first();
+      await expect(participantCard.getByText(/cancel booking/i)).toBeVisible({ timeout: 90_000 });
+      await expect(participantCard.getByText(summary!)).toBeVisible();
+      await expect(participantCard.getByText(/no action/i)).toHaveCount(3);
+    }
+  });
+
+  test('admin phone-call continue decision restores the awaiting-token booking and notifies both parties', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const vehicle = process.env.E2E_OWNER_VEHICLE;
+    test.skip(!shipper || !owner || !vehicle, 'Provide test participants and an owned test vehicle.');
+    test.setTimeout(600_000);
+    const shipperUser = { role: 'shipper' as const, name: '', email: shipper!, mobile: '' };
+    const ownerUser = { role: 'truck-owner' as const, name: '', email: owner!, mobile: '' };
+    await login(page, shipperUser);
+    const loadUuid = await postLoad(page);
+    await login(page, ownerUser);
+    await applyForLoad(page, loadUuid, vehicle!, '18500');
+    await login(page, shipperUser);
+    await page.goto(`/shipper/load-board/${loadUuid}`);
+    const booking = await acceptApplicationAndCreateBooking(page, '18500', false);
+    console.log(`Continue-decision test load ${loadUuid}; booking ${booking.booking_reference} (${booking.uuid})`);
+    await page.goto(`/shipper/bookings?booking=${booking.uuid}`);
+    const shipperCard = page.locator('.card').filter({ hasText: booking.booking_reference }).first();
+    await shipperCard.getByRole('button', { name: /raise a dispute/i }).click({ timeout: 90_000 });
+    await page.locator('#dispute-reason').fill(`Continue test dispute ${runId}`);
+    const raised = page.waitForResponse((response) => response.request().method() === 'POST'
+      && new URL(response.url()).pathname.endsWith(`/api/marketplace-bookings/${booking.uuid}/disputes`), { timeout: 45_000 });
+    await page.getByRole('button', { name: /submit to support/i }).click();
+    expect((await raised).status()).toBe(201);
+    await login(page, { role: 'admin', name: 'Admin', email: 'admin@test.local', mobile: '' }, 'password123');
+    await page.goto(`/admin/bookings?booking=${booking.uuid}`);
+    const adminCard = page.locator('.card').filter({ hasText: booking.booking_reference }).first();
+    await adminCard.getByRole('button', { name: /record decision after call/i }).click({ timeout: 90_000 });
+    await page.locator('#decision-booking').selectOption('continue');
+    await page.locator('#decision-owner-token').selectOption('no_action');
+    await page.locator('#decision-provider-token').selectOption('no_action');
+    await page.locator('#decision-commission').selectOption('no_action');
+    const summary = `Browser phone-call decision ${runId}: continue without payment action.`;
+    await page.locator('#decision-summary').fill(summary);
+    const resolved = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/marketplace-disputes\/[^/]+\/resolve$/.test(new URL(response.url()).pathname), { timeout: 45_000 });
+    await page.getByRole('button', { name: /record decision after call/i }).last().click();
+    expect((await resolved).status()).toBe(200);
+    await expect(adminCard.getByText(/continue booking/i)).toBeVisible({ timeout: 90_000 });
+    await expect(adminCard.getByText(summary)).toBeVisible();
+    for (const participant of [shipperUser, ownerUser]) {
+      await login(page, participant);
+      const notificationResponse = await page.waitForResponse(async (response) => {
+        if (response.request().method() !== 'GET' || !new URL(response.url()).pathname.endsWith('/api/notifications') || !response.ok()) return false;
+        const body = await response.json().catch(() => null) as { data?: { title: string; data?: { booking_uuid?: string } }[] } | null;
+        return !!body?.data?.some((item) => item.title === 'Dispute resolved' && item.data?.booking_uuid === booking.uuid);
+      }, { timeout: 90_000 });
+      const body = await notificationResponse.json() as { data: { id: string; title: string; data?: { booking_uuid?: string } }[] };
+      const id = body.data.find((item) => item.title === 'Dispute resolved' && item.data?.booking_uuid === booking.uuid)!.id;
+      await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+      await page.locator(`[data-notification-id="${id}"]`).click();
+      await expect(page).toHaveURL(new RegExp(`/${participant.role}/bookings\\?booking=${booking.uuid}`), { timeout: 45_000 });
+      const participantCard = page.locator('.card').filter({ hasText: booking.booking_reference }).first();
+      await expect(participantCard.getByText(/continue booking/i)).toBeVisible({ timeout: 90_000 });
+      await expect(participantCard.getByText(summary)).toBeVisible();
+      await expect(participantCard.getByText(/awaiting deposit/i).first()).toBeVisible();
+    }
+  });
+
+  test('counter-offer and explicit rejection notifications open the right load and offers', async ({ page }) => {
+    const shipper = process.env.E2E_SHIPPER_EMAIL;
+    const owner = process.env.E2E_OWNER_EMAIL;
+    const vehicle = process.env.E2E_OWNER_VEHICLE;
+    test.skip(!shipper || !owner || !vehicle, 'Provide test participants and an owned test vehicle.');
+    test.setTimeout(600_000);
+    const shipperUser = { role: 'shipper' as const, name: '', email: shipper!, mobile: '' };
+    const ownerUser = { role: 'truck-owner' as const, name: '', email: owner!, mobile: '' };
+    await login(page, shipperUser);
+    const loadUuid = await postLoad(page);
+    console.log(`Counter-offer notification test load: ${loadUuid}; shipper ${shipper}; owner ${owner}`);
+    await login(page, ownerUser);
+    await applyForLoad(page, loadUuid, vehicle!, '18500');
+    await login(page, shipperUser);
+    await page.goto(`/shipper/load-board/${loadUuid}`);
+    await page.getByRole('button', { name: /view offers/i }).click({ timeout: 90_000 });
+    await page.locator('input[name="counterAmount"]').fill('17000');
+    const ownerOffer = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/applications\/[^/]+\/offers$/.test(new URL(response.url()).pathname), { timeout: 45_000 });
+    await page.getByRole('button', { name: /send counter-offer/i }).click();
+    expect((await ownerOffer).status()).toBe(201);
+    await login(page, ownerUser);
+    const providerNotice = await waitForLoadNotification(page, 'New counter-offer received', loadUuid);
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+    await page.locator(`[data-notification-id="${providerNotice}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}\\?offers=`), { timeout: 45_000 });
+    const providerCounter = page.locator('input[name="counterAmount"]');
+    await expect(providerCounter).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByText(/17,000/).first()).toBeVisible({ timeout: 60_000 });
+    await providerCounter.fill('18000');
+    const providerOffer = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/applications\/[^/]+\/offers$/.test(new URL(response.url()).pathname), { timeout: 45_000 });
+    await page.getByRole('button', { name: /send counter-offer/i }).click();
+    expect((await providerOffer).status()).toBe(201);
+    await login(page, shipperUser);
+    const shipperNotice = await waitForLoadNotification(page, 'New counter-offer received', loadUuid);
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+    await page.locator(`[data-notification-id="${shipperNotice}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/shipper/load-board/${loadUuid}\\?offers=`), { timeout: 45_000 });
+    await expect(page.locator('input[name="counterAmount"]')).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByText(/18,000/).first()).toBeVisible({ timeout: 60_000 });
+    await page.getByRole('button', { name: /^reject$/i }).click();
+    const rejected = page.waitForResponse((response) => response.request().method() === 'POST'
+      && /\/api\/loads\/[^/]+\/applications\/[^/]+\/reject$/.test(new URL(response.url()).pathname), { timeout: 45_000 });
+    await page.getByRole('button', { name: /^confirm$/i }).click();
+    expect((await rejected).status()).toBe(200);
+    await login(page, ownerUser);
+    const rejectedNotice = await waitForLoadNotification(page, 'Application declined', loadUuid);
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+    await page.locator(`[data-notification-id="${rejectedNotice}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/truck-owner/load-board/${loadUuid}`), { timeout: 45_000 });
+    await expect(page.getByText(/offer declined/i)).toBeVisible({ timeout: 90_000 });
+    console.log(`Verified counter-offers and explicit decline for load ${loadUuid}`);
   });
 });

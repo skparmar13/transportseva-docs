@@ -86,8 +86,9 @@
       <label>Vehicle Registration Number</label>
       <div class="input-wrap">
         <app-icon name="i-truck" [size]="18" />
-        <input type="text" class="input" placeholder="e.g. RJ14GA1234" [ngModel]="regNumber()" (ngModelChange)="regNumber.set($event)" name="regNumber" />
+        <input type="text" class="input" placeholder="e.g. RJ14GA1234" [ngModel]="regNumber()" (ngModelChange)="regNumber.set($event); registrationError.set('')" name="regNumber" [attr.aria-invalid]="registrationError() ? 'true' : null" [attr.aria-describedby]="registrationError() ? 'vehicle-registration-error' : null" />
       </div>
+      @if (registrationError()) { <p id="vehicle-registration-error" class="field-error" role="alert">{{ registrationError() }}</p> }
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="field">
@@ -123,6 +124,7 @@
         <input type="text" class="input" style="padding-left:14px;" placeholder="Driver name" [ngModel]="driver()" (ngModelChange)="driver.set($event)" name="driver" />
       </div>
     </div>
+    @if (addError()) { <p class="field-error" role="alert">{{ addError() }}</p> }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
       <button type="button" class="btn btn-outline" (click)="closeAdd()">Cancel</button>
       <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitAdd()">{{ saving() ? 'Saving…' : 'Add Vehicle' }}</button>

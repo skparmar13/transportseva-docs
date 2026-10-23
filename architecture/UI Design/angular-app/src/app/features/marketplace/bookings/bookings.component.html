@@ -35,6 +35,7 @@
               <div style="font-size:12.5px;color:var(--color-text-soft);margin-top:4px;">{{ booking.counterpartyName }} · {{ booking.vehicleRegNumber }} · {{ booking.amount }}</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
+              @if (booking.dispute && booking.dispute.status !== 'Resolved') { <span class="status-pill status-pending">Dispute {{ booking.dispute.status }}</span> }
               <span class="status-pill" [class]="booking.status === 'Completed' ? 'status-delivered' : booking.status === 'Cancelled' ? 'status-cancelled' : booking.status === 'Awaiting Deposit' ? 'status-pending' : 'status-transit'">{{ statusKey(booking.status) | t }}</span>
               <button type="button" class="btn btn-outline btn-sm" (click)="toggle(booking.id)">{{ expandedId() === booking.id ? ('bookings.hideDetails' | t) : ('bookings.viewDetails' | t) }}</button>
             </div>
@@ -87,11 +88,11 @@
                       <p style="font-size:11px;color:var(--color-text-soft);margin:4px 0 0;">{{ 'bookings.commission.cancelFeePolicy' | t:{ rate: commission.cancellationRateBps / 100 } }}</p>
                     </div>
                   }
-                  @if (booking.status === 'Awaiting Deposit' && mySide(booking) && booking.commissionSnapshot) {
+                  @if (booking.status === 'Awaiting Deposit' && (!booking.dispute || booking.dispute.status === 'Resolved') && mySide(booking) && booking.commissionSnapshot) {
                     <label class="checkbox-row" style="margin-top:10px;font-size:12px;"><input type="checkbox" [checked]="reviewedCommissionSides().includes(commissionDisclosureKey(booking))" (change)="reviewCommission(booking, $any($event.target).checked)"><span>{{ 'bookings.commission.confirmReview' | t }}</span></label>
                   }
 
-                  @if (booking.status === 'Awaiting Deposit') {
+                  @if (booking.status === 'Awaiting Deposit' && (!booking.dispute || booking.dispute.status === 'Resolved')) {
                     @if (mySide(booking) === 'owner' && booking.ownerDeposit.status === 'Pending') {
                       <button type="button" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" [disabled]="!hasReviewedCommission(booking)" (click)="openPayDeposit(booking)">{{ 'bookings.deposit.payYours' | t:{ amount: booking.ownerDeposit.amount } }}</button>
                     }
@@ -269,23 +270,33 @@
                     }
                   </div>
                 }
-                @if (booking.status !== 'Cancelled' && booking.status !== 'Completed') {
                   @if (booking.dispute; as dispute) {
                     <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                       <div style="font-weight:600;font-size:13.5px;">{{ 'bookings.dispute.title' | t }} · {{ dispute.reference }}</div>
                       <div style="font-size:13px;color:var(--color-text-muted);margin-top:6px;">{{ dispute.reason }}</div>
                       <span class="status-pill" [class.status-delivered]="dispute.status === 'Resolved'" [class.status-pending]="dispute.status !== 'Resolved'" style="margin-top:8px;display:inline-block;">{{ statusKey(dispute.status) | t }}</span>
+                      @if (dispute.status === 'Resolved' && dispute.outcome) {
+                        <div style="font-size:13px;color:var(--color-text-muted);margin-top:6px;">{{ 'bookings.dispute.outcome' | t }}: {{ disputeOutcomeKey(dispute.outcome) | t }}</div>
+                      }
+                      @if (dispute.decision; as decision) {
+                        <div style="font-size:13px;color:var(--color-text-muted);margin-top:6px;">
+                          <div>{{ 'bookings.dispute.ownerToken' | t }}: {{ ('bookings.dispute.choice.' + decision.ownerToken) | t }}</div>
+                          <div>{{ 'bookings.dispute.providerToken' | t }}: {{ ('bookings.dispute.choice.' + decision.providerToken) | t }}</div>
+                          <div>{{ 'bookings.dispute.commissionDecision' | t }}: {{ ('bookings.dispute.choice.' + decision.commission) | t }}</div>
+                          <div>{{ 'bookings.dispute.callSummary' | t }}: {{ decision.summary }}</div>
+                          <p>{{ 'bookings.dispute.recordOnly' | t }}</p>
+                        </div>
+                      }
                       @if (session.role() === 'admin' && dispute.status !== 'Resolved') {
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-                        <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'resolve-dispute', 'waive')" (click)="resolveDispute(booking.id, false)">@if (isWorkflowActionPending(booking.id, 'resolve-dispute', 'waive')) { <span class="button-loader" aria-hidden="true"></span><span>Saving…</span> } @else { <span>{{ 'bookings.dispute.waiveCommission' | t }}</span> }</button>
-                        <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'resolve-dispute', 'charge')" (click)="resolveDispute(booking.id, true)">@if (isWorkflowActionPending(booking.id, 'resolve-dispute', 'charge')) { <span class="button-loader" aria-hidden="true"></span><span>Saving…</span> } @else { <span>{{ 'bookings.dispute.commissionDue' | t }}</span> }</button>
+                          <button type="button" class="btn btn-outline btn-sm" (click)="openDisputeDecision(booking.id)">{{ 'bookings.dispute.recordDecision' | t }}</button>
                         </div>
                       }
                     </div>
-                  } @else {
+                  }
+                  @if ((!booking.dispute || booking.dispute.status === 'Resolved') && booking.status !== 'Cancelled' && booking.status !== 'Completed') {
                     <button type="button" class="btn btn-outline btn-sm" (click)="openDispute(booking.id)">{{ 'bookings.dispute.raise' | t }}</button>
                   }
-                }
               </div>
             </div>
           }
@@ -326,6 +337,36 @@
         </button>
       }
     </div>
+  </app-modal>
+}
+
+@if (resolvingDispute(); as disputeBookingId) {
+  <app-modal [title]="'bookings.dispute.recordDecision' | t" (close)="resolvingDispute.set(null)">
+    <p style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.dispute.afterCall' | t }}</p>
+    <p role="note" style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.dispute.recordOnly' | t }}</p>
+    <div class="field"><label for="decision-booking">{{ 'bookings.dispute.bookingDecision' | t }}</label>
+      <select id="decision-booking" class="input" [ngModel]="disputeResolution()" (ngModelChange)="disputeResolution.set($event)">
+        <option value="">{{ 'bookings.dispute.selectDecision' | t }}</option><option value="continue">{{ 'bookings.dispute.outcomeContinue' | t }}</option><option value="cancel">{{ 'bookings.dispute.outcomeCancel' | t }}</option>
+      </select>
+    </div>
+    <div class="field"><label for="decision-owner-token">{{ 'bookings.dispute.ownerToken' | t }}</label>
+      <select id="decision-owner-token" class="input" [ngModel]="ownerTokenDecision()" (ngModelChange)="ownerTokenDecision.set($event)">
+        <option value="">{{ 'bookings.dispute.selectDecision' | t }}</option>@for (choice of ['pending', 'refund', 'retain', 'no_action']; track choice) { <option [value]="choice">{{ ('bookings.dispute.choice.' + choice) | t }}</option> }
+      </select>
+    </div>
+    <div class="field"><label for="decision-provider-token">{{ 'bookings.dispute.providerToken' | t }}</label>
+      <select id="decision-provider-token" class="input" [ngModel]="providerTokenDecision()" (ngModelChange)="providerTokenDecision.set($event)">
+        <option value="">{{ 'bookings.dispute.selectDecision' | t }}</option>@for (choice of ['pending', 'refund', 'retain', 'no_action']; track choice) { <option [value]="choice">{{ ('bookings.dispute.choice.' + choice) | t }}</option> }
+      </select>
+    </div>
+    <div class="field"><label for="decision-commission">{{ 'bookings.dispute.commissionDecision' | t }}</label>
+      <select id="decision-commission" class="input" [ngModel]="commissionDecision()" (ngModelChange)="commissionDecision.set($event)">
+        <option value="">{{ 'bookings.dispute.selectDecision' | t }}</option>@for (choice of ['pending', 'waive', 'charge', 'no_action']; track choice) { <option [value]="choice">{{ ('bookings.dispute.choice.' + choice) | t }}</option> }
+      </select>
+    </div>
+    <div class="field"><label for="decision-summary">{{ 'bookings.dispute.callSummary' | t }}</label><textarea id="decision-summary" class="input" maxlength="2000" rows="3" [ngModel]="decisionSummary()" (ngModelChange)="decisionSummary.set($event)"></textarea><small>{{ 'bookings.dispute.summaryVisible' | t }}</small></div>
+    @if (workflowActionErrorFor(disputeBookingId, 'resolve-dispute'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" [disabled]="isWorkflowActionPending(disputeBookingId, 'resolve-dispute')" (click)="resolvingDispute.set(null)">{{ 'common.cancel' | t }}</button><button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(disputeBookingId, 'resolve-dispute') || !disputeResolution() || !ownerTokenDecision() || !providerTokenDecision() || !commissionDecision() || decisionSummary().trim().length < 3" [attr.aria-busy]="isWorkflowActionPending(disputeBookingId, 'resolve-dispute')" (click)="resolveDispute()">@if (isWorkflowActionPending(disputeBookingId, 'resolve-dispute')) { <span class="button-loader" aria-hidden="true"></span><span>{{ 'bookings.dispute.saving' | t }}</span> } @else { <span>{{ 'bookings.dispute.recordDecision' | t }}</span> }</button></div>
   </app-modal>
 }
 

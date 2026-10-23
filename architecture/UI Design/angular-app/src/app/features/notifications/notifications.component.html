@@ -19,7 +19,7 @@
   @if (visibleNotifications().length) {
     <div class="notif-list">
       @for (n of visibleNotifications(); track n.id) {
-        <div class="notif-row" [class.unread]="!n.read">
+        <div class="notif-row" [attr.data-notification-id]="n.id" [class.unread]="!n.read">
           <div class="notif-icon"><app-icon [name]="categoryIcon[n.category]" [size]="18" /></div>
           <div class="notif-body">
             <div class="notif-top">
@@ -29,6 +29,9 @@
             <p>{{ n.message }}</p>
             <span class="notif-time">{{ n.timestamp }}</span>
           </div>
+          @if (navigation.destination(n)) {
+            <button type="button" class="btn btn-outline btn-sm" (click)="openNotification(n)">Open</button>
+          }
           @if (!n.read) {
             <button type="button" class="btn btn-outline btn-sm" (click)="markRead(n.id)">{{ 'notifications.markAsRead' | t }}</button>
           }

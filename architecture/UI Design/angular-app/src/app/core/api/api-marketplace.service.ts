@@ -162,10 +162,12 @@ export interface ApiMarketplaceBooking {
     mid_trip_milestones?: Array<{ id: string; amount: number | string; trigger: string; created_at: string; released_at?: string }>;
     trip_started_at?: string;
     trip_completed_at?: string;
+    dispute_decisions?: Record<string, Omit<DisputeDecision, 'resolution'> & { booking_decision: 'continue' | 'cancel'; recorded_at: string }>;
   };
   owner_token_status?: string;
   provider_token_status?: string;
   settlement?: ApiSettlement;
+  dispute?: ApiDispute | null;
   viewer_side?: 'owner' | 'provider';
   created_at?: string;
 }
@@ -189,6 +191,15 @@ export interface ApiDispute {
   reason: string;
   status: 'open' | 'under_review' | 'resolved';
   resolution?: string;
+  created_at?: string;
+}
+
+export interface DisputeDecision {
+  resolution: 'continue' | 'cancel';
+  owner_token_decision: 'pending' | 'refund' | 'retain' | 'no_action';
+  provider_token_decision: 'pending' | 'refund' | 'retain' | 'no_action';
+  commission_decision: 'pending' | 'waive' | 'charge' | 'no_action';
+  summary: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -307,14 +318,14 @@ export class ApiMarketplaceService {
     return this.api.get<ApiDispute[]>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/disputes`).pipe(map((response) => response.data));
   }
 
-  resolveDispute(disputeUuid: string, resolution: 'refunded' | 'forfeited' | 'commission_waived' | 'commission_due'): Observable<ApiDispute> {
-    return this.api.post<ApiDispute>(`marketplace-disputes/${encodeURIComponent(disputeUuid)}/resolve`, { resolution }).pipe(map((response) => response.data));
+  resolveDispute(disputeUuid: string, decision: DisputeDecision): Observable<ApiDispute> {
+    return this.api.post<ApiDispute>(`marketplace-disputes/${encodeURIComponent(disputeUuid)}/resolve`, decision).pipe(map((response) => response.data));
   }
 
-  resolveBookingDispute(bookingUuid: string, resolution: 'refunded' | 'forfeited' | 'commission_waived' | 'commission_due'): Observable<ApiDispute> {
+  resolveBookingDispute(bookingUuid: string, decision: DisputeDecision): Observable<ApiDispute> {
     return this.listDisputes(bookingUuid).pipe(
       map((disputes) => disputes.find((dispute) => dispute.status !== 'resolved')),
-      switchMap((dispute) => this.resolveDispute(dispute?.uuid ?? '', resolution)),
+      switchMap((dispute) => this.resolveDispute(dispute?.uuid ?? '', decision)),
     );
   }
 

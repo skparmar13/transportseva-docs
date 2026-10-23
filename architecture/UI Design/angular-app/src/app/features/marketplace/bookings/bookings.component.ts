@@ -10,12 +10,13 @@ import { PaymentMockService } from '../../../core/services/payment-mock.service'
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { API_CONFIG } from '../../../core/api/api-config';
-import { ApiMarketplaceBooking, ApiMarketplaceDriver, ApiMarketplaceService, ApiMarketplaceVehicle } from '../../../core/api/api-marketplace.service';
+import { ApiMarketplaceBooking, ApiMarketplaceDriver, ApiMarketplaceService, ApiMarketplaceVehicle, DisputeDecision } from '../../../core/api/api-marketplace.service';
 import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
 import { switchMap } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /** A provider vehicle shown in the booking-assignment selector. */
 interface AssignmentVehicleOption {
@@ -49,6 +50,7 @@ export class BookingsComponent {
   private readonly apiMarketplace = inject(ApiMarketplaceService);
   private readonly cashfreeCheckout = inject(CashfreeCheckoutService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly session = inject(SessionService);
 
   private readonly backendBookings = signal<ApiMarketplaceBooking[]>([]);
@@ -61,6 +63,11 @@ export class BookingsComponent {
   protected readonly loading = signal(API_CONFIG.useBackend);
   protected readonly loadError = signal('');
   constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const booking = params.get('booking');
+      this.focusedBookingId.set(booking);
+      if (booking) this.expandedId.set(booking);
+    });
     this.reloadBackendBookings();
     this.reloadBackendVehicles();
   }
@@ -95,12 +102,23 @@ export class BookingsComponent {
       error: () => this.backendVehicles.set([]),
     });
   }
-  protected readonly bookings = computed<MarketplaceBooking[]>(() => API_CONFIG.useBackend
-    ? this.backendBookings().map((booking) => this.mapBackendBooking(booking))
-    : this.marketplace.bookings().map((booking) => this.formatBookingDates(booking)));
+  protected readonly focusedBookingId = signal<string | null>(null);
+  protected readonly bookings = computed<MarketplaceBooking[]>(() => {
+    const list = API_CONFIG.useBackend
+      ? this.backendBookings().map((booking) => this.mapBackendBooking(booking))
+      : this.marketplace.bookings().map((booking) => this.formatBookingDates(booking));
+    const focus = this.focusedBookingId();
+    return focus ? list.sort((a, b) => Number(b.id === focus) - Number(a.id === focus)) : list;
+  });
   protected readonly expandedId = signal<string | null>(null);
   protected readonly disputingBooking = signal<string | null>(null);
   protected readonly disputeReason = signal('');
+  protected readonly resolvingDispute = signal<string | null>(null);
+  protected readonly disputeResolution = signal<DisputeDecision['resolution'] | ''>('');
+  protected readonly ownerTokenDecision = signal<DisputeDecision['owner_token_decision'] | ''>('');
+  protected readonly providerTokenDecision = signal<DisputeDecision['provider_token_decision'] | ''>('');
+  protected readonly commissionDecision = signal<DisputeDecision['commission_decision'] | ''>('');
+  protected readonly decisionSummary = signal('');
   protected readonly offlinePaymentFor = signal<MarketplaceBooking | null>(null);
   protected readonly offlineAmount = signal<number | null>(null);
   protected readonly offlineReference = signal('');
@@ -110,12 +128,25 @@ export class BookingsComponent {
     return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
   }
 
+  protected disputeOutcomeKey(outcome: NonNullable<MarketplaceBooking['dispute']>['outcome']): string {
+    switch (outcome) {
+      case 'Refunded': return 'bookings.dispute.outcomeRefundRequested';
+      case 'Forfeited': return 'bookings.dispute.outcomeForfeitureRequested';
+      case 'Commission Waived': return 'bookings.dispute.outcomeWaiverRecorded';
+      case 'Commission Due': return 'bookings.dispute.outcomeCommissionRecorded';
+      case 'Continue': return 'bookings.dispute.outcomeContinue';
+      case 'Cancel': return 'bookings.dispute.outcomeCancel';
+      default: return 'bookings.dispute.outcome';
+    }
+  }
+
   protected dateTime(value: string | undefined): string {
     return formatDateTime(value);
   }
 
   protected mySide(booking: MarketplaceBooking): 'owner' | 'counterparty' | null {
     const role = this.session.role();
+    if (role === 'admin') return null;
     if (booking.ownerRole === role) return 'owner';
     if (booking.counterpartyRole === role) return 'counterparty';
     return null;
@@ -641,17 +672,28 @@ export class BookingsComponent {
     this.disputeReason.set('');
   }
 
-  protected resolveDispute(bookingId: string, chargeCommission: boolean): void {
-    const actionKey = this.workflowActionKey(bookingId, 'resolve-dispute', chargeCommission ? 'charge' : 'waive');
+  protected openDisputeDecision(bookingId: string): void {
+    this.disputeResolution.set(''); this.ownerTokenDecision.set(''); this.providerTokenDecision.set('');
+    this.commissionDecision.set(''); this.decisionSummary.set(''); this.resolvingDispute.set(bookingId);
+  }
+
+  protected resolveDispute(): void {
+    const bookingId = this.resolvingDispute();
+    const resolution = this.disputeResolution();
+    const owner = this.ownerTokenDecision();
+    const provider = this.providerTokenDecision();
+    const commission = this.commissionDecision();
+    if (!bookingId || !resolution || !owner || !provider || !commission || this.decisionSummary().trim().length < 3) return;
+    const actionKey = this.workflowActionKey(bookingId, 'resolve-dispute');
     if (!this.beginWorkflowAction(actionKey)) return;
     if (API_CONFIG.useBackend) {
-      this.apiMarketplace.resolveBookingDispute(bookingId, chargeCommission ? 'commission_due' : 'commission_waived').subscribe({
-        next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
+      this.apiMarketplace.resolveBookingDispute(bookingId, { resolution, owner_token_decision: owner, provider_token_decision: provider, commission_decision: commission, summary: this.decisionSummary().trim() }).subscribe({
+        next: () => { this.finishWorkflowAction(actionKey); this.resolvingDispute.set(null); this.reloadBackendBookings(); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Dispute could not be resolved. Please retry.')),
       });
       return;
     }
-    setTimeout(() => { this.marketplace.resolveDispute(bookingId, chargeCommission); this.finishWorkflowAction(actionKey); }, 350);
+    this.failWorkflowAction(actionKey, 'Dispute decisions require the backend.');
   }
 
   protected submitDispute(): void {
@@ -714,6 +756,9 @@ export class BookingsComponent {
   private mapBackendBooking(booking: ApiMarketplaceBooking): MarketplaceBooking {
     const owner = booking.viewer_side === 'owner';
     const workflow = booking.workflow ?? {};
+    const disputeOutcomes: Record<string, NonNullable<MarketplaceBooking['dispute']>['outcome']> = {
+      refunded: 'Refunded', forfeited: 'Forfeited', commission_waived: 'Commission Waived', commission_due: 'Commission Due', continue: 'Continue', cancel: 'Cancel',
+    };
     const stage: MarketplaceBooking['status'] = booking.status === 'completed' && booking.settlement?.status === 'settled'
       ? 'Completed'
       : workflow.trip_completed_at || booking.status === 'completed'
@@ -770,6 +815,20 @@ export class BookingsComponent {
       escrowStatus: booking.status === 'completed' ? 'Released' : booking.status === 'confirmed' || booking.status === 'in_transit' ? 'Locked' : 'Awaiting Deposits', settlementPlan,
       vehicleAssignment: workflow.vehicle_assignment ? { mode: workflow.vehicle_assignment.mode, vehicleRegNumber: workflow.vehicle_assignment.vehicle_reg_number, subcontractedTo: workflow.vehicle_assignment.subcontracted_to, assignedAt: formatDateTime(workflow.vehicle_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
       driverAssignment: workflow.driver_assignment ? { driverName: workflow.driver_assignment.driver_name, driverPhone: workflow.driver_assignment.driver_phone, assignedAt: formatDateTime(workflow.driver_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
+      dispute: booking.dispute ? {
+        reference: booking.dispute.uuid,
+        reason: booking.dispute.reason,
+        raisedBy: 'Booking participant',
+        status: booking.dispute.status === 'resolved' ? 'Resolved' : booking.dispute.status === 'under_review' ? 'Under Review' : 'Open',
+        outcome: booking.dispute.resolution ? disputeOutcomes[booking.dispute.resolution] : undefined,
+        decision: workflow.dispute_decisions?.[booking.dispute.uuid] ? {
+          ownerToken: workflow.dispute_decisions[booking.dispute.uuid].owner_token_decision,
+          providerToken: workflow.dispute_decisions[booking.dispute.uuid].provider_token_decision,
+          commission: workflow.dispute_decisions[booking.dispute.uuid].commission_decision,
+          summary: workflow.dispute_decisions[booking.dispute.uuid].summary,
+        } : undefined,
+        raisedAt: formatDateTime(booking.dispute.created_at),
+      } : undefined,
       settlement: booking.settlement ? {
         status: booking.settlement.status,
         freightAmount: amount, grossFreightAmount: amount,

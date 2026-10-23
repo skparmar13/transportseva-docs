@@ -2,7 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../core/i18n';
 import { CommunicationMockService } from '../../core/services/communication-mock.service';
-import { NotificationCategory } from '../../core/models/communication.model';
+import { AppNotification, NotificationCategory } from '../../core/models/communication.model';
+import { NotificationNavigationService } from '../../core/services/notification-navigation.service';
+import { Router } from '@angular/router';
 
 type NotificationFilter = 'all' | 'unread';
 
@@ -36,6 +38,8 @@ const CATEGORY_KEY: Record<NotificationCategory, string> = {
 })
 export class NotificationsComponent {
   protected readonly comms = inject(CommunicationMockService);
+  protected readonly navigation = inject(NotificationNavigationService);
+  private readonly router = inject(Router);
   protected readonly categoryIcon = CATEGORY_ICON;
   protected readonly categoryKey = CATEGORY_KEY;
   protected readonly filter = signal<NotificationFilter>('all');
@@ -51,6 +55,13 @@ export class NotificationsComponent {
 
   protected markRead(id: string): void {
     this.comms.markNotificationRead(id);
+  }
+
+  protected openNotification(notification: AppNotification): void {
+    const destination = this.navigation.destination(notification);
+    if (!destination) return;
+    this.comms.markNotificationRead(notification.id);
+    void this.router.navigateByUrl(destination);
   }
 
   protected markAllRead(): void {

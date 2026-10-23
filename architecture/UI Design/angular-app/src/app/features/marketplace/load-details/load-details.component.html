@@ -157,6 +157,7 @@
                       }
                       @if (chatError()) {
                         <p role="alert" style="margin:0 0 10px;color:var(--color-danger,#dc2626);font-size:13px;">{{ chatError() }}</p>
+                        <button type="button" class="btn btn-outline btn-sm" (click)="retryChat(app.id)">Retry conversation</button>
                       }
                       @for (msg of activeChatMessages(); track msg.id) {
                         <div class="chat-bubble" [class.mine]="msg.sender === 'owner'" [class.theirs]="msg.sender !== 'owner'">
@@ -165,8 +166,8 @@
                         </div>
                       }
                       <div class="chat-input-row">
-                        <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
-                        <button type="button" class="btn btn-primary btn-sm" [disabled]="chatSending()" (click)="sendChat(app.id)">
+                        <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [disabled]="chatLoading() || (backendEnabled && !backendBookingForApplication(app.id))" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
+                        <button type="button" class="btn btn-primary btn-sm" aria-label="Send message" [disabled]="chatSending() || chatLoading() || (backendEnabled && !backendBookingForApplication(app.id))" (click)="sendChat(app.id)">
                           @if (chatSending()) { <span class="button-loader" aria-hidden="true"></span> }
                           @else { <app-icon name="i-send" [size]="15" /> }
                         </button>
@@ -304,6 +305,7 @@
                   }
                   @if (chatError()) {
                     <p role="alert" style="margin:0 0 10px;color:var(--color-danger,#dc2626);font-size:13px;">{{ chatError() }}</p>
+                    <button type="button" class="btn btn-outline btn-sm" (click)="retryChat(app.id)">Retry conversation</button>
                   }
                   @for (msg of activeChatMessages(); track msg.id) {
                     <div class="chat-bubble" [class.mine]="msg.sender === 'applicant'" [class.theirs]="msg.sender !== 'applicant'">
@@ -312,8 +314,8 @@
                     </div>
                   }
                   <div class="chat-input-row">
-                    <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
-                    <button type="button" class="btn btn-primary btn-sm" [disabled]="chatSending()" (click)="sendChat(app.id)">
+                    <input type="text" class="input" [placeholder]="'loadDetails.chat.placeholder' | t" [disabled]="chatLoading() || (backendEnabled && !backendBookingForApplication(app.id))" [ngModel]="chatText()" (ngModelChange)="chatText.set($event)" (keyup.enter)="sendChat(app.id)" />
+                    <button type="button" class="btn btn-primary btn-sm" aria-label="Send message" [disabled]="chatSending() || chatLoading() || (backendEnabled && !backendBookingForApplication(app.id))" (click)="sendChat(app.id)">
                       @if (chatSending()) { <span class="button-loader" aria-hidden="true"></span> }
                       @else { <app-icon name="i-send" [size]="15" /> }
                     </button>
@@ -322,7 +324,7 @@
               }
             </div>
           </div>
-        } @else {
+        } @else if (canApplyToLoad(l)) {
           <div class="card">
             <div class="card-body" style="text-align:center;padding:36px 22px;">
               <p style="color:var(--color-text-muted);margin-bottom:16px;">{{ 'loadDetails.interest.body' | t }}</p>
@@ -331,6 +333,8 @@
               </button>
             </div>
           </div>
+        } @else {
+          <div class="card"><div class="card-body" role="status">This load is no longer accepting applications.</div></div>
         }
       }
     </div>
@@ -396,6 +400,7 @@
         <input type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [placeholder]="'loadDetails.apply.freightPlaceholder' | t" [ngModel]="quotedAmount()" (ngModelChange)="quotedAmount.set($event)" name="quotedAmount" />
         </div>
       </div>
+      @if (applicationSubmissionError()) { <p role="alert" class="field-error">{{ applicationSubmissionError() }}</p> }
       <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
         <button type="button" class="btn btn-outline" (click)="showApplyModal.set(false)">{{ 'common.cancel' | t }}</button>
         <button type="button" class="btn btn-primary" [disabled]="applying() || !vehicleRegNumber() || registeredVehicles().length === 0" (click)="submitApplication()">

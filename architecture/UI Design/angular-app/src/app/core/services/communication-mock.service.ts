@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, exhaustMap, interval, of, startWith } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, interval, startWith } from 'rxjs';
 import { AppNotification, SupportTicket, TicketMessage } from '../models/communication.model';
 import { ApiNotification, ApiNotificationsService } from '../api/api-notifications.service';
 import { API_CONFIG } from '../api/api-config';
@@ -27,7 +27,12 @@ export class CommunicationMockService {
 
   /** Keep the bell current while the user has the app open. */
   startLiveUpdates(): void {
-    if (this.liveUpdatesStarted || !API_CONFIG.useBackend) return;
+    if (!API_CONFIG.useBackend) return;
+    if (this.liveUpdatesStarted) {
+      this._notifications.set([]);
+      this.refreshNotifications();
+      return;
+    }
     this.liveUpdatesStarted = true;
     this._notifications.set([]);
     // A local PHP server handles requests serially. Do not start a new bell
@@ -37,14 +42,35 @@ export class CommunicationMockService {
     // their successful API response.
     interval(15_000).pipe(
       startWith(0),
-      exhaustMap(() => this.apiNotifications.list().pipe(catchError(() => of([] as ApiNotification[])))),
+      exhaustMap(() => {
+        const token = localStorage.getItem('transportseva.access_token');
+        return this.apiNotifications.list().pipe(
+          catchError(() => EMPTY),
+          exhaustMap((notifications) => token && token === localStorage.getItem('transportseva.access_token') ? [notifications] : EMPTY),
+        );
+      }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((notifications) => this._notifications.set(notifications.map((notification) => this.mapNotification(notification))));
   }
 
-  markNotificationRead(id: string) {
+  private refreshNotifications(): void {
+    const token = localStorage.getItem('transportseva.access_token');
+    this.apiNotifications.list().subscribe({
+      next: (notifications) => {
+        if (token && token === localStorage.getItem('transportseva.access_token')) {
+          this._notifications.set(notifications.map((notification) => this.mapNotification(notification)));
+        }
+      },
+      error: () => undefined,
+    });
+  }
+
+  clearNotifications(): void { this._notifications.set([]); }
+
+  markNotificationRead(id: string, afterSave?: () => void) {
     this._notifications.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    if (API_CONFIG.useBackend) this.apiNotifications.markRead(id).subscribe({ error: () => undefined });
+    if (API_CONFIG.useBackend) this.apiNotifications.markRead(id).subscribe({ complete: () => afterSave?.(), error: () => afterSave?.() });
+    else afterSave?.();
   }
 
   markAllNotificationsRead() {
@@ -64,6 +90,8 @@ export class CommunicationMockService {
       message: notification.message,
       timestamp: notification.created_at ? formatDateTime(notification.created_at) : 'Just now',
       read: !!notification.read_at,
+      data: notification.data,
+      actionUrl: notification.action_url,
     };
   }
 

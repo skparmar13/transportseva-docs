@@ -8,7 +8,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { Vehicle, VehicleCategory, VehicleLiveStatus } from '../../../core/models/fleet.model';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiMarketplaceService, ApiMarketplaceVehicle } from '../../../core/api/api-marketplace.service';
-import { apiErrorMessage } from '../../../core/api/api-error';
+import { apiErrorMessage, apiFieldErrors } from '../../../core/api/api-error';
 
 const VEHICLE_TYPES: VehicleCategory[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
@@ -83,12 +83,18 @@ export class VehicleListComponent {
   protected readonly capacityTons = signal<number | null>(null);
   protected readonly driver = signal('');
   protected readonly saving = signal(false);
+  protected readonly registrationError = signal('');
+  protected readonly addError = signal('');
 
   protected openAdd(): void {
+    this.registrationError.set('');
+    this.addError.set('');
     this.showAddModal.set(true);
   }
 
   protected closeAdd(): void {
+    this.registrationError.set('');
+    this.addError.set('');
     this.showAddModal.set(false);
     this.regNumber.set('');
     this.make.set('');
@@ -104,6 +110,8 @@ export class VehicleListComponent {
     if (capacity === null || !Number.isFinite(capacity) || capacity <= 0 || !Number.isInteger(capacity * 10)) return;
     if (this.yearOfMake() && (!Number.isInteger(year) || year < 1950 || year > new Date().getFullYear())) return;
     if (!this.regNumber() || !this.make() || !this.model()) return;
+    this.registrationError.set('');
+    this.addError.set('');
     this.saving.set(true);
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.createMarketplaceVehicle({
@@ -121,7 +129,9 @@ export class VehicleListComponent {
         },
         error: (error) => {
           this.saving.set(false);
-          this.vehicleError.set(apiErrorMessage(error, 'Vehicle could not be registered. Please review the details and try again.'));
+          const fieldErrors = apiFieldErrors(error);
+          if (fieldErrors['registration_number']) this.registrationError.set(fieldErrors['registration_number']);
+          else this.addError.set(apiErrorMessage(error, 'Vehicle could not be registered. Please review the details and try again.'));
         },
       });
       return;
