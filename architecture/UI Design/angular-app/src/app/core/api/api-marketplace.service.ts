@@ -158,10 +158,23 @@ export interface ApiMarketplaceBooking {
     vehicle_assignment?: { mode: 'Own Fleet' | 'Subcontracted'; vehicle_reg_number: string; subcontracted_to?: string; assigned_at?: string };
     driver_assignment?: { driver_name: string; driver_phone?: string; assigned_at?: string };
     loading_completed_at?: string;
+    loading_confirmed_at?: string;
+    loading_confirmed_by_uuid?: string;
     released_milestones?: Record<string, string>;
     mid_trip_milestones?: Array<{ id: string; amount: number | string; trigger: string; created_at: string; released_at?: string }>;
     trip_started_at?: string;
     trip_completed_at?: string;
+    pod?: {
+      status: 'pending_approval' | 'approved' | 'rejected';
+      pod_number: string;
+      received_by_name: string;
+      remarks?: string | null;
+      file_name?: string;
+      uploaded_at?: string;
+      review_note?: string | null;
+      rejection_reason?: string | null;
+      reviewed_at?: string | null;
+    };
     dispute_decisions?: Record<string, Omit<DisputeDecision, 'resolution'> & { booking_decision: 'continue' | 'cancel'; recorded_at: string }>;
   };
   owner_token_status?: string;
@@ -200,6 +213,24 @@ export interface DisputeDecision {
   provider_token_decision: 'pending' | 'refund' | 'retain' | 'no_action';
   commission_decision: 'pending' | 'waive' | 'charge' | 'no_action';
   summary: string;
+}
+
+export type MarketplaceKycStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ApiMarketplaceKycProfile {
+  uuid: string;
+  user_uuid: string;
+  user_name?: string | null;
+  user_role?: string | null;
+  business_name: string;
+  business_type: 'individual' | 'proprietorship' | 'partnership' | 'company';
+  pan_last_four?: string | null;
+  gstin_last_four?: string | null;
+  document_name: string;
+  status: MarketplaceKycStatus;
+  review_note?: string | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -306,12 +337,27 @@ export class ApiMarketplaceService {
     return this.api.post<ApiSettlement>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/settle`, {}).pipe(map((response) => response.data));
   }
 
+  uploadMarketplacePod(bookingUuid: string, payload: FormData): Observable<ApiMarketplaceBooking> {
+    return this.api.post<ApiMarketplaceBooking>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/pod`, payload).pipe(map((response) => response.data));
+  }
+
+  reviewMarketplacePod(bookingUuid: string, decision: 'approved' | 'rejected', reviewNote = ''): Observable<ApiMarketplaceBooking> {
+    return this.api.post<ApiMarketplaceBooking>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/pod/review`, {
+      decision,
+      ...(reviewNote.trim() ? { review_note: reviewNote.trim() } : {}),
+    }).pipe(map((response) => response.data));
+  }
+
   updateMarketplaceWorkflow(bookingUuid: string, action: string, payload: Record<string, unknown> = {}): Observable<ApiMarketplaceBooking> {
     return this.api.post<ApiMarketplaceBooking>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/workflow`, { action, ...payload }).pipe(map((response) => response.data));
   }
 
   raiseDispute(bookingUuid: string, reason: string): Observable<ApiDispute> {
     return this.api.post<ApiDispute>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/disputes`, { reason }).pipe(map((response) => response.data));
+  }
+
+  requestMarketplaceCancellation(bookingUuid: string, reason: string): Observable<ApiDispute> {
+    return this.api.post<ApiDispute>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/disputes/cancellation-request`, { reason }).pipe(map((response) => response.data));
   }
 
   listDisputes(bookingUuid: string): Observable<ApiDispute[]> {
@@ -327,6 +373,29 @@ export class ApiMarketplaceService {
       map((disputes) => disputes.find((dispute) => dispute.status !== 'resolved')),
       switchMap((dispute) => this.resolveDispute(dispute?.uuid ?? '', decision)),
     );
+  }
+
+  getMarketplaceKyc(): Observable<ApiMarketplaceKycProfile | null> {
+    return this.api.get<ApiMarketplaceKycProfile | null>('marketplace-kyc').pipe(map((response) => response.data));
+  }
+
+  submitMarketplaceKyc(payload: FormData): Observable<ApiMarketplaceKycProfile> {
+    return this.api.post<ApiMarketplaceKycProfile>('marketplace-kyc', payload).pipe(map((response) => response.data));
+  }
+
+  listMarketplaceKyc(status?: MarketplaceKycStatus): Observable<ApiMarketplaceKycProfile[]> {
+    return this.api.get<ApiMarketplaceKycProfile[]>('admin/marketplace-kyc', status ? { status } : undefined).pipe(map((response) => response.data));
+  }
+
+  moderateMarketplaceKyc(profileUuid: string, status: 'approved' | 'rejected', reviewNote = ''): Observable<ApiMarketplaceKycProfile> {
+    return this.api.patch<ApiMarketplaceKycProfile>(`admin/marketplace-kyc/${encodeURIComponent(profileUuid)}`, {
+      status,
+      ...(reviewNote.trim() ? { review_note: reviewNote.trim() } : {}),
+    }).pipe(map((response) => response.data));
+  }
+
+  downloadMarketplaceKycDocument(profileUuid: string): Observable<Blob> {
+    return this.api.getBlob(`marketplace-kyc/${encodeURIComponent(profileUuid)}/document`);
   }
 
   private normalizeLoad(load: ApiLoad): ApiLoad {

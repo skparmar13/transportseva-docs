@@ -40,6 +40,8 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         titleKey: 'nav.operations',
         items: [
           { label: 'Load / Booking Management', labelKey: 'nav.loadBookingManagement', icon: 'i-box', path: 'bookings' },
+          { label: 'Customer Reviews', labelKey: 'nav.customerReviews', icon: 'i-star', path: 'reviews' },
+          { label: 'Business KYC', labelKey: 'nav.businessKyc', icon: 'i-doc', path: 'kyc' },
           { label: 'Route Management', labelKey: 'nav.routeManagement', icon: 'i-route', path: 'routes' },
           { label: 'Trip Management', labelKey: 'nav.tripManagement', icon: 'i-truck', path: 'trips' },
           { label: 'Live Tracking', labelKey: 'nav.liveTracking', icon: 'i-map', path: 'tracking' },
@@ -95,6 +97,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'My Loads', labelKey: 'nav.myLoads', icon: 'i-box', path: 'my-loads' },
           { label: 'Applications Received', labelKey: 'nav.applicationsReceived', icon: 'i-doc', path: 'applications' },
           { label: 'Bookings', labelKey: 'nav.bookings', icon: 'i-check', path: 'bookings' },
+          { label: 'Review TransportSeva', labelKey: 'nav.reviewTransportSeva', icon: 'i-star', path: 'reviews' },
         ],
       },
       {
@@ -114,6 +117,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Payment Ledger', labelKey: 'nav.paymentLedger', icon: 'i-invoice', path: 'financials' },
           { label: 'Payments', labelKey: 'nav.payments', icon: 'i-invoice', path: 'payments' },
           { label: 'Documents', labelKey: 'nav.documents', icon: 'i-doc', path: 'documents' },
+          { label: 'Business KYC', labelKey: 'nav.businessKyc', icon: 'i-doc', path: 'kyc' },
           { label: 'Support Tickets', labelKey: 'nav.supportTickets', icon: 'i-headset', path: 'support' },
           { label: 'Notifications', labelKey: 'nav.notifications', icon: 'i-bell', path: 'notifications' },
           { label: 'Business Settings', labelKey: 'nav.businessSettings', icon: 'i-settings', path: 'profile' },
@@ -171,6 +175,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Payment Ledger', labelKey: 'nav.paymentLedger', icon: 'i-invoice', path: 'financials' },
           { label: 'Payments', labelKey: 'nav.payments', icon: 'i-invoice', path: 'payments' },
           { label: 'Documents', labelKey: 'nav.documents', icon: 'i-doc', path: 'documents' },
+          { label: 'Business KYC', labelKey: 'nav.businessKyc', icon: 'i-doc', path: 'kyc' },
           { label: 'Notifications', labelKey: 'nav.notifications', icon: 'i-bell', path: 'notifications' },
           { label: 'Support Tickets', labelKey: 'nav.supportTickets', icon: 'i-headset', path: 'support' },
           { label: 'Business Settings', labelKey: 'nav.businessSettings', icon: 'i-settings', path: 'profile' },
@@ -193,6 +198,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Load Board', labelKey: 'nav.loadBoard', icon: 'i-search', path: 'load-board' },
           { label: 'My Applications', labelKey: 'nav.myApplications', icon: 'i-doc', path: 'applications' },
           { label: 'Bookings', labelKey: 'nav.bookings', icon: 'i-check', path: 'bookings' },
+          { label: 'Review TransportSeva', labelKey: 'nav.reviewTransportSeva', icon: 'i-star', path: 'reviews' },
         ],
       },
       {
@@ -223,6 +229,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Payment Ledger', labelKey: 'nav.paymentLedger', icon: 'i-invoice', path: 'financials' },
           { label: 'Payments', labelKey: 'nav.payments', icon: 'i-invoice', path: 'payments' },
           { label: 'Documents', labelKey: 'nav.documents', icon: 'i-doc', path: 'documents' },
+          { label: 'Business KYC', labelKey: 'nav.businessKyc', icon: 'i-doc', path: 'kyc' },
           { label: 'Notifications', labelKey: 'nav.notifications', icon: 'i-bell', path: 'notifications' },
           { label: 'Support Tickets', labelKey: 'nav.supportTickets', icon: 'i-headset', path: 'support' },
           { label: 'Business Settings', labelKey: 'nav.businessSettings', icon: 'i-settings', path: 'profile' },

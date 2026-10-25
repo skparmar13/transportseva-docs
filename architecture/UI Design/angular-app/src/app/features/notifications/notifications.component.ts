@@ -60,8 +60,9 @@ export class NotificationsComponent {
   protected openNotification(notification: AppNotification): void {
     const destination = this.navigation.destination(notification);
     if (!destination) return;
-    this.comms.markNotificationRead(notification.id);
-    void this.router.navigateByUrl(destination);
+    // Navigate first so a slow notification PATCH never delays the action
+    // screen on the serial local PHP development server.
+    void this.router.navigateByUrl(destination).then(() => setTimeout(() => this.comms.markNotificationRead(notification.id), 250));
   }
 
   protected markAllRead(): void {

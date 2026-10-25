@@ -21,6 +21,10 @@ export class ApiClientService {
     return this.http.get<ApiEnvelope<T>>(this.url(path), { params: httpParams });
   }
 
+  getBlob(path: string): Observable<Blob> {
+    return this.http.get(this.url(path), { responseType: 'blob' });
+  }
+
   post<T>(path: string, body: unknown): Observable<ApiEnvelope<T>> {
     return this.http.post<ApiEnvelope<T>>(this.url(path), body);
   }

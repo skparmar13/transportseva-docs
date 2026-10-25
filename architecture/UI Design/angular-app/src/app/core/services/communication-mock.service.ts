@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, EMPTY, exhaustMap, interval, startWith } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, Subject, takeUntil, timer } from 'rxjs';
 import { AppNotification, SupportTicket, TicketMessage } from '../models/communication.model';
 import { ApiNotification, ApiNotificationsService } from '../api/api-notifications.service';
 import { API_CONFIG } from '../api/api-config';
@@ -10,7 +10,9 @@ import { formatDateTime } from '../utils/date-format';
 export class CommunicationMockService {
   private readonly apiNotifications = inject(ApiNotificationsService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly notificationPollingRestarted = new Subject<void>();
   private liveUpdatesStarted = false;
+  private notificationToken = '';
   private readonly _notifications = signal<AppNotification[]>([
     { id: 'n1', category: 'Booking', title: 'Booking Confirmed', message: 'Your booking for load LD-1042 (Jaipur → Ahmedabad) has been confirmed by the transporter.', timestamp: '2024-06-18 09:20 AM', read: false },
     { id: 'n2', category: 'Payment', title: 'Payment Received', message: 'Freight payment of ₹42,000 received for trip TRIP-3877.', timestamp: '2024-06-18 08:05 AM', read: false },
@@ -28,44 +30,35 @@ export class CommunicationMockService {
   /** Keep the bell current while the user has the app open. */
   startLiveUpdates(): void {
     if (!API_CONFIG.useBackend) return;
-    if (this.liveUpdatesStarted) {
-      this._notifications.set([]);
-      this.refreshNotifications();
-      return;
-    }
+    const token = localStorage.getItem('transportseva.access_token') ?? '';
+    if (this.liveUpdatesStarted && this.notificationToken === token) return;
+    if (this.liveUpdatesStarted) this.notificationPollingRestarted.next();
     this.liveUpdatesStarted = true;
+    this.notificationToken = token;
     this._notifications.set([]);
-    // A local PHP server handles requests serially. Do not start a new bell
-    // poll while the prior one is still in flight; that queues stale requests
-    // and can block marketplace actions from refreshing. Fifteen seconds is
-    // still prompt for the bell, while action screens update immediately from
-    // their successful API response.
-    interval(15_000).pipe(
-      startWith(0),
+    // A local PHP server handles requests serially.  Give the route that just
+    // opened a short head start.  A new login replaces—not duplicates—the
+    // previous account's polling stream, so its bell stays current without
+    // blocking the screen's own request.
+    timer(1_250, 15_000).pipe(
+      takeUntil(this.notificationPollingRestarted),
+      takeUntilDestroyed(this.destroyRef),
       exhaustMap(() => {
-        const token = localStorage.getItem('transportseva.access_token');
+        const activeToken = localStorage.getItem('transportseva.access_token');
         return this.apiNotifications.list().pipe(
           catchError(() => EMPTY),
-          exhaustMap((notifications) => token && token === localStorage.getItem('transportseva.access_token') ? [notifications] : EMPTY),
+          exhaustMap((notifications) => activeToken && activeToken === localStorage.getItem('transportseva.access_token') ? [notifications] : EMPTY),
         );
       }),
-      takeUntilDestroyed(this.destroyRef),
     ).subscribe((notifications) => this._notifications.set(notifications.map((notification) => this.mapNotification(notification))));
   }
 
-  private refreshNotifications(): void {
-    const token = localStorage.getItem('transportseva.access_token');
-    this.apiNotifications.list().subscribe({
-      next: (notifications) => {
-        if (token && token === localStorage.getItem('transportseva.access_token')) {
-          this._notifications.set(notifications.map((notification) => this.mapNotification(notification)));
-        }
-      },
-      error: () => undefined,
-    });
+  clearNotifications(): void {
+    this.notificationPollingRestarted.next();
+    this.liveUpdatesStarted = false;
+    this.notificationToken = '';
+    this._notifications.set([]);
   }
-
-  clearNotifications(): void { this._notifications.set([]); }
 
   markNotificationRead(id: string, afterSave?: () => void) {
     this._notifications.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));

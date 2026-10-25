@@ -233,10 +233,25 @@ export interface MarketplaceBooking {
   escrowStatus: EscrowStatus;
   vehicleAssignment?: BookingVehicleAssignment;
   driverAssignment?: BookingDriverAssignment;
+  /** Set after the shipper has verified the provider's loading-complete update. */
+  loadingConfirmedAt?: string;
+  /** Signed Proof of Delivery, reviewed by the shipper before settlement. */
+  pod?: BookingPod;
   /** The freight Settlement Plan — Loading Advance, optional Mid-Trip Payment(s), Final Settlement. */
   settlementPlan: SettlementMilestone[];
   settlement?: BookingSettlement;
   dispute?: BookingDispute;
+}
+
+export interface BookingPod {
+  status: 'Pending Approval' | 'Approved' | 'Rejected';
+  podNumber: string;
+  receivedByName: string;
+  remarks?: string;
+  fileName?: string;
+  uploadedAt?: string;
+  reviewNote?: string;
+  reviewedAt?: string;
 }
 
 export interface BookingDispute {

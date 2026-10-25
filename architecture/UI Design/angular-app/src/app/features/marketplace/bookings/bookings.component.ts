@@ -113,6 +113,8 @@ export class BookingsComponent {
   protected readonly expandedId = signal<string | null>(null);
   protected readonly disputingBooking = signal<string | null>(null);
   protected readonly disputeReason = signal('');
+  protected readonly cancellingBooking = signal<string | null>(null);
+  protected readonly cancellationReason = signal('');
   protected readonly resolvingDispute = signal<string | null>(null);
   protected readonly disputeResolution = signal<DisputeDecision['resolution'] | ''>('');
   protected readonly ownerTokenDecision = signal<DisputeDecision['owner_token_decision'] | ''>('');
@@ -123,6 +125,14 @@ export class BookingsComponent {
   protected readonly offlineAmount = signal<number | null>(null);
   protected readonly offlineReference = signal('');
   protected readonly offlineAmountValid = computed(() => this.isValidAmount(this.offlineAmount()));
+  protected readonly uploadingPodFor = signal<MarketplaceBooking | null>(null);
+  protected readonly podNumber = signal('');
+  protected readonly podReceivedBy = signal('');
+  protected readonly podRemarks = signal('');
+  protected readonly podFile = signal<File | null>(null);
+  protected readonly reviewingPodFor = signal<MarketplaceBooking | null>(null);
+  protected readonly podReviewDecision = signal<'approved' | 'rejected'>('approved');
+  protected readonly podReviewNote = signal('');
 
   protected statusKey(s: string): string {
     return 'status.' + s.charAt(0).toLowerCase() + s.slice(1).replace(/\s+/g, '');
@@ -527,6 +537,20 @@ export class BookingsComponent {
     }, 450);
   }
 
+  /** The shipper verifies loading before the advance or departure can proceed. */
+  protected confirmLoading(bookingId: string): void {
+    const actionKey = this.workflowActionKey(bookingId, 'confirm-loading');
+    if (!this.beginWorkflowAction(actionKey)) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'confirm_loading').subscribe({
+        next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
+        error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Loading confirmation could not be saved. Please retry.')),
+      });
+      return;
+    }
+    this.failWorkflowAction(actionKey, 'Loading confirmation requires the backend.');
+  }
+
   protected releaseMilestone(bookingId: string, milestoneId: string): void {
     const actionKey = this.workflowActionKey(bookingId, 'release', milestoneId);
     if (!this.beginWorkflowAction(actionKey)) return;
@@ -548,9 +572,10 @@ export class BookingsComponent {
     const actionKey = this.workflowActionKey(bookingId, 'complete-trip');
     if (!this.beginWorkflowAction(actionKey)) return;
     if (API_CONFIG.useBackend) {
-      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'complete_trip').pipe(
-        switchMap(() => this.apiMarketplace.createSettlement(bookingId)),
-      ).subscribe({
+      // Settlement is intentionally a separate, POD-gated step. Completing the
+      // trip must remain successful even though the final payment cannot yet be
+      // prepared until the shipper has approved the submitted POD.
+      this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'complete_trip').subscribe({
         next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Trip could not be completed. Please retry.')),
       });
@@ -559,13 +584,67 @@ export class BookingsComponent {
     setTimeout(() => { this.marketplace.settleBooking(bookingId); this.finishWorkflowAction(actionKey); }, 450);
   }
 
+  protected openPodUpload(booking: MarketplaceBooking): void {
+    this.uploadingPodFor.set(booking);
+    this.podNumber.set('');
+    this.podReceivedBy.set('');
+    this.podRemarks.set('');
+    this.podFile.set(null);
+  }
+
+  protected onPodFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.podFile.set(input.files?.item(0) ?? null);
+  }
+
+  protected submitPod(): void {
+    const booking = this.uploadingPodFor();
+    const file = this.podFile();
+    if (!booking || !file || !this.podNumber().trim() || !this.podReceivedBy().trim()) return;
+    const actionKey = this.workflowActionKey(booking.id, 'upload-pod');
+    if (!this.beginWorkflowAction(actionKey)) return;
+    if (!API_CONFIG.useBackend) {
+      this.failWorkflowAction(actionKey, 'POD upload requires the backend.');
+      return;
+    }
+    const payload = new FormData();
+    payload.set('pod_number', this.podNumber().trim());
+    payload.set('received_by_name', this.podReceivedBy().trim());
+    if (this.podRemarks().trim()) payload.set('remarks', this.podRemarks().trim());
+    payload.set('file', file);
+    this.apiMarketplace.uploadMarketplacePod(booking.id, payload).subscribe({
+      next: () => { this.finishWorkflowAction(actionKey); this.uploadingPodFor.set(null); this.reloadBackendBookings(); },
+      error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'POD could not be submitted. Please retry.')),
+    });
+  }
+
+  protected openPodReview(booking: MarketplaceBooking, decision: 'approved' | 'rejected'): void {
+    this.reviewingPodFor.set(booking);
+    this.podReviewDecision.set(decision);
+    this.podReviewNote.set('');
+  }
+
+  protected submitPodReview(): void {
+    const booking = this.reviewingPodFor();
+    const decision = this.podReviewDecision();
+    if (!booking || (decision === 'rejected' && !this.podReviewNote().trim())) return;
+    const actionKey = this.workflowActionKey(booking.id, 'review-pod');
+    if (!this.beginWorkflowAction(actionKey)) return;
+    if (!API_CONFIG.useBackend) {
+      this.failWorkflowAction(actionKey, 'POD review requires the backend.');
+      return;
+    }
+    this.apiMarketplace.reviewMarketplacePod(booking.id, decision, this.podReviewNote()).subscribe({
+      next: () => { this.finishWorkflowAction(actionKey); this.reviewingPodFor.set(null); this.reloadBackendBookings(); },
+      error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'POD review could not be saved. Please retry.')),
+    });
+  }
+
   /** A milestone can only be released once its trigger condition is actually met. Loading Advance needs "Loading Completed"+; everything else (Mid-Trip Payment) can be released any time it's pending. */
   protected canReleaseMilestone(booking: MarketplaceBooking, milestoneLabel: string): boolean {
     if (milestoneLabel === 'Final Settlement') return false; // released only via full settlement
     if (milestoneLabel === 'Loading Advance') {
-      const loadingIndex = BOOKING_TIMELINE_STAGES.indexOf('Loading Completed');
-      const currentIndex = BOOKING_TIMELINE_STAGES.indexOf(booking.status);
-      return currentIndex >= loadingIndex;
+      return !!booking.loadingConfirmedAt;
     }
     return true;
   }
@@ -672,6 +751,11 @@ export class BookingsComponent {
     this.disputeReason.set('');
   }
 
+  protected openCancellationRequest(bookingId: string): void {
+    this.cancellingBooking.set(bookingId);
+    this.cancellationReason.set('');
+  }
+
   protected openDisputeDecision(bookingId: string): void {
     this.disputeResolution.set(''); this.ownerTokenDecision.set(''); this.providerTokenDecision.set('');
     this.commissionDecision.set(''); this.decisionSummary.set(''); this.resolvingDispute.set(bookingId);
@@ -717,6 +801,26 @@ export class BookingsComponent {
       this.finishWorkflowAction(actionKey);
       this.disputingBooking.set(null);
     }, 350);
+  }
+
+  protected submitCancellationRequest(): void {
+    const bookingId = this.cancellingBooking();
+    const reason = this.cancellationReason().trim();
+    if (!bookingId || reason.length < 10) return;
+    const actionKey = this.workflowActionKey(bookingId, 'request-cancellation');
+    if (!this.beginWorkflowAction(actionKey)) return;
+    if (API_CONFIG.useBackend) {
+      this.apiMarketplace.requestMarketplaceCancellation(bookingId, reason).subscribe({
+        next: () => {
+          this.finishWorkflowAction(actionKey);
+          this.cancellingBooking.set(null);
+          this.reloadBackendBookings();
+        },
+        error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Cancellation request could not be submitted. Please retry.')),
+      });
+      return;
+    }
+    this.failWorkflowAction(actionKey, 'Cancellation requests require the backend.');
   }
 
   protected openOfflinePayment(booking: MarketplaceBooking): void {
@@ -789,7 +893,7 @@ export class BookingsComponent {
     }));
     const midTripTotal = (workflow.mid_trip_milestones ?? []).reduce((total, milestone) => total + Number(milestone.amount || 0), 0);
     const settlementPlan = [
-      { id: `${booking.uuid}-loading`, label: 'Loading Advance', trigger: 'Can be recorded after the provider marks loading complete', amount: `₹${loadingAdvance.toLocaleString('en-IN')}`, status: releasedAt ? 'Released' as const : 'Pending' as const, ...(releasedAt ? { releasedAt } : {}) },
+      { id: `${booking.uuid}-loading`, label: 'Loading Advance', trigger: 'Released after the shipper confirms loading', amount: `₹${loadingAdvance.toLocaleString('en-IN')}`, status: releasedAt ? 'Released' as const : 'Pending' as const, ...(releasedAt ? { releasedAt } : {}) },
       ...midTripMilestones,
       { id: `${booking.uuid}-final`, label: 'Final Settlement', trigger: 'Released after POD is uploaded and approved', amount: `₹${Math.max(freight - loadingAdvance - midTripTotal, 0).toLocaleString('en-IN')}`, status: 'Pending' as const },
     ];
@@ -815,6 +919,17 @@ export class BookingsComponent {
       escrowStatus: booking.status === 'completed' ? 'Released' : booking.status === 'confirmed' || booking.status === 'in_transit' ? 'Locked' : 'Awaiting Deposits', settlementPlan,
       vehicleAssignment: workflow.vehicle_assignment ? { mode: workflow.vehicle_assignment.mode, vehicleRegNumber: workflow.vehicle_assignment.vehicle_reg_number, subcontractedTo: workflow.vehicle_assignment.subcontracted_to, assignedAt: formatDateTime(workflow.vehicle_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
       driverAssignment: workflow.driver_assignment ? { driverName: workflow.driver_assignment.driver_name, driverPhone: workflow.driver_assignment.driver_phone, assignedAt: formatDateTime(workflow.driver_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
+      loadingConfirmedAt: workflow.loading_confirmed_at,
+      pod: workflow.pod ? {
+        status: workflow.pod.status === 'approved' ? 'Approved' : workflow.pod.status === 'rejected' ? 'Rejected' : 'Pending Approval',
+        podNumber: workflow.pod.pod_number,
+        receivedByName: workflow.pod.received_by_name,
+        remarks: workflow.pod.remarks ?? undefined,
+        fileName: workflow.pod.file_name,
+        uploadedAt: workflow.pod.uploaded_at ? formatDateTime(workflow.pod.uploaded_at) : undefined,
+        reviewNote: workflow.pod.review_note ?? workflow.pod.rejection_reason ?? undefined,
+        reviewedAt: workflow.pod.reviewed_at ? formatDateTime(workflow.pod.reviewed_at) : undefined,
+      } : undefined,
       dispute: booking.dispute ? {
         reference: booking.dispute.uuid,
         reason: booking.dispute.reason,

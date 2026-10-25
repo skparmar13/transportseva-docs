@@ -20,6 +20,8 @@ export class NotificationNavigationService {
     const application = uuid(data['application_uuid']);
     const message = uuid(data['message_uuid']);
     const offer = uuid(data['offer_uuid']);
+    const review = uuid(data['review_uuid']);
+    const kyc = uuid(data['kyc_profile_uuid']);
     const marketplaceRole = role === 'shipper' || role === 'transporter' || role === 'truck-owner';
     if (load && marketplaceRole) return this.router.createUrlTree([base, 'load-board', load], {
       queryParams: message && application ? { chat: application } : offer && application ? { offers: application } : {},
@@ -27,6 +29,8 @@ export class NotificationNavigationService {
     if (booking && marketplaceRole) {
       return this.router.createUrlTree([base, role === 'transporter' ? 'requests' : 'bookings'], { queryParams: { booking } });
     }
+    if (review && (role === 'shipper' || role === 'truck-owner' || role === 'admin')) return this.router.createUrlTree([base, 'reviews']);
+    if (kyc && (marketplaceRole || role === 'admin')) return this.router.createUrlTree([base, 'kyc']);
     // Action links are accepted only within the current portal, never as external redirects.
     const action = notification.actionUrl;
     if (action && action.startsWith(base + '/') && !action.includes('\\') && !action.startsWith('//')) {

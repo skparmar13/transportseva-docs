@@ -145,10 +145,21 @@
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="font-weight:600;font-size:13.5px;margin-bottom:8px;">{{ 'bookings.loading.title' | t }}</div>
                     @if (booking.status === 'Loading Completed') {
-                      <div class="workflow-success" role="status" aria-live="polite">
-                        <span class="workflow-success__mark" aria-hidden="true">✓</span>
-                        <span>{{ 'bookings.loading.completedNote' | t }}</span>
-                      </div>
+                      @if (booking.loadingConfirmedAt) {
+                        <div class="workflow-success" role="status" aria-live="polite">
+                          <span class="workflow-success__mark" aria-hidden="true">✓</span>
+                          <span>{{ 'bookings.loading.confirmedNote' | t:{ date: dateTime(booking.loadingConfirmedAt) } }}</span>
+                        </div>
+                      } @else if (mySide(booking) === 'owner') {
+                        <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:10px;">{{ 'bookings.loading.confirmPrompt' | t }}</div>
+                        <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'confirm-loading')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'confirm-loading')" (click)="confirmLoading(booking.id)">
+                          @if (isWorkflowActionPending(booking.id, 'confirm-loading')) { <span class="button-loader" aria-hidden="true"></span><span>{{ 'bookings.loading.confirming' | t }}</span> } @else { <app-icon name="i-check" [size]="15" /><span>{{ 'bookings.loading.confirm' | t }}</span> }
+                        </button>
+                        <div style="font-size:12px;color:var(--color-text-soft);margin-top:8px;">{{ 'bookings.loading.raiseDisputeHint' | t }}</div>
+                        @if (workflowActionErrorFor(booking.id, 'confirm-loading'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
+                      } @else {
+                        <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.loading.awaitingConfirmation' | t }}</div>
+                      }
                     } @else if (mySide(booking) === 'counterparty') {
                       <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isMarkingLoading(booking.id)" [attr.aria-busy]="isMarkingLoading(booking.id)" (click)="markLoadingCompleted(booking.id)">
                         @if (isMarkingLoading(booking.id)) {
@@ -208,10 +219,12 @@
                 }
 
                 <!-- Trip -->
-                @if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty') {
+                @if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty' && booking.loadingConfirmedAt) {
                   <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'start-trip')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'start-trip')" (click)="startTrip(booking.id)">
                     @if (isWorkflowActionPending(booking.id, 'start-trip')) { <span class="button-loader" aria-hidden="true"></span><span>Starting…</span> } @else { <app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.trip.start' | t }}</span> }
                   </button>
+                } @else if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty') {
+                  <p style="font-size:12px;color:var(--color-text-muted);">{{ 'bookings.loading.awaitingConfirmation' | t }}</p>
                 }
                 @if (booking.status === 'Trip Started') {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
@@ -232,11 +245,49 @@
                   </div>
                 }
 
+                @if (booking.status === 'Settlement Pending') {
+                  <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                      <div style="font-weight:600;font-size:13.5px;">Proof of Delivery</div>
+                      @if (booking.pod; as pod) {
+                        <span class="status-pill" [class.status-delivered]="pod.status === 'Approved'" [class.status-pending]="pod.status === 'Pending Approval'" [class.status-cancelled]="pod.status === 'Rejected'">{{ pod.status }}</span>
+                      }
+                    </div>
+                    @if (booking.pod; as pod) {
+                      <div style="font-size:13px;color:var(--color-text-muted);margin-top:8px;">POD {{ pod.podNumber }} · Received by {{ pod.receivedByName }}</div>
+                      @if (pod.fileName) { <div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">Signed file: {{ pod.fileName }}@if (pod.uploadedAt) { · {{ pod.uploadedAt }} }</div> }
+                      @if (pod.remarks) { <div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">{{ pod.remarks }}</div> }
+                      @if (pod.status === 'Pending Approval' && mySide(booking) === 'owner') {
+                        <p style="font-size:12px;color:var(--color-text-muted);margin:10px 0 0;">Review the signed proof before allowing final settlement.</p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                          <button type="button" class="btn btn-primary btn-sm" (click)="openPodReview(booking, 'approved')">Approve POD</button>
+                          <button type="button" class="btn btn-outline btn-sm" (click)="openPodReview(booking, 'rejected')">Request correction</button>
+                        </div>
+                      } @else if (pod.status === 'Pending Approval') {
+                        <p style="font-size:12px;color:var(--color-text-muted);margin:10px 0 0;">Awaiting the shipper's POD review.</p>
+                      } @else if (pod.status === 'Rejected' && mySide(booking) === 'counterparty') {
+                        <p style="font-size:12px;color:var(--color-danger);margin:10px 0 0;">{{ pod.reviewNote || 'The shipper requested a corrected POD.' }}</p>
+                        <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px;" (click)="openPodUpload(booking)">Upload corrected POD</button>
+                      } @else if (pod.status === 'Approved') {
+                        <p style="font-size:12px;color:var(--color-success);margin:10px 0 0;">POD approved@if (pod.reviewedAt) { · {{ pod.reviewedAt }} }. Final settlement can now proceed.</p>
+                      }
+                    } @else if (mySide(booking) === 'counterparty') {
+                      <p style="font-size:12px;color:var(--color-text-muted);margin:8px 0 0;">Upload the signed delivery proof for the shipper to review.</p>
+                      <button type="button" class="btn btn-primary btn-sm" style="margin-top:8px;" (click)="openPodUpload(booking)">Upload POD</button>
+                    } @else {
+                      <p style="font-size:12px;color:var(--color-text-muted);margin:8px 0 0;">Waiting for the fleet owner to upload the signed POD.</p>
+                    }
+                  </div>
+                }
+
                 @if (booking.status === 'Settlement Pending' && !booking.settlement && mySide(booking) === 'owner') {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="font-weight:600;font-size:13.5px;">Trip completed · Settlement pending</div>
                     <p style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">Create the settlement record to review the final balance.</p>
-                    <button type="button" class="btn btn-outline btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="(booking.dispute && booking.dispute.status !== 'Resolved') || isWorkflowActionPending(booking.id, 'settle')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'settle')" (click)="settle(booking.id)">
+                    @if (booking.pod?.status !== 'Approved') {
+                      <p style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">Final settlement is locked until the shipper approves the signed POD.</p>
+                    }
+                    <button type="button" class="btn btn-outline btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="booking.pod?.status !== 'Approved' || (booking.dispute && booking.dispute.status !== 'Resolved') || isWorkflowActionPending(booking.id, 'settle')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'settle')" (click)="settle(booking.id)">
                       @if (isWorkflowActionPending(booking.id, 'settle')) { <span class="button-loader" aria-hidden="true"></span><span>Preparing…</span> } @else { <span>Prepare Settlement</span> }
                     </button>
                     @if (workflowActionErrorFor(booking.id, 'settle'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
@@ -295,7 +346,12 @@
                     </div>
                   }
                   @if ((!booking.dispute || booking.dispute.status === 'Resolved') && booking.status !== 'Cancelled' && booking.status !== 'Completed') {
-                    <button type="button" class="btn btn-outline btn-sm" (click)="openDispute(booking.id)">{{ 'bookings.dispute.raise' | t }}</button>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                      @if ((booking.status === 'Awaiting Deposit' || booking.status === 'Confirmed') && session.role() !== 'admin') {
+                        <button type="button" class="btn btn-outline btn-sm" (click)="openCancellationRequest(booking.id)">Request cancellation</button>
+                      }
+                      <button type="button" class="btn btn-outline btn-sm" (click)="openDispute(booking.id)">{{ 'bookings.dispute.raise' | t }}</button>
+                    </div>
                   }
               </div>
             </div>
@@ -323,6 +379,31 @@
   </app-modal>
 }
 
+@if (uploadingPodFor(); as booking) {
+  <app-modal title="Upload Proof of Delivery" (close)="uploadingPodFor.set(null)">
+    <p style="font-size:13px;color:var(--color-text-muted);">Upload the signed POD after delivery. The shipper must approve it before final settlement can be prepared.</p>
+    <div class="field"><label for="pod-number">POD Number</label><input id="pod-number" class="input" name="podNumber" [ngModel]="podNumber()" (ngModelChange)="podNumber.set($event)" placeholder="e.g. POD-88214" /></div>
+    <div class="field"><label for="pod-received-by">Received By</label><input id="pod-received-by" class="input" name="podReceivedBy" [ngModel]="podReceivedBy()" (ngModelChange)="podReceivedBy.set($event)" placeholder="Receiver name" /></div>
+    <div class="field"><label for="pod-remarks">Remarks (optional)</label><textarea id="pod-remarks" class="input" rows="3" name="podRemarks" [ngModel]="podRemarks()" (ngModelChange)="podRemarks.set($event)" placeholder="Delivery notes"></textarea></div>
+    <div class="field"><label for="pod-file">Signed POD (PDF, JPG or PNG; max 10 MB)</label><input id="pod-file" type="file" accept="application/pdf,image/jpeg,image/png" (change)="onPodFileSelected($event)" /><div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">{{ podFile()?.name || 'No file selected' }}</div></div>
+    @if (workflowActionErrorFor(booking.id, 'upload-pod'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="uploadingPodFor.set(null)">Cancel</button><button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'upload-pod') || !podNumber().trim() || !podReceivedBy().trim() || !podFile()" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'upload-pod')" (click)="submitPod()">@if (isWorkflowActionPending(booking.id, 'upload-pod')) { <span class="button-loader" aria-hidden="true"></span><span>Uploading...</span> } @else { <span>Submit POD</span> }</button></div>
+  </app-modal>
+}
+
+@if (reviewingPodFor(); as booking) {
+  <app-modal [title]="podReviewDecision() === 'approved' ? 'Approve Proof of Delivery' : 'Request POD Correction'" (close)="reviewingPodFor.set(null)">
+    @if (podReviewDecision() === 'approved') {
+      <p style="font-size:13px;color:var(--color-text-muted);">Approving this POD unlocks the settlement record. It does not charge or transfer money.</p>
+    } @else {
+      <p style="font-size:13px;color:var(--color-text-muted);">Explain what must be corrected. The fleet owner will be notified and can upload a replacement POD.</p>
+      <div class="field"><label for="pod-review-note">Correction required</label><textarea id="pod-review-note" class="input" rows="4" name="podReviewNote" [ngModel]="podReviewNote()" (ngModelChange)="podReviewNote.set($event)" placeholder="Explain the issue with the submitted POD"></textarea></div>
+    }
+    @if (workflowActionErrorFor(booking.id, 'review-pod'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="reviewingPodFor.set(null)">Cancel</button><button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'review-pod') || (podReviewDecision() === 'rejected' && !podReviewNote().trim())" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'review-pod')" (click)="submitPodReview()">@if (isWorkflowActionPending(booking.id, 'review-pod')) { <span class="button-loader" aria-hidden="true"></span><span>Saving...</span> } @else { <span>{{ podReviewDecision() === 'approved' ? 'Approve POD' : 'Request correction' }}</span> }</button></div>
+  </app-modal>
+}
+
 @if (disputingBooking()) {
   <app-modal [title]="'bookings.dispute.title' | t" (close)="disputingBooking.set(null)">
     <div class="field">
@@ -337,6 +418,14 @@
         </button>
       }
     </div>
+  </app-modal>
+}
+
+@if (cancellingBooking()) {
+  <app-modal title="Request booking cancellation" (close)="cancellingBooking.set(null)">
+    <p style="font-size:13px;color:var(--color-text-muted);">TransportSeva will review this request with both parties. No token refund, commission change, or cancellation happens automatically.</p>
+    <div class="field"><label for="cancellation-reason">Reason for cancellation</label><textarea id="cancellation-reason" class="input" rows="4" maxlength="2000" [ngModel]="cancellationReason()" (ngModelChange)="cancellationReason.set($event)" name="cancellationReason" placeholder="Explain why this booking needs to be cancelled"></textarea><div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">At least 10 characters required.</div></div>
+    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="cancellingBooking.set(null)">Keep booking</button>@if (cancellingBooking(); as cancellationBookingId) { <button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(cancellationBookingId, 'request-cancellation') || cancellationReason().trim().length < 10" [attr.aria-busy]="isWorkflowActionPending(cancellationBookingId, 'request-cancellation')" (click)="submitCancellationRequest()">@if (isWorkflowActionPending(cancellationBookingId, 'request-cancellation')) { <span class="button-loader" aria-hidden="true"></span><span>Submitting…</span> } @else { <span>Send to TransportSeva</span> }</button> }</div>
   </app-modal>
 }
 

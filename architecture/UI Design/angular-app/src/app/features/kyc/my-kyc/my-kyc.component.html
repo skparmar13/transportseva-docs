@@ -1,0 +1,25 @@
+<div class="page-toolbar"><div><h1>Business KYC Verification</h1><p class="desc">Submit your business details and one supporting document for TransportSeva review.</p></div></div>
+@if (loading()) {
+  <div class="page-loading-state"><div class="loading-panel"><div class="dot-loader"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><strong>Loading KYC details…</strong></div></div>
+} @else {
+  @if (profile(); as existing) {
+    <section class="card kyc-status" [class.approved]="existing.status === 'approved'" [class.rejected]="existing.status === 'rejected'">
+      <div><b>{{ statusLabel(existing.status) }}</b><p>Submitted {{ displayDate(existing.submitted_at) }}</p></div>
+      <span class="status-pill" [class.status-delivered]="existing.status === 'approved'" [class.status-cancelled]="existing.status === 'rejected'" [class.status-pending]="existing.status === 'pending'">{{ existing.status }}</span>
+    </section>
+    <section class="card details"><div class="card-body"><div><span>Business</span><b>{{ existing.business_name }}</b></div><div><span>Business type</span><b>{{ existing.business_type }}</b></div><div><span>PAN</span><b>{{ existing.pan_last_four }}</b></div>@if (existing.gstin_last_four) { <div><span>GSTIN</span><b>{{ existing.gstin_last_four }}</b></div> }<div><span>Document</span><button type="button" class="text-button" (click)="download(existing)">{{ existing.document_name }}</button></div></div></section>
+    @if (existing.status === 'approved') { <div class="notice success">Your KYC is verified. Keep your legal business details current.</div> }
+    @if (existing.status === 'pending') { <div class="notice">Your document is with the verification team. We will notify you when it is approved or needs changes.</div> }
+    @if (existing.status === 'rejected' && existing.review_note) { <div class="notice warning"><b>Reviewer note:</b> {{ existing.review_note }}</div> }
+  }
+  @if (!profile() || profile()?.status === 'rejected') {
+    <section class="card kyc-form"><div class="card-body"><h2>{{ profile() ? 'Update and resubmit KYC' : 'Submit business KYC' }}</h2><p class="desc">Accepted document formats: PDF, JPG, JPEG or PNG, up to 10 MB. Your PAN and GSTIN are encrypted and shown only in masked form.</p>
+      <div class="field"><label for="kyc-business-name">Legal business name <span>*</span></label><input id="kyc-business-name" class="input" [ngModel]="businessName()" (ngModelChange)="businessName.set($event)" maxlength="160" autocomplete="organization"></div>
+      <div class="field"><label for="kyc-business-type">Business type <span>*</span></label><select id="kyc-business-type" class="input" [ngModel]="businessType()" (ngModelChange)="businessType.set($event)"><option value="individual">Individual</option><option value="proprietorship">Proprietorship</option><option value="partnership">Partnership</option><option value="company">Company</option></select></div>
+      <div class="field-row"><div class="field"><label for="kyc-pan">PAN <span>*</span></label><input id="kyc-pan" class="input" [ngModel]="panNumber()" (ngModelChange)="panNumber.set($event)" maxlength="10" placeholder="ABCDE1234F" autocomplete="off"></div><div class="field"><label for="kyc-gstin">GSTIN <small>(optional)</small></label><input id="kyc-gstin" class="input" [ngModel]="gstin()" (ngModelChange)="gstin.set($event)" maxlength="15" placeholder="27ABCDE1234F1Z5" autocomplete="off"></div></div>
+      <div class="field"><label for="kyc-document">Supporting document <span>*</span></label><input id="kyc-document" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" (change)="onDocumentSelected($event)"><small>Select a clear PAN, GST, registration, or other business-supporting document.</small></div>
+      @if (error()) { <div class="form-error" role="alert">{{ error() }}</div> } @if (success()) { <div class="form-success" role="status">{{ success() }}</div> }
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submit()">{{ saving() ? 'Submitting…' : 'Submit for verification' }}</button>
+    </div></section>
+  } @else if (error() || success()) { @if (error()) { <div class="form-error" role="alert">{{ error() }}</div> } @if (success()) { <div class="form-success" role="status">{{ success() }}</div> } }
+}

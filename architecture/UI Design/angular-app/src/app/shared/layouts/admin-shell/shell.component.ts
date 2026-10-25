@@ -141,8 +141,12 @@ export class ShellComponent {
       // event rather than leaving the old application state on screen.
       this.comms.markNotificationRead(notification.id, () => window.location.reload());
     } else {
-      this.comms.markNotificationRead(notification.id);
-      void this.router.navigateByUrl(destination);
+      // Activate the destination before persisting the bell state.  The local
+      // PHP server serves requests serially; sending PATCH /read first can
+      // otherwise keep the destination's data request in a visible loader.
+      // Delay the background write just enough for the route's request to be
+      // dispatched first.
+      void this.router.navigateByUrl(destination).then(() => setTimeout(() => this.comms.markNotificationRead(notification.id), 250));
     }
   }
 

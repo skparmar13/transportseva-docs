@@ -85,6 +85,16 @@ async function waitForLoadNotification(page: Page, title: string, loadUuid: stri
   return payload.data.find((item) => item.title === title && item.data?.load_uuid === loadUuid)!.id;
 }
 
+async function waitForBookingNotification(page: Page, title: string, bookingUuid: string): Promise<string> {
+  const response = await page.waitForResponse(async (candidate) => {
+    if (candidate.request().method() !== 'GET' || !new URL(candidate.url()).pathname.endsWith('/api/notifications') || !candidate.ok()) return false;
+    const payload = await candidate.json().catch(() => null) as { data?: { id: string; title: string; data?: { booking_uuid?: string } }[] } | null;
+    return !!payload?.data?.some((item) => item.title === title && item.data?.booking_uuid === bookingUuid);
+  }, { timeout: 90_000 });
+  const payload = await response.json() as { data: { id: string; title: string; data?: { booking_uuid?: string } }[] };
+  return payload.data.find((item) => item.title === title && item.data?.booking_uuid === bookingUuid)!.id;
+}
+
 async function postLoad(page: Page): Promise<string> {
   await page.goto('/shipper/post-load');
   await page.locator('input#pickup-city').fill('Delhi');
@@ -263,10 +273,10 @@ test.describe('Marketplace browser journey', () => {
     await expect(page).toHaveURL(/\/shipper\/dashboard/, { timeout: 45_000 });
   });
 
-  test('two fleet owners apply, then the selected offer creates a booking and both parties pay tokens', async ({ page }) => {
+  test('two fleet owners apply, then the selected offer completes the loading-confirmation gate before departure', async ({ page }) => {
     // The local PHP development server services requests serially; this
     // scenario deliberately creates three accounts and two applications.
-    test.setTimeout(720_000);
+    test.setTimeout(960_000);
     const shipper = testUser('shipper', 11);
     const firstOwner = testUser('truck-owner', 2);
     const secondOwner = testUser('truck-owner', 3);
@@ -316,6 +326,118 @@ test.describe('Marketplace browser journey', () => {
     await payBookingToken(page);
     await expect(page.getByRole('link', { name: /open booking workflow/i })).toBeVisible({ timeout: 45_000 });
     await assertBookingState(page, 'truck-owner', booking.uuid, 'confirmed', 'paid', 'paid');
+
+    // Prepare the owned driver and assign the registered vehicle/driver to the
+    // newly confirmed booking. This keeps the loading-confirmation workflow
+    // independent of any pre-existing test record.
+    const driverName = `Loading Gate Driver ${runId}`;
+    const driverPhone = `8${String(Number(runId)).padStart(9, '0')}`;
+    await page.goto('/truck-owner/drivers');
+    await page.getByRole('button', { name: /add driver/i }).first().click();
+    await page.locator('input[name="name"]').fill(driverName);
+    await page.locator('input[name="phone"]').fill(driverPhone);
+    await page.locator('input[name="licenseNumber"]').fill(`LOAD-${runId}`);
+    const driverCreated = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith('/api/marketplace-drivers'), { timeout: 45_000 });
+    await page.getByRole('button', { name: /add driver/i }).last().click();
+    expect((await driverCreated).status()).toBe(201);
+    await expect(page.getByText(driverName, { exact: true })).toBeVisible({ timeout: 45_000 });
+
+    const openBooking = async (portal: 'shipper' | 'truck-owner') => {
+      await page.goto(`/${portal}/bookings`);
+      const card = page.locator('.card').filter({ hasText: booking.booking_reference });
+      await expect(card).toBeVisible({ timeout: 45_000 });
+      await card.getByRole('button', { name: /view details/i }).click();
+      return card;
+    };
+    const workflowResponse = () => page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith(`/api/marketplace-bookings/${booking.uuid}/workflow`), { timeout: 45_000 });
+
+    let card = await openBooking('truck-owner');
+    await card.getByRole('button', { name: /assign vehicle/i }).click();
+    const vehiclePicker = page.locator('select[name="vehicleRegInput"]');
+    await expect(vehiclePicker.locator('option', { hasText: firstVehicle })).toHaveCount(1, { timeout: 45_000 });
+    await vehiclePicker.selectOption(firstVehicle);
+    const vehicleAssigned = workflowResponse();
+    await page.getByRole('button', { name: /^assign$/i }).click();
+    expect((await vehicleAssigned).status()).toBe(200);
+
+    await card.getByRole('button', { name: /assign driver/i }).click();
+    const driverPicker = page.locator('select[name="driverIdInput"]');
+    await expect(driverPicker.locator('option', { hasText: driverName })).toHaveCount(1, { timeout: 45_000 });
+    const driverId = await driverPicker.locator('option', { hasText: driverName }).getAttribute('value');
+    expect(driverId).toBeTruthy();
+    await driverPicker.selectOption(driverId!);
+    const driverAssigned = workflowResponse();
+    await page.getByRole('button', { name: /^assign$/i }).click();
+    expect((await driverAssigned).status()).toBe(200);
+
+    const loadingMarked = workflowResponse();
+    await card.getByRole('button', { name: /mark loading completed/i }).click();
+    const loadingResponse = await loadingMarked;
+    expect(loadingResponse.status()).toBe(200);
+    expect((await loadingResponse.json() as { data: { workflow: { loading_completed_at: string; loading_confirmed_at?: string } } }).data.workflow.loading_completed_at).toBeTruthy();
+    await expect(card.locator('p').filter({ hasText: /^Loading is complete and awaits shipper confirmation before the advance or trip can proceed\.$/i }))
+      .toBeVisible({ timeout: 45_000 });
+
+    await login(page, shipper);
+    const confirmationNotice = await waitForBookingNotification(page, 'Loading confirmation requested', booking.uuid);
+    await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+    await page.locator(`[data-notification-id="${confirmationNotice}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/shipper/bookings\\?booking=${booking.uuid}`), { timeout: 45_000 });
+
+    card = await openBooking('shipper');
+    await expect(card.getByText(/verify the loaded goods before confirming/i)).toBeVisible({ timeout: 45_000 });
+    await expect(card.getByRole('button', { name: /^release$/i })).toHaveCount(0);
+    const loadingConfirmed = workflowResponse();
+    await card.getByRole('button', { name: /confirm loading/i }).click();
+    const confirmationResponse = await loadingConfirmed;
+    expect(confirmationResponse.status()).toBe(200);
+    expect((await confirmationResponse.json() as { data: { workflow: { loading_confirmed_at: string } } }).data.workflow.loading_confirmed_at).toBeTruthy();
+    await expect(card.getByText(/loading confirmed by the shipper/i)).toBeVisible({ timeout: 45_000 });
+
+    const advanceReleased = workflowResponse();
+    await card.getByRole('button', { name: /^release$/i }).click();
+    expect((await advanceReleased).status()).toBe(200);
+    await expect(card.getByText(/^released/i).first()).toBeVisible({ timeout: 45_000 });
+
+    await login(page, firstOwner);
+    card = await openBooking('truck-owner');
+    const tripStarted = workflowResponse();
+    await card.getByRole('button', { name: /^start trip$/i }).click();
+    expect((await tripStarted).status()).toBe(200);
+    await expect(card.getByText('Trip In Progress', { exact: true })).toBeVisible({ timeout: 45_000 });
+
+    // Delivery no longer creates a settlement automatically: the fleet owner
+    // submits the signed POD and the shipper must approve it first.
+    const tripCompleted = workflowResponse();
+    await card.getByRole('button', { name: /mark trip completed/i }).click();
+    expect((await tripCompleted).status()).toBe(200);
+    await expect(card.getByText('Proof of Delivery', { exact: true })).toBeVisible({ timeout: 45_000 });
+    await card.getByRole('button', { name: /^upload pod$/i }).click();
+    await page.locator('input[name="podNumber"]').fill(`POD-${runId}`);
+    await page.locator('input[name="podReceivedBy"]').fill('E2E Consignee');
+    await page.locator('#pod-file').setInputFiles({
+      name: 'signed-pod.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64'),
+    });
+    const podSubmitted = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith(`/api/marketplace-bookings/${booking.uuid}/pod`), { timeout: 45_000 });
+    await page.getByRole('button', { name: /submit pod/i }).click();
+    expect((await podSubmitted).status()).toBe(201);
+    await expect(card.getByText('Pending Approval', { exact: true })).toBeVisible({ timeout: 45_000 });
+
+    await login(page, shipper);
+    await waitForBookingNotification(page, 'Proof of delivery submitted', booking.uuid);
+    card = await openBooking('shipper');
+    await card.getByRole('button', { name: /^approve pod$/i }).click();
+    const podApproved = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith(`/api/marketplace-bookings/${booking.uuid}/pod/review`), { timeout: 45_000 });
+    await page.getByRole('button', { name: /^approve pod$/i }).last().click();
+    expect((await podApproved).status()).toBe(200);
+    await expect(card.getByText('POD approved', { exact: false })).toBeVisible({ timeout: 45_000 });
+    await expect(card.getByRole('button', { name: /prepare settlement/i })).toBeEnabled();
   });
 
   test('an existing test booking can be assigned an owned registered vehicle', async ({ page }) => {
@@ -652,6 +774,97 @@ test.describe('Marketplace browser journey', () => {
     await expect(page.getByText('This load is no longer accepting applications.')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByRole('button', { name: /apply for this load/i })).toHaveCount(0);
     await expect(page.getByText('Booked', { exact: true })).toBeVisible();
+  });
+
+  test('concurrent application and booking requests create only one record each', async ({ page }) => {
+    const shipperEmail = process.env.E2E_SHIPPER_EMAIL;
+    const ownerEmail = process.env.E2E_OWNER_EMAIL;
+    const ownerVehicle = process.env.E2E_OWNER_VEHICLE;
+    test.skip(!shipperEmail || !ownerEmail || !ownerVehicle, 'Provide the established E2E shipper, fleet owner, and vehicle.');
+    test.setTimeout(720_000);
+
+    const shipper = { role: 'shipper' as const, name: '', email: shipperEmail!, mobile: '' };
+    const owner = { role: 'truck-owner' as const, name: '', email: ownerEmail!, mobile: '' };
+    const secondOwner = testUser('truck-owner', 94);
+    const secondVehicle = `TSC${runId}B`;
+    const concurrentPosts = async (urls: string[], token: string, bodies: unknown[]) => page.evaluate(async ({ urls, token, bodies }) => {
+      return Promise.all(urls.map(async (url, index) => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(bodies[index] ?? {}),
+        });
+        return { status: response.status, body: await response.json() };
+      }));
+    }, { urls, token, bodies });
+
+    await login(page, shipper);
+    const loadUuid = await postLoad(page);
+    await login(page, owner);
+    const apiBaseUrl = await page.evaluate(() => window.TRANSPORTSEVA_CONFIG?.apiBaseUrl ?? 'http://localhost:8080/api');
+    const ownerToken = await page.evaluate(() => localStorage.getItem('transportseva.access_token'));
+    expect(ownerToken).toBeTruthy();
+    const applicationPayload = {
+      applicant_role: 'truck-owner', applicant_name: 'Concurrent E2E fleet owner',
+      vehicle_reg_number: ownerVehicle, vehicle_type: '32ft Trailer',
+      availability: 'Available today', quoted_amount: 18500,
+    };
+    const applicationEndpoint = `${apiBaseUrl}/loads/${loadUuid}/applications`;
+    const duplicateApplications = await concurrentPosts([applicationEndpoint, applicationEndpoint], ownerToken!, [applicationPayload, applicationPayload]);
+    expect(duplicateApplications.map((result) => result.status).sort()).toEqual([201, 422]);
+    const firstApplication = duplicateApplications.find((result) => result.status === 201)?.body as { data?: { uuid?: string } } | undefined;
+    expect(firstApplication?.data?.uuid).toBeTruthy();
+    const firstApplicationUuid = firstApplication!.data!.uuid!;
+    console.log(`Concurrency test load ${loadUuid}; first application ${firstApplicationUuid}`);
+
+    await page.goto(`/truck-owner/load-board/${loadUuid}`);
+    await expect(page.getByText(/your application/i)).toBeVisible({ timeout: 90_000 });
+    await signUpAndCompleteProfile(page, secondOwner);
+    await registerVehicle(page, secondVehicle);
+    await applyForLoad(page, loadUuid, secondVehicle, '18000');
+
+    await login(page, shipper);
+    await page.goto(`/shipper/load-board/${loadUuid}`);
+    await expect(page.getByRole('heading', { name: /applications received \(2\)/i })).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByText(ownerVehicle)).toBeVisible();
+    await expect(page.getByText(secondVehicle)).toBeVisible();
+    const shipperToken = await page.evaluate(() => localStorage.getItem('transportseva.access_token'));
+    expect(shipperToken).toBeTruthy();
+    const applicationsResponse = await page.evaluate(async ({ endpoint, token }) => {
+      const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+      return response.json();
+    }, { endpoint: applicationEndpoint, token: shipperToken! }) as { data: Array<{ uuid: string }> };
+    const secondApplicationUuid = applicationsResponse.data.find((application) => application.uuid !== firstApplicationUuid)?.uuid;
+    expect(secondApplicationUuid).toBeTruthy();
+
+    const acceptanceResults = await concurrentPosts(
+      [
+        `${apiBaseUrl}/loads/${loadUuid}/applications/${firstApplicationUuid}/accept`,
+        `${apiBaseUrl}/loads/${loadUuid}/applications/${secondApplicationUuid}/accept`,
+      ],
+      shipperToken!,
+      [{}, {}],
+    );
+    expect(acceptanceResults.map((result) => result.status).sort()).toEqual([200, 422]);
+    const acceptedApplicationUuid = acceptanceResults.find((result) => result.status === 200)?.body?.data?.uuid as string | undefined;
+    expect(acceptedApplicationUuid).toBeTruthy();
+
+    const bookingEndpoint = `${apiBaseUrl}/loads/${loadUuid}/applications/${acceptedApplicationUuid}/booking`;
+    const bookingResults = await concurrentPosts([bookingEndpoint, bookingEndpoint], shipperToken!, [{}, {}]);
+    expect(bookingResults.map((result) => result.status).sort()).toEqual([200, 201]);
+    const bookingIds = bookingResults.map((result) => result.body?.data?.uuid as string | undefined);
+    expect(new Set(bookingIds).size).toBe(1);
+    const bookingUuid = bookingIds[0]!;
+    const bookingReference = bookingResults[0].body?.data?.booking_reference as string;
+    expect(bookingReference).toBeTruthy();
+    console.log(`Concurrency test booking ${bookingReference} (${bookingUuid})`);
+
+    await page.goto(`/shipper/bookings?booking=${bookingUuid}`);
+    const bookingCard = page.locator('.card').filter({ hasText: bookingReference }).first();
+    await expect(bookingCard).toBeVisible({ timeout: 90_000 });
+    await expect(bookingCard.getByText('Awaiting Deposit', { exact: true }).first()).toBeVisible();
+    await page.goto(`/shipper/load-board/${loadUuid}`);
+    await expect(page.getByText('Booked', { exact: true })).toBeVisible({ timeout: 90_000 });
   });
 
   test('public load notes reject contact numbers before submission', async ({ page }) => {

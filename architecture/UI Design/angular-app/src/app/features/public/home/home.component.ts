@@ -12,6 +12,7 @@ import { MarketplaceMockService } from '../../../core/services/marketplace-mock.
 import { Load } from '../../../core/models/marketplace.model';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiLoad, ApiMarketplaceService } from '../../../core/api/api-marketplace.service';
+import { ApiMarketplaceReview, ApiReviewService } from '../../../core/api/api-review.service';
 import { formatLoadReference } from '../../../core/utils/load-reference';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
@@ -29,11 +30,16 @@ export class HomeComponent implements OnInit {
   private readonly language = inject(LanguageService);
   private readonly marketplace = inject(MarketplaceMockService);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
+  private readonly apiReviews = inject(ApiReviewService);
   private readonly backendLoads = toSignal(
     API_CONFIG.useBackend
       ? this.apiMarketplace.listRecentLoads(20).pipe(catchError(() => of([] as ApiLoad[])))
       : of([] as ApiLoad[]),
     { initialValue: [] as ApiLoad[] },
+  );
+  private readonly backendReviews = toSignal(
+    API_CONFIG.useBackend ? this.apiReviews.listPublic(6).pipe(catchError(() => of([] as ApiMarketplaceReview[]))) : of([] as ApiMarketplaceReview[]),
+    { initialValue: [] as ApiMarketplaceReview[] },
   );
   protected readonly sourceQuery = signal('');
   protected readonly destinationQuery = signal('');
@@ -98,15 +104,22 @@ export class HomeComponent implements OnInit {
   ]);
   protected readonly mobileItems = signal(['mobile.item1', 'mobile.item2', 'mobile.item3', 'mobile.item4', 'mobile.item5']);
   private readonly defaultTestimonials = [
-    { textKey: 'testi1.text', name: 'Rakesh Sharma', roleKey: 'testi1.role', text: '', role: '' },
-    { textKey: 'testi2.text', name: 'Vikram Singh', roleKey: 'testi2.role', text: '', role: '' },
-    { textKey: 'testi3.text', name: 'Neha Verma', roleKey: 'testi3.role', text: '', role: '' },
+    { textKey: 'testi1.text', name: 'Rakesh Sharma', roleKey: 'testi1.role', text: '', role: '', stars: '★★★★★' },
+    { textKey: 'testi2.text', name: 'Vikram Singh', roleKey: 'testi2.role', text: '', role: '', stars: '★★★★★' },
+    { textKey: 'testi3.text', name: 'Neha Verma', roleKey: 'testi3.role', text: '', role: '', stars: '★★★★★' },
   ];
   protected readonly testimonials = computed(() => {
+    const publicReviews = this.backendReviews();
+    if (publicReviews.length) return publicReviews.map((review) => ({
+      name: review.reviewer_name,
+      role: review.reviewer_role === 'shipper' ? 'Verified Shipper' : 'Verified Fleet Owner',
+      text: review.comment,
+      textKey: '', roleKey: '', stars: '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating),
+    }));
     const selectedLanguage = this.language.lang() === 'hi' ? 'Hindi' : 'English';
     const managed = this.cms.publishedTestimonials().filter((item) => item.language === selectedLanguage);
     return managed.length || selectedLanguage === 'English'
-      ? managed.map((item) => ({ name: item.author || item.title, role: item.attribution || item.summary, text: item.body, textKey: '', roleKey: '' }))
+      ? managed.map((item) => ({ name: item.author || item.title, role: item.attribution || item.summary, text: item.body, textKey: '', roleKey: '', stars: '★★★★★' }))
       : this.defaultTestimonials;
   });
   protected readonly partners = signal(['TATA MOTORS', 'ASHOK LEYLAND', 'mahindra', 'Castrol', 'FASTag', 'ICICI Lombard']);
