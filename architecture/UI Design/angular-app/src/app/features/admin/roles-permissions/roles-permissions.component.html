@@ -1,3 +1,11 @@
-<div class="page-toolbar"><div><h1>{{ 'admin.roles.title' | t }}</h1><p class="desc">{{ 'admin.roles.desc' | t }}</p></div><button type="button" class="btn btn-primary" (click)="save()">{{ 'admin.roles.save' | t }}</button></div>
-@if (saved()) { <div class="alert alert-success" role="status" style="margin-bottom:16px;">{{ 'admin.roles.saved' | t }}</div> }
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">@for (role of roles(); track role.name) {<div class="card"><div class="card-body"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><h3 style="margin:0;">{{ role.name }}</h3><p class="desc" style="margin:4px 0 16px;">{{ role.members }} members</p></div><span class="status-pill status-delivered">Active</span></div>@for (permission of allPermissions; track permission) {<label style="display:flex;gap:10px;align-items:center;padding:8px 0;font-size:13px;border-top:1px solid var(--color-border);"><input type="checkbox" [checked]="role.permissions.includes(permission)" (change)="toggle(role, permission)" />{{ permission }}</label>}</div></div>}</div>
+<div class="page-toolbar"><div><h1>{{ 'admin.roles.title' | t }}</h1><p class="desc">Inspect roles and grants stored on the server.</p></div><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load()">Refresh roles</button></div>
+<div class="card card-body" style="margin-bottom:16px;" role="note">Read-only inspection. This screen does not change access or report unsaved changes as saved. A granular staff permission-editing policy has not been enabled here.</div>
+@if (loading()) {<div role="status" class="card card-body">Loading stored roles…</div>}
+@else if (error()) {<div role="alert" class="card card-body">{{ error() }} <button type="button" class="btn btn-outline" (click)="load()">Retry</button></div>}
+@else {
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+    @for (role of roles(); track role.uuid) {<div class="card"><div class="card-body"><h3>{{ role.name }}</h3><p class="desc">{{ role.code }} · {{ role.status ? 'Active' : 'Inactive' }}</p><p>Stored permissions</p><ul>@for (permission of role.permissions; track permission.uuid) {<li>{{ permission.name }}@if (!permission.status) { (inactive) }</li>} @empty {<li>No explicit permission grants recorded.</li>}</ul></div></div>}
+    @empty {<div class="card card-body">No stored roles found.</div>}
+  </div>
+  <div class="page-toolbar" style="margin-top:16px;"><button type="button" class="btn btn-outline" [disabled]="page() <= 1" (click)="changePage(page() - 1)">Previous</button><span>Page {{ page() }} of {{ lastPage() }}</span><button type="button" class="btn btn-outline" [disabled]="page() >= lastPage()" (click)="changePage(page() + 1)">Next</button></div>
+}

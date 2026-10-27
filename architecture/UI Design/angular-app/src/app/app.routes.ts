@@ -44,6 +44,7 @@ export const routes: Routes = [
     path: 'admin',
     component: ShellComponent,
     canActivate: [setPortalRole('admin')],
+    canActivateChild: [setPortalRole('admin')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'TransportSeva | Admin Console', loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent) },
@@ -84,6 +85,7 @@ export const routes: Routes = [
     path: 'shipper',
     component: ShellComponent,
     canActivate: [setPortalRole('shipper')],
+    canActivateChild: [setPortalRole('shipper')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'Dashboard | Shipper Portal | TransportSeva', loadComponent: () => import('./features/shipper/dashboard/shipper-dashboard.component').then((m) => m.ShipperDashboardComponent) },
@@ -112,6 +114,7 @@ export const routes: Routes = [
     path: 'transporter',
     component: ShellComponent,
     canActivate: [setPortalRole('transporter')],
+    canActivateChild: [setPortalRole('transporter')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'Dashboard | Transporter Portal | TransportSeva', loadComponent: () => import('./features/transporter/dashboard/transporter-dashboard.component').then((m) => m.TransporterDashboardComponent) },
@@ -146,6 +149,7 @@ export const routes: Routes = [
     path: 'truck-owner',
     component: ShellComponent,
     canActivate: [setPortalRole('truck-owner')],
+    canActivateChild: [setPortalRole('truck-owner')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'Dashboard | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/truck-owner/dashboard/truck-owner-dashboard.component').then((m) => m.TruckOwnerDashboardComponent) },
@@ -179,6 +183,7 @@ export const routes: Routes = [
     path: 'driver',
     component: ShellComponent,
     canActivate: [setPortalRole('driver')],
+    canActivateChild: [setPortalRole('driver')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'Dashboard | Driver Portal | TransportSeva', loadComponent: () => import('./features/driver/dashboard/driver-dashboard.component').then((m) => m.DriverDashboardComponent) },
@@ -197,6 +202,7 @@ export const routes: Routes = [
     path: 'company',
     component: ShellComponent,
     canActivate: [setPortalRole('company')],
+    canActivateChild: [setPortalRole('company')],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'Dashboard | Company Portal | TransportSeva', loadComponent: () => import('./features/company/dashboard/company-dashboard.component').then((m) => m.CompanyDashboardComponent) },

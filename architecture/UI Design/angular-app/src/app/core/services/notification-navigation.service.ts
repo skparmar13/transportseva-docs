@@ -26,7 +26,7 @@ export class NotificationNavigationService {
     if (load && marketplaceRole) return this.router.createUrlTree([base, 'load-board', load], {
       queryParams: message && application ? { chat: application } : offer && application ? { offers: application } : {},
     });
-    if (booking && marketplaceRole) {
+    if (booking && (marketplaceRole || role === 'admin')) {
       return this.router.createUrlTree([base, role === 'transporter' ? 'requests' : 'bookings'], { queryParams: { booking } });
     }
     if (review && (role === 'shipper' || role === 'truck-owner' || role === 'admin')) return this.router.createUrlTree([base, 'reviews']);

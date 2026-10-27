@@ -25,6 +25,7 @@
     <select class="filter-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
       <option value="">All Status</option>
       <option value="On Trip">On Trip</option>
+      <option value="Reserved">Reserved</option>
       <option value="Idle">Idle</option>
       <option value="Maintenance">Maintenance</option>
       <option value="Offline">Offline</option>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
@@ -14,7 +14,7 @@ import { ApiMarketplaceBooking, ApiMarketplaceDriver, ApiMarketplaceService, Api
 import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
-import { switchMap } from 'rxjs';
+import { switchMap, timeout, TimeoutError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -24,7 +24,7 @@ interface AssignmentVehicleOption {
   regNumber: string;
   vehicleType: string;
   /** Reuses the legacy labels so the mock and API paths share the same UI. */
-  status: 'Idle' | 'Offline' | 'Inactive' | 'On Trip' | 'Maintenance';
+  status: 'Idle' | 'Offline' | 'Inactive' | 'Reserved' | 'On Trip' | 'Maintenance';
 }
 
 /**
@@ -51,6 +51,7 @@ export class BookingsComponent {
   private readonly cashfreeCheckout = inject(CashfreeCheckoutService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly session = inject(SessionService);
 
   private readonly backendBookings = signal<ApiMarketplaceBooking[]>([]);
@@ -69,14 +70,13 @@ export class BookingsComponent {
       if (booking) this.expandedId.set(booking);
     });
     this.reloadBackendBookings();
-    this.reloadBackendVehicles();
   }
 
   private reloadBackendBookings(): void {
     if (!API_CONFIG.useBackend) return;
     this.loading.set(true);
     this.loadError.set('');
-    this.apiMarketplace.listMarketplaceBookings().subscribe({
+    this.apiMarketplace.listMarketplaceBookings().pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (bookings) => {
         this.backendBookings.set(bookings);
         this.loading.set(false);
@@ -84,18 +84,24 @@ export class BookingsComponent {
       error: (error) => {
         this.backendBookings.set([]);
         this.loading.set(false);
-        this.loadError.set(apiErrorMessage(error, 'Bookings could not be loaded. Please retry.'));
+        this.loadError.set(error instanceof TimeoutError
+          ? 'Loading bookings took too long. Please retry.'
+          : apiErrorMessage(error, 'Bookings could not be loaded. Please retry.'));
       },
     });
   }
   protected retryBookings(): void {
     this.reloadBackendBookings();
-    this.reloadBackendVehicles();
+  }
+
+  /** Render the authoritative mutation response without refetching the list. */
+  private applyBackendBooking(updatedBooking: ApiMarketplaceBooking): void {
+    this.backendBookings.update((bookings) => bookings.map((booking) => booking.uuid === updatedBooking.uuid ? updatedBooking : booking));
   }
 
   private reloadBackendVehicles(): void {
     if (!API_CONFIG.useBackend) return;
-    this.apiMarketplace.listMarketplaceVehicles().subscribe({
+    this.apiMarketplace.listMarketplaceVehicles().pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (vehicles) => this.backendVehicles.set(vehicles),
       // The booking page still renders an explicit empty-state message in the
       // selector if the provider has not registered a vehicle yet.
@@ -371,7 +377,8 @@ export class BookingsComponent {
       id: vehicle.uuid,
       regNumber: vehicle.registration_number,
       vehicleType: vehicle.vehicle_type,
-      status: vehicle.status === 'available' ? 'Idle'
+      status: vehicle.is_busy ? (vehicle.availability_status === 'on_trip' ? 'On Trip' : 'Reserved')
+        : vehicle.status === 'available' ? 'Idle'
         : vehicle.status === 'inactive' ? 'Inactive'
           : vehicle.status === 'on_trip' ? 'On Trip' : 'Maintenance',
     }));
@@ -403,7 +410,7 @@ export class BookingsComponent {
         mode: this.vehicleMode(), vehicle_reg_number: this.vehicleRegInput(),
         subcontracted_to: this.vehicleMode() === 'Subcontracted' ? this.subcontractedToInput() || undefined : undefined,
       }).subscribe({
-        next: () => { this.finishWorkflowAction(actionKey); this.assigningVehicleFor.set(null); this.reloadBackendBookings(); },
+        next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); this.assigningVehicleFor.set(null); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Vehicle could not be assigned. Please retry.')),
       });
       return;
@@ -427,7 +434,7 @@ export class BookingsComponent {
   protected readonly registeredDriversError = signal('');
   private readonly backendDrivers = signal<ApiMarketplaceDriver[]>([]);
   protected readonly registeredDrivers = computed(() => this.backendEnabled
-    ? this.backendDrivers().map((driver) => ({ id: driver.uuid, name: driver.name, phone: driver.phone, status: driver.status !== 'available' ? 'Off Duty' : driver.is_busy ? 'Assigned' : 'Available', assignedVehicleRegNumber: undefined as string | undefined }))
+    ? this.backendDrivers().map((driver) => ({ id: driver.uuid, name: driver.name, phone: driver.phone, status: driver.status !== 'available' ? 'Off Duty' : driver.is_busy ? 'Assigned' : 'Available', assignedVehicleRegNumber: driver.assigned_vehicle_reg_number || undefined }))
     : this.drivers.drivers().filter((driver) => driver.employerRole === this.session.role()));
   protected readonly assignableDrivers = computed(() => this.registeredDrivers().filter((driver) => driver.status === 'Available' && !driver.assignedVehicleRegNumber));
   protected readonly driverIdInput = signal('');
@@ -480,7 +487,7 @@ export class BookingsComponent {
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'assign_driver', {
         driver_uuid: this.driverIdInput(),
       }).subscribe({
-        next: () => { this.assigningDriver.set(false); this.assigningDriverFor.set(null); this.reloadBackendBookings(); },
+        next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.assigningDriver.set(false); this.assigningDriverFor.set(null); },
         error: (error) => { this.assigningDriver.set(false); this.driverAssignmentError.set(apiErrorMessage(error, 'Driver could not be assigned. Please retry.')); },
       });
       return;
@@ -497,7 +504,7 @@ export class BookingsComponent {
     if (!this.beginWorkflowAction(actionKey)) return;
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'start_trip').subscribe({
-        next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
+        next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Trip could not be started. Please retry.')),
       });
       return;
@@ -518,9 +525,9 @@ export class BookingsComponent {
     this.markingLoadingFor.set(bookingId);
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'loading_completed').subscribe({
-        next: () => {
+        next: (updatedBooking) => {
+          this.applyBackendBooking(updatedBooking);
           this.markingLoadingFor.set(null);
-          this.reloadBackendBookings();
         },
         error: (error) => {
           this.markingLoadingFor.set(null);
@@ -543,7 +550,7 @@ export class BookingsComponent {
     if (!this.beginWorkflowAction(actionKey)) return;
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'confirm_loading').subscribe({
-        next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
+        next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Loading confirmation could not be saved. Please retry.')),
       });
       return;
@@ -560,7 +567,7 @@ export class BookingsComponent {
         label: milestone?.label ?? milestoneId,
         ...(milestone?.label === 'Mid-Trip Payment' ? { milestone_id: milestone.id } : {}),
       }).subscribe({
-        next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
+        next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Payment could not be released. Please retry.')),
       });
       return;
@@ -576,7 +583,7 @@ export class BookingsComponent {
       // trip must remain successful even though the final payment cannot yet be
       // prepared until the shipper has approved the submitted POD.
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'complete_trip').subscribe({
-        next: () => { this.finishWorkflowAction(actionKey); this.reloadBackendBookings(); },
+        next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Trip could not be completed. Please retry.')),
       });
       return;
@@ -590,6 +597,23 @@ export class BookingsComponent {
     this.podReceivedBy.set('');
     this.podRemarks.set('');
     this.podFile.set(null);
+  }
+
+  protected downloadPod(booking: MarketplaceBooking): void {
+    const actionKey = this.workflowActionKey(booking.id, 'download-pod');
+    if (!this.beginWorkflowAction(actionKey)) return;
+    this.apiMarketplace.downloadMarketplacePod(booking.id).subscribe({
+      next: (file) => {
+        const url = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = booking.pod?.fileName || 'proof-of-delivery';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this.finishWorkflowAction(actionKey);
+      },
+      error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'The POD document could not be downloaded. Please retry.')),
+    });
   }
 
   protected onPodFileSelected(event: Event): void {
@@ -613,7 +637,7 @@ export class BookingsComponent {
     if (this.podRemarks().trim()) payload.set('remarks', this.podRemarks().trim());
     payload.set('file', file);
     this.apiMarketplace.uploadMarketplacePod(booking.id, payload).subscribe({
-      next: () => { this.finishWorkflowAction(actionKey); this.uploadingPodFor.set(null); this.reloadBackendBookings(); },
+      next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); this.uploadingPodFor.set(null); },
       error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'POD could not be submitted. Please retry.')),
     });
   }
@@ -635,7 +659,7 @@ export class BookingsComponent {
       return;
     }
     this.apiMarketplace.reviewMarketplacePod(booking.id, decision, this.podReviewNote()).subscribe({
-      next: () => { this.finishWorkflowAction(actionKey); this.reviewingPodFor.set(null); this.reloadBackendBookings(); },
+      next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); this.reviewingPodFor.set(null); },
       error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'POD review could not be saved. Please retry.')),
     });
   }
@@ -670,7 +694,7 @@ export class BookingsComponent {
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.updateMarketplaceWorkflow(bookingId, 'add_mid_trip_milestone', { amount, trigger }).subscribe({
         next: (updatedBooking) => {
-          this.backendBookings.update((bookings) => bookings.map((booking) => booking.uuid === updatedBooking.uuid ? updatedBooking : booking));
+          this.applyBackendBooking(updatedBooking);
           this.finishWorkflowAction(actionKey);
           this.addingMilestoneFor.set(null);
         },
@@ -837,10 +861,10 @@ export class BookingsComponent {
     if (!this.beginWorkflowAction(actionKey)) return;
     if (API_CONFIG.useBackend) {
       this.apiMarketplace.updateMarketplaceWorkflow(booking.id, 'settle_final_payment', { amount, reference: this.offlineReference().trim() || undefined }).subscribe({
-        next: () => {
+        next: (updatedBooking) => {
+          this.applyBackendBooking(updatedBooking);
           this.finishWorkflowAction(actionKey);
           this.offlinePaymentFor.set(null);
-          this.reloadBackendBookings();
         },
         error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'Final payment could not be settled. Please retry.')),
       });

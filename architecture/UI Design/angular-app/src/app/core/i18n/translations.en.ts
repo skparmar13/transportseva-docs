@@ -934,6 +934,7 @@ export const EN: Record<string, string> = {
   'nav.reviewTransportSeva': 'Review TransportSeva',
   'nav.businessSettings': 'Business Settings',
   'nav.businessKyc': 'Business KYC',
+  'status.vehicleLive.reserved': 'Reserved',
 
   'nav.loadBoard': 'Load Board',
   'nav.postLoadOnBehalf': 'Post Load (on behalf)',

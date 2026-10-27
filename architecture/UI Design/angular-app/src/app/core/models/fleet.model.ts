@@ -8,7 +8,7 @@ import { PortalRole } from './nav.model';
  */
 export type VehicleCategory = 'Open Body Truck' | '20ft Container' | '32ft Trailer' | 'Mini Truck' | 'Tanker' | 'Trailer (Flatbed)';
 
-export type VehicleLiveStatus = 'On Trip' | 'Idle' | 'Maintenance' | 'Offline';
+export type VehicleLiveStatus = 'On Trip' | 'Reserved' | 'Idle' | 'Maintenance' | 'Offline';
 
 export type DocumentStatus = 'Valid' | 'Expiring Soon' | 'Expired' | 'Not Uploaded';
 

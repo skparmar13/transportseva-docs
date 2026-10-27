@@ -69,4 +69,77 @@ describe('authTokenInterceptor', () => {
     expect(localStorage.getItem('transportseva.refresh_token')).toBeNull();
     expect(navigate).toHaveBeenCalledWith(['/auth/login'], { queryParams: { reason: 'session-expired' } });
   });
+
+  for (const status of [0, 503]) {
+    it(`retains the session after a temporary refresh failure (${status})`, () => {
+      localStorage.setItem('transportseva.access_token', 'expired-access');
+      localStorage.setItem('transportseva.refresh_token', 'refresh-1');
+      localStorage.setItem('transportseva.api_user', '{"uuid":"user-1"}');
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      let error: HttpErrorResponse | undefined;
+
+      httpClient.get(`${API_CONFIG.baseUrl}/loads`).subscribe({ error: (value) => error = value });
+      http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({}, { status: 401, statusText: 'Unauthorized' });
+      const refresh = http.expectOne(`${API_CONFIG.baseUrl}/auth/refresh`);
+      if (status === 0) refresh.error(new ProgressEvent('error'));
+      else refresh.flush({}, { status, statusText: 'Service Unavailable' });
+
+      expect(error?.status).toBe(status);
+      expect(localStorage.getItem('transportseva.access_token')).toBe('expired-access');
+      expect(localStorage.getItem('transportseva.refresh_token')).toBe('refresh-1');
+      expect(localStorage.getItem('transportseva.api_user')).toBe('{"uuid":"user-1"}');
+      expect(navigate).not.toHaveBeenCalled();
+    });
+  }
+
+  for (const status of [403, 503]) {
+    it(`retains the renewed session when the retried business request fails (${status})`, () => {
+      localStorage.setItem('transportseva.access_token', 'expired-access');
+      localStorage.setItem('transportseva.refresh_token', 'refresh-1');
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      let error: HttpErrorResponse | undefined;
+
+      httpClient.get(`${API_CONFIG.baseUrl}/loads`).subscribe({ error: (value) => error = value });
+      http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({}, { status: 401, statusText: 'Unauthorized' });
+      http.expectOne(`${API_CONFIG.baseUrl}/auth/refresh`).flush({ success: true, data: { access_token: 'access-2', refresh_token: 'refresh-2', expires_in: 900 } });
+      http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({}, { status, statusText: 'Request Failed' });
+
+      expect(error?.status).toBe(status);
+      expect(localStorage.getItem('transportseva.access_token')).toBe('access-2');
+      expect(localStorage.getItem('transportseva.refresh_token')).toBe('refresh-2');
+      expect(navigate).not.toHaveBeenCalled();
+    });
+  }
+
+  it('expires the session if the renewed access token is also rejected', () => {
+    localStorage.setItem('transportseva.access_token', 'expired-access');
+    localStorage.setItem('transportseva.refresh_token', 'refresh-1');
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    httpClient.get(`${API_CONFIG.baseUrl}/loads`).subscribe({ error: () => undefined });
+    http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({}, { status: 401, statusText: 'Unauthorized' });
+    http.expectOne(`${API_CONFIG.baseUrl}/auth/refresh`).flush({ success: true, data: { access_token: 'access-2', refresh_token: 'refresh-2', expires_in: 900 } });
+    http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(localStorage.getItem('transportseva.access_token')).toBeNull();
+    expect(localStorage.getItem('transportseva.refresh_token')).toBeNull();
+    expect(navigate).toHaveBeenCalledWith(['/auth/login'], { queryParams: { reason: 'session-expired' } });
+  });
+
+  it('shares one token refresh between concurrent expired requests', () => {
+    localStorage.setItem('transportseva.access_token', 'expired-access');
+    localStorage.setItem('transportseva.refresh_token', 'refresh-1');
+    let responses = 0;
+    httpClient.get(`${API_CONFIG.baseUrl}/loads`).subscribe(() => responses++);
+    httpClient.get(`${API_CONFIG.baseUrl}/bookings`).subscribe(() => responses++);
+    http.expectOne(`${API_CONFIG.baseUrl}/loads`).flush({}, { status: 401, statusText: 'Unauthorized' });
+    http.expectOne(`${API_CONFIG.baseUrl}/bookings`).flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    http.expectOne(`${API_CONFIG.baseUrl}/auth/refresh`).flush({ success: true, data: { access_token: 'access-2', refresh_token: 'refresh-2', expires_in: 900 } });
+    for (const path of ['loads', 'bookings']) {
+      const retry = http.expectOne(`${API_CONFIG.baseUrl}/${path}`);
+      expect(retry.request.headers.get('Authorization')).toBe('Bearer access-2');
+      retry.flush({ success: true, data: [] });
+    }
+    expect(responses).toBe(2);
+  });
 });

@@ -8,6 +8,7 @@ export interface ApiEnvelope<T> {
   message?: string;
   data: T;
   errors?: Record<string, string[]>;
+  meta?: { current_page?: number; last_page?: number; per_page?: number; total?: number; [key: string]: unknown };
 }
 
 @Injectable({ providedIn: 'root' })

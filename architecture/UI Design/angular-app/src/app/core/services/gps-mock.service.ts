@@ -145,7 +145,7 @@ export class GpsMockService {
           heading: pos.heading,
           location: v.location,
           lastUpdated: health?.lastPingAt ?? '—',
-          status: v.status,
+          status: v.status === 'Reserved' ? 'Idle' : v.status,
           topPct: pos.topPct,
           leftPct: pos.leftPct,
         };

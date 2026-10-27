@@ -7,6 +7,7 @@
   <form (ngSubmit)="submit()">
     @if (sessionNotice()) {
       <div class="form-error" role="status"><app-icon name="i-info" [size]="16" />{{ sessionNotice() }}</div>
+      @if (canRetrySession()) { <button type="button" class="btn btn-outline" (click)="retrySession()">Retry session check</button> }
     }
     <div class="field">
         <label>{{ 'login.identifierLabel' | t }} <span class="required-mark" aria-hidden="true">*</span></label>

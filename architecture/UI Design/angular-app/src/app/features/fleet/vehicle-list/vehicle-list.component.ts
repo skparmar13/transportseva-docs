@@ -13,6 +13,7 @@ import { apiErrorMessage, apiFieldErrors } from '../../../core/api/api-error';
 const VEHICLE_TYPES: VehicleCategory[] = ['Open Body Truck', '20ft Container', '32ft Trailer', 'Mini Truck', 'Tanker', 'Trailer (Flatbed)'];
 
 const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
+  Reserved: 'status-pending',
   'On Trip': 'status-transit',
   Idle: 'status-pending',
   Maintenance: 'status-overdue',
@@ -171,7 +172,7 @@ export class VehicleListComponent {
       model: vehicle.model,
       yearOfMake: vehicle.year_of_make?.toString() ?? '—',
       capacityTons: Number(vehicle.capacity_tons),
-      status: statusByApi[vehicle.status],
+      status: vehicle.is_busy ? (vehicle.availability_status === 'on_trip' ? 'On Trip' : 'Reserved') : statusByApi[vehicle.status],
       location: 'Not tracked yet',
       addedOn: vehicle.created_at ?? 'Recently',
       documents: [],

@@ -14,6 +14,7 @@ import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 type TabId = 'overview' | 'device' | 'documents' | 'maintenance' | 'fuel';
 
 const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
+  Reserved: 'status-pending',
   'On Trip': 'status-transit',
   Idle: 'status-pending',
   Maintenance: 'status-overdue',
@@ -21,6 +22,7 @@ const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
 };
 
 const STATUS_KEY: Record<VehicleLiveStatus, string> = {
+  Reserved: 'status.vehicleLive.reserved',
   'On Trip': 'status.vehicleLive.onTrip',
   Idle: 'status.vehicleLive.idle',
   Maintenance: 'status.vehicleLive.maintenance',

@@ -37,7 +37,10 @@ export class ApiAuthService {
   }
 
   me(): Observable<BackendLoginUser> {
-    return this.api.get<BackendLoginUser>('auth/me').pipe(map((response) => response.data));
+    return this.api.get<BackendLoginUser>('auth/me').pipe(
+      map((response) => response.data),
+      tap((user) => localStorage.setItem('transportseva.api_user', JSON.stringify(user))),
+    );
   }
 
   refresh(): Observable<BackendLoginData> {

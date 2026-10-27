@@ -920,6 +920,7 @@ export const HI: Record<string, string> = {
   'nav.reviewTransportSeva': 'ट्रांसपोर्टसेवा की समीक्षा करें',
   'nav.businessSettings': 'व्यवसाय सेटिंग्स',
   'nav.businessKyc': 'व्यवसाय केवाईसी',
+  'status.vehicleLive.reserved': 'आरक्षित',
 
   'nav.loadBoard': 'लोड बोर्ड',
   'nav.postLoadOnBehalf': 'लोड पोस्ट करें (ओर से)',

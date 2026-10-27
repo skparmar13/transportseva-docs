@@ -689,8 +689,25 @@ test.describe('Marketplace browser journey', () => {
     const completedResponse = await completed;
     expect(completedResponse.status()).toBe(200);
     expect((await completedResponse.json() as { data: { status: string } }).data.status).toBe('completed');
+    await card.getByRole('button', { name: /^upload pod$/i }).click();
+    await page.locator('#pod-number').fill(`POD-${Date.now()}`);
+    await page.locator('#pod-received-by').fill('E2E Consignee');
+    await page.locator('#pod-file').setInputFiles({
+      name: 'signed-pod.png', mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64'),
+    });
+    const podSubmitted = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith(`/api/marketplace-bookings/${bookingUuid}/pod`), { timeout: 45_000 });
+    await page.getByRole('button', { name: /submit pod/i }).click();
+    expect((await podSubmitted).status()).toBe(201);
     await login(page, { role: 'shipper', name: '', email: shipperEmail!, mobile: '' });
     card = await openBooking('shipper');
+    await expect(card.getByRole('button', { name: /prepare settlement/i })).toBeDisabled();
+    await card.getByRole('button', { name: /^approve pod$/i }).click();
+    const podReviewed = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
+      && new URL(candidate.url()).pathname.endsWith(`/api/marketplace-bookings/${bookingUuid}/pod/review`), { timeout: 45_000 });
+    await page.getByRole('dialog').getByRole('button', { name: /^approve pod$/i }).click();
+    expect((await podReviewed).status()).toBe(200);
     await expect(card.getByText(/trip completed · settlement pending/i)).toBeVisible();
     const prepared = page.waitForResponse((candidate) => candidate.request().method() === 'POST'
       && new URL(candidate.url()).pathname.endsWith(`/api/marketplace-bookings/${bookingUuid}/settle`), { timeout: 45_000 });

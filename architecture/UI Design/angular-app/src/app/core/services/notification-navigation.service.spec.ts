@@ -23,4 +23,12 @@ describe('NotificationNavigationService', () => {
     session.setRole('admin');
     expect(router.serializeUrl(service.destination({ id: 'n-2', category: 'System', title: 'KYC awaiting review', message: '', timestamp: '', read: false, data: { kyc_profile_uuid: kycUuid } })!)).toBe('/admin/kyc');
   });
+
+  it('opens the disputed booking for an admin cancellation notification', () => {
+    const service = TestBed.inject(NotificationNavigationService);
+    const session = TestBed.inject(SessionService);
+    const router = TestBed.inject(Router);
+    session.setRole('admin');
+    expect(router.serializeUrl(service.destination({ id: 'n-3', category: 'Booking', title: 'Cancellation decision required', message: '', timestamp: '', read: false, data: { booking_uuid: kycUuid } })!)).toBe('/admin/bookings?booking=' + kycUuid);
+  });
 });

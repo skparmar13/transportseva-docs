@@ -236,7 +236,7 @@ export class LoadDetailsComponent {
           id: vehicle.uuid,
           regNumber: vehicle.registration_number,
           vehicleType: vehicle.vehicle_type as VehicleType,
-          status: vehicle.status.replace(/_/g, ' '),
+          status: (vehicle.availability_status ?? vehicle.status).replace(/_/g, ' '),
         }))
         .sort((left, right) => left.regNumber.localeCompare(right.regNumber));
     }

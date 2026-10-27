@@ -52,6 +52,9 @@ export interface ApiMarketplaceVehicle {
   year_of_make?: number | null;
   capacity_tons: number | string;
   status: 'available' | 'on_trip' | 'maintenance' | 'inactive';
+  is_busy?: boolean;
+  availability_status?: 'available' | 'reserved' | 'on_trip' | 'maintenance' | 'inactive';
+  assigned_booking_uuid?: string | null;
   created_at?: string;
 }
 
@@ -339,6 +342,10 @@ export class ApiMarketplaceService {
 
   uploadMarketplacePod(bookingUuid: string, payload: FormData): Observable<ApiMarketplaceBooking> {
     return this.api.post<ApiMarketplaceBooking>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/pod`, payload).pipe(map((response) => response.data));
+  }
+
+  downloadMarketplacePod(bookingUuid: string): Observable<Blob> {
+    return this.api.getBlob(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/pod/download`);
   }
 
   reviewMarketplacePod(bookingUuid: string, decision: 'approved' | 'rejected', reviewNote = ''): Observable<ApiMarketplaceBooking> {

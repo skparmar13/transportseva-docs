@@ -33,11 +33,21 @@ export class LoginComponent {
   protected readonly apiError = signal('');
   protected readonly fieldErrors = signal<Record<string, string>>({});
   protected readonly sessionNotice = signal('');
+  protected readonly canRetrySession = signal(false);
 
   constructor() {
     const reason = this.route.snapshot.queryParamMap.get('reason');
     if (reason === 'inactivity') this.sessionNotice.set('You were signed out after 15 minutes of inactivity. Please log in again.');
     if (reason === 'session-expired') this.sessionNotice.set('Your session expired. Please log in again.');
+    if (reason === 'access-check-failed') {
+      this.sessionNotice.set('We could not verify your session. Your credentials have not been cleared; please try again.');
+      this.canRetrySession.set(true);
+    }
+  }
+
+  protected retrySession(): void {
+    const target = this.route.snapshot.queryParamMap.get('returnUrl') ?? '';
+    if (/^\/(admin|shipper|transporter|truck-owner|driver|company)(\/|$)/.test(target)) this.router.navigateByUrl(target);
   }
 
   protected togglePassword(): void {

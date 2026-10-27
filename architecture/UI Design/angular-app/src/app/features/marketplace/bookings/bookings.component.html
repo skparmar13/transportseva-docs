@@ -257,6 +257,12 @@
                       <div style="font-size:13px;color:var(--color-text-muted);margin-top:8px;">POD {{ pod.podNumber }} · Received by {{ pod.receivedByName }}</div>
                       @if (pod.fileName) { <div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">Signed file: {{ pod.fileName }}@if (pod.uploadedAt) { · {{ pod.uploadedAt }} }</div> }
                       @if (pod.remarks) { <div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">{{ pod.remarks }}</div> }
+                      @if (pod.fileName) {
+                        <button type="button" class="btn btn-outline btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="isWorkflowActionPending(booking.id, 'download-pod')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'download-pod')" (click)="downloadPod(booking)">
+                          @if (isWorkflowActionPending(booking.id, 'download-pod')) { <span class="button-loader" aria-hidden="true"></span><span>Downloading...</span> } @else { <span>Download signed POD</span> }
+                        </button>
+                        @if (workflowActionErrorFor(booking.id, 'download-pod'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
+                      }
                       @if (pod.status === 'Pending Approval' && mySide(booking) === 'owner') {
                         <p style="font-size:12px;color:var(--color-text-muted);margin:10px 0 0;">Review the signed proof before allowing final settlement.</p>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
@@ -347,7 +353,7 @@
                   }
                   @if ((!booking.dispute || booking.dispute.status === 'Resolved') && booking.status !== 'Cancelled' && booking.status !== 'Completed') {
                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                      @if ((booking.status === 'Awaiting Deposit' || booking.status === 'Confirmed') && session.role() !== 'admin') {
+                      @if (['Awaiting Deposit', 'Confirmed', 'Vehicle Assigned', 'Driver Assigned', 'Loading Completed'].includes(booking.status) && session.role() !== 'admin') {
                         <button type="button" class="btn btn-outline btn-sm" (click)="openCancellationRequest(booking.id)">Request cancellation</button>
                       }
                       <button type="button" class="btn btn-outline btn-sm" (click)="openDispute(booking.id)">{{ 'bookings.dispute.raise' | t }}</button>
@@ -425,6 +431,7 @@
   <app-modal title="Request booking cancellation" (close)="cancellingBooking.set(null)">
     <p style="font-size:13px;color:var(--color-text-muted);">TransportSeva will review this request with both parties. No token refund, commission change, or cancellation happens automatically.</p>
     <div class="field"><label for="cancellation-reason">Reason for cancellation</label><textarea id="cancellation-reason" class="input" rows="4" maxlength="2000" [ngModel]="cancellationReason()" (ngModelChange)="cancellationReason.set($event)" name="cancellationReason" placeholder="Explain why this booking needs to be cancelled"></textarea><div style="font-size:12px;color:var(--color-text-soft);margin-top:4px;">At least 10 characters required.</div></div>
+    @if (cancellingBooking(); as cancellationBookingId) { @if (workflowActionErrorFor(cancellationBookingId, 'request-cancellation'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> } }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;"><button type="button" class="btn btn-outline" (click)="cancellingBooking.set(null)">Keep booking</button>@if (cancellingBooking(); as cancellationBookingId) { <button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(cancellationBookingId, 'request-cancellation') || cancellationReason().trim().length < 10" [attr.aria-busy]="isWorkflowActionPending(cancellationBookingId, 'request-cancellation')" (click)="submitCancellationRequest()">@if (isWorkflowActionPending(cancellationBookingId, 'request-cancellation')) { <span class="button-loader" aria-hidden="true"></span><span>Submitting…</span> } @else { <span>Send to TransportSeva</span> }</button> }</div>
   </app-modal>
 }
@@ -537,6 +544,7 @@
       </div>
     }
     <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
+      @if (workflowActionErrorFor(bookingId, 'assign-vehicle'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }
       <button type="button" class="btn btn-outline" [disabled]="isWorkflowActionPending(bookingId, 'assign-vehicle')" (click)="assigningVehicleFor.set(null)">{{ 'common.cancel' | t }}</button>
       <button type="button" class="btn btn-primary workflow-action-button" [disabled]="isWorkflowActionPending(bookingId, 'assign-vehicle') || !vehicleRegInput() || !canAssignSelectedVehicle()" [attr.aria-busy]="isWorkflowActionPending(bookingId, 'assign-vehicle')" (click)="confirmAssignVehicle()">
         @if (isWorkflowActionPending(bookingId, 'assign-vehicle')) { <span class="button-loader" aria-hidden="true"></span><span>Assigning…</span> } @else { <span>{{ 'bookings.assignVehicle.assign' | t }}</span> }

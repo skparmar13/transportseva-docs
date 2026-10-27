@@ -28,6 +28,7 @@
     @if (invalid()) {
       <p class="hint" role="alert">{{ 'staffLogin.invalid' | t }}</p>
     }
+    @if (error()) { <p class="hint" role="alert">{{ error() }}</p> }
 
     <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
       <span>{{ (submitting() ? 'staffLogin.submitting' : 'staffLogin.submit') | t }}</span>
@@ -35,12 +36,12 @@
     </button>
   </form>
 
-  <section class="staff-demo" aria-label="Prototype demo accounts">
+  @if (!backendEnabled) { <section class="staff-demo" aria-label="Prototype demo accounts">
     <p>{{ 'staffLogin.demoHint' | t }}</p>
     <div class="staff-demo-list">
       @for (demoEmail of demoEmails; track demoEmail) {
         <button type="button" class="btn btn-outline btn-sm" (click)="useDemoAccount(demoEmail)">{{ demoEmail }}</button>
       }
     </div>
-  </section>
+  </section> }
 </app-auth-shell>

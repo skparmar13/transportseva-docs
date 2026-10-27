@@ -45,14 +45,26 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
       );
     }
     return refreshRequest$.pipe(
+      catchError((refreshError: unknown) => {
+        // A network/server failure does not prove that the refresh token expired.
+        if (refreshError instanceof HttpErrorResponse && (refreshError.status === 401 || refreshError.status === 403)) {
+          clearExpiredSession(router);
+        }
+        return throwError(() => refreshError);
+      }),
       switchMap(() => {
         const newToken = localStorage.getItem('transportseva.access_token');
-        if (!newToken) return throwError(() => error);
-        return next(request.clone({ setHeaders: { Authorization: 'Bearer ' + newToken } }));
-      }),
-      catchError((refreshError: unknown) => {
-        clearExpiredSession(router);
-        return throwError(() => refreshError);
+        if (!newToken) {
+          clearExpiredSession(router);
+          return throwError(() => error);
+        }
+        return next(request.clone({ setHeaders: { Authorization: 'Bearer ' + newToken } })).pipe(
+          catchError((retryError: unknown) => {
+            // A denied business action (403) is not a rejected session.
+            if (retryError instanceof HttpErrorResponse && retryError.status === 401) clearExpiredSession(router);
+            return throwError(() => retryError);
+          }),
+        );
       }),
     );
   }));
