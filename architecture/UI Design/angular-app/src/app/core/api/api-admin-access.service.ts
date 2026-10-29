@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { ApiClientService } from './api-client.service';
+import { StaffAccessReadiness } from '../models/staff-access.model';
 
 export type AuditCategory = 'Info' | 'Review' | 'Security';
 export interface AdminActivityEvent {
@@ -18,6 +19,7 @@ export interface AdminPage<T> { data: T[]; meta: { current_page: number; last_pa
 @Injectable({ providedIn: 'root' })
 export class ApiAdminAccessService {
   private readonly api = inject(ApiClientService);
+  session(): Observable<StaffAccessReadiness> { return this.api.get<StaffAccessReadiness>('admin/access/session').pipe(map((response) => response.data)); }
   activity(page = 1, category?: AuditCategory, targetUuid?: string): Observable<AdminPage<AdminActivityEvent>> {
     return this.list<AdminActivityEvent>('admin/audit-events', { page, ...(category ? { category } : {}), ...(targetUuid ? { target_uuid: targetUuid } : {}) });
   }

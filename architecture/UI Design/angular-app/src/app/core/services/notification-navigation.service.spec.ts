@@ -31,4 +31,11 @@ describe('NotificationNavigationService', () => {
     session.setRole('admin');
     expect(router.serializeUrl(service.destination({ id: 'n-3', category: 'Booking', title: 'Cancellation decision required', message: '', timestamp: '', read: false, data: { booking_uuid: kycUuid } })!)).toBe('/admin/bookings?booking=' + kycUuid);
   });
+  it('opens verified staff access for a staff role-change notification', () => {
+    const service = TestBed.inject(NotificationNavigationService);
+    const session = TestBed.inject(SessionService);
+    const router = TestBed.inject(Router);
+    session.setRole('admin');
+    expect(router.serializeUrl(service.destination({ id: 'staff', category: 'System', title: 'Staff access updated', message: '', timestamp: '', read: false, data: { staff_access_changed: true } })!)).toBe('/admin/access');
+  });
 });

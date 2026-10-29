@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiMarketplaceKycProfile, ApiMarketplaceService, MarketplaceKycStatus } from '../../../core/api/api-marketplace.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
+import { SessionService } from '../../../core/services/session.service';
 
 type KycFilter = MarketplaceKycStatus | 'all';
 
@@ -16,6 +17,7 @@ type KycFilter = MarketplaceKycStatus | 'all';
 })
 export class KycManagementComponent implements OnInit {
   private readonly api = inject(ApiMarketplaceService);
+  protected readonly session = inject(SessionService);
   protected readonly filter = signal<KycFilter>('pending');
   protected readonly profiles = signal<ApiMarketplaceKycProfile[]>([]);
   protected readonly loading = signal(true);
@@ -23,6 +25,7 @@ export class KycManagementComponent implements OnInit {
   protected readonly actionUuid = signal<string | null>(null);
   protected readonly rejecting = signal<ApiMarketplaceKycProfile | null>(null);
   protected readonly rejectionNote = signal('');
+  protected readonly downloading = signal<string | null>(null);
 
   ngOnInit(): void { this.load(); }
   protected setFilter(filter: KycFilter): void { this.filter.set(filter); this.rejecting.set(null); this.load(); }
@@ -38,10 +41,12 @@ export class KycManagementComponent implements OnInit {
     this.moderate(profile, 'rejected', this.rejectionNote().trim());
   }
   protected download(profile: ApiMarketplaceKycProfile): void {
+    if (this.downloading() || !this.session.canStaffAction('marketplace.kyc.document')) return;
+    this.downloading.set(profile.uuid);
     this.error.set('');
     this.api.downloadMarketplaceKycDocument(profile.uuid).subscribe({
-      next: (file) => { const url = URL.createObjectURL(file); const link = document.createElement('a'); link.href = url; link.download = profile.document_name; link.click(); URL.revokeObjectURL(url); },
-      error: (error) => this.error.set(apiErrorMessage(error, 'The KYC document could not be downloaded.')),
+      next: (file) => { this.downloading.set(null); const url = URL.createObjectURL(file); const link = document.createElement('a'); link.href = url; link.download = profile.document_name; link.click(); URL.revokeObjectURL(url); },
+      error: (error) => { this.downloading.set(null); this.error.set(apiErrorMessage(error, 'The KYC document could not be downloaded.')); },
     });
   }
 
@@ -55,6 +60,7 @@ export class KycManagementComponent implements OnInit {
   }
 
   private moderate(profile: ApiMarketplaceKycProfile, status: 'approved' | 'rejected', note = ''): void {
+    if (this.actionUuid() || !this.session.canStaffAction('marketplace.kyc.moderate')) return;
     this.actionUuid.set(profile.uuid); this.error.set('');
     this.api.moderateMarketplaceKyc(profile.uuid, status, note).subscribe({
       next: () => { this.actionUuid.set(null); this.cancelReject(); this.load(); },

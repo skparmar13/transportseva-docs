@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiMarketplaceReview, ApiReviewService, MarketplaceReviewStatus } from '../../../core/api/api-review.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
+import { SessionService } from '../../../core/services/session.service';
 
 type ModerationFilter = MarketplaceReviewStatus | 'all';
 
@@ -16,6 +17,7 @@ type ModerationFilter = MarketplaceReviewStatus | 'all';
 })
 export class ReviewManagementComponent implements OnInit {
   private readonly api = inject(ApiReviewService);
+  protected readonly session = inject(SessionService);
   protected readonly filter = signal<ModerationFilter>('pending');
   protected readonly reviews = signal<ApiMarketplaceReview[]>([]);
   protected readonly loading = signal(true);
@@ -48,6 +50,7 @@ export class ReviewManagementComponent implements OnInit {
   }
 
   private moderate(review: ApiMarketplaceReview, status: 'approved' | 'rejected', note = ''): void {
+    if (this.actionUuid() || !this.session.canStaffAction('marketplace.reviews.moderate')) return;
     this.actionUuid.set(review.uuid); this.error.set('');
     this.api.moderate(review.uuid, status, note).subscribe({
       next: () => { this.actionUuid.set(null); this.cancelReject(); this.load(); },

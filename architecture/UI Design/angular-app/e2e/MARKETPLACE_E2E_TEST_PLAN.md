@@ -34,7 +34,7 @@ named test users and data; it never resets a database.
 | MKT-21 | Booking-query scaling, response updates, and local concurrency | List query count stays bounded, API fields/privacy are preserved, successful actions update the affected card without a full refetch, and two visible tabs remain responsive with bell polling. | Passed: 3 backend performance tests / 33 assertions; 5 Angular behavior tests; headed two-tab test completed 6 concurrent refreshes in 2.7–4.8 seconds each without timeout. Nine-booking query count fell from 30 to 6. Warm serial local API requests had a 500 ms median. These are local development measurements, not a production capacity claim. |
 | MKT-22 | Administrator boundaries and server-verified portal access | Anonymous users, non-admin accounts, forged local roles, and a privileged role name attached to a customer cannot access administration or decide disputes. Staff login uses the real API in backend mode. | Passed with real JWT middleware and visible Chrome. Legacy user/role/permission APIs returned 403 for a regular account; anonymous portal navigation returned to login; forged local admin data returned to the account's actual portal. |
 | MKT-23 | Recorded administrative activity | KYC/review/dispute decisions record actor, target and safe before/after state atomically; audit reads are admin-only and paginated; events cannot be changed through the application. | Passed: 8 new backend tests / 88 assertions. Visible review feedback generated a persistent event; category/record filters and read-only role inspection passed. Combined backend regressions passed 32 tests / 459 assertions. |
-| MKT-24 | Honest roles inspection and session error feedback | The role screen shows stored grants without fake saving; transient identity-check errors preserve tokens and offer Retry; confirmed 401 uses the expiry flow. | Covered by the Angular regressions and visible admin screen. Granular permission editing remains intentionally disabled pending a defined staff permission matrix. |
+| MKT-24 | Honest roles inspection and session error feedback | The role screen shows stored grants without fake saving; transient identity-check errors preserve tokens and offer Retry; confirmed 401 uses the expiry flow. | Covered by the Angular regressions and visible admin screen. The matrix was approved on 29/10/2026; local first-phase checks are recorded below. Granular editing remains disabled pending its remaining safeguards. |
 
 Detailed steps: [VERIFICATION_FLOWS.md](VERIFICATION_FLOWS.md).
 Execution, credentials, and record IDs: [VERIFICATION_RUN_2026-10-26.md](VERIFICATION_RUN_2026-10-26.md).
@@ -42,6 +42,15 @@ Allocation cases: [FLEET_ALLOCATION_TEST_PLAN.md](FLEET_ALLOCATION_TEST_PLAN.md)
 Allocation execution and remaining UI checks: [FLEET_ALLOCATION_RUN_2026-10-27.md](FLEET_ALLOCATION_RUN_2026-10-27.md).
 Successful performance and allocation follow-up: [BOOKING_PERFORMANCE_RUN_2026-10-27.md](BOOKING_PERFORMANCE_RUN_2026-10-27.md).
 Admin access/activity verification and credentials: [ADMIN_ACCESS_AUDIT_RUN_2026-10-27.md](ADMIN_ACCESS_AUDIT_RUN_2026-10-27.md).
+
+## Staff permission follow-up
+
+The [29/10/2026 staff permission matrix](STAFF_PERMISSION_MATRIX_DRAFT_2026-10-29.md)
+is approved. The [local first-phase report](STAFF_PERMISSIONS_RUN_2026-10-29.md)
+records 46 backend tests / 629 assertions, 41 Angular tests, seven final headed
+scenarios and five login-verified staff roles. Finance/Support assignment and
+staff/grant editing remain disabled. The [full acceptance plan](STAFF_PERMISSION_TEST_PLAN.md)
+is not yet complete; MKT-22 through MKT-24 remain the earlier baseline evidence.
 
 ## Test data policy
 

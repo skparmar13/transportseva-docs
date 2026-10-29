@@ -1,5 +1,5 @@
 <div class="page-toolbar"><div><h1>{{ 'admin.roles.title' | t }}</h1><p class="desc">Inspect roles and grants stored on the server.</p></div><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load()">Refresh roles</button></div>
-<div class="card card-body" style="margin-bottom:16px;" role="note">Read-only inspection. This screen does not change access or report unsaved changes as saved. A granular staff permission-editing policy has not been enabled here.</div>
+<div class="card card-body" style="margin-bottom:16px;" role="note">Read-only inspection. This screen does not change access or report unsaved changes as saved. Stored grants do not enable unfinished features. <a href="/admin/access">Staff Access</a> lists the capabilities currently enforced by the API. Staff and role editing remain disabled until their safeguards are complete.</div>
 @if (loading()) {<div role="status" class="card card-body">Loading stored roles…</div>}
 @else if (error()) {<div role="alert" class="card card-body">{{ error() }} <button type="button" class="btn btn-outline" (click)="load()">Retry</button></div>}
 @else {

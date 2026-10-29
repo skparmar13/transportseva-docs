@@ -6,6 +6,7 @@ import { SessionService } from '../services/session.service';
 import { API_CONFIG } from '../api/api-config';
 import { ApiAuthService } from '../api/api-auth.service';
 import { catchError, map, of, timeout } from 'rxjs';
+import { staffRouteAllowed } from '../models/staff-access.model';
 
 /**
  * Route guard factory — activates the given portal role on the mock
@@ -31,6 +32,10 @@ export function setPortalRole(role: PortalRole): CanActivateFn {
         }
         session.setBackendUser(user);
         session.setRole(actual as PortalRole);
+        if (actual === 'admin' && role === 'admin' && user.staff_access?.enforced) {
+          const path = state.url.split(/[?#]/)[0].split('/').filter(Boolean)[1] ?? '';
+          if (!staffRouteAllowed(user.staff_access, path)) return router.createUrlTree(['/admin/access']);
+        }
         return actual === role ? true : router.createUrlTree([`/${actual}/dashboard`]);
       }),
       // Keep tokens on a transient failure; do not mislabel it as expiry or

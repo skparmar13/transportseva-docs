@@ -39,6 +39,7 @@ testem.log
 __screenshots__/
 /playwright-report/
 /test-results/
+/.local-backups/
 
 # System files
 .DS_Store

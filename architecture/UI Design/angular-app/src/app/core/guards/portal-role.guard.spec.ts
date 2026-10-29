@@ -20,8 +20,8 @@ describe('Server-verified portal access', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: ApiAuthService, useValue: api }] });
   });
   afterEach(() => { config.useBackend = originalBackend; localStorage.removeItem('transportseva.access_token'); localStorage.removeItem('transportseva.api_user'); });
-  async function check() {
-    const result = TestBed.runInInjectionContext(() => setPortalRole('admin')({} as ActivatedRouteSnapshot, { url: '/admin/audit' } as RouterStateSnapshot));
+  async function check(url = '/admin/audit') {
+    const result = TestBed.runInInjectionContext(() => setPortalRole('admin')({} as ActivatedRouteSnapshot, { url } as RouterStateSnapshot));
     return isObservable(result) ? firstValueFrom(result) : await result;
   }
   it('redirects anonymous access before requesting admin data', async () => {
@@ -61,5 +61,21 @@ describe('Server-verified portal access', () => {
   it('does not call a confirmed authentication failure a transient check failure', async () => {
     api.me.and.returnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
     expect((await check() as UrlTree).queryParams['reason']).toBe('session-expired');
+  });
+  it('allows a server-authorized KYC route but redirects role administration', async () => {
+    api.me.and.returnValue(of({ ...customer, role: 'admin', staff_access: {
+      enforced: true, ready: true, role_code: 'KYC_OFFICER', role_name: 'KYC Officer',
+      permissions: ['marketplace.kyc.view'], routes: ['access', 'notifications', 'kyc'], blocked_reason: null,
+    } }));
+    expect(await check('/admin/kyc')).toBeTrue();
+    expect((await check('/admin/roles') as UrlTree).toString()).toBe('/admin/access');
+  });
+  it('keeps an unmapped administrator on the honest access page', async () => {
+    api.me.and.returnValue(of({ ...customer, role: 'admin', staff_access: {
+      enforced: true, ready: false, role_code: null, role_name: null, permissions: [],
+      routes: ['access', 'notifications'], blocked_reason: 'unmapped',
+    } }));
+    expect((await check('/admin/dashboard') as UrlTree).toString()).toBe('/admin/access');
+    expect(await check('/admin/access')).toBeTrue();
   });
 });

@@ -1,0 +1,13 @@
+<div class="page-toolbar"><div><h1>Staff Access</h1><p class="desc">Your server-verified staff role and currently available permissions.</p></div><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load()">{{ loading() ? 'Checking access…' : 'Refresh access' }}</button></div>
+@if (loading()) { <div class="card card-body" role="status">Checking current staff access…</div> }
+@else if (error()) { <div class="card card-body" role="alert">{{ error() }} <button type="button" class="btn btn-outline" (click)="load()">Retry</button></div> }
+@else if (state(); as current) {
+  @if (!current.access.enforced) { <div class="card card-body" role="note" style="margin-bottom:16px;">Staff policy is prepared but not activated. Current role mappings and deployment safeguards must be confirmed before enforcement changes.</div> }
+  @else if (!current.access.ready) { <div class="card card-body" role="alert" style="margin-bottom:16px;">This account has no usable approved staff access. Ask the authorized Super Admin to review its mapping. Access reason: {{ current.access.blocked_reason }}. No broader administrator access is assumed.</div> }
+  <div class="card card-body" style="margin-bottom:16px;"><h2>{{ current.access.role_name ?? 'No approved staff role mapped' }}</h2><p>{{ current.access.role_code ?? 'Unmapped' }}</p><p>Policy enforcement: {{ current.access.enforced ? 'Active' : 'Not activated' }}</p><p>Permissions are checked by the API on every request. Role labels and browser storage cannot grant access.</p></div>
+  <div class="card card-body" style="margin-bottom:16px;"><h2>Available capabilities</h2><ul>@for (permission of current.access.permissions; track permission) { <li>{{ permission }}</li> } @empty { <li>No approved capabilities are available.</li> }</ul></div>
+  <div class="card card-body" role="note" style="margin-bottom:16px;">Staff membership and role editing remain disabled while last-admin, self-edit and assignment safeguards are completed. Scoped finance/support actions, real payments and GPS are not enabled. POD approval remains with the booking's shipper.</div>
+  <div class="card"><div class="card-body"><h2>Approved role catalogue</h2><p class="desc">These role definitions are not proof of account assignment.</p><ul>@for (role of current.approved_roles; track role.code) { <li>{{ role.name }} · {{ role.code }}</li> }</ul></div></div>
+  @if (current.access.enforced && current.access.routes.includes('reviews')) { <a class="btn btn-outline" style="margin-top:16px;" routerLink="/admin/reviews">Review moderation</a> }
+  @if (current.access.enforced && current.access.routes.includes('kyc')) { <a class="btn btn-outline" style="margin-top:16px;" routerLink="/admin/kyc">Business KYC queue</a> }
+}

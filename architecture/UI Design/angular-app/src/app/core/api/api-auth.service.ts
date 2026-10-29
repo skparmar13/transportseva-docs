@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { ApiClientService } from './api-client.service';
+import { StaffAccess } from '../models/staff-access.model';
 
 export interface BackendLoginUser {
   uuid: string;
@@ -10,6 +11,7 @@ export interface BackendLoginUser {
   role?: string;
   roles?: string[];
   profile_completion_required?: boolean;
+  staff_access?: StaffAccess | null;
 }
 
 export interface BackendLoginData {

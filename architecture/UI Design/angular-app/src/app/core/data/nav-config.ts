@@ -14,7 +14,10 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
     roleTagKey: 'nav.roleTag.admin',
     basePath: '/admin',
     nav: [
-      { items: [{ label: 'Dashboard', labelKey: 'nav.dashboard', icon: 'i-grid', path: 'dashboard' }] },
+      { items: [
+        { label: 'Staff Access', labelKey: 'nav.staffAccess', icon: 'i-shield', path: 'access' },
+        { label: 'Dashboard', labelKey: 'nav.dashboard', icon: 'i-grid', path: 'dashboard' },
+      ] },
       {
         title: 'Company Management',
         titleKey: 'nav.companyManagement',

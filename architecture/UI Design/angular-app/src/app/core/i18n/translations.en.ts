@@ -880,6 +880,8 @@ export const EN: Record<string, string> = {
 
   // Sidebar navigation (Admin, Shipper, Transporter, Truck Owner, Company, Driver portals)
   'nav.roleTag.admin': 'Super Admin Portal',
+  'nav.roleTag.platformStaff': 'Platform Staff Portal',
+  'nav.staffAccess': 'Staff Access',
   'nav.roleTag.shipper': 'Shipper Portal',
   'nav.roleTag.transporter': 'Transporter Portal',
   'nav.roleTag.truckOwner': 'Truck Owner Portal',

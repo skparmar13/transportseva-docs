@@ -13,6 +13,7 @@ export class NotificationNavigationService {
     const role = this.session.role();
     const base = this.session.portal().basePath;
     const data = notification.data ?? {};
+    if (role === 'admin' && data['staff_access_changed'] === true) return this.router.createUrlTree([base, 'access']);
     const uuid = (value: unknown): string | null =>
       typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value) ? value : null;
     const load = uuid(data['load_uuid']);

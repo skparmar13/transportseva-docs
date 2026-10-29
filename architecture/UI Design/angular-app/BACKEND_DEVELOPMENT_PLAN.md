@@ -28,7 +28,7 @@ The framework can be selected separately; domain boundaries and API contracts mu
 ### Phase 0 — Contract freeze
 
 1. Map each mock-service method to an API operation.
-2. Finalize the role, staff and tenant permission matrix.
+2. Finalize the role, staff and tenant permission matrix. The [29/10/2026 staff matrix](e2e/STAFF_PERMISSION_MATRIX_DRAFT_2026-10-29.md) is approved; its [local first-phase rollout](e2e/STAFF_PERMISSIONS_RUN_2026-10-29.md) is verified. Persisted Finance/Support assignment and safeguarded staff/grant editing remain pending in the [acceptance plan](e2e/STAFF_PERMISSION_TEST_PLAN.md).
 3. Confirm the payment provider, supported methods, refund rules and settlement contract with compliance counsel.
 4. Approve currency, tax, cancellation, dispute and Platform-fee policy versions.
 

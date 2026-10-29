@@ -3,6 +3,7 @@ import { ShellComponent } from './shared/layouts/admin-shell/shell.component';
 import { PublicShellComponent } from './shared/layouts/public-shell/public-shell.component';
 import { ComingSoonComponent } from './shared/components/coming-soon/coming-soon.component';
 import { setPortalRole } from './core/guards/portal-role.guard';
+import { API_CONFIG } from './core/api/api-config';
 
 /**
  * Public marketing pages now own the root route, while the existing
@@ -46,10 +47,13 @@ export const routes: Routes = [
     canActivate: [setPortalRole('admin')],
     canActivateChild: [setPortalRole('admin')],
     children: [
+      { path: 'access', title: 'Staff Access | TransportSeva', loadComponent: () => import('./features/admin/staff-access/staff-access.component').then((m) => m.StaffAccessComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', title: 'TransportSeva | Admin Console', loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent) },
       { path: 'companies', title: 'Company Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/company-management/company-management.component').then((m) => m.CompanyManagementComponent) },
-      { path: 'users', title: 'User Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/user-management/user-management.component').then((m) => m.UserManagementComponent) },
+      { path: 'users', title: 'Staff Management | Admin Console | TransportSeva', loadComponent: () => API_CONFIG.useBackend
+        ? import('./features/admin/staff-access/staff-access.component').then((m) => m.StaffAccessComponent)
+        : import('./features/admin/user-management/user-management.component').then((m) => m.UserManagementComponent) },
       { path: 'roles', title: 'Roles & Permissions | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/roles-permissions/roles-permissions.component').then((m) => m.RolesPermissionsComponent) },
       { path: 'customers', title: 'Customer Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/customer-management/customer-management.component').then((m) => m.CustomerManagementComponent) },
       { path: 'transporters', title: 'Transporter Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/transporter-management/transporter-management.component').then((m) => m.TransporterManagementComponent) },

@@ -2,6 +2,9 @@ import { Injectable, computed, signal } from '@angular/core';
 import { PortalRole } from '../models/nav.model';
 import { PORTAL_CONFIGS } from '../data/nav-config';
 import type { MockPlatformStaff } from './auth-mock.service';
+import { StaffAccess, staffRouteAllowed } from '../models/staff-access.model';
+
+interface BackendSessionUser { full_name?: string; email?: string; phone?: string; role?: string; roles?: string[]; staff_access?: StaffAccess | null; }
 
 export interface MockUser {
   name: string;
@@ -31,7 +34,7 @@ const MOCK_USERS: Record<PortalRole, MockUser> = {
 export class SessionService {
   private readonly activeRole = signal<PortalRole>('admin');
   private readonly activePlatformStaff = signal<MockPlatformStaff | null>(null);
-  private readonly activeBackendUser = signal<{ full_name?: string; email?: string; phone?: string; role?: string; roles?: string[] } | null>(null);
+  private readonly activeBackendUser = signal<BackendSessionUser | null>(null);
 
   constructor() {
     if (typeof localStorage !== 'undefined') {
@@ -67,21 +70,34 @@ export class SessionService {
     }
     const backend = this.activeBackendUser();
     if (backend) {
-      const roleTag = this.roleLabel(this.activeRole());
+      const roleTag = this.activeRole() === 'admin' ? backend.staff_access?.role_name ?? 'Administrator' : this.roleLabel(this.activeRole());
       const name = backend.full_name || backend.email || roleTag;
       return { name, role: this.activeRole(), roleTag, avatarInitials: name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() };
     }
     return MOCK_USERS[this.activeRole()];
   });
-  readonly portal = computed(() => PORTAL_CONFIGS[this.activeRole()]);
+  readonly portal = computed(() => {
+    const portal = PORTAL_CONFIGS[this.activeRole()];
+    const backend = this.activeBackendUser();
+    if (this.activeRole() !== 'admin' || !backend) return portal;
+    return { ...portal, roleTag: 'Platform Staff Portal', roleTagKey: 'nav.roleTag.platformStaff',
+      nav: portal.nav.map((section) => ({ ...section, items: section.items.filter((item) => staffRouteAllowed(backend.staff_access, item.path)) }))
+        .filter((section) => section.items.length > 0),
+    };
+  });
 
   setRole(role: PortalRole): void {
     this.activeRole.set(role);
     if (role !== 'admin') this.activePlatformStaff.set(null);
   }
 
-  setBackendUser(user: { full_name?: string; email?: string; phone?: string; role?: string; roles?: string[] }): void { this.activeBackendUser.set(user); }
+  setBackendUser(user: BackendSessionUser): void { this.activeBackendUser.set(user); }
   clearBackendUser(): void { this.activeBackendUser.set(null); }
+
+  canStaffAction(permission: string): boolean {
+    const access = this.activeBackendUser()?.staff_access;
+    return !access?.enforced || (access.ready && access.permissions.includes(permission));
+  }
 
   setPlatformStaff(staff: MockPlatformStaff): void {
     this.activePlatformStaff.set(staff);

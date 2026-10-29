@@ -866,6 +866,8 @@ export const HI: Record<string, string> = {
 
   // Sidebar navigation (Admin, Shipper, Transporter, Truck Owner, Company, Driver portals)
   'nav.roleTag.admin': 'सुपर एडमिन पोर्टल',
+  'nav.roleTag.platformStaff': 'प्लेटफ़ॉर्म स्टाफ पोर्टल',
+  'nav.staffAccess': 'स्टाफ एक्सेस',
   'nav.roleTag.shipper': 'शिपर पोर्टल',
   'nav.roleTag.transporter': 'ट्रांसपोर्टर पोर्टल',
   'nav.roleTag.truckOwner': 'ट्रक मालिक पोर्टल',
