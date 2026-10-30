@@ -39,6 +39,7 @@ export class LoginComponent {
     const reason = this.route.snapshot.queryParamMap.get('reason');
     if (reason === 'inactivity') this.sessionNotice.set('You were signed out after 15 minutes of inactivity. Please log in again.');
     if (reason === 'session-expired') this.sessionNotice.set('Your session expired. Please log in again.');
+    if (reason === 'password-reset') this.sessionNotice.set('Your password was reset. Sign in with your new password.');
     if (reason === 'access-check-failed') {
       this.sessionNotice.set('We could not verify your session. Your credentials have not been cleared; please try again.');
       this.canRetrySession.set(true);

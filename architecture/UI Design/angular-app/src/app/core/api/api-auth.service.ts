@@ -22,6 +22,8 @@ export interface BackendLoginData {
 }
 
 export interface SignupOtpData { debug_otp?: string; }
+export interface RecoveryChallenge { challenge_id: string; expires_in: number; resend_after: number; debug_otp?: string; }
+export interface RecoveryProof { reset_token: string; expires_in: number; }
 
 @Injectable({ providedIn: 'root' })
 export class ApiAuthService {
@@ -86,6 +88,18 @@ export class ApiAuthService {
       map((response) => response.data),
       tap((user) => localStorage.setItem('transportseva.api_user', JSON.stringify(user))),
     );
+  }
+
+  requestPasswordRecovery(identifier: string): Observable<RecoveryChallenge> {
+    return this.api.post<RecoveryChallenge>('auth/password/request-otp', { identifier: identifier.trim() }).pipe(map((response) => response.data));
+  }
+
+  verifyPasswordRecovery(challenge_id: string, otp: string): Observable<RecoveryProof> {
+    return this.api.post<RecoveryProof>('auth/password/verify-otp', { challenge_id, otp }).pipe(map((response) => response.data));
+  }
+
+  resetPassword(challenge_id: string, reset_token: string, password: string, password_confirmation: string): Observable<unknown> {
+    return this.api.post<unknown>('auth/password/reset', { challenge_id, reset_token, password, password_confirmation });
   }
 
   clearTokens(): void {

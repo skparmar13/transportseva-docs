@@ -22,6 +22,22 @@ describe('ApiAuthService', () => {
     localStorage.clear();
   });
 
+  it('uses real recovery endpoints without authenticating or caching recovery proof', () => {
+    service.requestPasswordRecovery(' qa@example.test ').subscribe();
+    const requested = http.expectOne(API_CONFIG.baseUrl + '/auth/password/request-otp');
+    expect(requested.request.body).toEqual({ identifier: 'qa@example.test' });
+    requested.flush({ success: true, data: { challenge_id: 'c-1', expires_in: 600, resend_after: 60 } });
+    service.verifyPasswordRecovery('c-1', '123456').subscribe();
+    const verified = http.expectOne(API_CONFIG.baseUrl + '/auth/password/verify-otp');
+    expect(verified.request.body).toEqual({ challenge_id: 'c-1', otp: '123456' });
+    verified.flush({ success: true, data: { reset_token: 'proof', expires_in: 300 } });
+    service.resetPassword('c-1', 'proof', 'NewPassword@123', 'NewPassword@123').subscribe();
+    const reset = http.expectOne(API_CONFIG.baseUrl + '/auth/password/reset');
+    expect(reset.request.body).toEqual({ challenge_id: 'c-1', reset_token: 'proof', password: 'NewPassword@123', password_confirmation: 'NewPassword@123' });
+    reset.flush({ success: true, data: null });
+    expect(localStorage.length).toBe(0);
+  });
+
   it('sends the selected signup role with OTP verification and stores returned session', () => {
     let result: unknown;
     service.verifySignupOtp('+918505838433', '903744', 'truck-owner').subscribe((data) => result = data);

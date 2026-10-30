@@ -28,6 +28,17 @@ describe('authTokenInterceptor', () => {
     localStorage.clear();
   });
 
+  it('sends anonymous recovery requests without refreshing or clearing an unrelated session', () => {
+    localStorage.setItem('transportseva.access_token', 'existing-session');
+    localStorage.setItem('transportseva.refresh_token', 'existing-refresh');
+    httpClient.post(API_CONFIG.baseUrl + '/auth/password/verify-otp', {}).subscribe({ error: () => undefined });
+    const request = http.expectOne(API_CONFIG.baseUrl + '/auth/password/verify-otp');
+    expect(request.request.headers.has('Authorization')).toBeFalse();
+    request.flush({}, { status: 401, statusText: 'Unauthorized' });
+    http.expectNone(API_CONFIG.baseUrl + '/auth/refresh');
+    expect(localStorage.getItem('transportseva.access_token')).toBe('existing-session');
+  });
+
   it('refreshes an expired access token and retries the original request', () => {
     localStorage.setItem('transportseva.access_token', 'expired-access');
     localStorage.setItem('transportseva.refresh_token', 'refresh-1');
