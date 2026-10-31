@@ -6,6 +6,24 @@
  * sibling `translations.<lang>.ts` file with the same key set.
  */
 export const EN: Record<string, string> = {
+  'testi.loading': 'Loading customer reviews…',
+  'testi.empty': 'No published customer reviews yet.',
+  'testi.error': 'Customer reviews could not be loaded.',
+  'testi.retry': 'Try again',
+  'testi.shipper': 'Shipper',
+  'testi.truckOwner': 'Truck owner',
+  'testi.rating': '{rating} out of 5 stars',
+  'registeredVehicle.refresh': 'Refresh details',
+  'registeredVehicle.loading': 'Loading registered vehicle…',
+  'registeredVehicle.subtitle': 'Your registered vehicle details',
+  'registeredVehicle.booking': 'Assigned booking reference',
+  'registeredVehicle.relatedTitle': 'Additional vehicle records',
+  'registeredVehicle.relatedUnavailable': 'GPS, vehicle documents, maintenance and fuel records are not connected on this screen yet. No sample records are shown or saved.',
+  'registeredVehicle.forbidden': 'Vehicle access unavailable',
+  'registeredVehicle.forbiddenDesc': 'This account cannot access registered vehicle details.',
+  'registeredVehicle.error': 'Vehicle details could not be loaded',
+  'registeredVehicle.retryDesc': 'Please try again. No sample vehicle has been substituted.',
+  'registeredVehicle.notFound': 'This vehicle is not available in your registered fleet. Return to the vehicle list to select a vehicle.',
   // Common / shared
   'common.appName': 'TransportSeva',
   'common.planned': 'Planned',

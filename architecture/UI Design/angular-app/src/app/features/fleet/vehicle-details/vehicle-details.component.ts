@@ -10,6 +10,8 @@ import { DocumentStatus, VehicleLiveStatus } from '../../../core/models/fleet.mo
 import { VehicleDocument } from '../../../core/models/fleet.model';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { RegisteredVehicleDetailsComponent } from './registered-vehicle-details.component';
 
 type TabId = 'overview' | 'device' | 'documents' | 'maintenance' | 'fuel';
 
@@ -52,11 +54,12 @@ const DOC_STATUS_KEY: Record<DocumentStatus, string> = {
 @Component({
   selector: 'app-vehicle-details',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, DatePickerComponent],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, DatePickerComponent, RegisteredVehicleDetailsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './vehicle-details.component.html',
 })
 export class VehicleDetailsComponent {
+  protected readonly useBackend = API_CONFIG.useBackend;
   private readonly route = inject(ActivatedRoute);
   private readonly fleet = inject(FleetMockService);
   protected readonly session = inject(SessionService);

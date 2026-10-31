@@ -1,18 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../../core/i18n';
-import { DashboardMockService } from '../../../core/services/dashboard-mock.service';
+import { ApiDashboardService } from '../../../core/api/api-dashboard.service';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { dashboardFeed } from '../../marketplace/dashboard/dashboard-feed';
+import { dashboardCopy, dashboardStatusClass } from '../../marketplace/dashboard/dashboard-copy';
+import { formatDateTime } from '../../../core/utils/date-format';
 import { SessionService } from '../../../core/services/session.service';
-import { VehicleLiveStatus } from '../../../core/models/dashboard.model';
-
-const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
-  'On Trip': 'status-transit',
-  Idle: 'status-pending',
-  Maintenance: 'status-overdue',
-  Offline: 'status-cancelled',
-};
 
 @Component({
   selector: 'app-truck-owner-dashboard',
@@ -20,16 +15,30 @@ const STATUS_CLASS: Record<VehicleLiveStatus, string> = {
   imports: [IconComponent, RouterLink, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './truck-owner-dashboard.component.html',
+  styleUrl: '../../marketplace/dashboard/dashboard.scss',
 })
 export class TruckOwnerDashboardComponent {
-  private readonly mock = inject(DashboardMockService);
+  private readonly api = inject(ApiDashboardService);
+  private readonly language = inject(LanguageService);
   protected readonly session = inject(SessionService);
-
-  protected readonly kpis = toSignal(this.mock.getTruckOwnerKpis(), { initialValue: [] });
-  protected readonly vehicles = toSignal(this.mock.getTruckOwnerVehicles(), { initialValue: [] });
-  protected readonly quickActions = toSignal(this.mock.getTruckOwnerQuickActions(), { initialValue: [] });
-
-  protected statusClass(status: VehicleLiveStatus): string {
-    return STATUS_CLASS[status];
-  }
+  protected readonly feed = dashboardFeed(() => this.api.provider());
+  protected readonly data = computed(() => this.feed.state().data);
+  protected readonly copy = computed(() => dashboardCopy(this.language.lang()));
+  protected readonly kpis = computed(() => {
+    const totals = this.data()?.totals; const c = this.copy();
+    return totals ? [
+      { key: 'vehicles_total', icon: 'i-car', value: totals.vehicles_total, label: c.vehicles, path: 'vehicles' },
+      { key: 'vehicles_on_trip', icon: 'i-truck', value: totals.vehicles_on_trip, label: c.onTrip, path: 'vehicles' },
+      { key: 'vehicles_available', icon: 'i-check', value: totals.vehicles_available, label: c.available, path: 'vehicles' },
+      { key: 'pending_applications', icon: 'i-doc', value: totals.pending_applications, label: c.pending, path: 'my-applications' },
+    ] : [];
+  });
+  protected readonly quickActions = computed(() => [
+    { label: this.copy().loadBoard, path: 'load-board', icon: 'i-search' },
+    { label: this.copy().myVehicles, path: 'vehicles', icon: 'i-car' },
+    { label: this.copy().myDrivers, path: 'drivers', icon: 'i-user' },
+    { label: this.copy().bookings, path: 'bookings', icon: 'i-check' },
+  ]);
+  protected readonly dateTime = formatDateTime;
+  protected readonly statusClass = dashboardStatusClass;
 }

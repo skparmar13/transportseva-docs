@@ -9,6 +9,9 @@ import { defineConfig } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // Diagnostic collectors reproduce unfinished behavior; they are not
+  // ordinary regression tests. Opt in with playwright.audit.config.ts.
+  testIgnore: ['**/screen-data-audit.spec.ts'],
   timeout: 90_000,
   expect: { timeout: 12_000 },
   fullyParallel: false,

@@ -2,9 +2,7 @@
 import { RouterLink } from '@angular/router';
 import { computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
-import { CmsMockService } from '../../../core/services/cms-mock.service';
-import { LanguageService } from '../../../core/i18n/language.service';
+import { Subject, catchError, map, of, startWith, switchMap } from 'rxjs';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
@@ -16,6 +14,8 @@ import { ApiMarketplaceReview, ApiReviewService } from '../../../core/api/api-re
 import { formatLoadReference } from '../../../core/utils/load-reference';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
+type ReviewFeed = { status: 'loading' | 'ready' | 'error'; reviews: ApiMarketplaceReview[] };
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -26,8 +26,6 @@ import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 })
 export class HomeComponent implements OnInit {
   private readonly seo = inject(SeoService);
-  private readonly cms = inject(CmsMockService);
-  private readonly language = inject(LanguageService);
   private readonly marketplace = inject(MarketplaceMockService);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
   private readonly apiReviews = inject(ApiReviewService);
@@ -37,9 +35,16 @@ export class HomeComponent implements OnInit {
       : of([] as ApiLoad[]),
     { initialValue: [] as ApiLoad[] },
   );
-  private readonly backendReviews = toSignal(
-    API_CONFIG.useBackend ? this.apiReviews.listPublic(6).pipe(catchError(() => of([] as ApiMarketplaceReview[]))) : of([] as ApiMarketplaceReview[]),
-    { initialValue: [] as ApiMarketplaceReview[] },
+  private readonly reviewRefresh = new Subject<void>();
+  protected readonly reviewFeed = toSignal(
+    this.reviewRefresh.pipe(startWith(undefined), switchMap(() => API_CONFIG.useBackend
+      ? this.apiReviews.listPublic(6).pipe(
+        map((reviews): ReviewFeed => ({ status: 'ready', reviews })),
+        startWith<ReviewFeed>({ status: 'loading', reviews: [] }),
+        catchError(() => of<ReviewFeed>({ status: 'error', reviews: [] })),
+      )
+      : of<ReviewFeed>({ status: 'ready', reviews: [] }))),
+    { initialValue: { status: 'loading', reviews: [] } as ReviewFeed },
   );
   protected readonly sourceQuery = signal('');
   protected readonly destinationQuery = signal('');
@@ -103,25 +108,17 @@ export class HomeComponent implements OnInit {
     { number: '8', titleKey: 'how.step8.title', descKey: 'how.step8.desc' },
   ]);
   protected readonly mobileItems = signal(['mobile.item1', 'mobile.item2', 'mobile.item3', 'mobile.item4', 'mobile.item5']);
-  private readonly defaultTestimonials = [
-    { textKey: 'testi1.text', name: 'Rakesh Sharma', roleKey: 'testi1.role', text: '', role: '', stars: '★★★★★' },
-    { textKey: 'testi2.text', name: 'Vikram Singh', roleKey: 'testi2.role', text: '', role: '', stars: '★★★★★' },
-    { textKey: 'testi3.text', name: 'Neha Verma', roleKey: 'testi3.role', text: '', role: '', stars: '★★★★★' },
-  ];
-  protected readonly testimonials = computed(() => {
-    const publicReviews = this.backendReviews();
-    if (publicReviews.length) return publicReviews.map((review) => ({
-      name: review.reviewer_name,
-      role: review.reviewer_role === 'shipper' ? 'Verified Shipper' : 'Verified Fleet Owner',
-      text: review.comment,
-      textKey: '', roleKey: '', stars: '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating),
-    }));
-    const selectedLanguage = this.language.lang() === 'hi' ? 'Hindi' : 'English';
-    const managed = this.cms.publishedTestimonials().filter((item) => item.language === selectedLanguage);
-    return managed.length || selectedLanguage === 'English'
-      ? managed.map((item) => ({ name: item.author || item.title, role: item.attribution || item.summary, text: item.body, textKey: '', roleKey: '', stars: '★★★★★' }))
-      : this.defaultTestimonials;
-  });
+  // Public API is moderation-filtered. Never substitute local CMS/sample reviews,
+  // including while loading, on failure, in prototype mode or during SSR.
+  protected readonly testimonials = computed(() => this.reviewFeed().reviews
+    .filter((review) => (!review.status || review.status === 'approved')
+      && Number.isInteger(review.rating) && review.rating >= 1 && review.rating <= 5)
+    .map((review) => ({ ...review, stars: '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating),
+      roleKey: review.reviewer_role === 'shipper' ? 'testi.shipper' : 'testi.truckOwner' })));
+
+  protected retryReviews(): void {
+    if (this.reviewFeed().status === 'error') this.reviewRefresh.next();
+  }
   protected readonly partners = signal(['TATA MOTORS', 'ASHOK LEYLAND', 'mahindra', 'Castrol', 'FASTag', 'ICICI Lombard']);
 
   protected setPreviewLimit(value: string): void { this.previewLimit.set(Number(value) === 20 ? 20 : 10); }

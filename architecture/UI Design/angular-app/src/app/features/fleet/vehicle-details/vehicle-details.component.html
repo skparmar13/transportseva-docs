@@ -1,3 +1,6 @@
+@if (useBackend) {
+  <app-registered-vehicle-details />
+} @else {
 @if (vehicle(); as v) {
   <div class="page-toolbar">
     <div>
@@ -271,4 +274,5 @@
     <h3>{{ 'vehicleDetails.notFound.title' | t }}</h3>
     <p>{{ 'vehicleDetails.notFound.desc' | t }}</p>
   </div>
+}
 }

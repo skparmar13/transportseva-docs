@@ -1,0 +1,11 @@
+.kpi-card { text-decoration: none; color: inherit; }
+.content-grid { grid-template-columns: minmax(0, 3fr) minmax(220px, 1fr); }
+.content-grid > .card { min-width: 0; }
+.data-table td:first-child a { white-space: nowrap; }
+.dashboard-status { padding: 24px; margin-bottom: 24px; }
+.dashboard-note { margin-bottom: 20px; }
+.table-scroll { overflow-x: auto; }
+.dashboard-spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: dashboard-spin .8s linear infinite; }
+@keyframes dashboard-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .dashboard-spinner { animation: none; } }
+@media (max-width: 1200px) { .content-grid { grid-template-columns: minmax(0, 1fr); } }

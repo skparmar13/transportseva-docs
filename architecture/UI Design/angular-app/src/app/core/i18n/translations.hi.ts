@@ -5,6 +5,24 @@
  * complete content in Hindi.
  */
 export const HI: Record<string, string> = {
+  'testi.loading': 'ग्राहक समीक्षाएँ लोड हो रही हैं…',
+  'testi.empty': 'अभी कोई ग्राहक समीक्षा प्रकाशित नहीं हुई है।',
+  'testi.error': 'ग्राहक समीक्षाएँ लोड नहीं हो सकीं।',
+  'testi.retry': 'फिर कोशिश करें',
+  'testi.shipper': 'शिपर',
+  'testi.truckOwner': 'ट्रक मालिक',
+  'testi.rating': '5 में से {rating} सितारे',
+  'registeredVehicle.refresh': 'विवरण रीफ़्रेश करें',
+  'registeredVehicle.loading': 'पंजीकृत वाहन लोड हो रहा है…',
+  'registeredVehicle.subtitle': 'आपके पंजीकृत वाहन का विवरण',
+  'registeredVehicle.booking': 'संबंधित बुकिंग का संदर्भ',
+  'registeredVehicle.relatedTitle': 'वाहन के अतिरिक्त रिकॉर्ड',
+  'registeredVehicle.relatedUnavailable': 'इस स्क्रीन पर GPS, वाहन दस्तावेज़, रखरखाव और ईंधन रिकॉर्ड अभी जुड़े नहीं हैं। कोई नमूना रिकॉर्ड नहीं दिखाया या सहेजा जाता है।',
+  'registeredVehicle.forbidden': 'वाहन तक पहुँच उपलब्ध नहीं है',
+  'registeredVehicle.forbiddenDesc': 'इस खाते से पंजीकृत वाहन विवरण नहीं देखा जा सकता।',
+  'registeredVehicle.error': 'वाहन विवरण लोड नहीं हो सका',
+  'registeredVehicle.retryDesc': 'कृपया फिर कोशिश करें। इसकी जगह कोई नमूना वाहन नहीं दिखाया गया है।',
+  'registeredVehicle.notFound': 'यह वाहन आपके पंजीकृत बेड़े में उपलब्ध नहीं है। वाहन चुनने के लिए सूची पर लौटें।',
   // Common / shared
   'common.appName': 'ट्रांसपोर्टसेवा',
   'common.planned': 'नियोजित',

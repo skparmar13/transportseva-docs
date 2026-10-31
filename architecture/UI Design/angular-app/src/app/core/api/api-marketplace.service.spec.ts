@@ -16,6 +16,15 @@ describe('ApiMarketplaceService', () => {
 
   afterEach(() => http.verify());
 
+  it('loads a registered vehicle using the ownership-scoped detail endpoint', () => {
+    let vehicle: unknown;
+    service.getMarketplaceVehicle('vehicle/one').subscribe((value) => vehicle = value);
+    const request = http.expectOne(`${API_CONFIG.baseUrl}/marketplace-vehicles/vehicle%2Fone`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ success: true, data: { uuid: 'vehicle/one', registration_number: 'QA14AA1234', make: 'Tata' } });
+    expect(vehicle).toEqual(jasmine.objectContaining({ registration_number: 'QA14AA1234' }));
+  });
+
   it('normalizes Laravel decimal budget strings for all load screens', () => {
     let loadBudget: number | string | undefined;
     service.getLoad('load-1').subscribe((load) => loadBudget = load.budget);

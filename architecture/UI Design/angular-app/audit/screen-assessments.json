@@ -1,0 +1,250 @@
+{
+  "reviewDate": "31/10/2026",
+  "mode": "Backend-enabled local application; source wiring assessment, not production sign-off",
+  "groups": [
+    {
+      "files": ["public/home/home"],
+      "status": "mixed",
+      "priority": "P1",
+      "anchor": "reviewFeed",
+      "note": "31/10 repair: public reviews use only the moderation-filtered API, with loading/empty/error/retry and no sample/CMS fallback even during SSR. Marketing statistics/partner names remain static, and the load preview still lacks a distinct API error/retry state. See REVIEWS_VEHICLE_DETAILS_2026-10-31.md for scoped regression evidence."
+    },
+    {
+      "files": ["public/about/about", "public/blog/blog", "public/blog-post/blog-post", "public/help-center/help-center", "public/privacy-policy/privacy-policy", "public/terms-conditions/terms-conditions", "public/refund-policy/refund-policy"],
+      "status": "browser_local_content",
+      "priority": "P2",
+      "anchor": "CmsMockService",
+      "note": "CMS content is seeded/browser localStorage, not server-managed publishing. Static approved legal/marketing copy can be valid, but local content edits are not shared administration."
+    },
+    {
+      "files": ["public/pricing/pricing"],
+      "status": "static_content",
+      "priority": "P2",
+      "anchor": "SUBSCRIPTION_PLANS",
+      "note": "Static plan catalogue/marketing. Reconcile with subscriptions disabled in backend configuration before public launch; no real subscription checkout verified."
+    },
+    {
+      "files": ["public/contact/contact"],
+      "status": "prototype",
+      "priority": "P0",
+      "anchor": "this.submitted.set(true)",
+      "note": "Submit displays message-sent success and clears fields without persisting or sending the inquiry. Contact phone/address are sample copy. Map lookup is not inquiry delivery."
+    },
+    {
+      "files": ["public/careers/careers"],
+      "status": "browser_local_content",
+      "priority": "P2",
+      "anchor": "CareersMockService",
+      "note": "Jobs are seeded/localStorage with client-side filters; not a shared server publishing or application-tracking workflow."
+    },
+    {
+      "files": ["auth/login/login", "auth/staff-login/staff-login", "auth/signup/signup", "auth/forgot-password/forgot-password"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiAuthService",
+      "note": "Backend authentication/recovery branch present and previously verified. Real OTP/email delivery remains deferred; developer sandbox is not delivery evidence."
+    },
+    {
+      "files": ["auth/otp-verification/otp-verification"],
+      "status": "mixed",
+      "priority": "P1",
+      "anchor": "next') === 'signup'",
+      "note": "Signup OTP uses API and retry-safe server verification. Non-signup query path still calls mock verification; resend has no client countdown/duplicate guard although server throttles it."
+    },
+    {
+      "files": ["auth/profile-setup/profile-setup"],
+      "status": "mixed",
+      "priority": "P1",
+      "anchor": "ApiAuthService",
+      "note": "Credentials/name complete through real API; additional business/profile fields also update prototype state. Do not infer full address/designation/company persistence."
+    },
+    {
+      "files": ["auth/business-registration/business-registration"],
+      "status": "mixed",
+      "priority": "P1",
+      "anchor": "ApiCompanyService",
+      "note": "API company creation caller exists, but route is not the current signup transition and uses pending browser signup fields. Tenant ownership and pending-profile authorization require review; no company creation exercised by this audit."
+    },
+    {
+      "files": ["auth/workspace-selection/workspace-selection"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "AuthMockService",
+      "note": "Workspace catalogue/selection is mock; no persisted organization membership switch. Portal guard independently checks real identity, so selection is not evidence of new access."
+    },
+    {
+      "files": ["admin/staff-access/staff-access", "admin/roles-permissions/roles-permissions", "admin/audit-logs/audit-logs"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiAdminAccessService",
+      "note": "Real read-only access/role/activity APIs. Staff/role editing deliberately disabled; role-specific route ceiling applies. /admin/users redirects under local strict mode."
+    },
+    {
+      "files": ["admin/review-management/review-management", "reviews/my-review/my-review"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiReviewService",
+      "note": "Actual submission/moderation APIs and database statuses. Homepage publication fallback was removed in the 31/10 repair; existing moderation writes were not re-executed in that read-only browser repair run."
+    },
+    {
+      "files": ["admin/kyc-management/kyc-management", "kyc/my-kyc/my-kyc"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiMarketplaceService",
+      "note": "Real private-document KYC APIs and moderation. No file uploads/downloads or moderation mutations performed in this audit."
+    },
+    {
+      "files": ["dashboard/dashboard", "transporter/dashboard/transporter-dashboard", "driver/dashboard/driver-dashboard"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "DashboardMockService",
+      "note": "Landing KPIs and recent records are samples even in backend mode. Transporter request acceptance mutates the mock marketplace store. Admin dashboard is blocked by current strict staff policy."
+    },
+    {
+      "files": ["shipper/dashboard/shipper-dashboard", "truck-owner/dashboard/truck-owner-dashboard"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiDashboardService",
+      "note": "31/10 dashboard repair: self-only API totals and owned recent rows, loading/error/retry/refresh and genuine zero states. No sample records/trends/earnings/GPS locations in either backend or backend-off mode. Counts cover all owned records, with recent previews capped at six; canonical load poster and booking owner/provider scope is enforced server-side. Other role dashboards remain prototypes. See MARKETPLACE_DASHBOARDS_2026-10-31.md."
+    },
+    {
+      "files": ["company/dashboard/company-dashboard"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "BusinessSettingsMockService",
+      "note": "Company, fleet, branch, staff and trip counts use mock stores. Backend UserType has no company role; company portal identity/workspace model is unresolved."
+    },
+    {
+      "files": ["admin/company-management/company-management", "admin/user-management/user-management", "admin/customer-management/customer-management", "admin/transporter-management/transporter-management", "admin/driver-management/driver-management", "admin/route-management/route-management", "admin/api-management/api-management"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "signal",
+      "note": "Inline sample records/client mutations, not server administration. Intentionally inaccessible under strict local staff policy; never enable simply by showing navigation."
+    },
+    {
+      "files": ["marketplace/bookings/bookings", "marketplace/post-load/post-load", "marketplace/my-loads/my-loads", "marketplace/load-details/load-details", "marketplace/applications/applications", "marketplace/load-board/load-board"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiMarketplaceService",
+      "note": "API-backed marketplace branch. Previously tested mutations are not re-executed in this read-only audit. Payments/GPS excluded; staff booking access is limited to authorized independent dispute review."
+    },
+    {
+      "files": ["fleet/vehicle-list/vehicle-list"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "viewVehicle",
+      "note": "Owned vehicle list/add use API. 31/10 repair: View now opens the real ownership-scoped vehicle detail API, including reload/retry. GPS/document/maintenance/fuel integrations remain explicitly unavailable on the detail screen; do not infer those capabilities from list marketing copy."
+    },
+    {
+      "files": ["drivers/driver-list/driver-list"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "listMarketplaceDrivers",
+      "note": "Real owned directory/add API; detail button is intentionally hidden in backend mode. This is not complete driver profile/document editing."
+    },
+    {
+      "files": ["fleet/vehicle-details/vehicle-details"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "RegisteredVehicleDetailsComponent",
+      "note": "31/10 repair: backend mode delegates to registered-vehicle-details.component.ts for persisted owned overview/allocation, loading/error/retry and safe 403/404. No sample related records or browser-only save actions appear in backend mode. Documents/maintenance/fuel/device integration remains deferred, not implemented by this read-only overview repair. Prototype tabs remain only in backend-off mode."
+    },
+    {
+      "files": ["drivers/driver-details/driver-details"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "DriverMockService",
+      "note": "Profile, assignment and documents use sample driver/fleet stores. Direct real-UUID route does not resolve; list hides its detail action in backend mode."
+    },
+    {
+      "files": ["trips/trip-list/trip-list", "trips/trip-details/trip-details"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "TripMockService",
+      "note": "Separate Trips/History/driver POD routes read/mutate sample trips, not marketplace bookings. Existing booking-level real POD workflow must not be confused with this module."
+    },
+    {
+      "files": ["documents/documents"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "FleetMockService",
+      "note": "Compliance hub derives sample fleet/driver/trip data. Upload saves only filenames, POD download fabricates text, not authenticated original file retrieval."
+    },
+    {
+      "files": ["business-settings/business-settings"],
+      "status": "prototype",
+      "priority": "P0",
+      "anchor": "BusinessSettingsMockService",
+      "note": "Company edit, branches and staff operations modify memory only; fake tenant profile is shared across role views. No persisted profile/tenant access policy; billing methods also remain prototype."
+    },
+    {
+      "files": ["support/support"],
+      "status": "prototype",
+      "priority": "P0",
+      "anchor": "createTicket",
+      "note": "Ticket creation/replies are in-memory only. Legacy Support module is disabled and has incompatible identity/policy contracts, so it must not simply be enabled. No actual support case reaches staff."
+    },
+    {
+      "files": ["notifications/notifications"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "CommunicationMockService",
+      "note": "Despite service name, bell/notifications use ApiNotificationsService with account-specific polling. Error handling/read acknowledgements need improvement; audit does not mark notifications read."
+    },
+    {
+      "files": ["reports/reports"],
+      "status": "prototype",
+      "priority": "P1",
+      "anchor": "ReportMockService",
+      "note": "Tables/KPIs and exported CSV are prototype datasets; no authorized server analytics. Do not treat downloadable sample CSV as a real report."
+    },
+    {
+      "files": ["admin/cms-management/cms-management", "admin/careers-management/careers-management", "admin/newsletter-management/newsletter-management"],
+      "status": "browser_local_content",
+      "priority": "P2",
+      "anchor": "MockService",
+      "note": "Client localStorage publishing/admin records, not shared server persistence. Blocked by strict local staff policy; require permissions and tenant/content contracts before enabling."
+    },
+    {
+      "files": ["wallet/wallet", "payments/payments"],
+      "status": "deferred_prototype",
+      "priority": "DEFERRED",
+      "anchor": "PaymentMockService",
+      "note": "Standalone ledger/payment/invoice screens read sample data. Real payment work deferred by user; no real charging/refund/payout attempted or claimed."
+    },
+    {
+      "files": ["gps/device-inventory/device-inventory", "gps/device-details/device-details", "gps/geofence-management/geofence-management"],
+      "status": "deferred_prototype",
+      "priority": "DEFERRED",
+      "anchor": "MockService",
+      "note": "Prototype GPS/device/geofence stores. Real GPS excluded by user; no live coordinates, device commands or location submission exercised."
+    },
+    {
+      "files": ["gps/live-tracking/live-tracking"],
+      "status": "deferred_guarded",
+      "priority": "DEFERRED",
+      "anchor": "this.backendEnabled ? []",
+      "note": "Backend mode deliberately suppresses demo positions. Assigned-vehicle link is not proof of a live feed. Hardware/mobile ingestion still deferred."
+    }
+  ],
+  "shared": [
+    {
+      "file": "src/app/shared/layouts/public-shell/public-shell.component.ts",
+      "anchor": "this.newsletter.subscribe",
+      "priority": "P0",
+      "note": "Footer claims subscription success using browser localStorage only; no server subscription, consent record or delivery evidence."
+    },
+    {
+      "file": "src/app/core/services/communication-mock.service.ts",
+      "anchor": "this.apiNotifications.list",
+      "priority": "P2",
+      "note": "Notification branch is real; ticket branch in the same service is not. Do not classify by class name alone."
+    },
+    {
+      "file": "src/app/core/guards/portal-role.guard.ts",
+      "anchor": "ApiAuthService).me",
+      "priority": "P2",
+      "note": "Actual server identity and staff route ceiling verified before activating a portal; forged role cache cannot authorize a new role."
+    }
+  ]
+}

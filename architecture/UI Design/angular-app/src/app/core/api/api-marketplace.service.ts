@@ -260,6 +260,11 @@ export class ApiMarketplaceService {
     return this.api.get<ApiMarketplaceVehicle[]>('marketplace-vehicles').pipe(map((response) => response.data));
   }
 
+  getMarketplaceVehicle(uuid: string): Observable<ApiMarketplaceVehicle> {
+    return this.api.get<ApiMarketplaceVehicle>('marketplace-vehicles/' + encodeURIComponent(uuid))
+      .pipe(map((response) => response.data));
+  }
+
   createMarketplaceVehicle(payload: CreateMarketplaceVehiclePayload): Observable<ApiMarketplaceVehicle> {
     return this.api.post<ApiMarketplaceVehicle>('marketplace-vehicles', payload).pipe(map((response) => response.data));
   }

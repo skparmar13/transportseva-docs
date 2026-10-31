@@ -1,0 +1,32 @@
+<div class="page-toolbar">
+  <a class="btn btn-outline btn-sm" [routerLink]="[session.portal().basePath, listPath()]">{{ 'vehicleDetails.back' | t }}</a>
+  <button type="button" class="btn btn-outline btn-sm" [disabled]="state().status === 'loading'" [attr.aria-busy]="state().status === 'loading'" (click)="reload()">{{ (state().status === 'loading' ? 'common.loading' : 'registeredVehicle.refresh') | t }}</button>
+</div>
+@if (state().status === 'loading') {
+  <div class="card"><div class="card-body" role="status" aria-busy="true">{{ 'registeredVehicle.loading' | t }}</div></div>
+} @else if (vehicle(); as v) {
+  <div class="page-toolbar"><div><h1>{{ v.registration_number }}</h1><p class="desc">{{ 'registeredVehicle.subtitle' | t }}</p></div><span class="status-pill status-pending">{{ availabilityKey() | t }}</span></div>
+  <section class="card" aria-labelledby="registered-vehicle-heading">
+    <div class="card-head"><h2 id="registered-vehicle-heading">{{ 'vehicleDetails.tab.overview' | t }}</h2></div>
+    <div class="card-body"><dl class="load-meta-grid">
+      <div><dt>{{ 'vehicleDetails.meta.vehicleType' | t }}</dt><dd>{{ v.vehicle_type }}</dd></div>
+      <div><dt>{{ 'vehicleList.modal.make' | t }}</dt><dd>{{ v.make || ('common.dash' | t) }}</dd></div>
+      <div><dt>{{ 'vehicleList.modal.model' | t }}</dt><dd>{{ v.model || ('common.dash' | t) }}</dd></div>
+      <div><dt>{{ 'vehicleList.modal.yearOfMake' | t }}</dt><dd>{{ v.year_of_make ?? ('common.dash' | t) }}</dd></div>
+      <div><dt>{{ 'vehicleDetails.meta.capacity' | t }}</dt><dd>{{ v.capacity_tons }} {{ 'vehicleDetails.tonsUnit' | t }}</dd></div>
+      <div><dt>{{ 'vehicleDetails.meta.addedOn' | t }}</dt><dd>{{ dateTime(v.created_at) }}</dd></div>
+      @if (v.assigned_booking_uuid) {
+        <div><dt>{{ 'registeredVehicle.booking' | t }}</dt><dd style="overflow-wrap:anywhere;">{{ v.assigned_booking_uuid }}</dd></div>
+      }
+    </dl></div>
+  </section>
+  <aside class="card" style="margin-top:20px;"><div class="card-body"><h3>{{ 'registeredVehicle.relatedTitle' | t }}</h3><p class="desc">{{ 'registeredVehicle.relatedUnavailable' | t }}</p></div></aside>
+} @else {
+  <div class="card"><div class="card-body" [attr.role]="state().status === 'error' ? 'alert' : 'status'">
+    <h1>{{ (state().status === 'not-found' ? 'vehicleDetails.notFound.title' : state().status === 'forbidden' ? 'registeredVehicle.forbidden' : 'registeredVehicle.error') | t }}</h1>
+    <p>{{ (state().status === 'not-found' ? 'registeredVehicle.notFound' : state().status === 'forbidden' ? 'registeredVehicle.forbiddenDesc' : 'registeredVehicle.retryDesc') | t }}</p>
+    @if (state().status === 'error') {
+      <button type="button" class="btn btn-primary" (click)="reload()">{{ 'testi.retry' | t }}</button>
+    }
+  </div></div>
+}
