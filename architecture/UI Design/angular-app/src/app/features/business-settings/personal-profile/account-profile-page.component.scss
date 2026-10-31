@@ -1,0 +1,15 @@
+:host { display: block; }
+.personal-profile { margin: 20px 0; }
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.wide { grid-column: 1 / -1; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.checkbox-row { display: flex; gap: 10px; margin: 12px 0; align-items: center; }
+.profile-banner { padding: 16px; background: #fff4e9; border: 1px solid #ffd4af; border-radius: 12px; }
+.profile-state { padding: 24px; display: flex; gap: 12px; align-items: center; }
+.profile-error { color: #b42318; }
+.profile-success { color: #087443; }
+.profile-continue { margin: 0 0 24px; }
+.profile-spinner { display: inline-block; flex-shrink: 0; width: 16px; height: 16px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: profile-spin .75s linear infinite; }
+@keyframes profile-spin { to { transform: rotate(360deg); } }
+@media (max-width: 640px) { .profile-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .profile-spinner { animation-duration: 2s; } }

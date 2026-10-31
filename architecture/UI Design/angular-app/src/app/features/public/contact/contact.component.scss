@@ -1,1 +1,7 @@
-﻿/* Uses global public classes from src/styles/_public.scss */
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.contact-error { color: #b42318; margin-top: 8px; }
+.contact-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+textarea { resize: vertical; }
+.contact-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: contact-spin .75s linear infinite; margin-right: 8px; }
+@keyframes contact-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .contact-spinner { animation-duration: 2s; } }

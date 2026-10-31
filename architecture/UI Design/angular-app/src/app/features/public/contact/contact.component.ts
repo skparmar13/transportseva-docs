@@ -1,73 +1,49 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ApiContactInquiryService, ContactDraft, InquiryReceipt, InquirySubject } from '../../../core/api/api-contact-inquiry.service';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { apiFieldErrors } from '../../../core/api/api-error';
+import { LanguageService } from '../../../core/i18n';
 import { SeoService } from '../../../core/seo/seo.service';
-import { CmsMockService } from '../../../core/services/cms-mock.service';
-import { LanguageService } from '../../../core/i18n/language.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { LocationSearchService } from '../../../core/services/location-search.service';
-import { GeoLocation } from '../../../core/models/location.model';
-import { take } from 'rxjs';
-import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID } from '@angular/core';
+import { formatDateTime } from '../../../core/utils/date-format';
+import { contactCopy } from './contact-copy';
 
-@Component({
-  selector: 'app-contact',
-  standalone: true,
-  imports: [FormsModule, RouterLink, IconComponent, TranslatePipe],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './contact.component.html',
-  styleUrl: './contact.component.scss',
-})
-export class ContactComponent implements OnInit {
-  private readonly seo = inject(SeoService);
-  private readonly cms = inject(CmsMockService);
+const blank = (): ContactDraft => ({ full_name: '', phone: '', email: '', subject: 'general', message: '', website: '' });
+@Component({ selector: 'app-contact', standalone: true, imports: [FormsModule], changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './contact.component.html', styleUrl: './contact.component.scss' })
+export class ContactComponent {
+  private readonly api = inject(ApiContactInquiryService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly language = inject(LanguageService);
-  private readonly locationSearch = inject(LocationSearchService);
-  private readonly sanitizer = inject(DomSanitizer);
-  private readonly platformId = inject(PLATFORM_ID);
-  protected readonly managedPage = computed(() => this.cms.publishedPage('Contact page', this.language.lang() === 'hi' ? 'Hindi' : 'English'));
-  protected readonly contactMapUrl = signal<SafeResourceUrl | null>(null);
-  protected readonly contactMapLoading = signal(true);
-
-  ngOnInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    this.locationSearch.search('123 Logistics Park, Sector 62, Noida, Uttar Pradesh, 201309').pipe(take(1)).subscribe({
-      next: (locations) => {
-        const location = locations[0];
-        if (location) {
-          const pad = 0.008;
-          const bbox = [location.longitude - pad, location.latitude - pad, location.longitude + pad, location.latitude + pad].join(',');
-          const url = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${location.latitude},${location.longitude}`;
-          this.contactMapUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
-        }
-        this.contactMapLoading.set(false);
-      },
-      error: () => this.contactMapLoading.set(false),
-    });
-    this.seo.update({
-      title: 'Contact TransportSeva | Support, Sales & Partnerships',
-      description:
-        'Get in touch with TransportSeva for shipment support, sales queries or partnership requests. 24x7 support desk and quick response from our team across India.',
-      url: '/contact',
-    });
-  }
-
-  protected readonly fullName = signal('');
-  protected readonly phone = signal('');
-  protected readonly email = signal('');
-  protected readonly subject = signal('General Inquiry');
-  protected readonly message = signal('');
-  protected readonly submitted = signal(false);
-
+  protected readonly copy = computed(() => contactCopy(this.language.lang()));
+  protected readonly draft = signal<ContactDraft>(blank());
+  protected readonly saving = signal(false);
+  protected readonly errors = signal<Record<string, string>>({});
+  protected readonly error = signal('');
+  protected readonly receipt = signal<InquiryReceipt | null>(null);
+  protected readonly conflict = signal(false);
+  protected readonly subjects: InquirySubject[] = ['general', 'booking', 'partnership', 'billing'];
+  protected readonly dateTime = formatDateTime;
+  private submissionId: string | null = null;
+  constructor() { inject(SeoService).update({ title: 'Contact TransportSeva | Enquiries', description: 'Contact TransportSeva about shipments, your account or a partnership.', url: '/contact' }); }
+  protected update(field: keyof ContactDraft, value: string): void { this.draft.update((draft) => ({ ...draft, [field]: value })); }
+  protected newEnquiry(): void { if (this.saving()) return; this.submissionId = null; this.receipt.set(null); this.error.set(''); this.errors.set({}); this.conflict.set(false); }
   protected submit(): void {
-    this.submitted.set(true);
-    this.fullName.set('');
-    this.phone.set('');
-    this.email.set('');
-    this.subject.set('General Inquiry');
-    this.message.set('');
+    if (this.saving() || this.receipt() || this.conflict()) return;
+    this.error.set(''); this.errors.set({});
+    if (!API_CONFIG.useBackend) { this.error.set(this.copy().unavailable); return; }
+    const d = this.draft(); const errors: Record<string, string> = {};
+    if (d.full_name.trim().length < 2 || d.full_name.trim().length > 100) errors['full_name'] = this.copy().invalidName;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email.trim()) || d.email.length > 150) errors['email'] = this.copy().invalidEmail;
+    if (!/^\+?[1-9][0-9]{9,14}$/.test(d.phone.trim().replace(/[\s()-]/g, ''))) errors['phone'] = this.copy().invalidPhone;
+    if (d.message.trim().length < 10 || d.message.length > 5000) errors['message'] = this.copy().invalidMessage;
+    if (!this.subjects.includes(d.subject)) errors['subject'] = this.copy().required;
+    if (Object.keys(errors).length) { this.errors.set(errors); return; }
+    this.submissionId ??= crypto.randomUUID(); this.saving.set(true);
+    this.api.submit({ ...d, submission_id: this.submissionId }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (receipt) => { this.receipt.set(receipt); this.draft.set(blank()); this.saving.set(false); },
+      error: (e) => { this.saving.set(false); this.errors.set(apiFieldErrors(e)); this.conflict.set(e instanceof HttpErrorResponse && e.status === 409); this.error.set(e instanceof HttpErrorResponse && e.status === 429 ? this.copy().rate : this.conflict() ? this.copy().conflictMessage : this.copy().failed); },
+    });
   }
 }

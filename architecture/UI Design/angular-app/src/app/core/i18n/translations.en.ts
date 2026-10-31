@@ -6,6 +6,7 @@
  * sibling `translations.<lang>.ts` file with the same key set.
  */
 export const EN: Record<string, string> = {
+  'nav.contactEnquiries': 'Contact Enquiries',
   'testi.loading': 'Loading customer reviews…',
   'testi.empty': 'No published customer reviews yet.',
   'testi.error': 'Customer reviews could not be loaded.',

@@ -10,6 +10,8 @@ import { PlanTier, SUBSCRIPTION_PLANS } from '../../core/data/subscription-plans
 import { LocationPickerComponent } from '../../shared/components/location-picker/location-picker.component';
 import { GeoLocation } from '../../core/models/location.model';
 import { formatDate, formatDateTime } from '../../core/utils/date-format';
+import { API_CONFIG } from '../../core/api/api-config';
+import { AccountBusinessProfileComponent } from './account-profile/account-business-profile.component';
 
 type SettingsTab = 'company' | 'branches' | 'users' | 'roles' | 'billing';
 
@@ -34,11 +36,12 @@ const BILLING_STATUS_CLASS: Record<BillingInvoiceStatus, string> = {
 @Component({
   selector: 'app-business-settings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, LocationPickerComponent],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, TranslatePipe, LocationPickerComponent, AccountBusinessProfileComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './business-settings.component.html',
 })
 export class BusinessSettingsComponent {
+  protected readonly useBackend = API_CONFIG.useBackend;
   protected readonly settings = inject(BusinessSettingsMockService);
 
   protected readonly staffStatusClass = STAFF_STATUS_CLASS;

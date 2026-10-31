@@ -23,6 +23,8 @@ export class NotificationNavigationService {
     const offer = uuid(data['offer_uuid']);
     const review = uuid(data['review_uuid']);
     const kyc = uuid(data['kyc_profile_uuid']);
+    const inquiry = uuid(data['contact_inquiry_uuid']);
+    if (inquiry && role === 'admin') return this.router.createUrlTree([base, 'contact-inquiries'], { queryParams: { inquiry } });
     const marketplaceRole = role === 'shipper' || role === 'transporter' || role === 'truck-owner';
     if (load && marketplaceRole) return this.router.createUrlTree([base, 'load-board', load], {
       queryParams: message && application ? { chat: application } : offer && application ? { offers: application } : {},

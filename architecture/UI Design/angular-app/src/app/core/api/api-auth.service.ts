@@ -11,6 +11,13 @@ export interface BackendLoginUser {
   role?: string;
   roles?: string[];
   profile_completion_required?: boolean;
+  email_verification_required?: boolean;
+  portal_access_ready?: boolean;
+  profile_url?: string;
+  first_name?: string;
+  last_name?: string;
+  status?: string;
+  email_verified_at?: string | null;
   staff_access?: StaffAccess | null;
 }
 

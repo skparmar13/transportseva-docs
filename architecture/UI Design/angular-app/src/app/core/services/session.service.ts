@@ -4,7 +4,7 @@ import { PORTAL_CONFIGS } from '../data/nav-config';
 import type { MockPlatformStaff } from './auth-mock.service';
 import { StaffAccess, staffRouteAllowed } from '../models/staff-access.model';
 
-interface BackendSessionUser { full_name?: string; email?: string; phone?: string; role?: string; roles?: string[]; staff_access?: StaffAccess | null; }
+interface BackendSessionUser { full_name?: string; email?: string; phone?: string; role?: string; roles?: string[]; staff_access?: StaffAccess | null; profile_completion_required?: boolean; email_verification_required?: boolean; portal_access_ready?: boolean; }
 
 export interface MockUser {
   name: string;
@@ -61,6 +61,10 @@ export class SessionService {
   }
 
   readonly role = computed(() => this.activeRole());
+  readonly onboardingRequired = computed(() => {
+    const user = this.activeBackendUser();
+    return !!user && (user.profile_completion_required === true || user.email_verification_required === true || user.portal_access_ready === false);
+  });
   readonly platformStaff = computed(() => this.activePlatformStaff());
   readonly user = computed<MockUser>(() => {
     const staff = this.activePlatformStaff();
@@ -71,7 +75,7 @@ export class SessionService {
     const backend = this.activeBackendUser();
     if (backend) {
       const roleTag = this.activeRole() === 'admin' ? backend.staff_access?.role_name ?? 'Administrator' : this.roleLabel(this.activeRole());
-      const name = backend.full_name || backend.email || roleTag;
+      const name = backend.full_name?.trim() || roleTag;
       return { name, role: this.activeRole(), roleTag, avatarInitials: name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() };
     }
     return MOCK_USERS[this.activeRole()];
@@ -79,6 +83,7 @@ export class SessionService {
   readonly portal = computed(() => {
     const portal = PORTAL_CONFIGS[this.activeRole()];
     const backend = this.activeBackendUser();
+    if (this.onboardingRequired() && this.activeRole() !== 'admin') return { ...portal, nav: [{ title: 'Account', items: [{ label: 'Profile', labelKey: 'nav.profile', icon: 'i-user', path: 'profile' }] }] };
     if (this.activeRole() !== 'admin' || !backend) return portal;
     return { ...portal, roleTag: 'Platform Staff Portal', roleTagKey: 'nav.roleTag.platformStaff',
       nav: portal.nav.map((section) => ({ ...section, items: section.items.filter((item) => staffRouteAllowed(backend.staff_access, item.path)) }))

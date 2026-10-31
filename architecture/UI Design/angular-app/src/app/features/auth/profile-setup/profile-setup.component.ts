@@ -11,7 +11,6 @@ import { LocationPickerComponent } from '../../../shared/components/location-pic
 import { GeoLocation } from '../../../core/models/location.model';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiAuthService } from '../../../core/api/api-auth.service';
-import { apiErrorMessage } from '../../../core/api/api-error';
 
 @Component({
   selector: 'app-profile-setup',
@@ -22,6 +21,7 @@ import { apiErrorMessage } from '../../../core/api/api-error';
   styleUrl: './profile-setup.component.scss',
 })
 export class ProfileSetupComponent {
+  protected readonly useBackend = API_CONFIG.useBackend;
   private readonly auth = inject(AuthMockService);
   private readonly session = inject(SessionService);
   private readonly router = inject(Router);
@@ -37,6 +37,16 @@ export class ProfileSetupComponent {
   protected readonly submitting = signal(false);
   protected readonly apiError = signal('');
 
+  constructor() {
+    if (API_CONFIG.useBackend) this.apiAuth.me().subscribe({
+      next: (user) => {
+        const role = user.role === 'customer' ? 'shipper' : user.role;
+        void this.router.navigateByUrl(`/${['shipper', 'transporter', 'truck-owner', 'driver'].includes(role ?? '') ? role : 'shipper'}/profile`, { replaceUrl: true });
+      },
+      error: () => void this.router.navigateByUrl('/auth/login', { replaceUrl: true }),
+    });
+  }
+
   protected setProfileCity(location: GeoLocation | null): void {
     if (location) this.city.set(location.city);
   }
@@ -49,36 +59,14 @@ export class ProfileSetupComponent {
   }
 
   protected skip(): void {
+    if (API_CONFIG.useBackend) return;
     this.goToDashboard();
   }
 
   protected submit(): void {
+    if (API_CONFIG.useBackend) return;
     this.apiError.set('');
     this.submitting.set(true);
-    if (API_CONFIG.useBackend) {
-      const pending = JSON.parse(sessionStorage.getItem('transportseva.pending_signup') ?? '{}') as { fullName?: string; email?: string; password?: string };
-      const parts = (pending.fullName ?? '').trim().split(/\s+/).filter(Boolean);
-      const first_name = parts.shift() ?? '';
-      const last_name = parts.join(' ') || first_name;
-      this.apiAuth.completeProfile({
-        first_name, last_name, email: pending.email ?? '', password: pending.password ?? '',
-        password_confirmation: pending.password ?? '',
-      }).subscribe({
-        next: () => {
-          this.submitting.set(false);
-          sessionStorage.removeItem('transportseva.pending_signup');
-          const backendUser = JSON.parse(localStorage.getItem('transportseva.api_user') ?? 'null');
-          if (backendUser) this.session.setBackendUser(backendUser);
-          this.goToDashboard();
-          sessionStorage.removeItem('transportseva.pending_signup_role');
-        },
-        error: (error) => {
-          this.submitting.set(false);
-          this.apiError.set(apiErrorMessage(error));
-        },
-      });
-      return;
-    }
     this.auth
       .completeProfileSetup({
         designation: this.designation(),

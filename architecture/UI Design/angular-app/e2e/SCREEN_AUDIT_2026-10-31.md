@@ -182,6 +182,11 @@ subsequently replaced with self-scoped API data. See
 [dashboard repair results](MARKETPLACE_DASHBOARDS_2026-10-31.md).
 Admin, Transporter, Driver and Company dashboard findings remain open.
 
+The active business-account profile screen was subsequently connected to
+self-owned persistence, validation, version conflicts and real notifications.
+See [business-profile repair results](BUSINESS_PROFILE_2026-10-31.md).
+Company tenancy/staff/billing and optional signup metadata remain separate.
+
 1. Remove homepage sample-review fallback and give genuine feed empty/error states.
 2. Fix real vehicle detail retrieval/navigation, then connect the shipper/owner
    dashboards to scoped aggregates. Never derive user data by trusting a role label.
@@ -197,3 +202,13 @@ Admin, Transporter, Driver and Company dashboard findings remain open.
 Each implementation task must include API authorization/validation, UI loading,
 error and empty states, visible action feedback, database persistence/reload,
 cross-account negative tests and real bell routing where applicable.
+
+31/10/2026 follow-up: optional signup fields/preferences now persist on the
+dashboard Profile page, with mandatory server-enforced profile + login-email
+verification for self-service users. Company tenancy/staff/billing remain
+separate. See [onboarding evidence and QA accounts](ACCOUNT_ONBOARDING_2026-10-31.md).
+
+31/10/2026 follow-up: public Contact Us now persists real enquiries with honest
+receipts, anti-spam/idempotency checks and a private capability-gated staff queue,
+audit/history and exact-item bell routing. Legacy Support Tickets and outbound
+email remain separate. See [Contact enquiry evidence](CONTACT_INQUIRIES_2026-10-31.md).

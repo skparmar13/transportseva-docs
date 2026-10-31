@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, HostListener, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, signal } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -46,7 +46,10 @@ export class ShellComponent {
     private readonly apiAuth: ApiAuthService,
     protected readonly comms: CommunicationMockService,
   ) {
-    this.comms.startLiveUpdates();
+    effect(() => {
+      if (API_CONFIG.useBackend && this.sessionSvc.onboardingRequired()) this.comms.clearNotifications();
+      else this.comms.startLiveUpdates();
+    });
   }
 
   protected readonly portal = computed(() => this.sessionSvc.portal());

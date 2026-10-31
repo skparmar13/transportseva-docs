@@ -61,7 +61,8 @@ export class OtpVerificationComponent {
           this.verifying.set(false);
           this.session.setBackendUser(data.user);
           sessionStorage.removeItem('transportseva.debug_otp');
-          this.router.navigateByUrl('/auth/profile-setup').catch(() => {
+          const role = data.user.role === 'customer' ? 'shipper' : data.user.role;
+          this.router.navigateByUrl(`/${['shipper', 'transporter', 'truck-owner', 'driver'].includes(role ?? '') ? role : 'shipper'}/profile`).catch(() => {
             this.verified.set(false);
             this.apiError.set('OTP was verified, but the next page could not be opened. Please refresh once.');
           });

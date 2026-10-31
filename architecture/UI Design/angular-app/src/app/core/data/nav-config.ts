@@ -66,6 +66,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { label: 'Notification Management', labelKey: 'nav.notificationManagement', icon: 'i-bell', path: 'notifications' },
           { label: 'Support Tickets', labelKey: 'nav.supportTickets', icon: 'i-ticket', path: 'support' },
+          { label: 'Contact Enquiries', labelKey: 'nav.contactEnquiries', icon: 'i-mail', path: 'contact-inquiries' },
           { label: 'Document Verification', labelKey: 'nav.documentVerification', icon: 'i-doc', path: 'documents' },
           { label: 'CMS Management', labelKey: 'nav.cmsManagement', icon: 'i-layers', path: 'cms' },
           { label: 'Careers Management', labelKey: 'nav.careersManagement', icon: 'i-users', path: 'careers' },
@@ -302,7 +303,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { label: 'Documents', labelKey: 'nav.documents', icon: 'i-doc', path: 'documents' },
           { label: 'Notifications', labelKey: 'nav.notifications', icon: 'i-bell', path: 'notifications' },
           { label: 'Support', labelKey: 'nav.support', icon: 'i-headset', path: 'support' },
-          { label: 'Profile', labelKey: 'nav.profile', icon: 'i-user', path: 'profile', planned: true },
+          { label: 'Profile', labelKey: 'nav.profile', icon: 'i-user', path: 'profile' },
         ],
       },
     ],

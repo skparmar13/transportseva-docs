@@ -5,6 +5,7 @@
  * complete content in Hindi.
  */
 export const HI: Record<string, string> = {
+  'nav.contactEnquiries': 'संपर्क पूछताछ',
   'testi.loading': 'ग्राहक समीक्षाएँ लोड हो रही हैं…',
   'testi.empty': 'अभी कोई ग्राहक समीक्षा प्रकाशित नहीं हुई है।',
   'testi.error': 'ग्राहक समीक्षाएँ लोड नहीं हो सकीं।',

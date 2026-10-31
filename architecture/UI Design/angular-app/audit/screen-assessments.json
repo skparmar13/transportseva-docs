@@ -25,10 +25,17 @@
     },
     {
       "files": ["public/contact/contact"],
-      "status": "prototype",
-      "priority": "P0",
-      "anchor": "this.submitted.set(true)",
-      "note": "Submit displays message-sent success and clears fields without persisting or sending the inquiry. Contact phone/address are sample copy. Map lookup is not inquiry delivery."
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiContactInquiryService",
+      "note": "Contact enquiries persist through a bounded anonymous API with validation, honeypot, rate limits and idempotent receipts. Success requires confirmed storage; failures retain drafts. Sample phone/address/map removed. No email delivery claim. See CONTACT_INQUIRIES_2026-10-31.md."
+    },
+    {
+      "files": ["admin/contact-inquiries/contact-inquiries"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiContactInquiryService",
+      "note": "Private Contact Enquiries queue for explicitly granted Super Admin/Support roles only, distinct from legacy Support Tickets. Real pagination/filter/detail, versioned follow-up history, safe audit, linked bells and action feedback. Real email delivery remains deferred. See CONTACT_INQUIRIES_2026-10-31.md."
     },
     {
       "files": ["public/careers/careers"],
@@ -56,7 +63,7 @@
       "status": "mixed",
       "priority": "P1",
       "anchor": "ApiAuthService",
-      "note": "Credentials/name complete through real API; additional business/profile fields also update prototype state. Do not infer full address/designation/company persistence."
+      "note": "Backend route is now a compatibility redirect to the authenticated owning portal Profile page. The standalone optional/skip form is available only in explicitly disconnected prototype mode; no profile-completion skip exists in backend mode."
     },
     {
       "files": ["auth/business-registration/business-registration"],
@@ -172,10 +179,17 @@
     },
     {
       "files": ["business-settings/business-settings"],
-      "status": "prototype",
-      "priority": "P0",
-      "anchor": "BusinessSettingsMockService",
-      "note": "Company edit, branches and staff operations modify memory only; fake tenant profile is shared across role views. No persisted profile/tenant access policy; billing methods also remain prototype."
+      "status": "mixed",
+      "priority": "P1",
+      "anchor": "AccountBusinessProfileComponent",
+      "note": "Business details remain separate from personal onboarding and Company tenancy. Self-only business API with versioning, real save/reload and linked notifications is embedded in the completed personal Profile page for business roles. Company tenancy/staff/billing remain deferred. See BUSINESS_PROFILE_2026-10-31.md and ACCOUNT_ONBOARDING_2026-10-31.md."
+    },
+    {
+      "files": ["business-settings/personal-profile/account-profile-page"],
+      "status": "api_connected",
+      "priority": "P1",
+      "anchor": "ApiAccountProfileService",
+      "note": "Mandatory owning-portal Profile page persists required identity, optional designation/address/city/pincode and email/SMS preferences. Server-backed profile plus login-email verification gate applies to existing and new self-service accounts. Explicit loading/errors, stale-version conflicts, busy buttons and retry-safe email verification; real delivery remains unverified/deferred. Company tenancy/staff/billing and platform staff onboarding remain separate. See ACCOUNT_ONBOARDING_2026-10-31.md."
     },
     {
       "files": ["support/support"],

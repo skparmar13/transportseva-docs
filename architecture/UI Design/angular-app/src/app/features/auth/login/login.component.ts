@@ -73,7 +73,7 @@ export class LoginComponent {
           const role = this.backendRole(user.role ?? user.roles?.[0] ?? '');
           this.session.setBackendUser(user);
           this.session.setRole(role);
-          this.router.navigate([this.session.portal().basePath, 'dashboard']);
+          this.router.navigate([this.session.portal().basePath, user.profile_completion_required || user.email_verification_required || user.portal_access_ready === false ? 'profile' : 'dashboard']);
         },
         error: (error) => {
           this.submitting.set(false);

@@ -4,7 +4,21 @@ import { NotificationNavigationService } from './notification-navigation.service
 import { SessionService } from './session.service';
 
 describe('NotificationNavigationService', () => {
+  it('opens the exact contact enquiry for authorized staff navigation', () => {
+    const session = TestBed.inject(SessionService); session.setRole('admin'); const router = TestBed.inject(Router);
+    const uuid = '12345678-1234-1234-1234-123456789012';
+    expect(router.serializeUrl(TestBed.inject(NotificationNavigationService).destination({ id: 'contact', category: 'System', title: 'New contact enquiry', message: '', timestamp: '', read: false, data: { contact_inquiry_uuid: uuid } })!)).toBe('/admin/contact-inquiries?inquiry=' + uuid);
+  });
   const kycUuid = '1b5ae2a3-67fa-4df0-b13c-7a20162ccf42';
+
+  it('opens the current account business profile for a saved-profile notification', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const service = TestBed.inject(NotificationNavigationService);
+    const session = TestBed.inject(SessionService); const router = TestBed.inject(Router);
+    session.setRole('truck-owner');
+    expect(router.serializeUrl(service.destination({ id: 'profile', category: 'System', title: 'Business profile updated', message: '', timestamp: '', read: false,
+      data: { event_type: 'business_profile_updated', profile_version: 2 }, actionUrl: '/truck-owner/profile' })!)).toBe('/truck-owner/profile');
+  });
 
   beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
 

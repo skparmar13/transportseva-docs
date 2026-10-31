@@ -13,6 +13,7 @@ describe('LanguageService status labels', () => {
   ];
 
   beforeEach(() => TestBed.configureTestingModule({}));
+  afterEach(() => TestBed.inject(LanguageService).setLang('en'));
 
   it('resolves every normalized status key in English and Hindi', () => {
     const language = TestBed.inject(LanguageService);

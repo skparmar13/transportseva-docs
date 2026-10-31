@@ -7,6 +7,21 @@ import { authTokenInterceptor } from './auth-token.interceptor';
 import { API_CONFIG } from './api-config';
 
 describe('authTokenInterceptor', () => {
+  it('submits public contact enquiries anonymously without refreshing or dropping a stored session', () => {
+    localStorage.setItem('transportseva.access_token', 'stored-session');
+    httpClient.post(API_CONFIG.baseUrl + '/public/contact-inquiries', {}).subscribe({ error: () => undefined });
+    const r = http.expectOne(API_CONFIG.baseUrl + '/public/contact-inquiries'); expect(r.request.headers.has('Authorization')).toBeFalse(); r.flush({}, { status: 503, statusText: 'Unavailable' });
+    http.expectNone(API_CONFIG.baseUrl + '/auth/refresh'); expect(localStorage.getItem('transportseva.access_token')).toBe('stored-session');
+  });
+  it('redirects an onboarding denial to the validated profile path without signing out', () => {
+    localStorage.setItem('transportseva.access_token', 'valid-session');
+    const go = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
+    httpClient.get(API_CONFIG.baseUrl + '/loads').subscribe({ error: () => undefined });
+    http.expectOne(API_CONFIG.baseUrl + '/loads').flush({ code: 'ACCOUNT_ONBOARDING_REQUIRED', data: { profile_url: '/shipper/profile' } }, { status: 403, statusText: 'Forbidden' });
+    expect(go).toHaveBeenCalledWith('/shipper/profile');
+    expect(localStorage.getItem('transportseva.access_token')).toBe('valid-session');
+    http.expectNone(API_CONFIG.baseUrl + '/auth/refresh');
+  });
   let httpClient: HttpClient;
   let http: HttpTestingController;
 

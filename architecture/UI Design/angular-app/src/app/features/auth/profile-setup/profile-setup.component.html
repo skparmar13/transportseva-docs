@@ -1,3 +1,4 @@
+@if (useBackend) {<p role="status">Opening your dashboard profile…</p>} @else {
 <app-auth-shell
   backLink="/auth/login"
   [backLabel]="'profileSetup.back' | t"
@@ -56,3 +57,4 @@
     <button type="button" class="link-button" (click)="skip()">{{ 'profileSetup.skipForNow' | t }}</button>
   </div>
 </app-auth-shell>
+}

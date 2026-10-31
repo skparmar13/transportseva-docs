@@ -44,7 +44,17 @@ describe('Server-verified portal access', () => {
   });
   it('routes an incomplete profile to profile setup', async () => {
     api.me.and.returnValue(of({ ...customer, profile_completion_required: true }));
-    expect((await check() as UrlTree).toString()).toBe('/auth/profile-setup');
+    expect((await check() as UrlTree).toString()).toBe('/shipper/profile');
+  });
+  it('gates an email-unverified user even when identity is complete', async () => {
+    api.me.and.returnValue(of({ ...customer, profile_completion_required: false, email_verification_required: true }));
+    expect((await check() as UrlTree).toString()).toBe('/shipper/profile');
+  });
+  it('allows only the owning profile route while onboarding is required', async () => {
+    api.me.and.returnValue(of({ ...customer, portal_access_ready: false }));
+    const run = (url: string) => TestBed.runInInjectionContext(() => setPortalRole('shipper')({} as ActivatedRouteSnapshot, { url } as RouterStateSnapshot));
+    expect(await firstValueFrom(run('/shipper/profile') as any)).toBeTrue();
+    expect((await firstValueFrom(run('/shipper/profile/other') as any) as UrlTree).toString()).toBe('/shipper/profile');
   });
   it('keeps credentials and offers a check retry on a transient API failure', async () => {
     api.me.and.returnValue(throwError(() => new Error('Temporary connection failure')));

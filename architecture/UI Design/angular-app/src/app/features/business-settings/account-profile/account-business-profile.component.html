@@ -1,0 +1,60 @@
+<div class="page-toolbar"><div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().subtitle }}</p></div>
+  <button type="button" class="btn btn-outline" [disabled]="state() === 'loading' || saving() || editing()" (click)="load()">{{ copy().refresh }}</button>
+</div>
+@if (state() === 'loading') {
+  <div class="card profile-status" role="status" aria-busy="true"><span class="profile-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>
+} @else if (state() === 'error') {
+  <div class="card profile-status" role="alert"><h2>{{ copy().loadError }}</h2><button type="button" class="btn btn-primary" (click)="load()">{{ copy().retry }}</button></div>
+} @else if (state() === 'forbidden') {
+  <div class="card profile-status" role="alert">{{ copy().unavailable }}</div>
+} @else if (data(); as view) {
+  <section class="card" aria-labelledby="profile-account-heading"><div class="card-head"><h2 id="profile-account-heading">{{ copy().identity }}</h2></div>
+    <div class="card-body"><dl class="profile-grid"><div><dt>{{ copy().accountName }}</dt><dd>{{ view.account.full_name }}</dd></div><div><dt>{{ copy().loginEmail }}</dt><dd data-account-email>{{ view.account.email }}</dd></div><div><dt>{{ copy().loginPhone }}</dt><dd>{{ view.account.phone || copy().notSet }}</dd></div></dl><p class="desc">{{ copy().identityHint }}</p></div>
+  </section>
+  @if (message()) { <p class="profile-success" role="status">{{ copy()[message() || 'saved'] }}</p> }
+  <section class="card profile-section" aria-labelledby="profile-business-heading">
+    <div class="card-head"><h2 id="profile-business-heading">{{ copy().profile }}</h2>
+      @if (!editing()) { <button type="button" class="btn btn-outline btn-sm" (click)="edit()">{{ view.persisted ? copy().edit : copy().create }}</button> }
+    </div>
+    <div class="card-body">
+      @if (!editing()) {
+        @if (view.persisted) {
+          <dl class="profile-grid">@for (field of fields; track field) { <div [class.profile-wide]="field === 'address'"><dt>{{ copy()[field] }}</dt><dd [attr.data-profile-field]="field">{{ value(field) }}</dd></div> }</dl>
+          <p class="desc">{{ copy().updated }}: {{ dateTime(view.profile.updated_at || undefined) }}</p>
+        } @else { <h3>{{ copy().empty }}</h3><p>{{ copy().emptyHint }}</p> }
+      } @else {
+        <form novalidate (ngSubmit)="save()">
+          <div class="profile-grid">@for (field of fields; track field) {
+            <div class="field" [class.profile-wide]="field === 'address'">
+              <label [for]="'business-' + field">{{ copy()[field] }} {{ field === 'business_name' || field === 'business_type' ? '*' : '(' + copy().optional + ')' }}</label>
+              @if (field === 'business_type') {
+                <select class="input" [id]="'business-' + field" [name]="field" [attr.name]="field" [ngModel]="draft()[field]" (ngModelChange)="update(field, $event)" [disabled]="saving()" [attr.aria-invalid]="errors()[field] ? 'true' : null" [attr.aria-describedby]="errors()[field] ? 'error-' + field : null">
+                  <option value="">{{ copy().choose }}</option>@for (type of types; track type) {<option [value]="type">{{ copy().types[type] }}</option>}
+                </select>
+              } @else if (field === 'address') {
+                <textarea class="input" [id]="'business-' + field" [name]="field" [attr.name]="field" rows="3" maxlength="500" [ngModel]="draft()[field]" (ngModelChange)="update(field, $event)" [disabled]="saving()" [attr.aria-invalid]="errors()[field] ? 'true' : null" [attr.aria-describedby]="errors()[field] ? 'error-' + field : null"></textarea>
+              } @else {
+                <input class="input" [id]="'business-' + field" [name]="field" [attr.name]="field" [type]="field === 'contact_email' ? 'email' : field === 'contact_phone' ? 'tel' : 'text'" [attr.inputmode]="field === 'pincode' ? 'numeric' : null" [attr.maxlength]="field === 'pincode' ? 6 : field === 'business_name' ? 160 : field === 'contact_email' ? 150 : field === 'contact_phone' ? 30 : 100" [ngModel]="draft()[field]" (ngModelChange)="update(field, $event)" [disabled]="saving()" [attr.aria-invalid]="errors()[field] ? 'true' : null" [attr.aria-describedby]="errors()[field] ? 'error-' + field : null" />
+              }
+              @if (errors()[field]) { <p class="field-error" [id]="'error-' + field">{{ errors()[field] }}</p> }
+            </div>
+          }</div>
+          @if (saveError()) {
+            <div class="profile-error" role="alert"><p>{{ copy()[saveError() || 'saveError'] }}</p>
+              @if (saveError() === 'conflict') { <button type="button" class="btn btn-outline" (click)="load(true)">{{ copy().latest }}</button> }
+            </div>
+          }
+          <div class="profile-actions"><button type="button" class="btn btn-outline" [disabled]="saving()" (click)="cancel()">{{ copy().cancel }}</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()" [attr.aria-busy]="saving()">@if (saving()) { <span class="profile-spinner" aria-hidden="true"></span> }{{ saving() ? copy().saving : copy().save }}</button>
+          </div>
+        </form>
+      }
+      <p class="desc">{{ copy().legalHint }}</p>
+    </div>
+  </section>
+  <section class="card profile-section" aria-labelledby="profile-kyc-heading"><div class="card-head"><h2 id="profile-kyc-heading">{{ copy().kyc }}</h2><a [routerLink]="['/' + view.account.role, 'kyc']">{{ copy().kycLink }}</a></div>
+    <div class="card-body">@if (view.kyc; as kyc) {
+      <dl class="profile-grid"><div><dt>{{ copy().kyc }}</dt><dd>{{ copy().statuses[kyc.status] }}</dd></div><div><dt>{{ copy().legalName }}</dt><dd>{{ kyc.business_name }}</dd></div><div><dt>{{ copy().pan }}</dt><dd>{{ kyc.pan_last_four || copy().notSet }}</dd></div><div><dt>{{ copy().gst }}</dt><dd>{{ kyc.gstin_last_four || copy().notSet }}</dd></div></dl>
+    } @else { <p>{{ copy().kycNone }}</p> }<p class="desc">{{ copy().kycHint }}</p></div>
+  </section>
+}

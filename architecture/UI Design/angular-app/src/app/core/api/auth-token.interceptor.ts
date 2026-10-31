@@ -18,10 +18,15 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const router = inject(Router);
   const auth = inject(ApiAuthService);
   // Recovery is anonymous; rejected recovery proof must not refresh a session.
-  if (request.url.includes('/auth/password/')) return next(request);
+  if (request.url.includes('/auth/password/') || request.url.endsWith('/public/contact-inquiries')) return next(request);
   const token = typeof localStorage === 'undefined' ? null : localStorage.getItem('transportseva.access_token');
   const outgoing = token ? request.clone({ setHeaders: { Authorization: 'Bearer ' + token } }) : request;
   return next(outgoing).pipe(catchError((error: unknown) => {
+    if (error instanceof HttpErrorResponse && error.status === 403 && error.error?.code === 'ACCOUNT_ONBOARDING_REQUIRED') {
+      const profile = error.error?.data?.profile_url;
+      if (typeof profile === 'string' && /^\/(shipper|transporter|truck-owner|driver)\/profile$/.test(profile) && router.url.split(/[?#]/)[0] !== profile) void router.navigateByUrl(profile);
+      return throwError(() => error);
+    }
     if (!(error instanceof HttpErrorResponse) || error.status !== 401 || typeof localStorage === 'undefined') return throwError(() => error);
 
     const isRefreshRequest = request.url.endsWith('/auth/refresh');

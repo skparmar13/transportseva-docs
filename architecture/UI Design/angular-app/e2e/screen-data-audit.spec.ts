@@ -129,13 +129,16 @@ for (const actor of actors) {
       const owned = await api(page, 'loads?mine=true&per_page=100');
       findings.ownedLoadsApiStatus = owned.status; findings.ownedLoadsCount = owned.body.data?.length;
       findings.dashboardFirstKpi = (await page.locator('.kpi-value').first().innerText()).trim();
-      await page.goto('/shipper/profile'); await page.getByText('Edit', { exact: true }).click();
-      findings.profileSeedName = await page.locator('input[name="companyName"]').inputValue();
-      await page.locator('input[name="companyName"]').fill('Audit local draft not saved');
-      await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
-      findings.profileDraftVisible = await page.getByText('Audit local draft not saved', { exact: true }).isVisible();
-      await page.reload(); await page.getByText('Edit', { exact: true }).click();
-      findings.profileNameAfterReload = await page.locator('input[name="companyName"]').inputValue();
+      // This screen now persists. Diagnostic audits must not click Save on a
+      // real business profile or disguise a blocked write as a save test.
+      const profile = await api(page, 'account/business-profile');
+      findings.businessProfileApiStatus = profile.status;
+      findings.businessProfilePersisted = profile.body.data?.persisted;
+      findings.businessProfileVersion = profile.body.data?.profile?.version;
+      await page.goto('/shipper/profile');
+      await page.getByRole('heading', { name: 'Business profile', exact: true }).waitFor();
+      findings.profileUsesAccountApi = await page.locator('app-account-business-profile').count() === 1;
+      findings.sampleBusinessProfileVisible = await page.getByText('Yadav Road Carriers Pvt. Ltd.', { exact: true }).isVisible();
       await page.goto('/shipper/support'); await page.getByRole('button', { name: 'New Ticket', exact: true }).click();
       await page.locator('input[name="subject"]').fill('Audit memory-only ticket');
       await page.locator('textarea[name="message"]').fill('Read-only diagnostic; no staff message may be sent.');

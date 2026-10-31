@@ -25,13 +25,17 @@ export function setPortalRole(role: PortalRole): CanActivateFn {
     return inject(ApiAuthService).me().pipe(
       timeout(15_000),
       map((user) => {
-        if (user.profile_completion_required) return router.createUrlTree(['/auth/profile-setup']);
         const actual = user.role === 'customer' ? 'shipper' : user.role;
         if (!['admin', 'shipper', 'transporter', 'truck-owner', 'driver', 'company'].includes(actual ?? '')) {
           return router.createUrlTree(['/auth/login']);
         }
         session.setBackendUser(user);
         session.setRole(actual as PortalRole);
+        if (user.profile_completion_required || user.email_verification_required || user.portal_access_ready === false) {
+          const profile = `/${actual}/profile`;
+          if (actual !== role || state.url.split(/[?#]/)[0] !== profile) return router.createUrlTree([profile]);
+          return true;
+        }
         if (actual === 'admin' && role === 'admin' && user.staff_access?.enforced) {
           const path = state.url.split(/[?#]/)[0].split('/').filter(Boolean)[1] ?? '';
           if (!staffRouteAllowed(user.staff_access, path)) return router.createUrlTree(['/admin/access']);

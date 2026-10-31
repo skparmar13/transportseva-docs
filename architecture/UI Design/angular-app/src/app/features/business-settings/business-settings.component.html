@@ -1,3 +1,6 @@
+@if (useBackend) {
+  <app-account-business-profile />
+} @else {
 <div class="page-toolbar">
   <div>
     <h1>{{ 'businessSettings.title' | t }}</h1>
@@ -370,4 +373,5 @@
       </button>
     </div>
   </app-modal>
+}
 }

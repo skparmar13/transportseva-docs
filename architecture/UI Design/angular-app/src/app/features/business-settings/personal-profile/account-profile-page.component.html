@@ -1,0 +1,61 @@
+<div class="page-toolbar"><div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().subtitle }}</p></div></div>
+@if (state() === 'loading') {
+  <div class="card profile-state" aria-busy="true" role="status"><span class="profile-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>
+} @else if (state() === 'error') {
+  <div class="card profile-state" role="alert">{{ copy().loadError }} <button type="button" class="btn btn-outline" (click)="load()">{{ copy().retry }}</button></div>
+} @else if (data(); as view) {
+  <p class="profile-banner" role="status" data-onboarding-status>{{ ready() ? copy().ready : copy().gate }}</p>
+  <section class="card personal-profile"><div class="card-body">
+    <p>{{ copy().phone }}: {{ view.account.phone || '—' }}</p>
+    <form novalidate (ngSubmit)="save()">
+      <fieldset [disabled]="saving() || verifying() || requesting()">
+        <div class="profile-grid">
+          @for (field of fields; track field) {
+            <div class="field" [class.wide]="field === 'address'">
+              <label [for]="'personal-' + field">{{ copy()[field] }} {{ field === 'first_name' || field === 'last_name' || field === 'email' ? '*' : '(' + copy().optional + ')' }}</label>
+              @if (field === 'address') {
+                <textarea class="input" [id]="'personal-' + field" [name]="field" [attr.name]="field" rows="2" maxlength="500" [ngModel]="draft()[field]" (ngModelChange)="update(field, $event)"></textarea>
+              } @else {
+                <input class="input" [id]="'personal-' + field" [name]="field" [attr.name]="field" [type]="field === 'email' ? 'email' : 'text'" [attr.maxlength]="field === 'first_name' || field === 'last_name' ? 50 : field === 'pincode' ? 6 : 100" [attr.inputmode]="field === 'pincode' ? 'numeric' : null" [ngModel]="draft()[field]" (ngModelChange)="update(field, $event)" [attr.aria-invalid]="errors()[field] ? 'true' : null" [attr.aria-describedby]="errors()[field] ? 'personal-error-' + field : null" />
+              }
+              @if (errors()[field]) { <p class="profile-error" [id]="'personal-error-' + field" role="alert">{{ errors()[field] }}</p> }
+            </div>
+          }
+          @if (pending()) {
+            <div class="field"><label for="personal-password">{{ copy().password }} *</label><input id="personal-password" class="input" type="password" name="password" autocomplete="new-password" maxlength="128" [ngModel]="password()" (ngModelChange)="password.set($event)" /><p class="desc">{{ copy().passwordHint }}</p>@if (errors()['password']) {<p class="profile-error" role="alert">{{ errors()['password'] }}</p>}</div>
+            <div class="field"><label for="personal-confirmation">{{ copy().confirmation }} *</label><input id="personal-confirmation" class="input" type="password" name="password_confirmation" autocomplete="new-password" maxlength="128" [ngModel]="confirmation()" (ngModelChange)="confirmation.set($event)" />@if (errors()['password_confirmation']) {<p class="profile-error" role="alert">{{ errors()['password_confirmation'] }}</p>}</div>
+          } @else if (emailChanged()) {
+            <div class="field wide"><label for="personal-current">{{ copy().current }}</label><input id="personal-current" class="input" type="password" name="current_password" autocomplete="current-password" maxlength="128" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" />@if (errors()['current_password']) {<p class="profile-error" role="alert">{{ errors()['current_password'] }}</p>}</div>
+          }
+        </div>
+        <label class="checkbox-row"><input type="checkbox" name="notify_email" [ngModel]="draft().notify_email" (ngModelChange)="update('notify_email', $event)" />{{ copy().emailUpdates }}</label>
+        <label class="checkbox-row"><input type="checkbox" name="notify_sms" [ngModel]="draft().notify_sms" (ngModelChange)="update('notify_sms', $event)" />{{ copy().smsUpdates }}</label>
+        <p class="desc">{{ copy().preferenceHint }}</p>
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || verifying() || requesting() || conflict()">@if (saving()) {<span class="profile-spinner" aria-hidden="true"></span>}{{ saving() ? copy().saving : copy().save }}</button>
+      </fieldset>
+    </form>
+    @if (message()) {<p class="profile-success" role="status">{{ copy().saved }}</p>}
+    @if (error()) {<p class="profile-error" role="alert">{{ error() }}</p>}
+    @if (conflict()) {<button type="button" class="btn btn-outline" (click)="load()">{{ copy().latest }}</button>}
+  </div></section>
+  <section class="card personal-profile" aria-labelledby="email-verification-heading"><div class="card-body">
+    <h2 id="email-verification-heading">{{ copy().verification }}</h2>
+    @if (!view.account.email_verification_required) {<p class="profile-success">{{ copy().verified }} — {{ view.account.email }}</p>}
+    @else if (view.account.profile_completion_required || emailChanged()) {<p>{{ copy().saveFirst }}</p>}
+    @else {
+      <p>{{ copy().unverified }} — {{ view.account.email }}</p>
+      <button type="button" class="btn btn-outline" [disabled]="requesting() || verifying() || saving()" (click)="requestCode()">@if (requesting()) {<span class="profile-spinner" aria-hidden="true"></span>}{{ requesting() ? copy().sending : challenge() ? copy().resend : copy().send }}</button>
+      @if (challenge(); as c) {
+        <p role="status">{{ c.delivery_status === 'sandbox' ? copy().sandbox : c.delivery_status === 'pending' ? copy().queued : copy().sent }} @if (c.debug_otp) {<strong data-development-email-otp>{{ c.debug_otp }}</strong>}</p>
+        <form (ngSubmit)="verify()"><div class="field"><label for="email-code">{{ copy().code }}</label><input id="email-code" class="input" name="email_code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" [ngModel]="otp()" (ngModelChange)="otp.set($event)" [disabled]="verifying()" /></div>
+          <button type="submit" class="btn btn-primary" [disabled]="verifying() || requesting() || otp().length !== 6">@if (verifying()) {<span class="profile-spinner" aria-hidden="true"></span>}{{ verifying() ? copy().verifying : copy().verify }}</button>
+        </form>
+      }
+    }
+    @if (emailError()) {<p class="profile-error" role="alert">{{ emailError() }}</p>}
+  </div></section>
+  @if (ready()) {
+    <button type="button" class="btn btn-primary profile-continue" (click)="continue()">{{ copy().continue }}</button>
+    @if (view.account.role !== 'driver') {<app-account-business-profile />}
+  }
+}

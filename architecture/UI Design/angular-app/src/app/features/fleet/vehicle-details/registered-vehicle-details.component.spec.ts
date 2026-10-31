@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { ApiMarketplaceService, ApiMarketplaceVehicle } from '../../../core/api/api-marketplace.service';
 import { RegisteredVehicleDetailsComponent } from './registered-vehicle-details.component';
+import { LanguageService } from '../../../core/i18n';
 
 describe('RegisteredVehicleDetailsComponent', () => {
   const uuid = '12345678-1234-1234-1234-123456789012';
@@ -19,6 +20,7 @@ describe('RegisteredVehicleDetailsComponent', () => {
     api.getMarketplaceVehicle.and.returnValue(of(vehicle));
     TestBed.configureTestingModule({ providers: [provideRouter([]),
       { provide: ActivatedRoute, useValue: { paramMap: params } }, { provide: ApiMarketplaceService, useValue: api }] });
+    TestBed.inject(LanguageService).setLang('en');
   });
 
   it('renders persisted values and allocation without prototype-only actions', () => {
