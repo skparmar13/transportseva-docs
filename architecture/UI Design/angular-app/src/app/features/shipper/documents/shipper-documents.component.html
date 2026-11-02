@@ -1,0 +1,79 @@
+<div class="page-toolbar">
+  <div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().desc }}</p></div>
+  <button class="btn btn-outline" type="button" [disabled]="loading() || !!downloading()" (click)="load(page())">{{ copy().refresh }}</button>
+</div>
+<p class="doc-hint">{{ copy().boundary }}</p>
+<div class="doc-tabs">
+  <button class="btn btn-outline" type="button" [attr.aria-pressed]="tab() === 'pods'" (click)="tab.set('pods')">{{ copy().pods }}</button>
+  <button class="btn btn-outline" type="button" [attr.aria-pressed]="tab() === 'kyc'" (click)="tab.set('kyc')">{{ copy().kyc }}</button>
+</div>
+@if (loading()) {
+  <div class="card doc-state" role="status"><span class="doc-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>
+} @else if (error()) {
+  <div class="card doc-state" role="alert"><p>{{ error() }}</p><button class="btn btn-outline" type="button" (click)="load(page())">{{ copy().retry }}</button></div>
+} @else if (data(); as view) {
+  <p class="doc-hint">{{ copy().checked }}: {{ dateTime(view.generated_at) }}</p>
+  @if (downloadError()) { <p class="doc-error" role="alert">{{ downloadError() }}</p> }
+  @if (tab() === 'pods') {
+    <div class="kpi-grid">
+      @for (key of ['total', 'pending_approval', 'approved', 'rejected']; track key) {
+        <div class="kpi-card"><div class="kpi-value" [attr.data-document-total]="key">{{ $any(view.totals)[key] }}</div><div class="kpi-label">{{ $any(copy())[key] }}</div></div>
+      }
+    </div>
+    <p class="doc-hint">{{ copy().counts }} @if (view.totals.other) { {{ copy().legacy }}: {{ view.totals.other }} }</p>
+    <form (ngSubmit)="load()" class="doc-filters">
+      <fieldset [disabled]="loading() || !!downloading()">
+        <div class="field"><label for="document-search">{{ copy().search }}</label><input class="input" id="document-search" name="search" maxlength="100" [ngModel]="search()" (ngModelChange)="search.set($event)" /></div>
+        <div class="field"><label for="document-status">{{ copy().filter }}</label><select class="input" id="document-status" name="status" [ngModel]="status()" (ngModelChange)="status.set($event)">@for (s of statuses; track s) { <option [value]="s">{{ copy()[s] }}</option> }</select></div>
+        <button class="btn btn-primary" type="submit">{{ copy().apply }}</button>
+      </fieldset>
+    </form>
+    <p>{{ copy().matching }}: {{ view.matching }}</p>
+    @if (view.pods.length) {
+      <div class="card doc-table"><table class="data-table">
+        <thead><tr><th>{{ copy().booking }}</th><th>{{ copy().document }}</th><th>{{ copy().review }}</th><th>{{ copy().actions }}</th></tr></thead>
+        <tbody>@for (pod of view.pods; track pod.booking_uuid) {
+          <tr data-document-row>
+            <td><b>{{ pod.booking_reference }}</b><p>{{ pod.load_reference || copy().missing }}</p><p>{{ pod.pickup_city || copy().missing }} → {{ pod.drop_city || copy().missing }}</p></td>
+            <td><b>{{ pod.file_name || copy().missing }}</b><p>POD: {{ pod.number || copy().missing }}</p><p>{{ copy().receiver }}: {{ pod.received_by || copy().missing }}</p><p>{{ copy().uploaded }}: {{ pod.uploaded_at ? dateTime(pod.uploaded_at) : copy().missing }}</p></td>
+            <td><b data-document-status>{{ copy()[pod.status] }}</b><p>{{ copy().reviewed }}: {{ pod.reviewed_at ? dateTime(pod.reviewed_at) : copy().missing }}</p>@if (pod.review_note) { <p class="doc-message">{{ pod.review_note }}</p> }</td>
+            <td><div class="doc-actions">
+              @if (pod.download_available) {
+                <button class="btn btn-outline btn-sm" type="button" [disabled]="!!downloading()" (click)="download('pod', pod.booking_uuid, pod.file_name, pod.download_available)">
+                  @if (downloading() === 'pod:' + pod.booking_uuid) { <span class="doc-spinner" aria-hidden="true"></span>{{ copy().downloading }} } @else { {{ copy().download }} }
+                </button>
+              } @else { <p data-file-unavailable>{{ copy().unavailable }}</p> }
+              <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/bookings']" [queryParams]="{ booking: pod.booking_uuid }">{{ copy().bookingLink }}</a>
+              <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', pod.booking_uuid]">{{ copy().tripLink }}</a>
+            </div></td>
+          </tr>
+        }</tbody>
+      </table></div>
+    } @else { <div class="card doc-state" data-document-empty>{{ view.totals.total ? copy().noMatch : copy().empty }}</div> }
+    <div class="doc-pages">
+      <button class="btn btn-outline" type="button" [disabled]="page() <= 1 || !!downloading()" (click)="load(page() - 1)">{{ copy().previous }}</button>
+      <span>{{ copy().page }} {{ view.page }} {{ copy().of }} {{ view.lastPage }}</span>
+      <button class="btn btn-outline" type="button" [disabled]="page() >= view.lastPage || !!downloading()" (click)="load(page() + 1)">{{ copy().next }}</button>
+    </div>
+  } @else {
+    <div class="card card-body" data-document-kyc>
+      <h2>{{ copy().kyc }}</h2><p class="doc-hint">{{ copy().kycHint }}</p>
+      @if (view.kyc; as kyc) {
+        <dl class="doc-grid">
+          <div><dt>{{ copy().business }}</dt><dd>{{ kyc.business_name || copy().missing }}</dd></div>
+          <div><dt>{{ copy().document }}</dt><dd>{{ kyc.file_name || copy().missing }}</dd></div>
+          <div><dt>{{ copy().review }}</dt><dd data-kyc-status>{{ copy()[kyc.status] }}</dd></div>
+          <div><dt>{{ copy().submitted }}</dt><dd>{{ kyc.submitted_at ? dateTime(kyc.submitted_at) : copy().missing }}</dd></div>
+          <div><dt>{{ copy().reviewed }}</dt><dd>{{ kyc.reviewed_at ? dateTime(kyc.reviewed_at) : copy().missing }}</dd></div>
+        </dl>
+        @if (kyc.review_note) { <p class="doc-message">{{ kyc.review_note }}</p> }
+        @if (kyc.download_available) {
+          <button class="btn btn-outline" type="button" [disabled]="!!downloading()" (click)="download('kyc', kyc.uuid, kyc.file_name, kyc.download_available)">
+            @if (downloading() === 'kyc:' + kyc.uuid) { <span class="doc-spinner" aria-hidden="true"></span>{{ copy().downloading }} } @else { {{ copy().download }} }
+          </button>
+        } @else { <p data-file-unavailable>{{ copy().unavailable }}</p> }
+      } @else { <p data-kyc-empty>{{ copy().kycEmpty }}</p> }
+      <p><a class="btn btn-outline" routerLink="/shipper/kyc">{{ copy().kycLink }}</a></p>
+    </div>
+  }
+}

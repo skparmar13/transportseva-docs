@@ -168,14 +168,28 @@
       "status": "prototype",
       "priority": "P1",
       "anchor": "TripMockService",
-      "note": "Separate Trips/History/driver POD routes read/mutate sample trips, not marketplace bookings. Existing booking-level real POD workflow must not be confused with this module."
+      "note": "Other-role legacy Trips/driver POD routes still use sample trips, not marketplace bookings. Shipper routes now select dedicated owner-scoped read-model components; this prototype is not counted as the shipper implementation. Existing booking-level real POD workflow remains authoritative."
+    },
+    {
+      "files": ["shipper/trips/shipper-trip-list", "shipper/trips/shipper-trip-details"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiShipperTripService",
+      "note": "01/11 shipper-only trip history/details read authoritative owned bookings, assignments, recorded lifecycle dates and private POD metadata/original downloads. No copied trip rows, fabricated event timestamps, ETA, GPS or payment status. Server pagination, literal search, stage counts, safe unavailable states, deep links to existing booking/POD actions and scoped regression checks. See SHIPPER_TRIPS_2026-11-01.md. Other role Trips remain separate prototypes."
     },
     {
       "files": ["documents/documents"],
       "status": "prototype",
       "priority": "P1",
       "anchor": "FleetMockService",
-      "note": "Compliance hub derives sample fleet/driver/trip data. Upload saves only filenames, POD download fabricates text, not authenticated original file retrieval."
+      "note": "Other-role legacy compliance hub still derives sample fleet/driver/trip data and fabricates POD text. Shipper now uses a dedicated owner-scoped document hub; this prototype is not the shipper implementation."
+    },
+    {
+      "files": ["shipper/documents/shipper-documents"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiShipperDocumentService",
+      "note": "01/11 shipper Documents reads only its canonical booking POD records and own KYC document. Private original binary downloads, strict owner/role filters, bounded search/pagination, missing-file honesty and exact booking/trip/KYC links. No provider identity-file disclosure, fake uploads or synthesized PODs. Upload/review mutations remain in existing KYC/Bookings. Other-role Documents remain prototypes. See SHIPPER_DOCUMENTS_2026-11-01.md."
     },
     {
       "files": ["business-settings/business-settings"],
@@ -193,10 +207,10 @@
     },
     {
       "files": ["support/support"],
-      "status": "prototype",
-      "priority": "P0",
-      "anchor": "createTicket",
-      "note": "Ticket creation/replies are in-memory only. Legacy Support module is disabled and has incompatible identity/policy contracts, so it must not simply be enabled. No actual support case reaches staff."
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiSupportTicketService",
+      "note": "Account-owned support tickets persist through JWT APIs: owner-only users, explicit Super Admin assignment and current-assignment-only Support access. Replies, status/reopening and immutable history use versions/idempotency; bells open the exact ticket. No sample tickets, calls or email delivery. Legacy company Support module remains disabled and separate; Company tenancy is not implemented. See SUPPORT_TICKETS_2026-11-01.md for scoped test evidence."
     },
     {
       "files": ["notifications/notifications"],
@@ -210,7 +224,14 @@
       "status": "prototype",
       "priority": "P1",
       "anchor": "ReportMockService",
-      "note": "Tables/KPIs and exported CSV are prototype datasets; no authorized server analytics. Do not treat downloadable sample CSV as a real report."
+      "note": "Other-role legacy report tables/KPIs/CSV still use prototype datasets. Shipper routes now use dedicated owner-scoped operational reports; this legacy component is not the shipper implementation."
+    },
+    {
+      "files": ["shipper/reports/shipper-reports"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiShipperReportService",
+      "note": "02/11 shipper operational Reports use canonical posted loads, live applications and owned bookings. IST creation-date cohorts, current-state rollups, literal table search/paging, real full-match bounded CSV with formula neutralization, safe links/zero/errors/action feedback. No payment/GPS/revenue/on-time/duration figures. Other-role reports remain prototypes. See SHIPPER_REPORTS_2026-11-02.md."
     },
     {
       "files": ["admin/cms-management/cms-management", "admin/careers-management/careers-management", "admin/newsletter-management/newsletter-management"],
@@ -252,7 +273,7 @@
       "file": "src/app/core/services/communication-mock.service.ts",
       "anchor": "this.apiNotifications.list",
       "priority": "P2",
-      "note": "Notification branch is real; ticket branch in the same service is not. Do not classify by class name alone."
+      "note": "Notification polling/read APIs are real despite the legacy class name. The unused sample-ticket branch was removed when account Support Tickets gained their own protected API."
     },
     {
       "file": "src/app/core/guards/portal-role.guard.ts",

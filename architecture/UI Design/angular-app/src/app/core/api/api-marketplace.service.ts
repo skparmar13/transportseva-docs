@@ -341,6 +341,13 @@ export class ApiMarketplaceService {
     return this.api.get<ApiMarketplaceBooking[]>('marketplace-bookings', { per_page: 100 }).pipe(map((response) => response.data));
   }
 
+  getMarketplaceBooking(uuid: string): Observable<ApiMarketplaceBooking> {
+    return this.api.get<ApiMarketplaceBooking>('marketplace-bookings/' + encodeURIComponent(uuid)).pipe(map((r) => {
+      if (!r.success || r.data?.uuid !== uuid) throw new Error('Invalid booking details');
+      return r.data;
+    }));
+  }
+
   createSettlement(bookingUuid: string): Observable<ApiSettlement> {
     return this.api.post<ApiSettlement>(`marketplace-bookings/${encodeURIComponent(bookingUuid)}/settle`, {}).pipe(map((response) => response.data));
   }

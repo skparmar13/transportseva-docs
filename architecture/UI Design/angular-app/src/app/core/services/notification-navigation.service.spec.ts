@@ -4,6 +4,13 @@ import { NotificationNavigationService } from './notification-navigation.service
 import { SessionService } from './session.service';
 
 describe('NotificationNavigationService', () => {
+  it('opens the exact support ticket in each supported account portal', () => {
+    const uuid = '12345678-1234-1234-1234-123456789012'; const session = TestBed.inject(SessionService); const router = TestBed.inject(Router);
+    for (const role of ['shipper', 'transporter', 'truck-owner', 'driver', 'admin'] as const) {
+      session.setRole(role);
+      expect(router.serializeUrl(TestBed.inject(NotificationNavigationService).destination({ id: 'ticket', category: 'System', title: 'Ticket updated', message: '', timestamp: '', read: false, data: { support_ticket_uuid: uuid }, actionUrl: 'https://untrusted.example' })!)).toBe('/' + role + '/support?ticket=' + uuid);
+    }
+  });
   it('opens the exact contact enquiry for authorized staff navigation', () => {
     const session = TestBed.inject(SessionService); session.setRole('admin'); const router = TestBed.inject(Router);
     const uuid = '12345678-1234-1234-1234-123456789012';

@@ -40,7 +40,7 @@ describe('Bookings request efficiency and recovery', () => {
 
   beforeEach(() => {
     config.useBackend = true;
-    api = jasmine.createSpyObj<ApiMarketplaceService>('ApiMarketplaceService', ['listMarketplaceBookings', 'listMarketplaceVehicles', 'updateMarketplaceWorkflow']);
+    api = jasmine.createSpyObj<ApiMarketplaceService>('ApiMarketplaceService', ['listMarketplaceBookings', 'getMarketplaceBooking', 'listMarketplaceVehicles', 'updateMarketplaceWorkflow']);
     api.listMarketplaceBookings.and.returnValue(of([first, other]));
     api.listMarketplaceVehicles.and.returnValue(of([]));
     TestBed.configureTestingModule({
@@ -69,6 +69,22 @@ describe('Bookings request efficiency and recovery', () => {
     fixture = TestBed.createComponent(BookingsComponent);
     return fixture.componentInstance as unknown as Harness;
   }
+
+  it('loads an exact linked booking even when it is outside the first list page', () => {
+    const uuid = '12345678-1234-1234-1234-123456789012';
+    TestBed.overrideProvider(ActivatedRoute, { useValue: { queryParamMap: of(convertToParamMap({ booking: uuid })) } });
+    api.getMarketplaceBooking.and.returnValue(of({ ...first, uuid }));
+    const c = create(); expect(api.getMarketplaceBooking).toHaveBeenCalledOnceWith(uuid); expect(c.backendBookings().some((r) => r.uuid === uuid)).toBeTrue(); expect(c.loadError()).toBe('');
+  });
+  it('does not fetch a focused booking already present in the loaded list', () => {
+    const uuid = '12345678-1234-1234-1234-123456789012'; api.listMarketplaceBookings.and.returnValue(of([{ ...first, uuid }]));
+    TestBed.overrideProvider(ActivatedRoute, { useValue: { queryParamMap: of(convertToParamMap({ booking: uuid })) } });
+    create(); expect(api.getMarketplaceBooking).not.toHaveBeenCalled();
+  });
+  it('reports denied/missing deep links instead of silently displaying unrelated bookings', () => {
+    const uuid = '12345678-1234-1234-1234-123456789012'; TestBed.overrideProvider(ActivatedRoute, { useValue: { queryParamMap: of(convertToParamMap({ booking: uuid })) } });
+    api.getMarketplaceBooking.and.returnValue(throwError(() => new HttpErrorResponse({ status: 403 }))); const c = create(); expect(c.loadError()).toContain('linked booking is unavailable'); expect(c.loading()).toBeFalse();
+  });
 
   function selectVehicle(state: Harness): void {
     state.backendVehicles.set([{

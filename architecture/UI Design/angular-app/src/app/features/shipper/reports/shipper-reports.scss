@@ -1,0 +1,12 @@
+:host { display: block; } .report-actions, .report-tabs, .report-pages { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.report-tabs [aria-pressed=true] { color: var(--color-primary); border-color: var(--color-primary); }
+.report-hint { color: var(--color-text-muted); line-height: 1.6; } .report-state { padding: 28px; }
+.report-filters { margin: 24px 0; } fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; align-items: end; flex-wrap: wrap; gap: 16px; }
+.report-filters .field { flex: 1 1 190px; margin: 0; } .input { padding-left: 14px; }
+.report-breakdown { margin: 20px 0; } .report-statuses { display: flex; flex-wrap: wrap; gap: 18px 32px; margin: 20px 0 0; }
+.report-statuses dt { color: var(--color-text-muted); font-size: 13px; } .report-statuses dd { margin: 4px 0; font-weight: 700; }
+.report-table { overflow-x: auto; } .report-table td { max-width: 270px; min-width: 135px; overflow-wrap: anywhere; vertical-align: top; }
+.report-links { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; } .report-pages { justify-content: flex-end; }
+.report-error { color: #b42318; margin: 16px 0; }
+.report-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: report-spin .7s linear infinite; margin-right: 8px; }
+@keyframes report-spin { to { transform: rotate(360deg); } } @media (prefers-reduced-motion:reduce) { .report-spinner { animation: none; border-style: dotted; } }

@@ -1,0 +1,27 @@
+<div class="page-toolbar"><div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().hint }}</p></div><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load(page())">{{ copy().refresh }}</button></div>
+@if (data(); as view) {
+  <div class="kpi-grid">
+    @for (key of kpiKeys; track key) {
+      <div class="kpi-card"><div class="kpi-value" [attr.data-trip-total]="key">{{ view.totals[key] }}</div><div class="kpi-label">{{ copy()[key] }}</div></div>
+    }
+  </div>
+}
+<form class="trip-filters" (ngSubmit)="load()"><fieldset [disabled]="loading()">
+  <div class="field"><label for="trip-stage">{{ copy().status }}</label><select id="trip-stage" class="input" name="stage" [ngModel]="stage()" (ngModelChange)="stage.set($event)"><option value="all">{{ copy().all }}</option>@for (value of stages; track value) { <option [value]="value">{{ copy()[value] }}</option> }</select></div>
+  <div class="field"><label for="trip-search">{{ copy().search }}</label><input id="trip-search" class="input" name="search" maxlength="100" [ngModel]="search()" (ngModelChange)="search.set($event)" /></div>
+  <button type="submit" class="btn btn-outline">{{ copy().apply }}</button>
+</fieldset></form>
+@if (loading()) { <section class="card trip-state" role="status" aria-busy="true"><span class="trip-spinner" aria-hidden="true"></span>{{ copy().loading }}</section> }
+@else if (error()) { <section class="card trip-state" role="alert">{{ error() }}<button type="button" class="btn btn-outline" (click)="load(page())">{{ copy().retry }}</button></section> }
+@else if (data(); as view) {
+  <div class="card trip-table"><table class="data-table"><thead><tr><th>{{ copy().reference }}</th><th>{{ copy().route }}</th><th>{{ copy().vehicleDriver }}</th><th>{{ copy().started }}</th><th>{{ copy().status }}</th><th>{{ copy().podLabel }}</th><th></th></tr></thead><tbody>
+    @for (row of view.rows; track row.uuid) {
+      <tr [attr.data-trip-row]="row.uuid"><td><b>{{ row.reference }}</b><div class="desc">{{ row.load_reference }}</div></td>
+        <td>@if (row.pickup_city && row.drop_city) { {{ row.pickup_city }} → {{ row.drop_city }} } @else { {{ copy().loadUnavailable }} }<div class="desc">{{ row.material }}</div></td>
+        <td>{{ row.vehicle || copy().notAssigned }}<div class="desc">{{ row.driver || copy().notAssigned }}</div></td><td>{{ row.started_at ? dateTime(row.started_at) : copy().notRecorded }}</td>
+        <td>{{ copy()[row.stage] }}</td><td>{{ copy()[row.pod_status] }}</td><td><a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', row.uuid]">{{ copy().view }}</a></td></tr>
+    } @empty { <tr><td colspan="7" data-trip-empty>{{ view.totals.total ? copy().empty : copy().noRecords }}</td></tr> }
+  </tbody></table></div>
+  <div class="trip-pages"><span>{{ copy().matching }}: {{ view.matching }} · {{ copy().page }} {{ view.page }} / {{ view.lastPage }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="view.page <= 1" (click)="load(view.page - 1)">{{ copy().previous }}</button><button type="button" class="btn btn-outline btn-sm" [disabled]="view.page >= view.lastPage" (click)="load(view.page + 1)">{{ copy().next }}</button></div>
+  <p class="desc">{{ copy().updated }}: {{ dateTime(view.generated_at) }}</p>
+}

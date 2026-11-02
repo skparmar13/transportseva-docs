@@ -1,0 +1,12 @@
+:host { display: block; } .doc-tabs, .doc-pages { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 18px 0; }
+.doc-tabs [aria-pressed=true] { color: var(--color-primary); border-color: var(--color-primary); }
+.doc-hint { color: var(--color-text-muted); line-height: 1.6; } .doc-state { padding: 28px; }
+.doc-table { overflow-x: auto; } .doc-table td { max-width: 310px; min-width: 160px; overflow-wrap: anywhere; vertical-align: top; }
+.doc-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; } .doc-actions .btn { white-space: normal; text-align: left; }
+.doc-filters { margin: 22px 0; } fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; align-items: end; gap: 16px; flex-wrap: wrap; }
+.doc-filters .field { flex: 1 1 220px; margin: 0; } .input { padding-left: 14px; }
+.doc-pages { justify-content: flex-end; } .doc-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 20px; margin: 22px 0; }
+dt { color: var(--color-text-muted); font-size: 13px; } dd { margin: 6px 0 0; overflow-wrap: anywhere; }
+.doc-message { white-space: pre-wrap; overflow-wrap: anywhere; } .doc-error { color: #b42318; margin: 16px 0; }
+.doc-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: doc-spin .7s linear infinite; margin-right: 8px; }
+@keyframes doc-spin { to { transform: rotate(360deg); } } @media (prefers-reduced-motion:reduce) { .doc-spinner { animation: none; border-style: dotted; } }

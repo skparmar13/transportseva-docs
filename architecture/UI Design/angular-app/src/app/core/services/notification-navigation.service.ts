@@ -24,6 +24,8 @@ export class NotificationNavigationService {
     const review = uuid(data['review_uuid']);
     const kyc = uuid(data['kyc_profile_uuid']);
     const inquiry = uuid(data['contact_inquiry_uuid']);
+    const ticket = uuid(data['support_ticket_uuid']);
+    if (ticket && role !== 'company') return this.router.createUrlTree([base, 'support'], { queryParams: { ticket } });
     if (inquiry && role === 'admin') return this.router.createUrlTree([base, 'contact-inquiries'], { queryParams: { inquiry } });
     const marketplaceRole = role === 'shipper' || role === 'transporter' || role === 'truck-owner';
     if (load && marketplaceRole) return this.router.createUrlTree([base, 'load-board', load], {

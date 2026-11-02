@@ -212,3 +212,32 @@ separate. See [onboarding evidence and QA accounts](ACCOUNT_ONBOARDING_2026-10-3
 receipts, anti-spam/idempotency checks and a private capability-gated staff queue,
 audit/history and exact-item bell routing. Legacy Support Tickets and outbound
 email remain separate. See [Contact enquiry evidence](CONTACT_INQUIRIES_2026-10-31.md).
+
+01/11/2026 follow-up: account Support Tickets now persist with owner-only access,
+Super Admin assignment, current-assignment-only Support staff access, retained
+replies/status history, version/idempotency protection and exact-item bell links.
+The sample ticket store/voice-call placeholder was removed; the legacy company
+Support module remains disabled. See [Support Ticket evidence](SUPPORT_TICKETS_2026-11-01.md).
+
+01/11/2026 follow-up: Shipper Trip History and Trip Details now read canonical,
+owner-scoped bookings, actual assignments, recorded workflow milestones and
+authenticated original POD files. Exact booking/POD links also work beyond the
+first booking-list page. Other roles' legacy Trips remain prototypes. Shipper
+now has 13 API-connected routes, 2 prototype routes (Documents and Reports) and
+4 deferred payment/GPS routes; this is not a full production-readiness claim.
+See [Trip implementation, tests and database-preservation limits](SHIPPER_TRIPS_2026-11-01.md).
+
+01/11/2026 follow-up: Shipper Documents now has a private owner-scoped POD/KYC
+hub with real original downloads, safe missing-file states, bounded filters and
+exact links to existing booking/trip/KYC workflows. Provider vehicle/driver
+identity files are not disclosed; other-role Documents remain prototypes.
+Shipper now has 14 API-connected routes, 1 prototype (Reports), and 4 deferred
+payment/GPS routes. See [Documents implementation and test evidence](SHIPPER_DOCUMENTS_2026-11-01.md).
+
+02/11/2026 follow-up: Shipper Reports now uses canonical owner-scoped loads,
+live applications and bookings, IST creation-date cohorts, current status totals,
+server paging/search and complete bounded private CSV exports. Payment, revenue,
+GPS and invented on-time/duration figures are excluded. Other-role Reports
+remain prototypes. Shipper's 19 routes now classify as 15 API-connected and
+4 deferred payment/GPS routes; this is not production certification.
+See [Reports implementation and verification](SHIPPER_REPORTS_2026-11-02.md).

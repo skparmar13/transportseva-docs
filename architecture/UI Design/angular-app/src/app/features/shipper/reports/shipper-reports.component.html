@@ -1,0 +1,77 @@
+<div class="page-toolbar">
+  <div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().desc }}</p></div>
+  <div class="report-actions">
+    <button class="btn btn-outline" type="button" [disabled]="busy()" (click)="load(page(), true)">{{ copy().refresh }}</button>
+    <button class="btn btn-primary" type="button" [disabled]="busy() || !data()?.matching" (click)="export()" data-report-export>
+      @if (exporting()) { <span class="report-spinner" aria-hidden="true"></span>{{ copy().exporting }} } @else { {{ copy().export }} }
+    </button>
+  </div>
+</div>
+<p class="report-hint">{{ copy().boundary }}</p><p class="report-hint">{{ copy().basis }}</p>
+<div class="report-tabs">
+  <button class="btn btn-outline" type="button" [disabled]="busy()" [attr.aria-pressed]="table() === 'loads'" (click)="selectTable('loads')">{{ copy().loads }}</button>
+  <button class="btn btn-outline" type="button" [disabled]="busy()" [attr.aria-pressed]="table() === 'bookings'" (click)="selectTable('bookings')">{{ copy().bookings }}</button>
+</div>
+<form (ngSubmit)="load()" class="report-filters">
+  <fieldset [disabled]="busy()">
+    <div class="field"><label for="report-from">{{ copy().from }}</label><input class="input" type="date" id="report-from" name="from" min="1900-01-01" max="2100-12-31" [ngModel]="from()" (ngModelChange)="from.set($event)" /></div>
+    <div class="field"><label for="report-to">{{ copy().to }}</label><input class="input" type="date" id="report-to" name="to" min="1900-01-01" max="2100-12-31" [ngModel]="to()" (ngModelChange)="to.set($event)" /></div>
+    <div class="field"><label for="report-search">{{ copy().search }}</label><input class="input" id="report-search" name="search" maxlength="100" [ngModel]="search()" (ngModelChange)="search.set($event)" /></div>
+    <button class="btn btn-primary" type="submit">{{ copy().apply }}</button>
+  </fieldset>
+</form>
+@if (loading()) {
+  <div class="card report-state" role="status"><span class="report-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>
+} @else if (error()) {
+  <div class="card report-state" role="alert"><p>{{ error() }}</p><button class="btn btn-outline" type="button" (click)="load(page(), true)">{{ copy().retry }}</button></div>
+} @else if (data(); as view) {
+  <p class="report-hint" data-report-applied>{{ copy().applied }}: {{ view.filters.from ? date(view.filters.from) : copy().allDates }} → {{ view.filters.to ? date(view.filters.to) : copy().allDates }} (IST).
+    {{ copy().appliedSearch }}: {{ view.filters.q || copy().none }}. {{ copy().checked }}: {{ dateTime(view.generated_at) }}</p>
+  @if (exportError()) { <p class="report-error" role="alert">{{ exportError() }}</p> }
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-value" data-report-total="loads">{{ view.summary.loads.total }}</div><div class="kpi-label">{{ copy().loadsTotal }}</div></div>
+    <div class="kpi-card"><div class="kpi-value" data-report-total="applications">{{ view.summary.loads.applications }}</div><div class="kpi-label">{{ copy().applicationsTotal }}</div></div>
+    <div class="kpi-card"><div class="kpi-value" data-report-total="bookings">{{ view.summary.bookings.total }}</div><div class="kpi-label">{{ copy().bookingsTotal }}</div></div>
+    <div class="kpi-card"><div class="kpi-value" data-report-total="delivered">{{ view.summary.bookings.stages.delivered }}</div><div class="kpi-label">{{ copy().deliveredTotal }}</div></div>
+  </div>
+  <p class="report-hint">{{ copy().counts }}</p>
+  <div class="card card-body report-breakdown">
+    <h2>{{ copy().statuses }}</h2>
+    @if (view.table === 'loads') {
+      <p>{{ copy().pendingApps }}: <b>{{ view.summary.loads.pending_applications }}</b> · {{ copy().withBooking }}: <b>{{ view.summary.loads.with_booking }}</b></p>
+      <dl class="report-statuses">@for (s of loadStatuses; track s) { <div><dt>{{ copy()[s] }}</dt><dd [attr.data-report-state]="s">{{ view.summary.loads.statuses[s] }}</dd></div> }</dl>
+    } @else {
+      <p>{{ copy().approvedPods }}: <b>{{ view.summary.bookings.approved_pods }}</b> · {{ copy().outstandingPods }}: <b>{{ view.summary.bookings.delivered_without_approved_pod }}</b></p>
+      <dl class="report-statuses">@for (s of stages; track s) { <div><dt>{{ copy()[s] }}</dt><dd [attr.data-report-state]="s">{{ view.summary.bookings.stages[s] }}</dd></div> }</dl>
+    }
+  </div>
+  <p>{{ copy().matching }}: {{ view.matching }}</p>
+  @if (!view.rows.length) {
+    <div class="card report-state" data-report-empty>{{ !view.summary.loads.total && !view.summary.bookings.total && !view.filters.from && !view.filters.to && !view.filters.q ? copy().zero : copy().empty }}</div>
+  } @else if (view.table === 'loads') {
+    <div class="card report-table"><table class="data-table">
+      <thead><tr><th>{{ copy().reference }}</th><th>{{ copy().route }}</th><th>{{ copy().status }}</th><th>{{ copy().apps }}</th><th>{{ copy().posted }}</th><th>{{ copy().actions }}</th></tr></thead>
+      <tbody>@for (row of loadRows(); track row.uuid) {
+        <tr data-report-row><td><b>{{ row.reference }}</b></td><td>{{ row.pickup_city || copy().missing }} → {{ row.drop_city || copy().missing }}<p>{{ row.material || copy().missing }}</p></td>
+          <td>{{ copy()[row.status] }}</td><td>{{ copy().apps }}: {{ row.applications }}<p>{{ copy().pending }}: {{ row.pending_applications }}</p><p>{{ copy().linked }}: {{ row.bookings }}</p></td>
+          <td>{{ row.created_at ? dateTime(row.created_at) : copy().missing }}</td><td><a class="btn btn-outline btn-sm" [routerLink]="['/shipper/load-board', row.uuid]">{{ copy().loadLink }}</a></td></tr>
+      }</tbody>
+    </table></div>
+  } @else {
+    <div class="card report-table"><table class="data-table">
+      <thead><tr><th>{{ copy().reference }}</th><th>{{ copy().route }}</th><th>{{ copy().status }}</th><th>{{ copy().assignment }}</th><th>{{ copy().created }}</th><th>{{ copy().actions }}</th></tr></thead>
+      <tbody>@for (row of bookingRows(); track row.uuid) {
+        <tr data-report-row><td><b>{{ row.reference }}</b><p>{{ row.load_reference || copy().missing }}</p></td><td>{{ row.pickup_city || copy().missing }} → {{ row.drop_city || copy().missing }}</td>
+          <td>{{ copy()[row.stage] }}<p>{{ copy().pod }}: {{ copy()[row.pod_status] }}</p></td><td>{{ row.vehicle || copy().unassigned }}<p>{{ row.driver || copy().unassigned }}</p></td>
+          <td>{{ row.created_at ? dateTime(row.created_at) : copy().missing }}<p>{{ copy().started }}: {{ row.started_at ? dateTime(row.started_at) : copy().missing }}</p><p>{{ copy().deliveredAt }}: {{ row.delivered_at ? dateTime(row.delivered_at) : copy().missing }}</p></td>
+          <td><div class="report-links"><a class="btn btn-outline btn-sm" routerLink="/shipper/bookings" [queryParams]="{ booking: row.uuid }">{{ copy().bookingLink }}</a><a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', row.uuid]">{{ copy().tripLink }}</a></div></td></tr>
+      }</tbody>
+    </table></div>
+  }
+  <div class="report-pages">
+    <button class="btn btn-outline" type="button" [disabled]="busy() || page() <= 1" (click)="load(page() - 1, true)">{{ copy().previous }}</button>
+    <span>{{ copy().page }} {{ view.page }} {{ copy().of }} {{ view.lastPage }}</span>
+    <button class="btn btn-outline" type="button" [disabled]="busy() || page() >= view.lastPage" (click)="load(page() + 1, true)">{{ copy().next }}</button>
+  </div>
+  <p class="report-hint">{{ copy().exportHint }}</p>
+}

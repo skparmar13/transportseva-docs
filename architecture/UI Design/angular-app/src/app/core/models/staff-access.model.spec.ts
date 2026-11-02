@@ -10,6 +10,8 @@ describe('Staff capability navigation', () => {
     const contact = { ...access, routes: ['contact-inquiries'], permissions: ['contact.inquiries.view'] };
     expect(staffRouteAllowed(contact, 'contact-inquiries')).toBeTrue();
     expect(staffRouteAllowed({ ...contact, permissions: ['support.cases.view'] }, 'contact-inquiries')).toBeFalse();
+    expect(staffRouteAllowed({ ...contact, routes: ['support'], permissions: ['support.tickets.view'] }, 'support')).toBeTrue();
+    expect(staffRouteAllowed({ ...contact, routes: ['support'], permissions: ['support.cases.view'] }, 'support')).toBeFalse();
     expect(staffRouteAllowed(access, 'reviews')).toBeTrue();
     expect(staffRouteAllowed({ ...access, permissions: [] }, 'reviews')).toBeFalse();
     expect(staffRouteAllowed({ ...access, routes: ['access'] }, 'reviews')).toBeFalse();

@@ -1,136 +1,107 @@
 <div class="page-toolbar">
-  <div>
-    <h1>{{ 'support.title' | t }}</h1>
-    <p class="desc">{{ 'support.subtitle' | t }}</p>
-  </div>
-  @if (view() === 'tickets') {
-    <button type="button" class="btn btn-primary" (click)="openNewTicket()">
-      <app-icon name="i-plus" [size]="18" />
-      <span>{{ 'support.newTicket' | t }}</span>
-    </button>
-  }
-</div>
-
-<div class="page-toolbar">
-  <div class="tab-row">
-    <button type="button" class="tab-btn" [class.active]="view() === 'tickets'" (click)="setView('tickets')">{{ 'support.tab.tickets' | t }}</button>
-    <button type="button" class="tab-btn" [class.active]="view() === 'calls'" (click)="setView('calls')">{{ 'support.tab.calls' | t }}</button>
+  <div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().subtitle }}</p><p class="desc" data-support-scope>{{ scope() === 'all' ? copy().all : scope() === 'assigned' ? copy().assigned : copy().own }}</p></div>
+  <div class="support-actions">
+    <button type="button" class="btn btn-outline" [disabled]="loading() || saving() || creating()" (click)="load(page()); loadDetail()">{{ copy().refresh }}</button>
+    @if (!staff() && backend) { <button type="button" class="btn btn-primary" (click)="openNew()"><app-icon name="i-plus" [size]="18" />{{ copy().newTicket }}</button> }
   </div>
 </div>
-
-@if (view() === 'tickets') {
-  <div class="card">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>{{ 'support.col.ticketNo' | t }}</th>
-          <th>{{ 'support.col.subject' | t }}</th>
-          <th>{{ 'support.col.category' | t }}</th>
-          <th>{{ 'support.col.priority' | t }}</th>
-          <th>{{ 'support.col.status' | t }}</th>
-          <th>{{ 'support.col.updated' | t }}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (t of comms.tickets(); track t.id) {
-          <tr>
-            <td><b>{{ t.ticketNumber }}</b></td>
-            <td>{{ t.subject }}</td>
-            <td>{{ t.category }}</td>
-            <td><span class="status-pill" [class]="priorityClass[t.priority]">{{ priorityKey[t.priority] | t }}</span></td>
-            <td><span class="status-pill" [class]="statusClass[t.status]">{{ t.status }}</span></td>
-            <td>{{ t.updatedOn }}</td>
-            <td><button type="button" class="btn btn-outline btn-sm" (click)="openTicket(t.id)">{{ 'support.view' | t }}</button></td>
-          </tr>
+@if (selected()) {
+  <section class="card support-detail" aria-labelledby="support-detail-heading">
+    <div class="card-head"><h2 id="support-detail-heading">{{ copy().details }}</h2><button type="button" class="btn btn-outline btn-sm" [disabled]="saving()" (click)="open(null)">{{ copy().close }}</button></div>
+    <div class="card-body">
+      @if (detailLoading()) { <p role="status" aria-busy="true"><span class="support-spinner" aria-hidden="true"></span>{{ copy().loading }}</p> }
+      @else if (detailError()) { <p role="alert">{{ detailError() }}</p><button type="button" class="btn btn-outline" (click)="loadDetail()">{{ copy().retry }}</button> }
+      @else if (detail(); as d) {
+        <h3 data-ticket-reference>{{ d.ticket.reference }} — {{ d.ticket.subject }}</h3>
+        <dl class="support-grid">
+          <div><dt>{{ copy().status }}</dt><dd data-ticket-status>{{ copy()[d.ticket.status] }}</dd></div>
+          <div><dt>{{ copy().priority }}</dt><dd>{{ copy()[d.ticket.priority] }}</dd></div>
+          <div><dt>{{ copy().category }}</dt><dd>{{ copy()[d.ticket.category] }}</dd></div>
+          <div><dt>{{ copy().owner }}</dt><dd>{{ d.ticket.owner_name }}</dd></div>
+          <div><dt>{{ copy().assignedTo }}</dt><dd data-ticket-assignee>{{ d.ticket.assigned_name || copy().unassigned }}</dd></div>
+          <div><dt>{{ copy().updated }}</dt><dd>{{ dateTime(d.ticket.updated_at) }}</dd></div>
+        </dl>
+        <p class="desc">{{ copy().noteHint }}</p>
+        @if (pollFailed()) { <p role="status">{{ copy().pollFailed }}</p> }
+        @if (external() || conflict()) {
+          <p role="alert">{{ external() ? copy().external : copy().conflict }}</p><button type="button" class="btn btn-outline" (click)="loadDetail()">{{ copy().latest }}</button>
         }
-      </tbody>
-    </table>
-  </div>
-}
-
-@if (view() === 'calls') {
-  <div class="card">
-    <div class="card-body" style="text-align:center;padding:56px 22px;color:var(--color-text-muted);">
-      <app-icon name="i-headphones" [size]="36" />
-      <h3 style="margin-top:14px;color:var(--color-secondary);">{{ 'support.calls.title' | t }}</h3>
-      <p style="margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto;"
-         [innerHTML]="'support.calls.body' | t:{ phone: '<b>1800-123-4567</b>' }"></p>
-      <button type="button" class="btn btn-outline" style="margin-top:18px;" disabled>
-        <app-icon name="i-phone" [size]="16" />
-        <span>{{ 'support.calls.button' | t }}</span>
-      </button>
-    </div>
-  </div>
-}
-
-@if (selectedTicket(); as ticket) {
-  <app-modal [title]="ticket.ticketNumber + ' — ' + ticket.subject" [large]="true" [showFooter]="false" (close)="closeTicket()">
-    <div style="display:flex;gap:10px;margin-bottom:18px;">
-      <span class="status-pill" [class]="priorityClass[ticket.priority]">{{ 'support.thread.priorityLabel' | t:{ priority: (priorityKey[ticket.priority] | t) } }}</span>
-      <span class="status-pill" [class]="statusClass[ticket.status]">{{ ticket.status }}</span>
-      <span class="status-pill status-pending">{{ ticket.category }}</span>
-    </div>
-
-    <div class="timeline">
-      @for (m of ticket.messages; track m.id) {
-        <div class="timeline-item done">
-          <div class="timeline-dot"><app-icon [name]="m.authorType === 'You' ? 'i-user' : 'i-headset'" [size]="14" /></div>
-          <div>
-            <div class="timeline-title">{{ m.author }} <span style="font-weight:400;color:var(--color-text-soft);">({{ m.authorType }})</span></div>
-            <p style="font-size:13.5px;color:var(--color-text-muted);margin:4px 0;">{{ m.message }}</p>
-            <div class="timeline-time">{{ m.timestamp }}</div>
-          </div>
+        @if (success()) { <p class="support-success" role="status">{{ success() }}</p> }
+        @if (actionError()) { <p class="support-error" role="alert">{{ actionError() }}</p> }
+        @if (pending() && !saving() && !conflict() && !external()) { <button type="button" class="btn btn-primary" (click)="act(pending()!.kind)">{{ copy().retryAction }}</button> }
+        <h3>{{ copy().history }}</h3>
+        @if (d.history.has_more) { <button type="button" class="btn btn-outline btn-sm" [disabled]="olderLoading() || saving()" (click)="older()">@if (olderLoading()) { <span class="support-spinner" aria-hidden="true"></span> }{{ copy().older }}</button> }
+        <div data-ticket-history aria-live="polite">
+          @for (event of d.events; track event.uuid) {
+            <article class="support-event" [attr.data-event-type]="event.type">
+              <div><b>{{ event.actor_name }} · {{ event.actor_role }}</b><span class="desc">{{ dateTime(event.created_at) }}</span></div>
+              <p class="desc">{{ event.type === 'created' ? copy().created : event.type === 'reply' ? copy().replied : event.type === 'assigned' ? copy().assignedEvent : copy().statusEvent }} · {{ copy()[event.status] }}
+                @if (event.type === 'assigned') { · {{ event.assigned_name || copy().unassigned }} }</p>
+              <p class="support-message">{{ event.message }}</p>
+            </article>
+          }
         </div>
+        @if (d.capabilities.reply && active()) {
+          <form (ngSubmit)="act('replies')"><fieldset [disabled]="saving() || !!pending() || conflict() || external()">
+            <div class="field"><label for="support-reply">{{ copy().reply }}</label><textarea id="support-reply" class="input" rows="3" maxlength="5000" name="reply" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"></textarea></div>
+            <button type="submit" class="btn btn-primary">@if (saving() && pending()?.kind === 'replies') { <span class="support-spinner" aria-hidden="true"></span> }{{ saving() && pending()?.kind === 'replies' ? copy().sending : copy().send }}</button>
+          </fieldset></form>
+        } @else if (!active()) { <p class="desc">{{ copy().noReply }}</p> }
+        @if (d.capabilities.assign && active()) {
+          <section class="support-controls"><h3>{{ copy().assignedTo }}</h3>
+            @if (agentsLoading()) { <p role="status"><span class="support-spinner" aria-hidden="true"></span>{{ copy().loading }}</p> }
+            @else if (agentsError()) { <p role="alert">{{ agentsError() }}</p><button type="button" class="btn btn-outline" (click)="loadAgents()">{{ copy().retry }}</button> }
+            @else {
+              <form (ngSubmit)="act('assignment')"><fieldset [disabled]="saving() || !!pending() || conflict() || external()">
+                <div class="field"><label for="support-agent">{{ copy().agent }}</label><select id="support-agent" class="input" name="assignee" [ngModel]="assignee()" (ngModelChange)="assignee.set($event)"><option value="">{{ copy().unassigned }}</option>@for (agent of agents(); track agent.uuid) { <option [value]="agent.uuid">{{ agent.name }}</option> }</select></div>
+                <div class="field"><label for="support-assignment-note">{{ copy().assignmentNote }}</label><textarea id="support-assignment-note" class="input" rows="2" maxlength="1000" name="assignmentNote" [ngModel]="assignmentNote()" (ngModelChange)="assignmentNote.set($event)"></textarea></div>
+                <button type="submit" class="btn btn-primary">@if (saving() && pending()?.kind === 'assignment') { <span class="support-spinner" aria-hidden="true"></span> }{{ saving() && pending()?.kind === 'assignment' ? copy().sending : copy().assign }}</button>
+              </fieldset></form>
+            }
+          </section>
+        }
+        @if (statusOptions().length) {
+          <section class="support-controls"><h3>{{ copy().status }}</h3>@if (!staff()) { <p class="desc">{{ copy().reopenHint }}</p> }
+            <form (ngSubmit)="act('status')"><fieldset [disabled]="saving() || !!pending() || conflict() || external()">
+              <div class="field"><label for="support-next-status">{{ copy().status }}</label><select id="support-next-status" class="input" name="status" [ngModel]="status()" (ngModelChange)="status.set($event)">@for (value of statusOptions(); track value) { <option [value]="value">{{ copy()[value] }}</option> }</select></div>
+              <div class="field"><label for="support-status-note">{{ copy().statusNote }}</label><textarea id="support-status-note" class="input" rows="2" maxlength="1000" name="note" [ngModel]="note()" (ngModelChange)="note.set($event)"></textarea></div>
+              <button type="submit" class="btn btn-primary">@if (saving() && pending()?.kind === 'status') { <span class="support-spinner" aria-hidden="true"></span> }{{ saving() && pending()?.kind === 'status' ? copy().sending : copy().changeStatus }}</button>
+            </fieldset></form>
+          </section>
+        }
       }
     </div>
-
-    @if (ticket.status !== 'Closed') {
-      <div class="field" style="margin-top:18px;">
-        <label>{{ 'support.thread.addReply' | t }}</label>
-        <textarea class="input" style="min-height:80px;padding:12px 14px;" [placeholder]="'support.thread.replyPh' | t" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)" name="reply"></textarea>
-      </div>
-      <div style="display:flex;justify-content:flex-end;">
-        <button type="button" class="btn btn-primary" [disabled]="!replyText().trim()" (click)="sendReply()">
-          <app-icon name="i-send" [size]="16" />
-          <span>{{ 'support.thread.send' | t }}</span>
-        </button>
-      </div>
-    }
-  </app-modal>
+  </section>
 }
-
-@if (showNewTicket()) {
-  <app-modal [title]="'support.modal.title' | t" (close)="closeNewTicket()">
-    <div class="field">
-      <label>{{ 'support.modal.subject' | t }}</label>
-      <input type="text" class="input" style="padding-left:14px;" [placeholder]="'support.modal.subjectPh' | t" [ngModel]="newSubject()" (ngModelChange)="newSubject.set($event)" name="subject" />
+<form class="support-filters" (ngSubmit)="load()">
+  <div class="field"><label for="support-filter">{{ copy().status }}</label><select id="support-filter" class="input" name="filter" [ngModel]="filter()" (ngModelChange)="filter.set($event)"><option value="all">{{ copy().allStatuses }}</option>@for (value of statuses; track value) { <option [value]="value">{{ copy()[value] }}</option> }</select></div>
+  <div class="field"><label for="support-reference">{{ copy().reference }}</label><input id="support-reference" class="input" name="reference" maxlength="32" [ngModel]="reference()" (ngModelChange)="reference.set($event)" /></div>
+  <button type="submit" class="btn btn-outline" [disabled]="loading() || saving()">{{ copy().filter }}</button>
+</form>
+@if (loading()) { <div class="card support-state" role="status" aria-busy="true"><span class="support-spinner" aria-hidden="true"></span>{{ copy().loading }}</div> }
+@else if (error()) { <div class="card support-state" role="alert">{{ error() }}<button type="button" class="btn btn-outline" (click)="load(page())">{{ copy().retry }}</button></div> }
+@else {
+  <div class="card support-table"><table class="data-table"><thead><tr><th>{{ copy().reference }}</th><th>{{ copy().subject }}</th><th>{{ copy().category }}</th><th>{{ copy().priority }}</th><th>{{ copy().status }}</th><th>{{ copy().updated }}</th><th></th></tr></thead>
+    <tbody>@for (row of rows(); track row.uuid) { <tr [attr.data-ticket-id]="row.uuid"><td>{{ row.reference }}</td><td>{{ row.subject }}</td><td>{{ copy()[row.category] }}</td><td>{{ copy()[row.priority] }}</td><td>{{ copy()[row.status] }}</td><td>{{ dateTime(row.updated_at) }}</td><td><button type="button" class="btn btn-outline btn-sm" [disabled]="saving()" (click)="open(row.uuid)">{{ copy().view }}</button></td></tr> } @empty { <tr><td colspan="7">{{ copy().empty }}</td></tr> }</tbody>
+  </table></div>
+  <div class="support-pages"><span>{{ copy().total }}: {{ total() }} · {{ copy().page }} {{ page() }} / {{ lastPage() }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="page() <= 1 || saving()" (click)="load(page() - 1)">{{ copy().previous }}</button><button type="button" class="btn btn-outline btn-sm" [disabled]="page() >= lastPage() || saving()" (click)="load(page() + 1)">{{ copy().next }}</button></div>
+}
+@if (showNew()) {
+  <div class="support-backdrop" (click)="$event.target === $event.currentTarget && closeNew()">
+  <section #newDialog class="support-dialog" role="dialog" aria-modal="true" aria-labelledby="support-new-heading" tabindex="-1">
+    <header><h2 id="support-new-heading">{{ copy().newTicket }}</h2><button type="button" class="btn btn-outline btn-sm" [disabled]="creating()" (click)="closeNew()">{{ copy().cancel }}</button></header>
+    <div class="support-dialog-body">
+    <p class="desc">{{ copy().noteHint }}</p>
+    <fieldset [disabled]="creating() || !!pendingCreate()">
+      <div class="field"><label for="support-subject">{{ copy().subject }}</label><input id="support-subject" class="input" name="subject" maxlength="160" [ngModel]="subject()" (ngModelChange)="subject.set($event)" /></div>
+      <div class="field"><label for="support-category">{{ copy().category }}</label><select id="support-category" class="input" name="category" [ngModel]="category()" (ngModelChange)="category.set($event)">@for (value of categories; track value) { <option [value]="value">{{ copy()[value] }}</option> }</select></div>
+      <div class="field"><label for="support-priority">{{ copy().priority }}</label><select id="support-priority" class="input" name="priority" [ngModel]="priority()" (ngModelChange)="priority.set($event)">@for (value of priorities; track value) { <option [value]="value">{{ copy()[value] }}</option> }</select></div>
+      <div class="field"><label for="support-message">{{ copy().message }}</label><textarea id="support-message" class="input" name="message" rows="4" maxlength="5000" [ngModel]="message()" (ngModelChange)="message.set($event)"></textarea></div>
+    </fieldset>
+    @if (createError()) { <p class="support-error" role="alert">{{ createError() }}</p> }
+    @if (createConflict()) { <button type="button" class="btn btn-outline" (click)="newSubmission()">{{ copy().newSubmission }}</button> }
     </div>
-    <div class="field">
-      <label>{{ 'support.modal.category' | t }}</label>
-      <select class="input" style="padding-left:14px;" [ngModel]="newCategory()" (ngModelChange)="newCategory.set($event)" name="category">
-        @for (c of ticketCategories; track c.value) {
-          <option [value]="c.value">{{ c.labelKey | t }}</option>
-        }
-      </select>
-    </div>
-    <div class="field">
-      <label>{{ 'support.modal.priority' | t }}</label>
-      <select class="input" style="padding-left:14px;" [ngModel]="newPriority()" (ngModelChange)="newPriority.set($event)" name="priority">
-        <option value="Low">{{ 'support.priority.low' | t }}</option>
-        <option value="Medium">{{ 'support.priority.medium' | t }}</option>
-        <option value="High">{{ 'support.priority.high' | t }}</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>{{ 'support.modal.message' | t }}</label>
-      <textarea class="input" style="min-height:90px;padding:12px 14px;" [placeholder]="'support.modal.messagePh' | t" [ngModel]="newMessage()" (ngModelChange)="newMessage.set($event)" name="message"></textarea>
-    </div>
-    <div modal-footer style="display:flex;gap:10px;justify-content:flex-end;width:100%;">
-      <button type="button" class="btn btn-outline" (click)="closeNewTicket()">{{ 'common.cancel' | t }}</button>
-      <button type="button" class="btn btn-primary" [disabled]="savingTicket() || !newSubject().trim() || !newMessage().trim()" (click)="submitNewTicket()">
-        {{ (savingTicket() ? 'support.modal.submitting' : 'support.modal.submit') | t }}
-      </button>
-    </div>
-  </app-modal>
+    <footer class="support-actions"><button type="button" class="btn btn-primary" [disabled]="creating() || createConflict()" (click)="create()">@if (creating()) { <span class="support-spinner" aria-hidden="true"></span> }{{ creating() ? copy().creating : pendingCreate() ? copy().retryCreate : copy().submit }}</button></footer>
+  </section>
+  </div>
 }

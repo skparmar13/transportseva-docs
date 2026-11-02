@@ -26,7 +26,8 @@ Generated local artifacts:
 
 The classification is manual source review supported by parsing, not a guess
 based on a service containing the word Mock. For example, notifications use real
-APIs through CommunicationMockService, while tickets in that same service do not.
+APIs through CommunicationMockService despite its legacy name. Account Support
+Tickets now use a dedicated ApiSupportTicketService; Company support is disabled.
 API-connected means a source-level backend integration exists; it does not prove
 every action, role, error path or external provider is working.
 

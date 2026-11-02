@@ -1,0 +1,39 @@
+<div class="page-toolbar"><div><a routerLink="/shipper/trips">{{ copy().back }}</a><h1>{{ copy().details }}</h1></div><button type="button" class="btn btn-outline" [disabled]="loading() || downloading()" (click)="load()">{{ copy().refresh }}</button></div>
+@if (loading()) { <section class="card trip-state" role="status" aria-busy="true"><span class="trip-spinner" aria-hidden="true"></span>{{ copy().loading }}</section> }
+@else if (error()) { <section class="card trip-state" role="alert">{{ error() }}<button type="button" class="btn btn-outline" (click)="load()">{{ copy().detailRetry }}</button></section> }
+@else if (data(); as view) {
+  <section class="card"><div class="card-body"><h2 data-trip-reference>{{ view.trip.reference }}</h2><p class="desc" data-trip-stage>{{ copy()[view.trip.stage] }}</p>
+    <div class="trip-actions"><a class="btn btn-outline btn-sm" routerLink="/shipper/bookings" [queryParams]="{booking: view.trip.uuid}" data-trip-booking-link>{{ copy().booking }}</a>@if (view.trip.load_uuid) { <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/load-board', view.trip.load_uuid]">{{ copy().load }}</a> }</div>
+    <p class="desc">{{ copy().lifecycleHint }}</p>@if (stale()) { <p role="status">{{ copy().liveFailed }}</p> }<p class="desc">{{ copy().updated }}: {{ dateTime(view.generated_at) }}</p>
+  </div></section>
+  <div class="trip-tabs">@for (value of tabs; track value) { <button type="button" class="btn btn-outline btn-sm" [attr.aria-pressed]="tab() === value" (click)="tab.set(value)">{{ copy()[value] }}</button> }</div>
+  @switch (tab()) {
+    @case ('overview') {
+      <section class="card"><div class="card-body"><h3>{{ copy().overview }}</h3><dl class="trip-grid">
+        <div><dt>{{ copy().pickup }}</dt><dd>{{ view.trip.pickup_city || copy().loadUnavailable }}<p>{{ view.trip.pickup_address }}</p></dd></div><div><dt>{{ copy().drop }}</dt><dd>{{ view.trip.drop_city || copy().loadUnavailable }}<p>{{ view.trip.drop_address }}</p></dd></div>
+        <div><dt>{{ copy().goods }}</dt><dd>{{ view.trip.material || copy().notRecorded }}</dd></div><div><dt>{{ copy().weight }}</dt><dd>{{ view.trip.weight_tons ?? copy().notRecorded }}</dd></div>
+        <div><dt>{{ copy().pickupDate }}</dt><dd>{{ view.trip.pickup_date ? date(view.trip.pickup_date) : copy().notRecorded }}</dd></div><div><dt>{{ copy().requiredVehicle }}</dt><dd>{{ view.trip.vehicle_type_required || copy().notRecorded }}</dd></div>
+        <div><dt>{{ copy().vehicle }}</dt><dd data-trip-vehicle>{{ view.trip.vehicle || copy().notAssigned }}</dd></div><div><dt>{{ copy().driver }}</dt><dd>{{ view.trip.driver || copy().notAssigned }}</dd></div>
+        <div><dt>{{ copy().driverPhone }}</dt><dd>{{ view.trip.driver_phone || copy().notRecorded }}</dd></div><div><dt>{{ copy().provider }}</dt><dd>{{ view.trip.provider_name || copy().notRecorded }}</dd></div>
+        <div><dt>{{ copy().started }}</dt><dd>{{ view.trip.started_at ? dateTime(view.trip.started_at) : copy().notRecorded }}</dd></div><div><dt>{{ copy().delivered }}</dt><dd>{{ view.trip.delivered_at ? dateTime(view.trip.delivered_at) : copy().notRecorded }}</dd></div>
+        <div><dt>{{ copy().freight }}</dt><dd>{{ money(view.trip.agreed_freight) }}</dd></div>
+      </dl><p class="desc" data-trip-gps-unavailable>{{ copy().noGps }}</p></div></section>
+    }
+    @case ('timelineLabel') {
+      <section class="card"><div class="card-body"><h3>{{ copy().timelineLabel }}</h3><p class="desc">{{ copy().timelineHint }}</p><div data-trip-timeline>
+        @for (event of view.timeline; track $index) { <article class="trip-event"><b>{{ copy()[event.stage] }}</b><p>{{ event.occurred_at ? dateTime(event.occurred_at) : copy().notRecorded }}</p></article> }
+      </div></div></section>
+    }
+    @case ('podLabel') {
+      <section class="card"><div class="card-body"><h3>{{ copy().podLabel }}</h3><p data-trip-pod-status>{{ copy()[view.pod.status] }}</p><p class="desc">{{ copy().podHint }}</p>
+        @if (view.pod.status === 'not_submitted') { <p>{{ copy().noPOD }}</p> }
+        <dl class="trip-grid"><div><dt>{{ copy().podNumber }}</dt><dd>{{ view.pod.number || copy().notRecorded }}</dd></div><div><dt>{{ copy().receiver }}</dt><dd>{{ view.pod.received_by || copy().notRecorded }}</dd></div>
+          <div><dt>{{ copy().uploaded }}</dt><dd>{{ view.pod.uploaded_at ? dateTime(view.pod.uploaded_at) : copy().notRecorded }}</dd></div><div><dt>{{ copy().reviewed }}</dt><dd>{{ view.pod.reviewed_at ? dateTime(view.pod.reviewed_at) : copy().notRecorded }}</dd></div>
+          <div><dt>{{ copy().original }}</dt><dd>{{ view.pod.file_name || copy().notRecorded }}</dd></div></dl>
+        @if (view.pod.remarks) { <h4>{{ copy().remarks }}</h4><p class="trip-message">{{ view.pod.remarks }}</p> } @if (view.pod.review_note) { <h4>{{ copy().reviewNote }}</h4><p class="trip-message">{{ view.pod.review_note }}</p> }
+        @if (view.pod.download_available) { <button type="button" class="btn btn-primary" [disabled]="downloading()" (click)="download()">@if (downloading()) { <span class="trip-spinner" aria-hidden="true"></span> }{{ downloading() ? copy().downloading : copy().download }}</button> } @else { <p>{{ copy().noFile }}</p> }
+        @if (downloadError()) { <p class="trip-error" role="alert">{{ downloadError() }}</p> }
+      </div></section>
+    }
+  }
+}

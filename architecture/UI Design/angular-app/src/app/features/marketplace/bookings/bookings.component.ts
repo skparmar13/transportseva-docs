@@ -14,8 +14,8 @@ import { ApiMarketplaceBooking, ApiMarketplaceDriver, ApiMarketplaceService, Api
 import { CashfreeCheckoutService } from '../../../core/api/cashfree-checkout.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
-import { switchMap, timeout, TimeoutError } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription, switchMap, timeout, TimeoutError } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /** A provider vehicle shown in the booking-assignment selector. */
@@ -38,7 +38,7 @@ interface AssignmentVehicleOption {
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe],
+  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookings.component.html',
 })
@@ -63,11 +63,14 @@ export class BookingsComponent {
   protected readonly backendEnabled = API_CONFIG.useBackend;
   protected readonly loading = signal(API_CONFIG.useBackend);
   protected readonly loadError = signal('');
+  private backendBookingsLoaded = false;
+  private focusedBookingRequest?: Subscription;
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const booking = params.get('booking');
       this.focusedBookingId.set(booking);
       if (booking) this.expandedId.set(booking);
+      if (this.backendBookingsLoaded) this.loadFocusedBooking();
     });
     this.reloadBackendBookings();
   }
@@ -76,10 +79,14 @@ export class BookingsComponent {
     if (!API_CONFIG.useBackend) return;
     this.loading.set(true);
     this.loadError.set('');
+    this.backendBookingsLoaded = false;
+    this.focusedBookingRequest?.unsubscribe();
     this.apiMarketplace.listMarketplaceBookings().pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (bookings) => {
         this.backendBookings.set(bookings);
+        this.backendBookingsLoaded = true;
         this.loading.set(false);
+        this.loadFocusedBooking();
       },
       error: (error) => {
         this.backendBookings.set([]);
@@ -92,6 +99,23 @@ export class BookingsComponent {
   }
   protected retryBookings(): void {
     this.reloadBackendBookings();
+  }
+
+  /** Exact links must work even when the target is older than the first list page. */
+  private loadFocusedBooking(): void {
+    if (!API_CONFIG.useBackend) return;
+    this.focusedBookingRequest?.unsubscribe();
+    this.loadError.set(''); this.loading.set(false);
+    const uuid = this.focusedBookingId();
+    if (!uuid || this.backendBookings().some((booking) => booking.uuid === uuid)) return;
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(uuid)) {
+      this.loadError.set('The linked booking is unavailable or access is not permitted.'); return;
+    }
+    this.loading.set(true);
+    this.focusedBookingRequest = this.apiMarketplace.getMarketplaceBooking(uuid).pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (booking) => { this.backendBookings.update((rows) => [...rows.filter((r) => r.uuid !== uuid), booking]); this.loading.set(false); },
+      error: () => { this.loading.set(false); this.loadError.set('The linked booking is unavailable or access is not permitted.'); },
+    });
   }
 
   /** Render the authoritative mutation response without refetching the list. */

@@ -38,6 +38,7 @@
               @if (booking.dispute && booking.dispute.status !== 'Resolved') { <span class="status-pill status-pending">Dispute {{ booking.dispute.status }}</span> }
               <span class="status-pill" [class]="booking.status === 'Completed' ? 'status-delivered' : booking.status === 'Cancelled' ? 'status-cancelled' : booking.status === 'Awaiting Deposit' ? 'status-pending' : 'status-transit'">{{ statusKey(booking.status) | t }}</span>
               <button type="button" class="btn btn-outline btn-sm" (click)="toggle(booking.id)">{{ expandedId() === booking.id ? ('bookings.hideDetails' | t) : ('bookings.viewDetails' | t) }}</button>
+              @if (backendEnabled && session.role() === 'shipper') { <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', booking.id]">{{ 'nav.tripHistory' | t }}</a> }
             </div>
           </div>
 
