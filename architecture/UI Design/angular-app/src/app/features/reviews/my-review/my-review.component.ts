@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timeout } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ApiMarketplaceReview, ApiReviewService } from '../../../core/api/api-review.service';
 import { apiErrorMessage } from '../../../core/api/api-error';
@@ -14,25 +16,29 @@ import { formatDateTime } from '../../../core/utils/date-format';
 })
 export class MyReviewComponent implements OnInit {
   private readonly api = inject(ApiReviewService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly stars = [1, 2, 3, 4, 5];
   protected readonly review = signal<ApiMarketplaceReview | null>(null);
   protected readonly rating = signal(0);
   protected readonly comment = signal('');
-  protected readonly loading = signal(true);
+  protected readonly loading = signal(false);
+  protected readonly loaded = signal(false);
+  protected readonly loadError = signal('');
   protected readonly saving = signal(false);
   protected readonly error = signal('');
   protected readonly success = signal('');
 
   ngOnInit(): void { this.load(); }
-  protected chooseRating(value: number): void { this.rating.set(value); this.error.set(''); }
+  protected chooseRating(value: number): void { if (!this.saving()) { this.rating.set(value); this.error.set(''); } }
 
   protected save(): void {
+    if (!this.loaded() || this.loading() || this.saving() || this.review()?.status === 'approved' || this.review()?.status === 'pending') return;
     const rating = this.rating();
     const comment = this.comment().trim();
     if (!rating) { this.error.set('Choose a star rating before submitting your review.'); return; }
     if (comment.length < 10) { this.error.set('Please write at least 10 characters so the review is useful.'); return; }
     this.saving.set(true); this.error.set(''); this.success.set('');
-    this.api.submit({ rating, comment }).subscribe({
+    this.api.submit({ rating, comment }).pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (review) => { this.review.set(review); this.rating.set(review.rating); this.comment.set(review.comment); this.saving.set(false); this.success.set(review.status === 'pending' ? 'Your review has been submitted for moderation.' : 'Your review has been updated.'); },
       error: (error) => { this.saving.set(false); this.error.set(apiErrorMessage(error, 'We could not submit your review. Please try again.')); },
     });
@@ -41,11 +47,12 @@ export class MyReviewComponent implements OnInit {
   protected statusLabel(status?: string): string { return status === 'approved' ? 'Published on the home page' : status === 'rejected' ? 'Needs changes' : 'Awaiting admin moderation'; }
   protected submittedAt(value?: string | null): string { return value ? formatDateTime(value) : '—'; }
 
-  private load(): void {
-    this.loading.set(true);
-    this.api.listMine().subscribe({
-      next: (review) => { this.review.set(review); if (review) { this.rating.set(review.rating); this.comment.set(review.comment); } this.loading.set(false); },
-      error: (error) => { this.loading.set(false); this.error.set(apiErrorMessage(error, 'Your review could not be loaded. Please refresh the page.')); },
+  protected load(): void {
+    if (this.loading() || this.saving()) return;
+    this.loading.set(true); this.loaded.set(false); this.loadError.set(''); this.error.set('');
+    this.api.listMine().pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (review) => { this.review.set(review); if (review) { this.rating.set(review.rating); this.comment.set(review.comment); } this.loading.set(false); this.loaded.set(true); },
+      error: (error) => { this.loading.set(false); this.loadError.set(apiErrorMessage(error, 'Your review could not be loaded. Please retry.')); },
     });
   }
 }

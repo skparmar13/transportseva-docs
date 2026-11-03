@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timeout } from 'rxjs';
 import { Router } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -33,9 +35,14 @@ export class ApplicationsComponent {
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly page = signal(1);
+  protected readonly lastPage = signal(1);
+  protected readonly total = signal(0);
 
   protected readonly statusClass = STATUS_CLASS;
-  protected readonly loading = signal(API_CONFIG.useBackend);
+  protected readonly loading = signal(false);
+  protected readonly backend = API_CONFIG.useBackend;
   protected readonly loadError = signal('');
   private readonly backendRows = signal<ApplicationRow[]>([]);
 
@@ -66,18 +73,30 @@ export class ApplicationsComponent {
     this.router.navigate([this.session.portal().basePath, 'load-board', loadId]);
   }
 
-  private reloadBackendData(): void {
-    if (!API_CONFIG.useBackend) return;
+  protected reloadBackendData(page = 1): void {
+    if (!API_CONFIG.useBackend || this.loading()) return;
+    this.page.set(page);
     this.loading.set(true);
     this.loadError.set('');
+    this.backendRows.set([]);
+    if (this.session.role() === 'shipper') {
+      this.apiMarketplace.listReceivedApplicationsPage(page).pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (result) => {
+          this.backendRows.set(result.rows.map((application) => ({ app: this.mapApplication(application), load: application.load ? this.mapLoad(application.load) : undefined })));
+          this.page.set(result.page); this.lastPage.set(result.lastPage); this.total.set(result.total); this.loading.set(false);
+        },
+        error: (e) => this.fail(e, 'We could not load applications. Please retry.'),
+      });
+      return;
+    }
     if (this.backendOwnerMode()) {
       this.apiMarketplace.listLoads({ mine: true, per_page: 100 }).subscribe({
         next: (loads) => {
           if (!loads.length) { this.backendRows.set([]); this.loading.set(false); return; }
           forkJoin(loads.map((load) => this.apiMarketplace.listApplications(load.uuid).pipe(
             map((applications) => applications.map((application) => ({ app: this.mapApplication(application), load: this.mapLoad(load) }))),
-            catchError(() => of([] as ApplicationRow[])),
-          ))).subscribe((rows) => { this.backendRows.set(rows.flat()); this.loading.set(false); });
+          ))).subscribe({ next: (rows) => { this.backendRows.set(rows.flat()); this.loading.set(false); },
+            error: (e) => this.fail(e, 'We could not load applications. Please retry.') });
         },
         error: (error) => this.fail(error, 'We could not load applications. Please try again.'),
       });

@@ -7,7 +7,7 @@
     </div>
   </div>
 } @else if (loadError()) {
-  <div class="card-body page-loading-state" role="alert"><app-icon name="i-info" [size]="30" /><strong>{{ loadError() }}</strong></div>
+  <div class="card-body page-loading-state" role="alert"><app-icon name="i-info" [size]="30" /><strong>{{ loadError() }}</strong><button type="button" class="btn btn-outline" (click)="reloadBackendData(page())">Retry</button></div>
 } @else {
 <h1>{{ isOwnerMode() ? ('applications.received.title' | t) : ('applications.mine.title' | t) }}</h1>
 <p class="desc">
@@ -91,4 +91,13 @@
     }
   }
 </div>
+@if (backend && session.role() === 'shipper') {
+  <div class="page-toolbar" style="margin-top:18px">
+    <span>Total applications: {{ total() }} · Page {{ page() }} of {{ lastPage() }}</span>
+    <div style="display:flex;gap:10px">
+      <button type="button" class="btn btn-outline" [disabled]="page() <= 1" (click)="reloadBackendData(page() - 1)">Previous</button>
+      <button type="button" class="btn btn-outline" [disabled]="page() >= lastPage()" (click)="reloadBackendData(page() + 1)">Next</button>
+    </div>
+  </div>
+}
 }

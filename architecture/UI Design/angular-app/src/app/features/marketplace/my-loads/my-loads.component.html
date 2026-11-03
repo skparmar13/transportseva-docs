@@ -25,7 +25,7 @@
       @if (loadError().toLowerCase().includes('profile completion')) {
         <button type="button" class="btn btn-primary btn-sm" (click)="completeProfile()">Complete Profile</button>
       } @else {
-        <button type="button" class="btn btn-outline btn-sm" (click)="postLoad()">Back to Post Load</button>
+        <button type="button" class="btn btn-outline btn-sm" (click)="load(page())">Retry</button>
       }
     </div>
   } @else if (loads().length) {
@@ -67,3 +67,12 @@
     </div>
   }
 </div>
+@if (backend && !loading() && !loadError()) {
+  <div class="page-toolbar" style="margin-top:18px">
+    <span>Total loads: {{ total() }} · Page {{ page() }} of {{ lastPage() }}</span>
+    <div style="display:flex;gap:10px">
+      <button type="button" class="btn btn-outline" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
+      <button type="button" class="btn btn-outline" [disabled]="page() >= lastPage()" (click)="load(page() + 1)">Next</button>
+    </div>
+  </div>
+}

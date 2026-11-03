@@ -67,7 +67,11 @@ export function collectInventory({ backendEnabled = true } = {}) {
       const body = ts.isArrowFunction(load) ? selectBackendBranch(load.body) : load;
       const files = scanImports(body);
       if (files.length !== 1) throw new Error('Expected exactly one active component: ' + full);
-      const file = files[0]; const assessment = assessments.get(file);
+      const file = files[0];
+      // The reviewed private layout is not a new leaf screen merely because it is lazy.
+      if (children && ts.isArrayLiteralExpression(children) && file === 'src/app/shared/layouts/admin-shell/shell.component.ts'
+        && review.shared.some((item) => item.file === file)) continue;
+      const assessment = assessments.get(file);
       if (!assessment) throw new Error('Unreviewed route/component: ' + full + ' -> ' + file);
       const text = read(file);
       const imports = [...text.matchAll(/import\s*\{([^}]+)\}\s*from\s*'([^']+)'/g)]

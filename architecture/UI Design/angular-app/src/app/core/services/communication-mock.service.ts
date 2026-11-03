@@ -1,19 +1,32 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, EMPTY, exhaustMap, Subject, takeUntil, timer } from 'rxjs';
+import { finalize, Subject, Subscription, takeUntil, timeout, timer } from 'rxjs';
 import { AppNotification } from '../models/communication.model';
-import { ApiNotification, ApiNotificationsService } from '../api/api-notifications.service';
+import { ApiNotificationsService } from '../api/api-notifications.service';
 import { API_CONFIG } from '../api/api-config';
 import { formatDateTime } from '../utils/date-format';
+import { notificationItem } from '../utils/notification-item';
 
 @Injectable({ providedIn: 'root' })
 export class CommunicationMockService {
   private readonly apiNotifications = inject(ApiNotificationsService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly notificationPollingRestarted = new Subject<void>();
-  private liveUpdatesStarted = false;
-  private notificationToken = '';
-  private readonly _notifications = signal<AppNotification[]>([
+  private readonly restarted = new Subject<void>();
+  private request?: Subscription;
+  private activeToken = '';
+  private started = false;
+  private generation = 0;
+  private retryId = '';
+  private readonly serverUnread = signal(0);
+  readonly loading = signal(false);
+  readonly loaded = signal(!API_CONFIG.useBackend);
+  readonly loadFailed = signal(false);
+  readonly readPending = signal('');
+  readonly markingAll = signal(false);
+  readonly writeError = signal<'read' | 'all' | null>(null);
+  readonly revision = signal(0);
+  readonly writing = computed(() => !!this.readPending() || this.markingAll());
+  private readonly _notifications = signal<AppNotification[]>(API_CONFIG.useBackend ? [] : [
     { id: 'n1', category: 'Booking', title: 'Booking Confirmed', message: 'Your booking for load LD-1042 (Jaipur → Ahmedabad) has been confirmed by the transporter.', timestamp: '2024-06-18 09:20 AM', read: false },
     { id: 'n2', category: 'Payment', title: 'Payment Received', message: 'Freight payment of ₹42,000 received for trip TRIP-3877.', timestamp: '2024-06-18 08:05 AM', read: false },
     { id: 'n3', category: 'Trip', title: 'Trip Started', message: 'Vehicle RJ14GA1234 has started the trip on route Jaipur → Ahmedabad.', timestamp: '2024-06-17 06:40 PM', read: false },
@@ -23,69 +36,63 @@ export class CommunicationMockService {
     { id: 'n7', category: 'Trip', title: 'POD Uploaded', message: 'Proof of Delivery uploaded for trip TRIP-3877.', timestamp: '2024-06-15 07:50 PM', read: true },
     { id: 'n8', category: 'Payment', title: 'Payout Processed', message: 'Payout of ₹18,500 has been processed to your bank account.', timestamp: '2024-06-14 02:10 PM', read: true },
   ]);
-  readonly notifications = computed(() => this._notifications().map((notification) => ({ ...notification, timestamp: formatDateTime(notification.timestamp) })));
-  readonly unreadCount = computed(() => this._notifications().filter((n) => !n.read).length);
-  readonly recentNotifications = computed(() => this.notifications().slice(0, 5));
+  readonly notifications = computed(() => this._notifications().map((n) => ({ ...n, timestamp: n.timestamp ? formatDateTime(n.timestamp) : '—' })));
+  readonly unreadCount = computed(() => API_CONFIG.useBackend ? this.serverUnread() : this._notifications().filter((n) => !n.read).length);
+  readonly recentNotifications = computed(() => this.notifications().slice(0,5));
 
-  /** Keep the bell current while the user has the app open. */
   startLiveUpdates(): void {
     if (!API_CONFIG.useBackend) return;
-    const token = localStorage.getItem('transportseva.access_token') ?? '';
-    if (this.liveUpdatesStarted && this.notificationToken === token) return;
-    if (this.liveUpdatesStarted) this.notificationPollingRestarted.next();
-    this.liveUpdatesStarted = true;
-    this.notificationToken = token;
-    this._notifications.set([]);
-    // A local PHP server handles requests serially.  Give the route that just
-    // opened a short head start.  A new login replaces—not duplicates—the
-    // previous account's polling stream, so its bell stays current without
-    // blocking the screen's own request.
-    timer(1_250, 15_000).pipe(
-      takeUntil(this.notificationPollingRestarted),
-      takeUntilDestroyed(this.destroyRef),
-      exhaustMap(() => {
-        const activeToken = localStorage.getItem('transportseva.access_token');
-        return this.apiNotifications.list().pipe(
-          catchError(() => EMPTY),
-          exhaustMap((notifications) => activeToken && activeToken === localStorage.getItem('transportseva.access_token') ? [notifications] : EMPTY),
-        );
-      }),
-    ).subscribe((notifications) => this._notifications.set(notifications.map((notification) => this.mapNotification(notification))));
+    const token = localStorage.getItem('transportseva.access_token') || '';
+    if (!token || (this.started && token === this.activeToken)) return;
+    this.clearNotifications(); this.activeToken = token; this.started = true;
+    timer(1_250,15_000).pipe(takeUntil(this.restarted),takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refreshNotifications());
   }
-
+  refreshNotifications(force = false): void {
+    if (!API_CONFIG.useBackend || this.writing() || (this.loading() && !force)) return;
+    const token = localStorage.getItem('transportseva.access_token'); if (!token) return;
+    this.request?.unsubscribe(); this.loading.set(true); const generation = this.generation;
+    this.request = this.apiNotifications.page(1,false,5).pipe(timeout(25_000),takeUntil(this.restarted),takeUntilDestroyed(this.destroyRef),
+      finalize(() => { if (generation === this.generation) this.loading.set(false); })).subscribe({
+      next: (page) => {
+        if (generation !== this.generation || token !== localStorage.getItem('transportseva.access_token')) return;
+        this._notifications.set(page.rows.map(notificationItem)); this.serverUnread.set(page.unreadTotal); this.loadFailed.set(false); this.loaded.set(true);
+      },
+      error: () => { if (generation === this.generation) this.loadFailed.set(true); },
+    });
+  }
   clearNotifications(): void {
-    this.notificationPollingRestarted.next();
-    this.liveUpdatesStarted = false;
-    this.notificationToken = '';
-    this._notifications.set([]);
+    this.generation++; this.restarted.next(); this.request?.unsubscribe(); this.started = false; this.activeToken = '';
+    this._notifications.set([]); this.serverUnread.set(0); this.loading.set(false); this.loaded.set(!API_CONFIG.useBackend); this.loadFailed.set(false);
+    this.readPending.set(''); this.markingAll.set(false); this.writeError.set(null); this.retryId = '';
   }
-
-  markNotificationRead(id: string, afterSave?: () => void) {
-    this._notifications.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    if (API_CONFIG.useBackend) this.apiNotifications.markRead(id).subscribe({ complete: () => afterSave?.(), error: () => afterSave?.() });
-    else afterSave?.();
+  markNotificationRead(id: string, afterSave?: () => void): void {
+    if (this.writing()) return;
+    if (!API_CONFIG.useBackend) { this._notifications.update((rows) => rows.map((n) => n.id === id ? {...n,read:true} : n)); afterSave?.(); return; }
+    this.readPending.set(id); this.retryId = id; this.writeError.set(null); const generation = this.generation;
+    this.apiNotifications.markRead(id).pipe(timeout(25_000),takeUntil(this.restarted),takeUntilDestroyed(this.destroyRef),
+      finalize(() => { if (generation === this.generation) this.readPending.set(''); })).subscribe({
+      next: () => {
+        if (generation !== this.generation) return;
+        this._notifications.update((rows) => rows.map((n) => n.id === id ? {...n,read:true} : n));
+        this.readPending.set(''); this.revision.update((v) => v+1); this.refreshNotifications(true); afterSave?.();
+      },
+      error: () => { if (generation === this.generation) this.writeError.set('read'); },
+    });
   }
-
-  markAllNotificationsRead() {
-    this._notifications.update((list) => list.map((n) => ({ ...n, read: true })));
-    if (API_CONFIG.useBackend) this.apiNotifications.markAllRead().subscribe({ error: () => undefined });
+  markAllNotificationsRead(afterSave?: () => void): void {
+    if (this.writing()) return;
+    if (!API_CONFIG.useBackend) { this._notifications.update((rows) => rows.map((n) => ({...n,read:true}))); afterSave?.(); return; }
+    this.markingAll.set(true); this.writeError.set(null); const generation = this.generation;
+    this.apiNotifications.markAllRead().pipe(timeout(25_000),takeUntil(this.restarted),takeUntilDestroyed(this.destroyRef),
+      finalize(() => { if (generation === this.generation) this.markingAll.set(false); })).subscribe({
+      next: () => {
+        if (generation !== this.generation) return;
+        this._notifications.update((rows) => rows.map((n) => ({...n,read:true}))); this.serverUnread.set(0);
+        this.markingAll.set(false); this.revision.update((v) => v+1); this.refreshNotifications(true); afterSave?.();
+      },
+      error: () => { if (generation === this.generation) this.writeError.set('all'); },
+    });
   }
-
-  private mapNotification(notification: ApiNotification): AppNotification {
-    const allowed: AppNotification['category'][] = ['Booking', 'Payment', 'Trip', 'Document', 'System'];
-    const category = allowed.includes(notification.category as AppNotification['category'])
-      ? notification.category as AppNotification['category']
-      : 'System';
-    return {
-      id: notification.id,
-      category,
-      title: notification.title,
-      message: notification.message,
-      timestamp: notification.created_at ? formatDateTime(notification.created_at) : 'Just now',
-      read: !!notification.read_at,
-      data: notification.data,
-      actionUrl: notification.action_url,
-    };
-  }
-
+  retryNotificationWrite(): void { if (this.writeError() === 'all') this.markAllNotificationsRead(); else if (this.retryId) this.markNotificationRead(this.retryId); }
+  synchronizeUnreadCount(total: number): void { this.serverUnread.set(total); }
 }

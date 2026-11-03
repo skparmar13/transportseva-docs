@@ -248,6 +248,20 @@ export class ApiMarketplaceService {
     return this.api.get<ApiLoad[]>('loads', { ...params }).pipe(map((response) => response.data.map((load) => this.normalizeLoad(load))));
   }
 
+  listLoadsPage(page = 1) {
+    return this.api.get<ApiLoad[]>('loads', { mine: true, page, per_page: 20 }).pipe(map((r) => {
+      if (!r.success || !Array.isArray(r.data) || !r.meta?.current_page || !r.meta.last_page || !Number.isInteger(r.meta.total)) throw new Error('Invalid load page');
+      return { rows: r.data.map((l) => this.normalizeLoad(l)), page: r.meta.current_page, lastPage: r.meta.last_page, total: r.meta.total! };
+    }));
+  }
+
+  listReceivedApplicationsPage(page = 1) {
+    return this.api.get<ApiApplication[]>('account/applications', { page, per_page: 20 }).pipe(map((r) => {
+      if (!r.success || !Array.isArray(r.data) || !r.meta?.current_page || !r.meta.last_page || !Number.isInteger(r.meta.total)) throw new Error('Invalid applications page');
+      return { rows: r.data, page: r.meta.current_page, lastPage: r.meta.last_page, total: r.meta.total! };
+    }));
+  }
+
   getLoad(uuid: string): Observable<ApiLoad> {
     return this.api.get<ApiLoad>(`loads/${encodeURIComponent(uuid)}`).pipe(map((response) => this.normalizeLoad(response.data)));
   }
@@ -395,12 +409,19 @@ export class ApiMarketplaceService {
   }
 
   getMarketplaceKyc(): Observable<ApiMarketplaceKycProfile | null> {
-    return this.api.get<ApiMarketplaceKycProfile | null>('marketplace-kyc').pipe(map((response) => response.data));
+    return this.api.get<ApiMarketplaceKycProfile | null>('marketplace-kyc').pipe(map((r) => {
+      if (!r.success || !(r.data === null || this.validKyc(r.data))) throw new Error('Invalid KYC response');
+      return r.data;
+    }));
   }
 
   submitMarketplaceKyc(payload: FormData): Observable<ApiMarketplaceKycProfile> {
-    return this.api.post<ApiMarketplaceKycProfile>('marketplace-kyc', payload).pipe(map((response) => response.data));
+    return this.api.post<ApiMarketplaceKycProfile>('marketplace-kyc', payload).pipe(map((r) => {
+      if (!r.success || !this.validKyc(r.data)) throw new Error('KYC storage was not confirmed');
+      return r.data;
+    }));
   }
+  private validKyc(r: ApiMarketplaceKycProfile): boolean { return !!r && typeof r.uuid === 'string' && ['pending','approved','rejected'].includes(r.status); }
 
   listMarketplaceKyc(status?: MarketplaceKycStatus): Observable<ApiMarketplaceKycProfile[]> {
     return this.api.get<ApiMarketplaceKycProfile[]>('admin/marketplace-kyc', status ? { status } : undefined).pipe(map((response) => response.data));

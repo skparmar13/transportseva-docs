@@ -86,7 +86,15 @@ test('empty/cross-account document and download access stays private; provider c
   try {
     const other = await emptyContext.newPage(); await login(other, empty); await open(other);
     await expect(hub(other).locator('[data-document-total=total]')).toHaveText('0'); await expect(hub(other).locator('[data-document-empty]')).toContainText('No POD documents');
-    await hub(other).getByRole('button', { name: 'My KYC document', exact: true }).click(); await expect(hub(other).locator('[data-kyc-empty]')).toBeVisible();
+    await hub(other).getByRole('button', { name: 'My KYC document', exact: true }).click();
+    // This zero-POD QA account may now have its own pending KYC from the
+    // acceptance upload. Compare its actual record; never delete it for a test.
+    const otherDocuments = await documents(other);
+    if (otherDocuments.kyc) {
+      expect(otherDocuments.kyc.uuid).not.toBe(own.kyc.uuid);
+      await expect(hub(other)).toContainText(otherDocuments.kyc.file_name);
+      await expect(hub(other)).not.toContainText(own.kyc.file_name);
+    } else await expect(hub(other).locator('[data-kyc-empty]')).toBeVisible();
     expect((await api(other, 'account/documents/pods/' + pod.booking_uuid + '/download')).status()).toBe(404);
     expect((await api(other, 'account/documents/kyc/' + own.kyc.uuid + '/download')).status()).toBe(404);
     expect((await api(other, 'account/documents?owner_uuid=' + own.kyc.uuid)).status()).toBe(422);
@@ -100,9 +108,17 @@ test('empty/cross-account document and download access stays private; provider c
 
 test('slow list animates, duplicate reads are guarded, failed refresh clears old content and retry recovers', async ({ page, context }) => {
   const blocked = await readOnly(context); await login(page); let reads = 0;
-  await page.route('**/api/account/documents?*', async (route) => { reads++; await new Promise((r) => setTimeout(r, 1200)); return route.fulfill({ status: 503, json: { success: false } }); }, { times: 1 });
-  await open(page); await expect(hub(page).locator('.doc-spinner')).toBeVisible(); const refresh = hub(page).getByRole('button', { name: 'Refresh', exact: true });
-  await expect(refresh).toBeDisabled(); await refresh.evaluate((b: HTMLButtonElement) => b.click());
+  let release!: () => void; const pending = new Promise<void>((resolve) => release = resolve);
+  await page.route('**/api/account/documents?*', async (route) => { reads++; await pending; return route.fulfill({ status: 503, json: { success: false } }); }, { times: 1 });
+  // Enter through the actual sidebar so SSR/hydration cannot consume a one-shot
+  // client fixture before its loading state is observed.
+  await page.getByRole('link', { name: 'Documents', exact: true }).click();
+  const refresh = hub(page).getByRole('button', { name: 'Refresh', exact: true });
+  try {
+    await expect(hub(page).locator('.doc-spinner')).toBeVisible();
+    await expect(refresh).toBeDisabled(); await refresh.evaluate((b: HTMLButtonElement) => b.click());
+    await expect.poll(() => reads).toBe(1);
+  } finally { release(); }
   await expect(hub(page)).toContainText('could not be loaded'); expect(reads).toBe(1);
   await hub(page).getByRole('button', { name: 'Retry', exact: true }).click(); await expect(hub(page).locator('[data-document-row]').first()).toBeVisible();
   await page.route('**/api/account/documents?*', (route) => route.fulfill({ status: 503, json: { success: false } }), { times: 1 });
@@ -132,7 +148,8 @@ test('missing-original UI fixture keeps recorded statuses; real no-match, Hindi 
     body.data.pods = body.data.pods.map((p: any) => ({ ...p, download_available: false })); if (body.data.kyc) body.data.kyc.download_available = false;
     return route.fulfill({ response, json: body });
   }, { times: 1 });
-  await open(page); await expect(hub(page).locator('[data-file-unavailable]').first()).toBeVisible();
+  await page.getByRole('link', { name: 'Documents', exact: true }).click();
+  await expect(hub(page).locator('[data-file-unavailable]').first()).toBeVisible();
   await expect(hub(page).getByRole('button', { name: 'Download original', exact: true })).toHaveCount(0);
   await expect(hub(page).locator('[data-document-status]').first()).toHaveText('Approved');
   await hub(page).getByRole('button', { name: 'My KYC document', exact: true }).click(); await expect(hub(page).locator('[data-kyc-status]')).toHaveText('Approved');

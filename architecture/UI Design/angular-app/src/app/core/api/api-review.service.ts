@@ -26,12 +26,19 @@ export class ApiReviewService {
   private readonly api = inject(ApiClientService);
 
   listMine(): Observable<ApiMarketplaceReview | null> {
-    return this.api.get<ApiMarketplaceReview | null>('reviews/mine').pipe(map((response) => response.data));
+    return this.api.get<ApiMarketplaceReview | null>('reviews/mine').pipe(map((r) => {
+      if (!r.success || !(r.data === null || this.valid(r.data))) throw new Error('Invalid review response');
+      return r.data;
+    }));
   }
 
   submit(payload: SubmitMarketplaceReviewPayload): Observable<ApiMarketplaceReview> {
-    return this.api.post<ApiMarketplaceReview>('reviews', payload).pipe(map((response) => response.data));
+    return this.api.post<ApiMarketplaceReview>('reviews', payload).pipe(map((r) => {
+      if (!r.success || !this.valid(r.data)) throw new Error('Review storage was not confirmed');
+      return r.data;
+    }));
   }
+  private valid(r: ApiMarketplaceReview): boolean { return !!r && typeof r.uuid === 'string' && Number.isInteger(r.rating) && r.rating >= 1 && r.rating <= 5 && ['pending','approved','rejected'].includes(r.status || ''); }
 
   listPublic(limit = 6): Observable<ApiMarketplaceReview[]> {
     return this.api.get<ApiMarketplaceReview[]>('public/reviews', { limit: Math.min(Math.max(limit, 1), 12) })

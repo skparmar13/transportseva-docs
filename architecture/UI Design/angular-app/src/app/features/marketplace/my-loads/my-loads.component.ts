@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, finalize, of } from 'rxjs';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timeout } from 'rxjs';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
@@ -36,15 +36,24 @@ export class MyLoadsComponent {
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
-  protected readonly loading = API_CONFIG.useBackend ? signal(true) : signal(false);
+  protected readonly loading = signal(false);
+  protected readonly backend = API_CONFIG.useBackend;
   protected readonly loadError = signal('');
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly backendLoads = signal<ApiLoad[]>([]);
+  protected readonly page = signal(1);
+  protected readonly lastPage = signal(1);
+  protected readonly total = signal(0);
 
-  private readonly backendLoads = toSignal(
-    API_CONFIG.useBackend
-      ? this.apiMarketplace.listLoads({ mine: true, per_page: 100 }).pipe(catchError((error) => { this.loadError.set(apiErrorMessage(error, 'We could not load your loads.')); return of([] as ApiLoad[]); }), finalize(() => this.loading.set(false)))
-      : of([] as ApiLoad[]),
-    { initialValue: [] as ApiLoad[] },
-  );
+  constructor() { this.load(); }
+  protected load(page = 1): void {
+    if (!API_CONFIG.useBackend || this.loading()) return;
+    this.page.set(page); this.loading.set(true); this.loadError.set(''); this.backendLoads.set([]);
+    this.apiMarketplace.listLoadsPage(page).pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (result) => { this.backendLoads.set(result.rows); this.page.set(result.page); this.lastPage.set(result.lastPage); this.total.set(result.total); this.loading.set(false); },
+      error: (e) => { this.loading.set(false); this.loadError.set(apiErrorMessage(e, 'We could not load your loads. Please retry.')); },
+    });
+  }
 
   protected readonly loads = computed(() => API_CONFIG.useBackend
     ? this.backendLoads().map((load) => this.mapLoad(load))

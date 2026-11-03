@@ -1,5 +1,4 @@
 ﻿import { Routes } from '@angular/router';
-import { ShellComponent } from './shared/layouts/admin-shell/shell.component';
 import { PublicShellComponent } from './shared/layouts/public-shell/public-shell.component';
 import { ComingSoonComponent } from './shared/components/coming-soon/coming-soon.component';
 import { setPortalRole } from './core/guards/portal-role.guard';
@@ -43,7 +42,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    component: ShellComponent,
+    loadComponent: () => import('./shared/layouts/admin-shell/shell.component').then((m) => m.ShellComponent),
     canActivate: [setPortalRole('admin')],
     canActivateChild: [setPortalRole('admin')],
     children: [
@@ -88,7 +87,7 @@ export const routes: Routes = [
   },
   {
     path: 'shipper',
-    component: ShellComponent,
+    loadComponent: () => import('./shared/layouts/admin-shell/shell.component').then((m) => m.ShellComponent),
     canActivate: [setPortalRole('shipper')],
     canActivateChild: [setPortalRole('shipper')],
     children: [
@@ -117,7 +116,7 @@ export const routes: Routes = [
   },
   {
     path: 'transporter',
-    component: ShellComponent,
+    loadComponent: () => import('./shared/layouts/admin-shell/shell.component').then((m) => m.ShellComponent),
     canActivate: [setPortalRole('transporter')],
     canActivateChild: [setPortalRole('transporter')],
     children: [
@@ -152,7 +151,7 @@ export const routes: Routes = [
   },
   {
     path: 'truck-owner',
-    component: ShellComponent,
+    loadComponent: () => import('./shared/layouts/admin-shell/shell.component').then((m) => m.ShellComponent),
     canActivate: [setPortalRole('truck-owner')],
     canActivateChild: [setPortalRole('truck-owner')],
     children: [
@@ -186,7 +185,7 @@ export const routes: Routes = [
   },
   {
     path: 'driver',
-    component: ShellComponent,
+    loadComponent: () => import('./shared/layouts/admin-shell/shell.component').then((m) => m.ShellComponent),
     canActivate: [setPortalRole('driver')],
     canActivateChild: [setPortalRole('driver')],
     children: [
@@ -206,7 +205,7 @@ export const routes: Routes = [
   },
   {
     path: 'company',
-    component: ShellComponent,
+    loadComponent: () => import('./shared/layouts/admin-shell/shell.component').then((m) => m.ShellComponent),
     canActivate: [setPortalRole('company')],
     canActivateChild: [setPortalRole('company')],
     children: [

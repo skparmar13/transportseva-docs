@@ -1,0 +1,5 @@
+.notif-controls { display:flex;gap:10px;flex-wrap:wrap;align-items:center; }
+.notif-error { color:#b42318;padding:16px; } .notif-status { padding:22px; }
+.notif-spinner { display:inline-block;width:15px;height:15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:notif-spin .7s linear infinite;margin-right:8px; }
+@keyframes notif-spin {to{transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce){.notif-spinner{animation:none;border-style:dotted;}}

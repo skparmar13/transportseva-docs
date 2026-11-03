@@ -63,11 +63,14 @@
           <div class="notif-dropdown">
             <div class="notif-dropdown-head">
               <h4>Notifications</h4>
+              <button type="button" [disabled]="comms.loading() || comms.writing()" (click)="comms.refreshNotifications(true)">Refresh</button>
               @if (comms.unreadCount() > 0) {
-                <button type="button" (click)="comms.markAllNotificationsRead()">Mark All as Read</button>
+                <button type="button" [disabled]="comms.writing()" (click)="comms.markAllNotificationsRead()">{{ comms.markingAll() ? 'Saving…' : 'Mark All as Read' }}</button>
               }
             </div>
-            @if (comms.recentNotifications().length) {
+            @if(comms.loading() || (!comms.loaded() && !comms.loadFailed())) { <div class="notif-dropdown-empty" role="status">Loading notifications…</div> }
+            @else if(comms.loadFailed()){<div class="notif-dropdown-empty" role="alert">Notifications could not be refreshed. <button type="button" (click)="comms.refreshNotifications(true)">Retry</button></div>}
+            @else if (comms.recentNotifications().length) {
               @for (n of comms.recentNotifications(); track n.id) {
                 <button type="button" class="notif-dropdown-item" [attr.data-notification-id]="n.id" [class.unread]="!n.read" (click)="openNotification(n)">
                   <div class="notif-icon"><app-icon [name]="categoryIcon[n.category]" [size]="14" /></div>
@@ -97,6 +100,12 @@
     </header>
 
     <div class="admin-content">
+      @if(comms.writeError()){
+        <div role="alert" style="padding:14px;margin-bottom:16px;border:1px solid #efb3ad;border-radius:10px;color:#b42318;">
+          {{ language.lang() === 'hi' ? 'सूचना का बदलाव सहेजा नहीं गया। अपठित स्थिति बरकरार है।' : 'The notification update was not saved. Unread state has been retained.' }}
+          <button type="button" class="btn btn-outline btn-sm" [disabled]="comms.writing()" (click)="comms.retryNotificationWrite()">{{ language.lang() === 'hi' ? 'पुनः प्रयास' : 'Retry' }}</button>
+        </div>
+      }
       <router-outlet />
     </div>
   </div>

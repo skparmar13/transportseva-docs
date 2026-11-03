@@ -27,3 +27,10 @@ test('sidebar links without a concrete route are explicitly marked planned', () 
   assert.ok(audit.navigation.length > 50);
   for (const item of audit.navigation) assert.ok(item.hasConcreteRoute || item.planned, 'Unlabelled missing sidebar route: ' + item.route);
 });
+test('lazy private layouts do not double-count portal screens or hide guarded children', () => {
+  const audit = collectInventory();
+  assert.equal(audit.counts.shipper.total, 19);
+  assert.ok(!audit.records.some((r) => r.kind === 'screen' && r.component.includes('admin-shell')));
+  for (const role of ['admin','shipper','transporter','truck-owner','driver','company'])
+    assert.ok(audit.records.some((r) => r.route === '/' + role + '/notifications'));
+});

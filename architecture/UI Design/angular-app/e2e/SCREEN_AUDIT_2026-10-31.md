@@ -241,3 +241,12 @@ GPS and invented on-time/duration figures are excluded. Other-role Reports
 remain prototypes. Shipper's 19 routes now classify as 15 API-connected and
 4 deferred payment/GPS routes; this is not production certification.
 See [Reports implementation and verification](SHIPPER_REPORTS_2026-11-02.md).
+
+03/11/2026 follow-up: the 15 non-deferred Shipper routes received a visible
+Chrome acceptance sweep with real data, reloads, private downloads, error/retry
+and scoped QA writes. Five reproduced defects were repaired: silently swallowed
+application errors, missing list pagination, misleading KYC/review forms after
+failed reads, and optimistic notification read acknowledgements. Original
+marketplace/payment records and staff access were verified against a full
+107-table backup. Payments, GPS and outbound delivery remain deferred.
+See [the acceptance flow, QA credentials and exact record IDs](SHIPPER_ACCEPTANCE_2026-11-03.md).

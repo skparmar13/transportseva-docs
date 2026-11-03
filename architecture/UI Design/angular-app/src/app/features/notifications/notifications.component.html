@@ -3,19 +3,27 @@
     <h1>{{ 'notifications.title' | t }}</h1>
     <p class="desc">{{ 'notifications.subtitle' | t }}</p>
   </div>
-  <button type="button" class="btn btn-outline" [disabled]="comms.unreadCount() === 0" (click)="markAllRead()">{{ 'notifications.markAllRead' | t }}</button>
+  <div class="notif-controls">
+    <button type="button" class="btn btn-outline" [disabled]="loading() || comms.writing()" (click)="load(page()); comms.refreshNotifications(true)">{{ copy().refresh }}</button>
+    <button type="button" class="btn btn-outline" [disabled]="loading() || comms.writing() || comms.unreadCount() === 0" (click)="markAllRead()">@if(comms.markingAll()){<span class="notif-spinner" aria-hidden="true"></span>{{ copy().saving }}}@else{ {{ 'notifications.markAllRead' | t }} }</button>
+  </div>
 </div>
 
 <div class="page-toolbar">
   <div class="tab-row">
-    <button type="button" class="tab-btn" [class.active]="filter() === 'all'" (click)="setFilter('all')">{{ 'notifications.filter.all' | t }}</button>
-    <button type="button" class="tab-btn" [class.active]="filter() === 'unread'" (click)="setFilter('unread')">
+    <button type="button" class="tab-btn" [disabled]="loading() || comms.writing()" [class.active]="filter() === 'all'" (click)="setFilter('all')">{{ 'notifications.filter.all' | t }}</button>
+    <button type="button" class="tab-btn" [disabled]="loading() || comms.writing()" [class.active]="filter() === 'unread'" (click)="setFilter('unread')">
       {{ 'notifications.filter.unread' | t }} @if (comms.unreadCount() > 0) { <span class="side-badge">{{ comms.unreadCount() }}</span> }
     </button>
   </div>
 </div>
 
 <div class="card">
+  @if(comms.writeError()){<div class="notif-error" role="alert">{{ copy().writeFailed }} <button type="button" class="btn btn-outline" [disabled]="comms.writing()" (click)="comms.retryNotificationWrite()">{{ copy().retry }}</button></div>}
+  @if(loading() && !visibleNotifications().length){<p class="notif-status" role="status"><span class="notif-spinner" aria-hidden="true"></span>{{ copy().loading }}</p>}
+  @else if(error()){<div class="notif-error" role="alert">{{ copy().failed }} <button type="button" class="btn btn-outline" (click)="load(page())">{{ copy().retry }}</button></div>}
+  @else {
+  @if(stale()){<p class="notif-status" role="status">{{ copy().stale }}</p>}
   @if (visibleNotifications().length) {
     <div class="notif-list">
       @for (n of visibleNotifications(); track n.id) {
@@ -27,13 +35,13 @@
               <span class="status-pill status-pending">{{ categoryKey[n.category] | t }}</span>
             </div>
             <p>{{ n.message }}</p>
-            <span class="notif-time">{{ n.timestamp }}</span>
+            <span class="notif-time">{{ backend ? dateTime(n.timestamp) : n.timestamp }}</span>
           </div>
           @if (navigation.destination(n)) {
-            <button type="button" class="btn btn-outline btn-sm" (click)="openNotification(n)">Open</button>
+            <button type="button" class="btn btn-outline btn-sm" (click)="openNotification(n)">{{ copy().open }}</button>
           }
           @if (!n.read) {
-            <button type="button" class="btn btn-outline btn-sm" (click)="markRead(n.id)">{{ 'notifications.markAsRead' | t }}</button>
+            <button type="button" class="btn btn-outline btn-sm" [disabled]="loading() || comms.writing()" (click)="markRead(n.id)">@if(comms.readPending() === n.id){<span class="notif-spinner" aria-hidden="true"></span>{{ copy().saving }}}@else{ {{ 'notifications.markAsRead' | t }} }</button>
           }
         </div>
       }
@@ -44,4 +52,11 @@
       <p style="margin-top:12px;">{{ 'notifications.empty' | t }}</p>
     </div>
   }
+  }
 </div>
+@if(backend && !error()){
+  <div class="page-toolbar" style="margin-top:18px"><span>{{ copy().total }}: {{ total() }} · {{ copy().unread }}: {{ comms.unreadCount() }} · {{ copy().page }} {{ page() }} {{ copy().of }} {{ lastPage() }}</span>
+    <div class="notif-controls"><button type="button" class="btn btn-outline" [disabled]="loading() || comms.writing() || page() <= 1" (click)="load(page()-1)">{{ copy().previous }}</button>
+    <button type="button" class="btn btn-outline" [disabled]="loading() || comms.writing() || page() >= lastPage()" (click)="load(page()+1)">{{ copy().next }}</button></div>
+  </div>
+}

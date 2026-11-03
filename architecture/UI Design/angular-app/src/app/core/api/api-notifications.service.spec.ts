@@ -28,6 +28,6 @@ describe('ApiNotificationsService', () => {
     service.markRead('n-1').subscribe();
     const request = http.expectOne(`${API_CONFIG.baseUrl}/notifications/n-1/read`);
     expect(request.request.method).toBe('PATCH');
-    request.flush({ success: true, data: {} });
+    request.flush({ success: true, data: { id: 'n-1', read_at: '2026-11-03T10:00:00Z' } });
   });
 });

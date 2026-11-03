@@ -91,14 +91,14 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiReviewService",
-      "note": "Actual submission/moderation APIs and database statuses. Homepage publication fallback was removed in the 31/10 repair; existing moderation writes were not re-executed in that read-only browser repair run."
+      "note": "Actual submission/moderation APIs and database statuses. Homepage publication fallback was removed in the 31/10 repair. 03/11 Shipper acceptance verified pending-only submission, locked/reloaded state and exclusion from public reviews. Failed reads now show Retry rather than a new writable form. Admin publication was not re-executed. See SHIPPER_ACCEPTANCE_2026-11-03.md."
     },
     {
       "files": ["admin/kyc-management/kyc-management", "kyc/my-kyc/my-kyc"],
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiMarketplaceService",
-      "note": "Real private-document KYC APIs and moderation. No file uploads/downloads or moderation mutations performed in this audit."
+      "note": "Real private-document KYC APIs and moderation. The original 31/10 source audit was read-only. 03/11 acceptance verified a clearly labelled pending QA upload and original-byte private download; pre-existing approved records and moderation decisions were preserved. Failed reads no longer expose a new submission form. See SHIPPER_ACCEPTANCE_2026-11-03.md."
     },
     {
       "files": ["dashboard/dashboard", "transporter/dashboard/transporter-dashboard", "driver/dashboard/driver-dashboard"],
@@ -133,7 +133,7 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiMarketplaceService",
-      "note": "API-backed marketplace branch. Previously tested mutations are not re-executed in this read-only audit. Payments/GPS excluded; staff booking access is limited to authorized independent dispute review."
+      "note": "API-backed marketplace branch. The original 31/10 audit was read-only. 03/11 Shipper acceptance added real My Loads/Applications Received pagination and honest retriable failures, and verified a labelled new load, registered-fleet application, negotiation, awaiting-token booking and concurrent chat/bell navigation. Other roles' application lists retain their older bounds. Payment/GPS and staff mutation coverage are separate. See SHIPPER_ACCEPTANCE_2026-11-03.md."
     },
     {
       "files": ["fleet/vehicle-list/vehicle-list"],
@@ -217,7 +217,7 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "CommunicationMockService",
-      "note": "Despite service name, bell/notifications use ApiNotificationsService with account-specific polling. Error handling/read acknowledgements need improvement; audit does not mark notifications read."
+      "note": "Despite the legacy service name, bell/notifications use real account-specific APIs. 03/11 repairs added server-wide unread totals, independent full-page pagination, saved read acknowledgements and visible errors/retry. Shipper acceptance verified exact-item bell navigation, single read persistence and secondary-QA mark-all/reload. Prototype notices are disabled in backend mode. See SHIPPER_ACCEPTANCE_2026-11-03.md."
     },
     {
       "files": ["reports/reports"],
@@ -264,6 +264,12 @@
   ],
   "shared": [
     {
+      "file": "src/app/shared/layouts/admin-shell/shell.component.ts",
+      "anchor": "NotificationNavigationService",
+      "priority": "P2",
+      "note": "Shared lazy private layout, not a leaf screen. Portal guards still apply to its children. Server notification counts, acknowledged read actions, error feedback and relevant-item navigation are checked in the Shipper acceptance suite; other portal features require their own acceptance coverage."
+    },
+    {
       "file": "src/app/shared/layouts/public-shell/public-shell.component.ts",
       "anchor": "this.newsletter.subscribe",
       "priority": "P0",
@@ -271,9 +277,9 @@
     },
     {
       "file": "src/app/core/services/communication-mock.service.ts",
-      "anchor": "this.apiNotifications.list",
+      "anchor": "this.apiNotifications.page",
       "priority": "P2",
-      "note": "Notification polling/read APIs are real despite the legacy class name. The unused sample-ticket branch was removed when account Support Tickets gained their own protected API."
+      "note": "Real notification polling, global unread totals and acknowledged read actions despite the legacy class name. Failures remain visible and retriable; account changes cancel stale requests. The full page uses its own server pagination. Prototype notices remain confined to backend-disabled mode."
     },
     {
       "file": "src/app/core/guards/portal-role.guard.ts",
