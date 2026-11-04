@@ -8,7 +8,7 @@ import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiShipperDocumentService, PodDocumentStatus } from '../../../core/api/api-shipper-document.service';
 import { LanguageService } from '../../../core/i18n';
 import { formatDateTime } from '../../../core/utils/date-format';
-import { DOCUMENT_COPY } from './document-copy';
+import { documentCopy } from './document-portal';
 
 @Component({
   selector: 'app-shipper-documents', standalone: true, imports: [FormsModule, RouterLink],
@@ -20,14 +20,17 @@ export class ShipperDocumentsComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   private readonly language = inject(LanguageService);
-  protected readonly copy = computed(() => DOCUMENT_COPY[this.language.lang()]);
+  private readonly route = inject(ActivatedRoute);
+  protected readonly truckOwner = this.route.snapshot.data?.['documentPortal'] === 'truck-owner';
+  protected readonly basePath = this.truckOwner ? '/truck-owner' : '/shipper';
+  protected readonly copy = computed(() => documentCopy(this.language.lang(), this.truckOwner));
   protected readonly dateTime = formatDateTime;
   protected readonly data = signal<AwaitedDocumentPage | null>(null);
   protected readonly loading = signal(false);
   protected readonly error = signal('');
   protected readonly downloading = signal('');
   protected readonly downloadError = signal('');
-  protected readonly tab = signal<'pods' | 'kyc'>(inject(ActivatedRoute).snapshot.queryParamMap.get('tab') === 'kyc' ? 'kyc' : 'pods');
+  protected readonly tab = signal<'pods' | 'kyc'>(this.route.snapshot.queryParamMap.get('tab') === 'kyc' ? 'kyc' : 'pods');
   protected readonly status = signal<PodDocumentStatus | 'all'>('all');
   protected readonly search = signal('');
   protected readonly page = signal(1);

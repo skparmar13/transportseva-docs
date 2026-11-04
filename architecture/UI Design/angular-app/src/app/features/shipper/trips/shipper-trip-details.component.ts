@@ -7,7 +7,7 @@ import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiShipperTripService, ShipperTripDetail } from '../../../core/api/api-shipper-trip.service';
 import { LanguageService } from '../../../core/i18n';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
-import { TRIP_COPY } from './trip-copy';
+import { tripCopy } from './trip-portal';
 
 @Component({
   selector: 'app-shipper-trip-details', standalone: true, imports: [RouterLink], changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +19,9 @@ export class ShipperTripDetailsComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   private readonly language = inject(LanguageService);
-  protected readonly copy = computed(() => TRIP_COPY[this.language.lang()]);
+  protected readonly truckOwner = this.route.snapshot?.data?.['tripPortal'] === 'truck-owner';
+  protected readonly basePath = this.truckOwner ? '/truck-owner' : '/shipper';
+  protected readonly copy = computed(() => tripCopy(this.language.lang(), this.truckOwner));
   protected readonly dateTime = formatDateTime;
   protected readonly date = formatDate;
   protected readonly data = signal<ShipperTripDetail | null>(null);

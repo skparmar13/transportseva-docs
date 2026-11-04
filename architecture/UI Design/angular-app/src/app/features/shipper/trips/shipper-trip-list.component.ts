@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, timeout } from 'rxjs';
 import { API_CONFIG } from '../../../core/api/api-config';
 import { ApiShipperTripService, SHIPPER_TRIP_STAGES, ShipperTripStage } from '../../../core/api/api-shipper-trip.service';
 import { LanguageService } from '../../../core/i18n';
 import { formatDateTime } from '../../../core/utils/date-format';
-import { TRIP_COPY } from './trip-copy';
+import { tripCopy } from './trip-portal';
 
 @Component({
   selector: 'app-shipper-trip-list', standalone: true, imports: [FormsModule, RouterLink], changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,7 +17,9 @@ export class ShipperTripListComponent {
   private readonly api = inject(ApiShipperTripService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly language = inject(LanguageService);
-  protected readonly copy = computed(() => TRIP_COPY[this.language.lang()]);
+  protected readonly truckOwner = inject(ActivatedRoute).snapshot?.data?.['tripPortal'] === 'truck-owner';
+  protected readonly basePath = this.truckOwner ? '/truck-owner' : '/shipper';
+  protected readonly copy = computed(() => tripCopy(this.language.lang(), this.truckOwner));
   protected readonly dateTime = formatDateTime;
   protected readonly stages = SHIPPER_TRIP_STAGES;
   protected readonly kpiKeys = ['total', 'active', 'delivered', 'pod_outstanding'] as const;

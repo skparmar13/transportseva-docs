@@ -43,8 +43,8 @@
                   @if (downloading() === 'pod:' + pod.booking_uuid) { <span class="doc-spinner" aria-hidden="true"></span>{{ copy().downloading }} } @else { {{ copy().download }} }
                 </button>
               } @else { <p data-file-unavailable>{{ copy().unavailable }}</p> }
-              <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/bookings']" [queryParams]="{ booking: pod.booking_uuid }">{{ copy().bookingLink }}</a>
-              <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', pod.booking_uuid]">{{ copy().tripLink }}</a>
+              <a class="btn btn-outline btn-sm" [routerLink]="[basePath, 'bookings']" [queryParams]="{ booking: pod.booking_uuid }">{{ copy().bookingLink }}</a>
+              <a class="btn btn-outline btn-sm" [routerLink]="[basePath, 'trips', pod.booking_uuid]">{{ copy().tripLink }}</a>
             </div></td>
           </tr>
         }</tbody>
@@ -73,7 +73,7 @@
           </button>
         } @else { <p data-file-unavailable>{{ copy().unavailable }}</p> }
       } @else { <p data-kyc-empty>{{ copy().kycEmpty }}</p> }
-      <p><a class="btn btn-outline" routerLink="/shipper/kyc">{{ copy().kycLink }}</a></p>
+      <p><a class="btn btn-outline" [routerLink]="[basePath, 'kyc']">{{ copy().kycLink }}</a></p>
     </div>
   }
 }

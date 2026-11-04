@@ -22,8 +22,9 @@ export interface ShipperDocuments {
 @Injectable({ providedIn: 'root' })
 export class ApiShipperDocumentService {
   private readonly api = inject(ApiClientService);
+  protected readonly resourcePath: string = 'account/documents';
   list(page = 1, status: PodDocumentStatus | 'all' = 'all', q = '') {
-    return this.api.get<ShipperDocuments>('account/documents', { page, per_page: 20, status, ...(q ? { q } : {}) }).pipe(map((r) => {
+    return this.api.get<ShipperDocuments>(this.resourcePath, { page, per_page: 20, status, ...(q ? { q } : {}) }).pipe(map((r) => {
       const d = r.data;
       if (!r.success || !Array.isArray(d?.pods) || !d.totals || typeof d.generated_at !== 'string'
         || !d.pods.every((p) => this.uuid(p?.booking_uuid) && typeof p.booking_reference === 'string' && POD_DOCUMENT_STATUSES.includes(p.status) && typeof p.download_available === 'boolean')
@@ -35,7 +36,7 @@ export class ApiShipperDocumentService {
     }));
   }
   download(kind: 'pod' | 'kyc', uuid: string) {
-    return this.api.getBlob('account/documents/' + (kind === 'pod' ? 'pods' : 'kyc') + '/' + encodeURIComponent(uuid) + '/download');
+    return this.api.getBlob(this.resourcePath + '/' + (kind === 'pod' ? 'pods' : 'kyc') + '/' + encodeURIComponent(uuid) + '/download');
   }
   private uuid(value: unknown): boolean { return typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value); }
 }

@@ -250,3 +250,17 @@ failed reads, and optimistic notification read acknowledgements. Original
 marketplace/payment records and staff access were verified against a full
 107-table backup. Payments, GPS and outbound delivery remain deferred.
 See [the acceptance flow, QA credentials and exact record IDs](SHIPPER_ACCEPTANCE_2026-11-03.md).
+
+04/11/2026 follow-up: Truck Owner Trips and Trip Details now use canonical
+provider-owned bookings through a separate strict read API and the shared
+operational trip views. Real filters, counts, assignments, recorded timeline,
+private original POD downloads and exact booking/load links were verified in
+visible Chrome, with Shipper regressions and main-data preservation checks.
+See [Truck Owner implementation and test evidence](TRUCK_OWNER_TRIPS_2026-11-04.md).
+
+04/11/2026 follow-up: Truck Owner Documents now uses real provider-owned booking
+PODs and self-only KYC through a separate private API, with original downloads,
+bounded filters/pagination, truthful missing-file states and correct
+booking/trip/KYC links. Visible browser coverage and isolated backend checks
+include cross-account privacy, with the main data preserved.
+See [Document implementation and test evidence](TRUCK_OWNER_DOCUMENTS_2026-11-04.md).

@@ -19,7 +19,7 @@
       <tr [attr.data-trip-row]="row.uuid"><td><b>{{ row.reference }}</b><div class="desc">{{ row.load_reference }}</div></td>
         <td>@if (row.pickup_city && row.drop_city) { {{ row.pickup_city }} → {{ row.drop_city }} } @else { {{ copy().loadUnavailable }} }<div class="desc">{{ row.material }}</div></td>
         <td>{{ row.vehicle || copy().notAssigned }}<div class="desc">{{ row.driver || copy().notAssigned }}</div></td><td>{{ row.started_at ? dateTime(row.started_at) : copy().notRecorded }}</td>
-        <td>{{ copy()[row.stage] }}</td><td>{{ copy()[row.pod_status] }}</td><td><a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', row.uuid]">{{ copy().view }}</a></td></tr>
+        <td>{{ copy()[row.stage] }}</td><td>{{ copy()[row.pod_status] }}</td><td><a class="btn btn-outline btn-sm" [routerLink]="[basePath, 'trips', row.uuid]">{{ copy().view }}</a></td></tr>
     } @empty { <tr><td colspan="7" data-trip-empty>{{ view.totals.total ? copy().empty : copy().noRecords }}</td></tr> }
   </tbody></table></div>
   <div class="trip-pages"><span>{{ copy().matching }}: {{ view.matching }} · {{ copy().page }} {{ view.page }} / {{ view.lastPage }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="view.page <= 1" (click)="load(view.page - 1)">{{ copy().previous }}</button><button type="button" class="btn btn-outline btn-sm" [disabled]="view.page >= view.lastPage" (click)="load(view.page + 1)">{{ copy().next }}</button></div>

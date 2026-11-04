@@ -84,9 +84,14 @@ test('empty shipper sees zero records, foreign trip stays private, provider cann
 
 test('delayed history loads animate and duplicate refresh is guarded; failed reads retry honestly and Hindi works', async ({ page, context }) => {
   const blocked = await readOnly(context); await login(page); let reads = 0;
-  await page.route('**/api/account/trips?*', async (route) => { reads++; await new Promise((r) => setTimeout(r, 900)); return route.fulfill({ status: 503, json: { success: false } }); }, { times: 1 });
-  await page.goto('/shipper/trips'); await expect(list(page).locator('.trip-spinner')).toBeVisible();
-  const refresh = list(page).getByRole('button', { name: 'Refresh', exact: true }); await expect(refresh).toBeDisabled(); await refresh.evaluate((b: HTMLButtonElement) => b.click());
+  let release!: () => void; const gate = new Promise<void>((resolve) => release = resolve);
+  await page.route('**/api/account/trips?*', async (route) => { reads++; await gate; return route.fulfill({ status: 503, json: { success: false } }); }, { times: 1 });
+  await page.getByRole('link', { name: 'Trip History', exact: true }).click();
+  const refresh = list(page).getByRole('button', { name: 'Refresh', exact: true });
+  try {
+    await expect(list(page).locator('.trip-spinner')).toBeVisible(); await expect(refresh).toBeDisabled();
+    await refresh.evaluate((b: HTMLButtonElement) => b.click()); await expect.poll(() => reads).toBe(1);
+  } finally { release(); }
   await expect(list(page)).toContainText('could not be loaded'); expect(reads).toBe(1); await expect(list(page).locator('[data-trip-row]')).toHaveCount(0);
   await list(page).getByRole('button', { name: 'Retry', exact: true }).click(); await expect(list(page).locator('[data-trip-row]').first()).toBeVisible();
   await page.getByRole('button', { name: 'Change language', exact: true }).click(); await expect(list(page)).toContainText('यात्रा इतिहास'); expect(blocked).toEqual([]);

@@ -3,6 +3,10 @@ import { PublicShellComponent } from './shared/layouts/public-shell/public-shell
 import { ComingSoonComponent } from './shared/components/coming-soon/coming-soon.component';
 import { setPortalRole } from './core/guards/portal-role.guard';
 import { API_CONFIG } from './core/api/api-config';
+import { ApiShipperTripService } from './core/api/api-shipper-trip.service';
+import { ApiTruckOwnerTripService } from './core/api/api-truck-owner-trip.service';
+import { ApiShipperDocumentService } from './core/api/api-shipper-document.service';
+import { ApiTruckOwnerDocumentService } from './core/api/api-truck-owner-document.service';
 
 /**
  * Public marketing pages now own the root route, while the existing
@@ -171,12 +175,12 @@ export const routes: Routes = [
       { path: 'devices/:id', title: 'Device Details | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/gps/device-details/device-details.component').then((m) => m.DeviceDetailsComponent) },
       { path: 'tracking', title: 'Live Tracking | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/gps/live-tracking/live-tracking.component').then((m) => m.LiveTrackingComponent) },
       { path: 'geofences', title: 'Geofence Management | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/gps/geofence-management/geofence-management.component').then((m) => m.GeofenceManagementComponent) },
-      { path: 'trips', title: 'Trips | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/trips/trip-list/trip-list.component').then((m) => m.TripListComponent) },
-      { path: 'trips/:id', title: 'Trip Details | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/trips/trip-details/trip-details.component').then((m) => m.TripDetailsComponent) },
+      { path: 'trips', title: 'Trips | Truck Owner Portal | TransportSeva', data: { tripPortal: 'truck-owner' }, providers: [{ provide: ApiShipperTripService, useClass: ApiTruckOwnerTripService }], loadComponent: () => import('./features/shipper/trips/shipper-trip-list.component').then((m) => m.ShipperTripListComponent) },
+      { path: 'trips/:id', title: 'Trip Details | Truck Owner Portal | TransportSeva', data: { tripPortal: 'truck-owner' }, providers: [{ provide: ApiShipperTripService, useClass: ApiTruckOwnerTripService }], loadComponent: () => import('./features/shipper/trips/shipper-trip-details.component').then((m) => m.ShipperTripDetailsComponent) },
       { path: 'financials', title: 'Payment Ledger | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/wallet/wallet.component').then((m) => m.WalletComponent) },
       { path: 'payments', title: 'Payments | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent) },
-      { path: 'reports', title: 'Reports & Analytics | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/reports/reports.component').then((m) => m.ReportsComponent) },
-      { path: 'documents', title: 'Documents | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/documents/documents.component').then((m) => m.DocumentsComponent) },
+      { path: 'reports', title: 'Reports & Analytics | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/truck-owner/reports/truck-owner-reports.component').then((m) => m.TruckOwnerReportsComponent) },
+      { path: 'documents', title: 'Documents | Truck Owner Portal | TransportSeva', data: { documentPortal: 'truck-owner' }, providers: [{ provide: ApiShipperDocumentService, useClass: ApiTruckOwnerDocumentService }], loadComponent: () => import('./features/shipper/documents/shipper-documents.component').then((m) => m.ShipperDocumentsComponent) },
       { path: 'notifications', title: 'Notifications | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/notifications/notifications.component').then((m) => m.NotificationsComponent) },
       { path: 'support', title: 'Support | Truck Owner Portal | TransportSeva', loadComponent: () => import('./features/support/support.component').then((m) => m.SupportComponent) },
       { path: 'profile', title: 'My Profile | Truck Owner Portal | TransportSeva', loadComponent: () => API_CONFIG.useBackend ? import('./features/business-settings/personal-profile/account-profile-page.component').then((m) => m.AccountProfilePageComponent) : import('./features/business-settings/business-settings.component').then((m) => m.BusinessSettingsComponent) },

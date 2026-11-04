@@ -34,3 +34,27 @@ test('lazy private layouts do not double-count portal screens or hide guarded ch
   for (const role of ['admin','shipper','transporter','truck-owner','driver','company'])
     assert.ok(audit.records.some((r) => r.route === '/' + role + '/notifications'));
 });
+
+test('truck owner trip routes select real operational views rather than the shared prototype', () => {
+  const audit = collectInventory();
+  for (const route of ['/truck-owner/trips', '/truck-owner/trips/:id']) {
+    const row = audit.records.find((item) => item.route === route);
+    assert.ok(row);
+    assert.equal(row.status, 'api_connected');
+    assert.match(row.component, /shipper\/trips/);
+  }
+});
+
+test('truck owner documents selects the private account hub rather than sample compliance files', () => {
+  const row = collectInventory().records.find((item) => item.route === '/truck-owner/documents');
+  assert.ok(row);
+  assert.equal(row.status, 'api_connected');
+  assert.match(row.component, /shipper\/documents/);
+});
+
+test('truck owner reports selects its provider-owned application and booking report', () => {
+  const row = collectInventory().records.find((item) => item.route === '/truck-owner/reports');
+  assert.ok(row);
+  assert.equal(row.status, 'api_connected');
+  assert.match(row.component, /truck-owner\/reports/);
+});

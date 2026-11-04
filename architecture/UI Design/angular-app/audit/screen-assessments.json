@@ -3,6 +3,13 @@
   "mode": "Backend-enabled local application; source wiring assessment, not production sign-off",
   "groups": [
     {
+      "files": ["truck-owner/reports/truck-owner-reports"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiTruckOwnerReportService",
+      "note": "04/11 provider-only reports over own sent applications and canonical provider bookings, with independent IST creation cohorts, current statuses, actual assignments/POD states, literal search/paging and full matching bounded private CSV exports. Linked conversion requires matching application/load/provider/shipper and a non-cancelled booking. Shared date/CSV safeguards preserve Shipper behavior; valid booking load metadata is repaired. See TRUCK_OWNER_REPORTS_2026-11-04.md."
+    },
+    {
       "files": ["public/home/home"],
       "status": "mixed",
       "priority": "P1",
@@ -168,28 +175,28 @@
       "status": "prototype",
       "priority": "P1",
       "anchor": "TripMockService",
-      "note": "Other-role legacy Trips/driver POD routes still use sample trips, not marketplace bookings. Shipper routes now select dedicated owner-scoped read-model components; this prototype is not counted as the shipper implementation. Existing booking-level real POD workflow remains authoritative."
+      "note": "Admin, Transporter, Company and Driver legacy Trips/POD routes still use sample trips. Shipper and Truck Owner now use real role-scoped booking projections; these prototypes are not their implementation. Existing booking-level POD workflow remains authoritative."
     },
     {
       "files": ["shipper/trips/shipper-trip-list", "shipper/trips/shipper-trip-details"],
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiShipperTripService",
-      "note": "01/11 shipper-only trip history/details read authoritative owned bookings, assignments, recorded lifecycle dates and private POD metadata/original downloads. No copied trip rows, fabricated event timestamps, ETA, GPS or payment status. Server pagination, literal search, stage counts, safe unavailable states, deep links to existing booking/POD actions and scoped regression checks. See SHIPPER_TRIPS_2026-11-01.md. Other role Trips remain separate prototypes."
+      "note": "Shared operational trip pages: Shipper reads canonical owner bookings; 04/11 Truck Owner routes bind a separate strictly provider-scoped API through route providers and role-aware copy/links. Real assignments, recorded timeline, private original POD download, server paging/search/counts, zero/errors/retry and exact booking links. Damaged load references cannot disclose a different shipper's load. No copied trip records or invented timestamps. Other legacy role Trips remain separate. See TRUCK_OWNER_TRIPS_2026-11-04.md and SHIPPER_TRIPS_2026-11-01.md."
     },
     {
       "files": ["documents/documents"],
       "status": "prototype",
       "priority": "P1",
       "anchor": "FleetMockService",
-      "note": "Other-role legacy compliance hub still derives sample fleet/driver/trip data and fabricates POD text. Shipper now uses a dedicated owner-scoped document hub; this prototype is not the shipper implementation."
+      "note": "Admin, Transporter, Driver and Company legacy compliance screens still derive sample fleet/driver/trip data and fabricate POD text. Shipper and Truck Owner use real private account document hubs; this prototype is not their implementation."
     },
     {
       "files": ["shipper/documents/shipper-documents"],
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiShipperDocumentService",
-      "note": "01/11 shipper Documents reads only its canonical booking POD records and own KYC document. Private original binary downloads, strict owner/role filters, bounded search/pagination, missing-file honesty and exact booking/trip/KYC links. No provider identity-file disclosure, fake uploads or synthesized PODs. Upload/review mutations remain in existing KYC/Bookings. Other-role Documents remain prototypes. See SHIPPER_DOCUMENTS_2026-11-01.md."
+      "note": "Shared private Documents view: Shipper reads canonical owner PODs; Truck Owner routes bind a separate provider-scoped API. KYC is self-only for both. Private original binary downloads, bounded filters/paging, preserved review statuses when files are missing, loading/error/Retry and role-correct booking/trip/KYC links. Damaged references and storage paths cannot disclose another record. Upload/review remains in existing KYC/Bookings. See TRUCK_OWNER_DOCUMENTS_2026-11-04.md and SHIPPER_DOCUMENTS_2026-11-01.md."
     },
     {
       "files": ["business-settings/business-settings"],
@@ -224,7 +231,7 @@
       "status": "prototype",
       "priority": "P1",
       "anchor": "ReportMockService",
-      "note": "Other-role legacy report tables/KPIs/CSV still use prototype datasets. Shipper routes now use dedicated owner-scoped operational reports; this legacy component is not the shipper implementation."
+      "note": "Admin, Transporter and Company legacy report tables/KPIs/CSV still use prototype datasets. Shipper and Truck Owner now use their own private operational reports; this legacy component is not their implementation."
     },
     {
       "files": ["shipper/reports/shipper-reports"],
