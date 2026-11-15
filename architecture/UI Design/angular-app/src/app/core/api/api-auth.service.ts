@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { ApiClientService } from './api-client.service';
 import { StaffAccess } from '../models/staff-access.model';
+import { rememberSignupOtpWait } from '../utils/signup-otp-session';
 
 export interface BackendLoginUser {
   uuid: string;
@@ -76,12 +77,29 @@ export class ApiAuthService {
   }
 
   requestSignupOtp(phone: string): Observable<SignupOtpData | null> {
-    return this.api.post<SignupOtpData | null>('auth/signup/request-otp', { phone }).pipe(map((response) => response.data));
+    return this.api.post<SignupOtpData | null>('auth/signup/request-otp', { phone }).pipe(
+      map((response) => {
+        if (!response.success) throw new Error('OTP request was not accepted.');
+        return response.data;
+      }),
+      tap((data) => {
+        rememberSignupOtpWait(phone);
+        sessionStorage.removeItem('transportseva.debug_otp');
+        if (data?.debug_otp) sessionStorage.setItem('transportseva.debug_otp', data.debug_otp);
+      }),
+    );
   }
 
   verifySignupOtp(phone: string, otp: string, role?: string): Observable<BackendLoginData> {
     return this.api.post<BackendLoginData>('auth/signup/verify-otp', { phone, otp, role }).pipe(
-      map((response) => response.data),
+      map((response) => {
+        const data = response.data;
+        if (!response.success || !data?.user || typeof data.user.uuid !== 'string' || !data.user.uuid
+          || typeof data.access_token !== 'string' || !data.access_token
+          || typeof data.refresh_token !== 'string' || !data.refresh_token
+          || !Number.isFinite(data.expires_in) || data.expires_in <= 0) throw new Error('Verification returned an incomplete session. Please try again.');
+        return data;
+      }),
       tap((data) => {
         localStorage.setItem('transportseva.access_token', data.access_token);
         localStorage.setItem('transportseva.refresh_token', data.refresh_token);

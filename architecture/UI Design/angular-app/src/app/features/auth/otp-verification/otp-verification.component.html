@@ -5,6 +5,11 @@
   [title]="'otp.title' | t"
   [sub]="'otp.sub' | t:{ target: identifier() || ('otp.fallbackTarget' | t) }"
 >
+  @if (!validFlow) {
+    <p class="otp-error" role="alert">{{ 'otp.invalidFlow' | t }}</p>
+    <a class="btn btn-primary btn-block" routerLink="/auth/signup">{{ 'otp.restartSignup' | t }}</a>
+    <div class="link-row"><a routerLink="/auth/forgot-password">{{ 'otp.passwordRecovery' | t }}</a></div>
+  } @else {
   <form (ngSubmit)="verify()">
     <div class="field">
       <label>{{ 'otp.otpLabel' | t }}</label>
@@ -19,28 +24,38 @@
             type="text"
             pattern="[0-9]"
             autocomplete="one-time-code"
+            [attr.aria-label]="'otp.digit' | t:{ number: $index + 1 }"
+            [disabled]="verifying() || resending() || verified()"
             [ngModel]="digit"
             (ngModelChange)="onDigitInput($index, $event)"
+            (paste)="onOtpPaste($event)"
+            (keydown)="onDigitKey($index, $event)"
             [name]="'otp' + $index"
           >
         }
       </div>
-      <p class="hint">{{ 'otp.notReceived' | t }} <button type="button" class="link-button" [disabled]="resending()" (click)="resend()">{{ (resending() ? 'Sending…' : 'otp.resendOtp') | t }}</button></p>
+      <p class="hint">{{ 'otp.notReceived' | t }} <button type="button" class="link-button" [disabled]="resending() || verifying() || verified() || cooldown() > 0" [attr.aria-busy]="resending()" (click)="resend()">@if (resending()) { <span class="otp-spinner" aria-hidden="true"></span> }{{ (resending() ? 'otp.sending' : 'otp.resendOtp') | t }}</button></p>
+      @if (cooldown() > 0 && !verified()) { <p class="hint" role="status">{{ 'otp.resendCountdown' | t:{ seconds: cooldown() } }}</p> }
       @if (debugOtp()) {
-        <p class="otp-debug">Development OTP: <strong>{{ debugOtp() }}</strong></p>
+        <p class="otp-debug">{{ 'otp.sandboxCode' | t }}: <strong>{{ debugOtp() }}</strong></p>
       }
       @if (resendMessage()) {
-        <p class="otp-resend-message">{{ resendMessage() }}</p>
+        <p class="otp-resend-message" role="status">{{ resendMessage() }}</p>
       }
       @if (apiError()) {
         <p class="otp-error" role="alert">{{ apiError() }}</p>
       }
     </div>
 
-    <button type="submit" class="btn btn-primary btn-block" [disabled]="verified() || verifying() || !isOtpComplete()">
-      {{ (verifying() ? 'otp.verifying' : (verified() ? 'Verified' : 'otp.verify')) | t }}
+    <button type="submit" class="btn btn-primary btn-block" [attr.aria-busy]="verifying()" [disabled]="verified() || verifying() || resending() || !isOtpComplete()">
+      @if (verifying()) { <span class="otp-spinner" aria-hidden="true"></span> }
+      {{ (verifying() ? 'otp.verifying' : (verified() ? 'otp.verified' : 'otp.verify')) | t }}
     </button>
   </form>
+  @if (verified() && profilePath) {
+    <button type="button" class="btn btn-outline btn-block" [disabled]="navigating()" [attr.aria-busy]="navigating()" (click)="continueProfile()">{{ 'otp.continueProfile' | t }}</button>
+  }
+  }
 
   <div class="link-row otp-back-link">
     <a routerLink="/auth/login">{{ 'otp.backToLogin' | t }}</a>

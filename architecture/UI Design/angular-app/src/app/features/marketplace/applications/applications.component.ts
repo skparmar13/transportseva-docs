@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { timeout } from 'rxjs';
+import { throwError, timeout } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { MarketplaceMockService } from '../../../core/services/marketplace-mock.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -80,39 +78,18 @@ export class ApplicationsComponent {
     this.loading.set(true);
     this.loadError.set('');
     this.backendRows.set([]);
-    if (this.session.role() === 'shipper') {
-      this.apiMarketplace.listReceivedApplicationsPage(page).pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
+    const request = this.backendOwnerMode()
+      ? this.session.role() === 'shipper' ? this.apiMarketplace.listReceivedApplicationsPage(page)
+        : this.session.role() === 'transporter' ? this.apiMarketplace.listTransporterReceivedApplicationsPage(page)
+          : throwError(() => new Error('Applications are unavailable for this account.'))
+      : this.apiMarketplace.listMyApplicationsPage(page);
+    request.pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (result) => {
           this.backendRows.set(result.rows.map((application) => ({ app: this.mapApplication(application), load: application.load ? this.mapLoad(application.load) : undefined })));
           this.page.set(result.page); this.lastPage.set(result.lastPage); this.total.set(result.total); this.loading.set(false);
         },
         error: (e) => this.fail(e, 'We could not load applications. Please retry.'),
       });
-      return;
-    }
-    if (this.backendOwnerMode()) {
-      this.apiMarketplace.listLoads({ mine: true, per_page: 100 }).subscribe({
-        next: (loads) => {
-          if (!loads.length) { this.backendRows.set([]); this.loading.set(false); return; }
-          forkJoin(loads.map((load) => this.apiMarketplace.listApplications(load.uuid).pipe(
-            map((applications) => applications.map((application) => ({ app: this.mapApplication(application), load: this.mapLoad(load) }))),
-          ))).subscribe({ next: (rows) => { this.backendRows.set(rows.flat()); this.loading.set(false); },
-            error: (e) => this.fail(e, 'We could not load applications. Please retry.') });
-        },
-        error: (error) => this.fail(error, 'We could not load applications. Please try again.'),
-      });
-      return;
-    }
-    this.apiMarketplace.listMyApplications().subscribe({
-      next: (applications) => {
-        this.backendRows.set(applications.map((application) => ({
-          app: this.mapApplication(application),
-          load: application.load ? this.mapLoad(application.load) : undefined,
-        })));
-        this.loading.set(false);
-      },
-      error: (error) => this.fail(error, 'We could not load your applications. Please try again.'),
-    });
   }
 
   private fail(error: unknown, fallback: string): void {

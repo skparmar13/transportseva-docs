@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, timeout } from 'rxjs';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthShellComponent } from '../../../shared/layouts/auth-shell/auth-shell.component';
@@ -45,6 +47,7 @@ export class SignupComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly language = inject(LanguageService);
   private readonly apiAuth = inject(ApiAuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly roleOptions = this.auth.roleOptions;
   protected readonly selectedRole = signal<SignupRole>('shipper');
@@ -114,6 +117,7 @@ export class SignupComponent {
   }
 
   protected submit(form: NgForm): void {
+    if (this.submitting()) return;
     this.validationError.set('');
     this.apiError.set('');
     if (form.invalid) {
@@ -143,7 +147,8 @@ export class SignupComponent {
         password: this.password(), role: this.selectedRole(),
       }));
       sessionStorage.setItem('transportseva.pending_signup_role', this.selectedRole());
-      this.apiAuth.requestSignupOtp('+91' + this.mobile()).subscribe({
+      this.apiAuth.requestSignupOtp('+91' + this.mobile())
+        .pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef), finalize(() => this.submitting.set(false))).subscribe({
         next: (data) => {
           if (data?.debug_otp) sessionStorage.setItem('transportseva.debug_otp', data.debug_otp);
           this.submitting.set(false);

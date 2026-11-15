@@ -60,10 +60,10 @@
     },
     {
       "files": ["auth/otp-verification/otp-verification"],
-      "status": "mixed",
-      "priority": "P1",
-      "anchor": "next') === 'signup'",
-      "note": "Signup OTP uses API and retry-safe server verification. Non-signup query path still calls mock verification; resend has no client countdown/duplicate guard although server throttles it."
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "validFlow",
+      "note": "15/11 backend OTP verification requires valid signup context; missing/unsupported paths show signup/recovery links and never call prototype verification. Request locking, refresh-persistent phone-scoped resend cooldown, Retry-After, bounded/cancelled reads, action feedback, paste/keyboard support and EN/HI copy are implemented. Verified codes remain verified after navigation failure, with Continue to profile rather than a repeated verification request. Browser OTP responses are explicitly controlled; real server retry/expiry/replacement/role behavior is covered transactionally. See SIGNUP_OTP_FLOW_2026-11-15.md."
     },
     {
       "files": ["auth/profile-setup/profile-setup"],
@@ -147,7 +147,7 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiMarketplaceService",
-      "note": "API-backed marketplace branch. The original 31/10 audit was read-only. 03/11 Shipper acceptance added real My Loads/Applications Received pagination and honest retriable failures, and verified a labelled new load, registered-fleet application, negotiation, awaiting-token booking and concurrent chat/bell navigation. Other roles' application lists retain their older bounds. Payment/GPS and staff mutation coverage are separate. See SHIPPER_ACCEPTANCE_2026-11-03.md."
+      "note": "API-backed marketplace branch. The original 31/10 audit was read-only. 03/11 Shipper acceptance added real My Loads/Applications Received pagination and honest retriable failures, and verified a labelled new load, registered-fleet application, negotiation, awaiting-token booking and concurrent chat/bell navigation. 15/11 added server paging to Truck Owner/Transporter sent applications and Transporter received applications, removing the 100-row/load fanout. Payment/GPS and staff mutation coverage are separate. See SHIPPER_ACCEPTANCE_2026-11-03.md and APPLICATION_PAGINATION_2026-11-15.md."
     },
     {
       "files": ["fleet/vehicle-list/vehicle-list"],
@@ -238,7 +238,14 @@
       "status": "prototype",
       "priority": "P1",
       "anchor": "ReportMockService",
-      "note": "Admin, Transporter and Company legacy report tables/KPIs/CSV still use prototype datasets. Shipper and Truck Owner now use their own private operational reports; this legacy component is not their implementation."
+      "note": "Admin and Company legacy report tables/KPIs/CSV still use prototype datasets. Shipper, Truck Owner and Transporter use their own private operational reports; this legacy component is not their implementation."
+    },
+    {
+      "files": ["transporter/reports/transporter-reports"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiTransporterReportService",
+      "note": "15/11 real posted-load/received-count, sent-application and owner/provider booking reports. Separate strict scope adapters preserve existing Shipper/Truck Owner authorization. Independent IST creation cohorts, current states, literal search/paging, canonical linked bookings and full matching bounded CSV with formula neutralization. Transporter load/requests/trip links and applied-filter action feedback. See TRANSPORTER_REPORTS_2026-11-15.md."
     },
     {
       "files": ["shipper/reports/shipper-reports"],

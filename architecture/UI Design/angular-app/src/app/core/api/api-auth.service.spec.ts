@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { ApiAuthService } from './api-auth.service';
 import { API_CONFIG } from './api-config';
+import { signupOtpWait } from '../utils/signup-otp-session';
 
 describe('ApiAuthService', () => {
   let service: ApiAuthService;
@@ -15,11 +16,13 @@ describe('ApiAuthService', () => {
     service = TestBed.inject(ApiAuthService);
     http = TestBed.inject(HttpTestingController);
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
     http.verify();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('uses real recovery endpoints without authenticating or caching recovery proof', () => {
@@ -65,6 +68,23 @@ describe('ApiAuthService', () => {
     const request = http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/request-otp`);
     expect(request.request.body).toEqual({ phone: '+918505838433' });
     request.flush({ success: true, data: { debug_otp: '903744' } });
+    expect(signupOtpWait('+918505838433')).toBe(60);
+    expect(sessionStorage.getItem('transportseva.debug_otp')).toBe('903744');
+  });
+
+  it('does not replace a valid session with an incomplete verification response',()=>{
+    localStorage.setItem('transportseva.access_token','existing');
+    for(const body of [{success:false,data:null},{success:true,data:{access_token:'new',refresh_token:'refresh',expires_in:3600}},{success:true,data:{user:{uuid:'u-1'},access_token:'new',refresh_token:'',expires_in:3600}}]){
+      let rejected=false;service.verifySignupOtp('+918505838433','123456','shipper').subscribe({next:()=>fail('Invalid session accepted'),error:()=>rejected=true});
+      http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/verify-otp`).flush(body);expect(rejected).toBeTrue();expect(localStorage.getItem('transportseva.access_token')).toBe('existing');
+    }
+  });
+
+  it('clears an old development code after a non-debug request and rejects unsuccessful envelopes',()=>{
+    sessionStorage.setItem('transportseva.debug_otp','123456');service.requestSignupOtp('+918505838433').subscribe();
+    http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/request-otp`).flush({success:true,data:null});expect(sessionStorage.getItem('transportseva.debug_otp')).toBeNull();
+    let rejected=false;service.requestSignupOtp('+919876543210').subscribe({error:()=>rejected=true});
+    http.expectOne(`${API_CONFIG.baseUrl}/auth/signup/request-otp`).flush({success:false,data:null});expect(rejected).toBeTrue();expect(signupOtpWait('+919876543210')).toBe(0);
   });
 
   it('keeps verification compatible with signup sessions created before role was stored', () => {

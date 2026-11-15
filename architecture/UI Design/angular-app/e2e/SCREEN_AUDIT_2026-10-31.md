@@ -317,3 +317,30 @@ Isolated backend, full Angular and visible browser checks passed; the report
 distinguishes real empty/privacy checks from controlled populated UI evidence.
 Six main business-table hashes were preserved. See [Transporter Documents
 evidence](TRANSPORTER_DOCUMENTS_2026-11-14.md).
+
+15/11/2026 follow-up: Transporter Reports now uses real posted-load/received
+counts, sent applications and combined owner/provider booking records through
+strict role-scoped APIs. It adds independent IST creation cohorts, current
+states, private complete bounded CSV, safe filters/paging and Transporter links.
+Backend/full Angular/source audit and visible browser coverage passed, with
+controlled populated browser records explicitly distinguished from live data.
+Six main business-table hashes were preserved. See [Transporter report evidence
+and limits](TRANSPORTER_REPORTS_2026-11-15.md).
+
+15/11/2026 follow-up: Truck Owner and Transporter sent applications now use
+server-backed paging. Transporter received applications use one private,
+canonical-owner query across all loads, replacing the bounded load fanout.
+Global totals, paging controls, bounded reads and failed-page retry are covered
+by backend, Angular and visible Chrome checks. Existing Shipper pagination and
+separate role enforcement remain covered. Six main business-table hashes were
+preserved. See [application pagination evidence and browser limits](APPLICATION_PAGINATION_2026-11-15.md).
+
+15/11/2026 follow-up: Backend signup OTP now validates its pending context,
+never uses prototype verification on unsupported paths, locks conflicting
+actions and restores a phone-scoped resend deadline after refresh. Successful
+verification survives failed navigation with a real profile continuation;
+incomplete sessions cannot replace existing login data. Full Angular, isolated
+backend, source audit, production build and visible Chrome checks passed.
+Browser OTP responses were controlled; no users were created or messages sent.
+real server signup/retry behavior was covered transactionally. Six main-table
+hashes were preserved. See [signup OTP flow evidence and limits](SIGNUP_OTP_FLOW_2026-11-15.md).

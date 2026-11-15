@@ -85,3 +85,13 @@ test('transporter documents selects the private account hub', () => {
   const row=collectInventory().records.find(item=>item.route==='/transporter/documents');
   assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/shipper\/documents/);
 });
+
+test('transporter reports selects its real posted-load, sent-application and booking report', () => {
+  const row=collectInventory().records.find(item=>item.route==='/transporter/reports');
+  assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/transporter\/reports/);
+});
+
+test('signup OTP selects a context-validated backend verification screen', () => {
+  const row=collectInventory().records.find(item=>item.route==='/auth/otp-verification');
+  assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/otp-verification/);
+});

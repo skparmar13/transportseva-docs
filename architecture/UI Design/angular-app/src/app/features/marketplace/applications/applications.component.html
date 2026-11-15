@@ -91,7 +91,7 @@
     }
   }
 </div>
-@if (backend && session.role() === 'shipper') {
+@if (backend) {
   <div class="page-toolbar" style="margin-top:18px">
     <span>Total applications: {{ total() }} · Page {{ page() }} of {{ lastPage() }}</span>
     <div style="display:flex;gap:10px">

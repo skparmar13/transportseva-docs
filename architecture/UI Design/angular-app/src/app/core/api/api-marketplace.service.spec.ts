@@ -16,6 +16,23 @@ describe('ApiMarketplaceService', () => {
 
   afterEach(() => http.verify());
 
+  for(const [method,path] of [['listMyApplicationsPage','applications/mine'],['listTransporterReceivedApplicationsPage','account/transporter/applications'],['listReceivedApplicationsPage','account/applications']] as const) {
+    it('preserves global totals and page metadata for '+path,()=>{
+      let page: unknown;service[method](6).subscribe(value=>page=value);
+      const request=http.expectOne(`${API_CONFIG.baseUrl}/${path}?page=6&per_page=20`);
+      expect(request.request.method).toBe('GET');request.flush({success:true,data:[{uuid:'oldest-app'}],meta:{current_page:6,last_page:6,total:101}});
+      expect(page).toEqual({rows:[{uuid:'oldest-app'}],page:6,lastPage:6,total:101});
+    });
+  }
+
+  it('rejects malformed application metadata instead of inventing an empty success',()=>{
+    for(const meta of [null,{current_page:0,last_page:1,total:0},{current_page:1,last_page:1,total:-1},{current_page:1,last_page:1,total:'101'}]){
+      let error:unknown;service.listMyApplicationsPage().subscribe({next:()=>fail('Invalid response accepted'),error:e=>error=e});
+      http.expectOne(`${API_CONFIG.baseUrl}/applications/mine?page=1&per_page=20`).flush({success:true,data:[],meta});
+      expect(error).toEqual(jasmine.any(Error));
+    }
+  });
+
   it('loads a registered vehicle using the ownership-scoped detail endpoint', () => {
     let vehicle: unknown;
     service.getMarketplaceVehicle('vehicle/one').subscribe((value) => vehicle = value);

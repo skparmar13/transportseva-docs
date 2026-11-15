@@ -256,9 +256,25 @@ export class ApiMarketplaceService {
   }
 
   listReceivedApplicationsPage(page = 1) {
-    return this.api.get<ApiApplication[]>('account/applications', { page, per_page: 20 }).pipe(map((r) => {
-      if (!r.success || !Array.isArray(r.data) || !r.meta?.current_page || !r.meta.last_page || !Number.isInteger(r.meta.total)) throw new Error('Invalid applications page');
-      return { rows: r.data, page: r.meta.current_page, lastPage: r.meta.last_page, total: r.meta.total! };
+    return this.applicationPage('account/applications', page);
+  }
+
+  listTransporterReceivedApplicationsPage(page = 1) {
+    return this.applicationPage('account/transporter/applications', page);
+  }
+
+  listMyApplicationsPage(page = 1) {
+    return this.applicationPage('applications/mine', page);
+  }
+
+  private applicationPage(path: string, page: number) {
+    return this.api.get<ApiApplication[]>(path, { page, per_page: 20 }).pipe(map((r) => {
+      const meta = r.meta;
+      if (!r.success || !Array.isArray(r.data) || !meta
+        || !Number.isInteger(meta.current_page) || meta.current_page! < 1
+        || !Number.isInteger(meta.last_page) || meta.last_page! < 1
+        || !Number.isInteger(meta.total) || meta.total! < 0) throw new Error('Invalid applications page');
+      return { rows: r.data, page: meta.current_page!, lastPage: meta.last_page!, total: meta.total! };
     }));
   }
 
