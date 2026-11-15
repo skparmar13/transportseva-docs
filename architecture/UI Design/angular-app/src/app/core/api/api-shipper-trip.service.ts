@@ -15,7 +15,7 @@ export interface ShipperTripList {
   rows: ShipperTripRow[]; totals: Record<ShipperTripStage | 'total' | 'pod_outstanding', number>; generated_at: string;
 }
 export interface ShipperTripDetail {
-  trip: ShipperTripRow & { pickup_address: string | null; drop_address: string | null; weight_tons: string | null; vehicle_type_required: string | null; agreed_freight: string | number | null; assignment_mode: string | null; driver_phone: string | null; provider_name: string | null; shipper_name?: string | null };
+  trip: ShipperTripRow & { pickup_address: string | null; drop_address: string | null; weight_tons: string | null; vehicle_type_required: string | null; agreed_freight: string | number | null; assignment_mode: string | null; driver_phone: string | null; provider_name: string | null; shipper_name?: string | null; viewer_side?: 'owner' | 'provider' };
   timeline: { stage: 'booking_created' | 'vehicle_assigned' | 'driver_assigned' | 'loading_completed' | 'loading_confirmed' | 'trip_started' | 'delivered' | 'pod_uploaded' | 'pod_reviewed'; occurred_at: string | null }[];
   pod: { status: TripPodStatus; number: string | null; received_by: string | null; remarks: string | null; file_name: string | null; uploaded_at: string | null; reviewed_at: string | null; review_note: string | null; download_available: boolean };
   generated_at: string;

@@ -264,3 +264,56 @@ bounded filters/pagination, truthful missing-file states and correct
 booking/trip/KYC links. Visible browser coverage and isolated backend checks
 include cross-account privacy, with the main data preserved.
 See [Document implementation and test evidence](TRUCK_OWNER_DOCUMENTS_2026-11-04.md).
+
+04/11/2026 follow-up: Truck Owner Reports now reads provider-owned applications
+and canonical bookings through its own private report API. It uses truthful IST
+creation cohorts, current statuses, actual assignment/POD state, scoped
+search/paging and safe complete CSV exports. The legacy report prototypes remain
+for Admin, Transporter and Company. See [Reports implementation and test
+evidence](TRUCK_OWNER_REPORTS_2026-11-04.md).
+
+14/11/2026 follow-up: registered Driver Details now uses the authenticated
+employer-scoped real driver directory in backend mode, with persisted fields,
+active booking allocation, visible directory links, missing/denied/retry
+states and stale-route cancellation. The visible Truck Owner flow passed with
+business writes blocked. See [driver profile evidence](REGISTERED_DRIVER_DETAILS_2026-11-14.md).
+
+14/11/2026 follow-up: the Truck Owner operational acceptance sweep passed 18
+routes with reloads and real API comparisons. It repaired the Pending
+Applications dashboard link and false empty-fleet states during pending/failed
+vehicle reads. A separate held-read/error/Retry browser test passed. The report
+records a real session-check recovery and limits the scope to read-only screen
+acceptance. See [acceptance evidence](TRUCK_OWNER_ACCEPTANCE_2026-11-14.md).
+
+14/11/2026 follow-up: portal session verification now shares one server identity
+read between parent and child guards in the same navigation, with fresh checks
+on later navigation/token changes, one transient-error retry and a total
+30-second deadline. Authorization, onboarding and staff restrictions remain
+server-verified. Visible slow-response and transient-error recovery passed.
+See [session navigation evidence](SESSION_NAVIGATION_2026-11-14.md).
+
+14/11/2026 follow-up: Transporter Dashboard now uses the real provider-scoped
+fleet/application API, with actual recent registered vehicles and truthful
+loading/error/retry/zero states. Sent applications now have their own route and
+sidebar link, distinct from applications received on posted loads. Browser
+verification repaired a nested Drivers quick-action path and checked all four
+quick actions, reloads and failed-refresh recovery. See [Transporter dashboard
+evidence](TRANSPORTER_DASHBOARD_2026-11-14.md).
+
+14/11/2026 follow-up: Transporter Trips and Trip Details now use a strict
+Transporter-party read API over canonical owner/provider bookings and the
+shared operational trip pages. Exact requests links, role-specific counterpart
+and POD copy, filtering/paging, recorded timeline and private original downloads
+are covered by isolated tests. Visible Chrome verifies real zero/privacy states
+and explicitly controlled populated contract states; existing Transporter QA
+accounts have no bookings. Six main business-table hashes were preserved.
+See [Transporter trip evidence and limits](TRANSPORTER_TRIPS_2026-11-14.md).
+
+14/11/2026 follow-up: Transporter Documents now reads canonical owner/provider
+booking PODs and self-only KYC through a separate private endpoint family.
+The shared hub provides real metadata, safe original downloads, filters/paging,
+review status with missing files and Transporter requests/trip/KYC links.
+Isolated backend, full Angular and visible browser checks passed; the report
+distinguishes real empty/privacy checks from controlled populated UI evidence.
+Six main business-table hashes were preserved. See [Transporter Documents
+evidence](TRANSPORTER_DOCUMENTS_2026-11-14.md).

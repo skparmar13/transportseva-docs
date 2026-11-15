@@ -8,6 +8,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ShipperDashboardComponent } from '../../shipper/dashboard/shipper-dashboard.component';
 import { TruckOwnerDashboardComponent } from '../../truck-owner/dashboard/truck-owner-dashboard.component';
+import { TransporterDashboardComponent } from '../../transporter/dashboard/transporter-dashboard.component';
 
 const shipper: ShipperDashboard = { dashboard_type: 'shipper', generated_at: '2026-10-31T08:00:00Z',
   totals: { loads_posted: 125, pending_applications: 8, in_transit_bookings: 2, delivered_bookings: 3 },
@@ -22,6 +23,8 @@ for (const scenario of [
     rowText: 'QA Origin', rowPath: '/shipper/load-board/load-qa', empty: 'No loads posted yet.' },
   { role: 'truck-owner', component: TruckOwnerDashboardComponent, method: 'provider', data: provider, expected: ['120', '4', '110', '2'],
     rowText: 'DASHQA1234', rowPath: '/truck-owner/vehicles/vehicle-qa', empty: 'No vehicles registered yet.' },
+  { role: 'transporter', component: TransporterDashboardComponent, method: 'provider', data: provider, expected: ['120', '4', '110', '2'],
+    rowText: 'DASHQA1234', rowPath: '/transporter/fleet/vehicle-qa', empty: 'No vehicles registered yet.' },
 ] as const) {
   describe(scenario.role + ' real dashboard', () => {
     let api: jasmine.SpyObj<ApiDashboardService>; let original: boolean;
@@ -46,6 +49,13 @@ for (const scenario of [
       expect(element.querySelectorAll('.kpi-trend').length).toBe(0);
       expect(element.textContent).toContain(scenario.rowText);
       expect(element.querySelector('tbody a')?.getAttribute('href')).toBe(scenario.rowPath);
+      if (scenario.role === 'truck-owner') expect(element.querySelector('[data-metric=pending_applications]')?.getAttribute('href')).toBe('/truck-owner/applications');
+      if (scenario.role === 'transporter') {
+        expect(element.querySelector('[data-metric=pending_applications]')?.getAttribute('href')).toBe('/transporter/sent-applications');
+        expect(element.querySelector('button.btn-primary')).toBeNull();
+        expect(element.querySelector('.qa-list')?.textContent).toContain('Bookings');
+        expect(Array.from(element.querySelectorAll('.qa-list a')).map(a=>a.getAttribute('href'))).toContain('/transporter/fleet/drivers');
+      }
       expect(element.textContent).toMatch(/31\/10\/2026 \d{2}:\d{2} (AM|PM)/);
       expect(element.textContent).not.toContain('Earnings (This Month)');
       expect(element.textContent).not.toContain('Payment Ledger Due');

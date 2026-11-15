@@ -20,8 +20,11 @@ export class ShipperTripDetailsComponent {
   private readonly document = inject(DOCUMENT);
   private readonly language = inject(LanguageService);
   protected readonly truckOwner = this.route.snapshot?.data?.['tripPortal'] === 'truck-owner';
-  protected readonly basePath = this.truckOwner ? '/truck-owner' : '/shipper';
-  protected readonly copy = computed(() => tripCopy(this.language.lang(), this.truckOwner));
+  protected readonly transporter = this.route.snapshot?.data?.['tripPortal'] === 'transporter';
+  protected readonly basePath = this.transporter ? '/transporter' : this.truckOwner ? '/truck-owner' : '/shipper';
+  protected readonly bookingPath = this.transporter ? 'requests' : 'bookings';
+  protected readonly providerSide = computed(() => this.truckOwner || (this.transporter && this.data()?.trip.viewer_side === 'provider'));
+  protected readonly copy = computed(() => tripCopy(this.language.lang(), this.truckOwner, this.transporter, this.providerSide()));
   protected readonly dateTime = formatDateTime;
   protected readonly date = formatDate;
   protected readonly data = signal<ShipperTripDetail | null>(null);

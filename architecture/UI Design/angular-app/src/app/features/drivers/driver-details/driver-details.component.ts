@@ -9,6 +9,8 @@ import { SessionService } from '../../../core/services/session.service';
 import { DriverDocStatus, DriverStatus } from '../../../core/models/driver.model';
 import { DriverDocument } from '../../../core/models/driver.model';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
+import { API_CONFIG } from '../../../core/api/api-config';
+import { RegisteredDriverDetailsComponent } from './registered-driver-details.component';
 
 type TabId = 'profile' | 'documents' | 'assignment' | 'timeline';
 
@@ -36,11 +38,12 @@ const DOC_STATUS_CLASS: Record<DriverDocStatus, string> = {
 @Component({
   selector: 'app-driver-details',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, RouterLink],
+  imports: [IconComponent, ModalComponent, FormsModule, RouterLink, RegisteredDriverDetailsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './driver-details.component.html',
 })
 export class DriverDetailsComponent {
+  protected readonly useBackend = API_CONFIG.useBackend;
   private readonly route = inject(ActivatedRoute);
   private readonly driverSvc = inject(DriverMockService);
   private readonly fleet = inject(FleetMockService);

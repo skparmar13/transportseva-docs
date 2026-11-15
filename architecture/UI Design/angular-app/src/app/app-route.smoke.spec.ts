@@ -60,37 +60,13 @@ describe('portal route browser smoke checks', () => {
     }
   });
 
-  it('lets a transporter accept a request and reflects the accepted state', async () => {
+  it('does not present sample transporter requests when the backend is disconnected', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/transporter/dashboard');
-    await harness.fixture.whenStable();
-    harness.fixture.detectChanges();
-
-    const button = harness.routeNativeElement?.querySelector('tbody button') as HTMLButtonElement;
-    expect(button).toBeTruthy();
-    expect(button.disabled).toBeFalse();
-    button.click();
-    harness.fixture.detectChanges();
-    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).not.toContain('#TS-48231');
-
-    await harness.navigateByUrl('/transporter/requests');
-    await harness.fixture.whenStable();
-    harness.fixture.detectChanges();
-    const acceptedBooking = TestBed.inject(MarketplaceMockService).bookings().find((booking) => booking.bookingId === '#TS-48231');
-    expect(acceptedBooking?.status).toBe('Awaiting Deposit');
-    const bookingCard = Array.from(harness.routeNativeElement?.querySelectorAll('.card') ?? [])
-      .find((card) => card.textContent?.includes('#TS-48231'));
-    expect(bookingCard?.querySelector('.status-pill')?.textContent?.trim()).toBeTruthy();
-
-    await harness.navigateByUrl('/transporter/dashboard');
-    await harness.fixture.whenStable();
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    harness.fixture.detectChanges();
-    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).not.toContain('#TS-48231');
-    expect(harness.routeNativeElement?.querySelector('tbody')?.textContent).toContain('#TS-48227');
-    const requestsKpi = Array.from(harness.routeNativeElement?.querySelectorAll('.kpi-card') ?? [])
-      .find((card) => card.textContent?.includes('New Requests'));
-    expect(requestsKpi?.textContent).toContain('1');
+    await harness.fixture.whenStable(); harness.fixture.detectChanges();
+    expect(harness.routeNativeElement?.querySelector('[role=alert]')).toBeTruthy();
+    expect(harness.routeNativeElement?.querySelector('.kpi-card')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector('tbody')).toBeNull();
   });
 
   it('returns a shipper to My Loads from a load detail instead of the missing load-board route', async () => {

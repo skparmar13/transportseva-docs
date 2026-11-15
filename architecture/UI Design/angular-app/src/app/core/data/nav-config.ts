@@ -143,7 +143,8 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { label: 'Load Board', labelKey: 'nav.loadBoard', icon: 'i-search', path: 'load-board' },
           { label: 'Post Load (on behalf)', labelKey: 'nav.postLoadOnBehalf', icon: 'i-plus', path: 'post-load' },
-          { label: 'My Applications', labelKey: 'nav.myApplications', icon: 'i-doc', path: 'applications' },
+            { label: 'My Applications', labelKey: 'nav.myApplications', icon: 'i-doc', path: 'sent-applications' },
+            { label: 'Applications Received', labelKey: 'nav.applicationsReceived', icon: 'i-doc', path: 'applications' },
           { label: 'Booking Requests', labelKey: 'nav.bookingRequests', icon: 'i-box', path: 'requests' },
         ],
       },

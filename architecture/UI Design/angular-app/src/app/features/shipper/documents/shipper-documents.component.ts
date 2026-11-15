@@ -22,8 +22,10 @@ export class ShipperDocumentsComponent {
   private readonly language = inject(LanguageService);
   private readonly route = inject(ActivatedRoute);
   protected readonly truckOwner = this.route.snapshot.data?.['documentPortal'] === 'truck-owner';
-  protected readonly basePath = this.truckOwner ? '/truck-owner' : '/shipper';
-  protected readonly copy = computed(() => documentCopy(this.language.lang(), this.truckOwner));
+  protected readonly transporter = this.route.snapshot.data?.['documentPortal'] === 'transporter';
+  protected readonly basePath = this.transporter ? '/transporter' : this.truckOwner ? '/truck-owner' : '/shipper';
+  protected readonly bookingPath = this.transporter ? 'requests' : 'bookings';
+  protected readonly copy = computed(() => documentCopy(this.language.lang(), this.truckOwner, this.transporter));
   protected readonly dateTime = formatDateTime;
   protected readonly data = signal<AwaitedDocumentPage | null>(null);
   protected readonly loading = signal(false);

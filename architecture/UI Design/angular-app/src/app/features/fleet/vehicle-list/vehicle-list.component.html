@@ -31,15 +31,15 @@
       <option value="Offline">Offline</option>
     </select>
   </div>
-  <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ filteredVehicles().length }} vehicles</span>
+  @if (!loadingVehicles() && !vehicleError()) { <span style="font-size:13px;color:var(--color-text-muted);font-weight:600;">{{ filteredVehicles().length }} vehicles</span> }
 </div>
 
-@if (vehicleError()) {
-  <div class="form-error" role="alert" style="margin-bottom:16px;">{{ vehicleError() }}</div>
-}
-
 <div class="card">
-  @if (filteredVehicles().length) {
+  @if (loadingVehicles()) {
+    <div class="card-body" role="status" aria-busy="true"><span class="vehicle-read-spinner" aria-hidden="true"></span> Loading registered vehicles…</div>
+  } @else if (vehicleError()) {
+    <div class="card-body form-error" role="alert">{{ vehicleError() }} <button type="button" class="btn btn-outline btn-sm" (click)="reloadBackendVehicles()">Retry</button></div>
+  } @else if (filteredVehicles().length) {
     <table class="data-table">
       <thead>
         <tr>
@@ -80,6 +80,11 @@
     </div>
   }
 </div>
+<style>
+  .vehicle-read-spinner { display:inline-block;width:18px;height:18px;border:2px solid #ddd;border-top-color:var(--color-primary);border-radius:50%;animation:vehicle-read-spin .8s linear infinite; }
+  @keyframes vehicle-read-spin { to { transform:rotate(360deg); } }
+  @media(prefers-reduced-motion:reduce) { .vehicle-read-spinner { animation:none; } }
+</style>
 
 @if (showAddModal()) {
   <app-modal title="Add Vehicle" (close)="closeAdd()">

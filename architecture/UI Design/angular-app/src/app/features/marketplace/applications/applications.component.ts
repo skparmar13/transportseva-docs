@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { timeout } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -34,6 +34,7 @@ export class ApplicationsComponent {
   private readonly marketplace = inject(MarketplaceMockService);
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly page = signal(1);
@@ -47,7 +48,7 @@ export class ApplicationsComponent {
   private readonly backendRows = signal<ApplicationRow[]>([]);
 
   private readonly myLoads = computed(() => this.marketplace.getLoadsPostedBy(this.session.role())());
-  private readonly backendOwnerMode = computed(() => ['shipper', 'transporter', 'company'].includes(this.session.role()));
+  private readonly backendOwnerMode = computed(() => this.route.snapshot.data['applicationView'] !== 'sent' && ['shipper', 'transporter', 'company'].includes(this.session.role()));
   protected readonly isOwnerMode = computed(() => API_CONFIG.useBackend ? this.backendOwnerMode() : this.myLoads().length > 0);
 
   constructor() { this.reloadBackendData(); }

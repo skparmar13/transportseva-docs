@@ -1,0 +1,44 @@
+<div class="page-toolbar">
+  <div>
+    <a [routerLink]="session.portal().basePath + '/' + listPath()">← {{ text('Back to Drivers', 'ड्राइवर सूची पर वापस जाएँ') }}</a>
+    <h1>{{ text('Driver Profile', 'ड्राइवर प्रोफ़ाइल') }}</h1>
+    <p class="desc">{{ text('Registered driver details and current booking allocation.', 'पंजीकृत ड्राइवर का विवरण और वर्तमान बुकिंग आवंटन।') }}</p>
+  </div>
+  <button type="button" class="btn btn-outline" [disabled]="state().status === 'loading'" (click)="reload()">{{ text('Refresh', 'रीफ़्रेश करें') }}</button>
+</div>
+@if (state().status === 'loading') {
+  <div class="card card-body" role="status"><span class="driver-spinner" aria-hidden="true"></span> {{ text('Loading registered driver…', 'पंजीकृत ड्राइवर लोड हो रहा है…') }}</div>
+} @else if (state().driver; as d) {
+  <section class="card" data-driver-profile>
+    <div class="card-head"><h2>{{ d.name }}</h2><span class="status-pill" [class.status-delivered]="d.status === 'available' && !d.is_busy">{{ d.status !== 'available' ? text('Inactive', 'निष्क्रिय') : d.is_busy ? text('Assigned', 'आवंटित') : text('Available', 'उपलब्ध') }}</span></div>
+    <div class="card-body driver-fields">
+      <div>{{ text('Phone', 'फ़ोन') }}: <strong>{{ d.phone || '—' }}</strong></div>
+      <div>{{ text('License No.', 'लाइसेंस संख्या') }}: <strong>{{ d.license_number || '—' }}</strong></div>
+      <div>{{ text('License Expiry', 'लाइसेंस समाप्ति') }}: <strong>{{ date(d.license_expiry || undefined) }}</strong></div>
+      <div>{{ text('Experience (years)', 'अनुभव (वर्ष)') }}: <strong>{{ d.experience_years }}</strong></div>
+      <div>{{ text('Address', 'पता') }}: <strong>{{ d.address || '—' }}</strong></div>
+    </div>
+  </section>
+  <section class="card" style="margin-top:20px">
+    <div class="card-head"><h3>{{ text('Current Vehicle Assignment', 'वर्तमान वाहन आवंटन') }}</h3></div>
+    <div class="card-body">
+      <p data-driver-assignment>{{ d.assigned_vehicle_reg_number || (d.is_busy ? text('Allocated to an active booking; vehicle not recorded.', 'सक्रिय बुकिंग को आवंटित; वाहन दर्ज नहीं है।') : text('No active booking assignment.', 'कोई सक्रिय बुकिंग आवंटन नहीं है।')) }}</p>
+      <p class="desc">{{ text('Driver and vehicle assignments are managed within the booking.', 'ड्राइवर और वाहन का आवंटन बुकिंग में प्रबंधित होता है।') }}</p>
+      <a class="btn btn-outline" [routerLink]="[session.portal().basePath, 'bookings']">{{ text('View Bookings', 'बुकिंग देखें') }}</a>
+    </div>
+  </section>
+} @else {
+  <div class="card card-body" [attr.role]="state().status === 'error' ? 'alert' : 'status'">
+    @switch (state().status) {
+      @case ('not-found') { <h2>{{ text('Driver not found', 'ड्राइवर नहीं मिला') }}</h2><p>{{ text('This driver is not in your registered directory.', 'यह ड्राइवर आपकी पंजीकृत सूची में नहीं है।') }}</p> }
+      @case ('forbidden') { <h2>{{ text('Access unavailable', 'पहुँच उपलब्ध नहीं है') }}</h2><p>{{ text('You do not have access to this driver directory.', 'आपको इस ड्राइवर सूची की पहुँच नहीं है।') }}</p> }
+      @default { <h2>{{ text('Driver could not be loaded', 'ड्राइवर लोड नहीं हो सका') }}</h2><button type="button" class="btn btn-outline" (click)="reload()">{{ text('Retry', 'पुनः प्रयास करें') }}</button> }
+    }
+  </div>
+}
+<style>
+  .driver-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; overflow-wrap:anywhere; }
+  .driver-spinner { display:inline-block; width:18px; height:18px; border:2px solid #ddd; border-top-color:var(--color-primary); border-radius:50%; animation:driver-spin .8s linear infinite; }
+  @keyframes driver-spin { to { transform:rotate(360deg); } }
+  @media(prefers-reduced-motion:reduce) { .driver-spinner { animation:none; } }
+</style>

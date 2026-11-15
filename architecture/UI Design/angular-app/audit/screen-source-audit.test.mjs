@@ -58,3 +58,30 @@ test('truck owner reports selects its provider-owned application and booking rep
   assert.equal(row.status, 'api_connected');
   assert.match(row.component, /truck-owner\/reports/);
 });
+
+test('registered driver profile is wired through the backend-only profile view', () => {
+  const row = collectInventory().records.find((item) => item.route === '/truck-owner/drivers/:id');
+  assert.ok(row);
+  assert.equal(row.status, 'api_connected');
+  assert.match(row.component, /drivers\/driver-details/);
+});
+
+test('transporter dashboard and sent applications use real reviewed screens', () => {
+  const records=collectInventory().records;
+  for(const route of ['/transporter/dashboard','/transporter/sent-applications']) {
+    const row=records.find(item=>item.route===route);assert.ok(row);assert.equal(row.status,'api_connected');
+  }
+});
+
+test('transporter trip routes use the real shared operational views', () => {
+  const records=collectInventory().records;
+  for(const route of ['/transporter/trips','/transporter/trips/:id']) {
+    const row=records.find(item=>item.route===route);assert.ok(row);assert.equal(row.status,'api_connected');
+    assert.match(row.component,/shipper\/trips/);
+  }
+});
+
+test('transporter documents selects the private account hub', () => {
+  const row=collectInventory().records.find(item=>item.route==='/transporter/documents');
+  assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/shipper\/documents/);
+});

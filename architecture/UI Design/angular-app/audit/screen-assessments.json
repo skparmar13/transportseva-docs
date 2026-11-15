@@ -108,11 +108,18 @@
       "note": "Real private-document KYC APIs and moderation. The original 31/10 source audit was read-only. 03/11 acceptance verified a clearly labelled pending QA upload and original-byte private download; pre-existing approved records and moderation decisions were preserved. Failed reads no longer expose a new submission form. See SHIPPER_ACCEPTANCE_2026-11-03.md."
     },
     {
-      "files": ["dashboard/dashboard", "transporter/dashboard/transporter-dashboard", "driver/dashboard/driver-dashboard"],
+      "files": ["dashboard/dashboard", "driver/dashboard/driver-dashboard"],
       "status": "prototype",
       "priority": "P1",
       "anchor": "DashboardMockService",
-      "note": "Landing KPIs and recent records are samples even in backend mode. Transporter request acceptance mutates the mock marketplace store. Admin dashboard is blocked by current strict staff policy."
+      "note": "Admin and Driver landing KPIs and recent records remain samples. Admin dashboard is blocked by current strict staff policy. Transporter now has a distinct real provider dashboard."
+    },
+    {
+      "files": ["transporter/dashboard/transporter-dashboard"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiDashboardService",
+      "note": "14/11 real provider-scoped fleet/application totals, capped recent registered vehicles, allocation status, date formatting, refresh/loading/error/retry/zero states and EN/HI labels. Dashboard links use Transporter fleet, sent-applications and requests routes. Sent applications are distinct from applications received on posted loads. See TRANSPORTER_DASHBOARD_2026-11-14.md."
     },
     {
       "files": ["shipper/dashboard/shipper-dashboard", "truck-owner/dashboard/truck-owner-dashboard"],
@@ -147,7 +154,7 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "viewVehicle",
-      "note": "Owned vehicle list/add use API. 31/10 repair: View now opens the real ownership-scoped vehicle detail API, including reload/retry. GPS/document/maintenance/fuel integrations remain explicitly unavailable on the detail screen; do not infer those capabilities from list marketing copy."
+      "note": "Owned vehicle list/add use API. 31/10 repair: View opens the ownership-scoped vehicle detail API. 14/11 acceptance repair: initial reads now show animated loading, bounded requests and retryable errors without a false empty fleet; successful empty results remain distinct. See TRUCK_OWNER_ACCEPTANCE_2026-11-14.md. Detail capabilities remain limited to registered fields and allocation."
     },
     {
       "files": ["drivers/driver-list/driver-list"],
@@ -165,38 +172,38 @@
     },
     {
       "files": ["drivers/driver-details/driver-details"],
-      "status": "prototype",
-      "priority": "P1",
-      "anchor": "DriverMockService",
-      "note": "Profile, assignment and documents use sample driver/fleet stores. Direct real-UUID route does not resolve; list hides its detail action in backend mode."
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "RegisteredDriverDetailsComponent",
+      "note": "14/11 backend mode delegates to the registered-driver view using the employer-scoped marketplace driver directory. Real UUID profile, persisted license/contact/experience/address and active allocation, safe missing/forbidden/error/retry and stale-request cancellation. Directory View is enabled. Assignment is managed through existing Bookings; unsupported sample documents/ratings/timeline are absent. Company access remains denied by the existing provider API. See REGISTERED_DRIVER_DETAILS_2026-11-14.md."
     },
     {
       "files": ["trips/trip-list/trip-list", "trips/trip-details/trip-details"],
       "status": "prototype",
       "priority": "P1",
       "anchor": "TripMockService",
-      "note": "Admin, Transporter, Company and Driver legacy Trips/POD routes still use sample trips. Shipper and Truck Owner now use real role-scoped booking projections; these prototypes are not their implementation. Existing booking-level POD workflow remains authoritative."
+      "note": "Admin, Company and Driver legacy Trips/POD routes still use sample trips. Shipper, Truck Owner and Transporter use real role-scoped booking projections. Existing booking-level POD workflow remains authoritative."
     },
     {
       "files": ["shipper/trips/shipper-trip-list", "shipper/trips/shipper-trip-details"],
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiShipperTripService",
-      "note": "Shared operational trip pages: Shipper reads canonical owner bookings; 04/11 Truck Owner routes bind a separate strictly provider-scoped API through route providers and role-aware copy/links. Real assignments, recorded timeline, private original POD download, server paging/search/counts, zero/errors/retry and exact booking links. Damaged load references cannot disclose a different shipper's load. No copied trip records or invented timestamps. Other legacy role Trips remain separate. See TRUCK_OWNER_TRIPS_2026-11-04.md and SHIPPER_TRIPS_2026-11-01.md."
+      "note": "Shared operational trip pages: Shipper reads canonical owner bookings; Truck Owner uses a strictly provider-scoped API; Transporter uses a separate API allowing canonical booking owner or provider parties. Real assignments, recorded timeline, private original POD, paging/search/counts and error/zero/retry states. Transporter links use requests and display counterparty/POD copy for the server-reported side. Damaged loads cannot disclose unrelated details. See TRANSPORTER_TRIPS_2026-11-14.md, TRUCK_OWNER_TRIPS_2026-11-04.md and SHIPPER_TRIPS_2026-11-01.md."
     },
     {
       "files": ["documents/documents"],
       "status": "prototype",
       "priority": "P1",
       "anchor": "FleetMockService",
-      "note": "Admin, Transporter, Driver and Company legacy compliance screens still derive sample fleet/driver/trip data and fabricate POD text. Shipper and Truck Owner use real private account document hubs; this prototype is not their implementation."
+      "note": "Admin, Driver and Company legacy compliance screens still derive sample fleet/driver/trip data and fabricate POD text. Shipper, Truck Owner and Transporter use real private account document hubs; this prototype is not their implementation."
     },
     {
       "files": ["shipper/documents/shipper-documents"],
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiShipperDocumentService",
-      "note": "Shared private Documents view: Shipper reads canonical owner PODs; Truck Owner routes bind a separate provider-scoped API. KYC is self-only for both. Private original binary downloads, bounded filters/paging, preserved review statuses when files are missing, loading/error/Retry and role-correct booking/trip/KYC links. Damaged references and storage paths cannot disclose another record. Upload/review remains in existing KYC/Bookings. See TRUCK_OWNER_DOCUMENTS_2026-11-04.md and SHIPPER_DOCUMENTS_2026-11-01.md."
+      "note": "Shared private Documents view: Shipper reads owner PODs; Truck Owner reads provider PODs; Transporter reads canonical owner/provider-party PODs through its own endpoint. KYC is always self-only. Private original downloads, bounded filters/paging, preserved review statuses when files are missing, loading/error/Retry and role-correct booking/trip/KYC links. Damaged relations and unsafe storage paths cannot disclose another record. Existing upload/review workflows remain authoritative. See TRANSPORTER_DOCUMENTS_2026-11-14.md, TRUCK_OWNER_DOCUMENTS_2026-11-04.md and SHIPPER_DOCUMENTS_2026-11-01.md."
     },
     {
       "files": ["business-settings/business-settings"],
@@ -238,7 +245,7 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiShipperReportService",
-      "note": "02/11 shipper operational Reports use canonical posted loads, live applications and owned bookings. IST creation-date cohorts, current-state rollups, literal table search/paging, real full-match bounded CSV with formula neutralization, safe links/zero/errors/action feedback. No payment/GPS/revenue/on-time/duration figures. Other-role reports remain prototypes. See SHIPPER_REPORTS_2026-11-02.md."
+      "note": "02/11 shipper operational Reports use canonical posted loads, live applications and owned bookings. IST creation-date cohorts, current-state rollups, literal table search/paging, real full-match bounded CSV with formula neutralization, safe links/zero/errors/action feedback. No payment/GPS/revenue/on-time/duration figures. Truck Owner has a separate private operational report; Admin, Transporter and Company legacy reports remain prototypes. See SHIPPER_REPORTS_2026-11-02.md and TRUCK_OWNER_REPORTS_2026-11-04.md."
     },
     {
       "files": ["admin/cms-management/cms-management", "admin/careers-management/careers-management", "admin/newsletter-management/newsletter-management"],
@@ -290,7 +297,7 @@
     },
     {
       "file": "src/app/core/guards/portal-role.guard.ts",
-      "anchor": "ApiAuthService).me",
+      "anchor": "PortalSessionCheckService).verify",
       "priority": "P2",
       "note": "Actual server identity and staff route ceiling verified before activating a portal; forged role cache cannot authorize a new role."
     }

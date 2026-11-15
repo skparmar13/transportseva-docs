@@ -30,7 +30,7 @@ export class TruckOwnerDashboardComponent {
       { key: 'vehicles_total', icon: 'i-car', value: totals.vehicles_total, label: c.vehicles, path: 'vehicles' },
       { key: 'vehicles_on_trip', icon: 'i-truck', value: totals.vehicles_on_trip, label: c.onTrip, path: 'vehicles' },
       { key: 'vehicles_available', icon: 'i-check', value: totals.vehicles_available, label: c.available, path: 'vehicles' },
-      { key: 'pending_applications', icon: 'i-doc', value: totals.pending_applications, label: c.pending, path: 'my-applications' },
+      { key: 'pending_applications', icon: 'i-doc', value: totals.pending_applications, label: c.pending, path: 'applications' },
     ] : [];
   });
   protected readonly quickActions = computed(() => [

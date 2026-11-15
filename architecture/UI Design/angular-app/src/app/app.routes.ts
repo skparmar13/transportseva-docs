@@ -5,8 +5,10 @@ import { setPortalRole } from './core/guards/portal-role.guard';
 import { API_CONFIG } from './core/api/api-config';
 import { ApiShipperTripService } from './core/api/api-shipper-trip.service';
 import { ApiTruckOwnerTripService } from './core/api/api-truck-owner-trip.service';
+import { ApiTransporterTripService } from './core/api/api-transporter-trip.service';
 import { ApiShipperDocumentService } from './core/api/api-shipper-document.service';
 import { ApiTruckOwnerDocumentService } from './core/api/api-truck-owner-document.service';
+import { ApiTransporterDocumentService } from './core/api/api-transporter-document.service';
 
 /**
  * Public marketing pages now own the root route, while the existing
@@ -130,7 +132,8 @@ export const routes: Routes = [
       { path: 'load-board/:id', title: 'Load Details | Transporter Portal | TransportSeva', loadComponent: () => import('./features/marketplace/load-details/load-details.component').then((m) => m.LoadDetailsComponent) },
       { path: 'post-load', title: 'Post Load | Transporter Portal | TransportSeva', loadComponent: () => import('./features/marketplace/post-load/post-load.component').then((m) => m.PostLoadComponent) },
       { path: 'my-loads', title: 'My Loads | Transporter Portal | TransportSeva', loadComponent: () => import('./features/marketplace/my-loads/my-loads.component').then((m) => m.MyLoadsComponent) },
-      { path: 'applications', title: 'My Applications | Transporter Portal | TransportSeva', loadComponent: () => import('./features/marketplace/applications/applications.component').then((m) => m.ApplicationsComponent) },
+      { path: 'applications', title: 'Applications Received | Transporter Portal | TransportSeva', loadComponent: () => import('./features/marketplace/applications/applications.component').then((m) => m.ApplicationsComponent) },
+      { path: 'sent-applications', title: 'My Applications | Transporter Portal | TransportSeva', data: { applicationView: 'sent' }, loadComponent: () => import('./features/marketplace/applications/applications.component').then((m) => m.ApplicationsComponent) },
       { path: 'requests', title: 'Booking Requests | Transporter Portal | TransportSeva', loadComponent: () => import('./features/marketplace/bookings/bookings.component').then((m) => m.BookingsComponent) },
       { path: 'fleet', title: 'Fleet & Drivers | Transporter Portal | TransportSeva', loadComponent: () => import('./features/fleet/vehicle-list/vehicle-list.component').then((m) => m.VehicleListComponent) },
       { path: 'fleet/drivers', title: 'Fleet & Drivers | Transporter Portal | TransportSeva', loadComponent: () => import('./features/drivers/driver-list/driver-list.component').then((m) => m.DriverListComponent) },
@@ -140,12 +143,12 @@ export const routes: Routes = [
       { path: 'devices/:id', title: 'Device Details | Transporter Portal | TransportSeva', loadComponent: () => import('./features/gps/device-details/device-details.component').then((m) => m.DeviceDetailsComponent) },
       { path: 'tracking', title: 'Live Tracking | Transporter Portal | TransportSeva', loadComponent: () => import('./features/gps/live-tracking/live-tracking.component').then((m) => m.LiveTrackingComponent) },
       { path: 'geofences', title: 'Geofence Management | Transporter Portal | TransportSeva', loadComponent: () => import('./features/gps/geofence-management/geofence-management.component').then((m) => m.GeofenceManagementComponent) },
-      { path: 'trips', title: 'Trips | Transporter Portal | TransportSeva', loadComponent: () => import('./features/trips/trip-list/trip-list.component').then((m) => m.TripListComponent) },
-      { path: 'trips/:id', title: 'Trip Details | Transporter Portal | TransportSeva', loadComponent: () => import('./features/trips/trip-details/trip-details.component').then((m) => m.TripDetailsComponent) },
+      { path: 'trips', title: 'Trips | Transporter Portal | TransportSeva', data: { tripPortal: 'transporter' }, providers: [{ provide: ApiShipperTripService, useClass: ApiTransporterTripService }], loadComponent: () => import('./features/shipper/trips/shipper-trip-list.component').then((m) => m.ShipperTripListComponent) },
+      { path: 'trips/:id', title: 'Trip Details | Transporter Portal | TransportSeva', data: { tripPortal: 'transporter' }, providers: [{ provide: ApiShipperTripService, useClass: ApiTransporterTripService }], loadComponent: () => import('./features/shipper/trips/shipper-trip-details.component').then((m) => m.ShipperTripDetailsComponent) },
       { path: 'financials', title: 'Payment Ledger | Transporter Portal | TransportSeva', loadComponent: () => import('./features/wallet/wallet.component').then((m) => m.WalletComponent) },
       { path: 'payments', title: 'Payments | Transporter Portal | TransportSeva', loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent) },
       { path: 'reports', title: 'Reports & Analytics | Transporter Portal | TransportSeva', loadComponent: () => import('./features/reports/reports.component').then((m) => m.ReportsComponent) },
-      { path: 'documents', title: 'Documents | Transporter Portal | TransportSeva', loadComponent: () => import('./features/documents/documents.component').then((m) => m.DocumentsComponent) },
+      { path: 'documents', title: 'Documents | Transporter Portal | TransportSeva', data: { documentPortal: 'transporter' }, providers: [{ provide: ApiShipperDocumentService, useClass: ApiTransporterDocumentService }], loadComponent: () => import('./features/shipper/documents/shipper-documents.component').then((m) => m.ShipperDocumentsComponent) },
       { path: 'kyc', title: 'Business KYC Verification | Transporter Portal | TransportSeva', loadComponent: () => import('./features/kyc/my-kyc/my-kyc.component').then((m) => m.MyKycComponent) },
       { path: 'notifications', title: 'Notifications | Transporter Portal | TransportSeva', loadComponent: () => import('./features/notifications/notifications.component').then((m) => m.NotificationsComponent) },
       { path: 'support', title: 'Support | Transporter Portal | TransportSeva', loadComponent: () => import('./features/support/support.component').then((m) => m.SupportComponent) },

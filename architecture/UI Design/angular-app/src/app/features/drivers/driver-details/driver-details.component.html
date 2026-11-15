@@ -1,4 +1,6 @@
-@if (driver(); as d) {
+@if (useBackend) {
+  <app-registered-driver-details />
+} @else if (driver(); as d) {
   <div class="page-toolbar">
     <div>
       <a [routerLink]="listPath()" style="font-size:13px;color:var(--color-text-muted);text-decoration:none;">← Back to Drivers</a>

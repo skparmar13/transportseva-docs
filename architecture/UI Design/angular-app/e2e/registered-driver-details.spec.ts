@@ -1,0 +1,46 @@
+import { expect, test } from '@playwright/test';
+test.use({ trace: 'off', video: 'off' });
+test.setTimeout(180_000);
+test.use({ actionTimeout: 30_000 });
+const checked = expect.configure({ timeout: 60_000 });
+const account = 'verify-truck-owner-1793028294862-62@transportseva.test';
+test('registered driver list opens the real profile, reloads and rejects foreign/malformed links', async ({ page, context }) => {
+  const blocked: string[] = [];
+  await context.addInitScript(() => localStorage.setItem('ts_lang', 'en'));
+  await context.route('**/*', route => {
+    const r = route.request(); const u = new URL(r.url());
+    if (!['localhost', '127.0.0.1'].includes(u.hostname)) return route.abort();
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(r.method()) && !(r.method() === 'POST' && /^\/api\/auth\/(login|refresh|logout)$/.test(u.pathname))) { blocked.push(r.method() + ' ' + u.pathname); return route.abort(); }
+    return route.continue();
+  });
+  await page.goto('/auth/login');
+  await page.locator('input[name=identifier]').fill(account);
+  await page.locator('input[name=password]').fill('TransportSevaE2E@2026');
+  await page.getByRole('button', { name: /^Log In$/i }).click();
+  await expect(page).toHaveURL('/truck-owner/dashboard', { timeout: 60_000 });
+  const token = await page.evaluate(() => localStorage.getItem('transportseva.access_token'));
+  const response = await page.request.get('http://localhost:8080/api/marketplace-drivers', { headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' } });
+  expect(response.status()).toBe(200); const drivers = (await response.json()).data;
+  expect(drivers.length).toBeGreaterThan(0); const driver = drivers[0];
+  await page.goto('/truck-owner/drivers');
+  await page.locator('tr').filter({ hasText: driver.license_number }).getByRole('link', { name: 'View', exact: true }).click();
+  await expect(page).toHaveURL('/truck-owner/drivers/' + driver.uuid);
+  const view = page.locator('app-registered-driver-details');
+  await expect(view.locator('[data-driver-profile]')).toContainText(driver.name);
+  await expect(view).toContainText(driver.phone);
+  await expect(view).toContainText(driver.license_number);
+  if (driver.assigned_vehicle_reg_number) await expect(view.locator('[data-driver-assignment]')).toHaveText(driver.assigned_vehicle_reg_number);
+  await expect(view.locator('input[type=file]')).toHaveCount(0);
+  await page.reload(); await checked(view).toContainText(driver.name);
+  await page.setViewportSize({ width: 390, height: 844 }); await expect(view.locator('[data-driver-profile]')).toBeVisible();
+  await page.goto('/truck-owner/drivers/00000000-0000-0000-0000-000000000000');
+  await checked(view).toContainText('Driver not found'); await expect(view).not.toContainText(driver.phone);
+  await page.goto('/truck-owner/drivers/d1'); await checked(view).toContainText('Driver not found');
+  await page.goto('/truck-owner/drivers/' + driver.uuid); await checked(view).toContainText(driver.phone);
+  await page.route('**/api/marketplace-drivers', route => route.fulfill({ status: 503, json: { success: false } }), { times: 1 });
+  await view.getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(view).toContainText('Driver could not be loaded');
+  await view.getByRole('button', { name: 'Retry', exact: true }).click(); await expect(view).toContainText(driver.phone);
+  await view.getByRole('link', { name: 'View Bookings', exact: true }).click(); await expect(page).toHaveURL('/truck-owner/bookings');
+  expect(blocked).toEqual([]);
+});

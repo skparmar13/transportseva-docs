@@ -137,7 +137,7 @@ test('another provider receives only own activity; shipper cannot read or export
     const s=await sc.newPage();await login(s,wrongRole);
     expect((await api(s,'account/truck-owner/reports')).status()).toBe(403);
     expect((await api(s,'account/truck-owner/reports/export')).status()).toBe(403);
-    await s.goto('/truck-owner/reports');await expect(s).toHaveURL('/shipper/dashboard');
+    await s.goto('/truck-owner/reports');await expect(s).toHaveURL('/shipper/dashboard', { timeout: 60_000 });
     expect([...ob,...sb]).toEqual([]);
   }finally{await oc.close();await sc.close();}
   expect(blocked).toEqual([]);

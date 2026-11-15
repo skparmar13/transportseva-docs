@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timeout } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -33,6 +35,7 @@ export class VehicleListComponent {
   private readonly apiMarketplace = inject(ApiMarketplaceService);
   protected readonly session = inject(SessionService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly vehicleTypes = VEHICLE_TYPES;
   protected readonly statusClass = STATUS_CLASS;
@@ -44,6 +47,7 @@ export class VehicleListComponent {
   protected readonly statusFilter = signal('');
   private readonly backendVehicles = signal<ApiMarketplaceVehicle[]>([]);
   protected readonly vehicleError = signal('');
+  protected readonly loadingVehicles = signal(false);
 
   private readonly myVehicles = computed<Vehicle[]>(() => API_CONFIG.useBackend
     ? this.backendVehicles().map((vehicle) => this.mapBackendVehicle(vehicle))
@@ -53,14 +57,20 @@ export class VehicleListComponent {
     this.reloadBackendVehicles();
   }
 
-  private reloadBackendVehicles(): void {
-    if (!API_CONFIG.useBackend) return;
-    this.apiMarketplace.listMarketplaceVehicles().subscribe({
+  protected reloadBackendVehicles(): void {
+    if (!API_CONFIG.useBackend || this.loadingVehicles()) return;
+    this.loadingVehicles.set(true);
+    this.vehicleError.set('');
+    this.apiMarketplace.listMarketplaceVehicles().pipe(timeout(30_000), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (vehicles) => {
         this.backendVehicles.set(vehicles);
         this.vehicleError.set('');
+        this.loadingVehicles.set(false);
       },
-      error: (error) => this.vehicleError.set(apiErrorMessage(error, 'Your registered vehicles could not be loaded.')),
+      error: (error) => {
+        this.loadingVehicles.set(false);
+        this.vehicleError.set(apiErrorMessage(error, 'Your registered vehicles could not be loaded.'));
+      },
     });
   }
 

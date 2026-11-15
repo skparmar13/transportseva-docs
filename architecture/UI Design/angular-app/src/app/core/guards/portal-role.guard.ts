@@ -4,8 +4,8 @@ import { CanActivateFn, Router } from '@angular/router';
 import { PortalRole } from '../models/nav.model';
 import { SessionService } from '../services/session.service';
 import { API_CONFIG } from '../api/api-config';
-import { ApiAuthService } from '../api/api-auth.service';
-import { catchError, map, of, timeout } from 'rxjs';
+import { PortalSessionCheckService } from './portal-session-check.service';
+import { catchError, map, of } from 'rxjs';
 import { staffRouteAllowed } from '../models/staff-access.model';
 
 /**
@@ -22,8 +22,7 @@ export function setPortalRole(role: PortalRole): CanActivateFn {
     if (typeof localStorage === 'undefined' || !localStorage.getItem('transportseva.access_token')) {
       return router.createUrlTree(['/auth/login']);
     }
-    return inject(ApiAuthService).me().pipe(
-      timeout(15_000),
+    return inject(PortalSessionCheckService).verify().pipe(
       map((user) => {
         const actual = user.role === 'customer' ? 'shipper' : user.role;
         if (!['admin', 'shipper', 'transporter', 'truck-owner', 'driver', 'company'].includes(actual ?? '')) {

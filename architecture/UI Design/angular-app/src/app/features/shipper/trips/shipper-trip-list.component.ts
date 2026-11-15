@@ -18,8 +18,9 @@ export class ShipperTripListComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly language = inject(LanguageService);
   protected readonly truckOwner = inject(ActivatedRoute).snapshot?.data?.['tripPortal'] === 'truck-owner';
-  protected readonly basePath = this.truckOwner ? '/truck-owner' : '/shipper';
-  protected readonly copy = computed(() => tripCopy(this.language.lang(), this.truckOwner));
+  protected readonly transporter = inject(ActivatedRoute).snapshot?.data?.['tripPortal'] === 'transporter';
+  protected readonly basePath = this.transporter ? '/transporter' : this.truckOwner ? '/truck-owner' : '/shipper';
+  protected readonly copy = computed(() => tripCopy(this.language.lang(), this.truckOwner, this.transporter));
   protected readonly dateTime = formatDateTime;
   protected readonly stages = SHIPPER_TRIP_STAGES;
   protected readonly kpiKeys = ['total', 'active', 'delivered', 'pod_outstanding'] as const;

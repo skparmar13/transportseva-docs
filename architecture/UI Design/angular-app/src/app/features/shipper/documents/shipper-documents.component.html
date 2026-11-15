@@ -43,7 +43,7 @@
                   @if (downloading() === 'pod:' + pod.booking_uuid) { <span class="doc-spinner" aria-hidden="true"></span>{{ copy().downloading }} } @else { {{ copy().download }} }
                 </button>
               } @else { <p data-file-unavailable>{{ copy().unavailable }}</p> }
-              <a class="btn btn-outline btn-sm" [routerLink]="[basePath, 'bookings']" [queryParams]="{ booking: pod.booking_uuid }">{{ copy().bookingLink }}</a>
+              <a class="btn btn-outline btn-sm" [routerLink]="[basePath, bookingPath]" [queryParams]="{ booking: pod.booking_uuid }">{{ copy().bookingLink }}</a>
               <a class="btn btn-outline btn-sm" [routerLink]="[basePath, 'trips', pod.booking_uuid]">{{ copy().tripLink }}</a>
             </div></td>
           </tr>

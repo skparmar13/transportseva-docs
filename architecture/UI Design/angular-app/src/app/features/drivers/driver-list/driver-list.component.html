@@ -67,7 +67,7 @@
             </td>
             <td>⭐ {{ driver.rating || '—' }}</td>
             <td><span class="status-pill" [class]="statusClass[driver.status]">{{ statusKey(driver.status) | t }}</span></td>
-            <td>@if (!backendEnabled) { <button type="button" class="btn btn-outline btn-sm" (click)="viewDriver(driver.id)">{{ 'myLoads.view' | t }}</button> }</td>
+            <td><a class="btn btn-outline btn-sm" [routerLink]="session.role() === 'truck-owner' ? [session.portal().basePath, 'drivers', driver.id] : [session.portal().basePath, 'fleet', 'drivers', driver.id]">{{ 'myLoads.view' | t }}</a></td>
           </tr>
         }
       </tbody>
