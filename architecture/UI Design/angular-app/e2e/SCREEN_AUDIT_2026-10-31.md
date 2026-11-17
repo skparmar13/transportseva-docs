@@ -344,3 +344,33 @@ backend, source audit, production build and visible Chrome checks passed.
 Browser OTP responses were controlled; no users were created or messages sent.
 real server signup/retry behavior was covered transactionally. Six main-table
 hashes were preserved. See [signup OTP flow evidence and limits](SIGNUP_OTP_FLOW_2026-11-15.md).
+
+17/11/2026 follow-up: The public newsletter footer now saves explicit pending
+consent, with encrypted email, normalized uniqueness, idempotent requests and
+throttling. Confirmation and withdrawal use private capabilities and explicit
+clicks; old links cannot restore withdrawn consent. Full Angular, isolated
+backend, source-audit, production build and headed homepage checks passed.
+Local links were sandbox-only; no real delivery was claimed. All 107 original
+tables remain, with two reviewed additive newsletter tables and a verified full
+backup. Six core marketplace row hashes match. Subscriber administration and
+homepage/API performance remain separate work. See [newsletter consent evidence](NEWSLETTER_CONSENT_2026-11-17.md).
+
+17/11/2026 follow-up: Local homepage/API performance now has a repeatable
+per-process OPcache launcher. Matched warm feed reads improved from about 2.2
+seconds to 0.25 seconds, with no response caching or controller/schema changes.
+Eleven launcher checks and three headed browser cases passed, including source
+freshness, real homepage records and separate Shipper/Truck Owner permissions.
+All 109 table names and six core marketplace row hashes were preserved. This
+runtime improvement does not change the homepage's screen classification.
+See [performance evidence and limits](API_PERFORMANCE_2026-11-17.md).
+
+17/11/2026 follow-up: The homepage Current Loads preview now distinguishes
+pending, failed, successful-empty and no-filter-match responses. It adds an
+accessible animated loading state, a bounded 30-second read, duplicate-locked
+retry, retained filters and clear-filter recovery with English/Hindi copy.
+Failed or malformed API envelopes cannot become successful empty feeds.
+The full Angular suite (427 tests), 15 source checks, production build and four
+headed Chrome cases passed. Browser recovery uses real public API records;
+other explicit fixtures are browser-only. No users or business records were
+changed. The homepage remains mixed because its marketing content is separate.
+See [load preview evidence and limits](HOME_LOAD_PREVIEW_2026-11-17.md).

@@ -241,7 +241,10 @@ export class ApiMarketplaceService {
   private readonly api = inject(ApiClientService);
 
   listRecentLoads(perPage = 10): Observable<ApiLoad[]> {
-    return this.api.get<ApiLoad[]>('loads/recent', { per_page: Math.min(perPage, 20) }).pipe(map((response) => response.data.map((load) => this.normalizeLoad(load))));
+    return this.api.get<ApiLoad[]>('loads/recent', { per_page: Math.min(perPage, 20) }).pipe(map((response) => {
+      if (!response.success || !Array.isArray(response.data)) throw new Error('Invalid recent loads response');
+      return response.data.map((load) => this.normalizeLoad(load));
+    }));
   }
 
   listLoads(params: LoadSearchParams = {}): Observable<ApiLoad[]> {

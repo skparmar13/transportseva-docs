@@ -95,3 +95,10 @@ test('signup OTP selects a context-validated backend verification screen', () =>
   const row=collectInventory().records.find(item=>item.route==='/auth/otp-verification');
   assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/otp-verification/);
 });
+
+test('public newsletter confirmation and withdrawal select proof-based real screens', () => {
+  const records=collectInventory().records;
+  for(const route of ['/newsletter/confirm','/newsletter/unsubscribe']){
+    const row=records.find(item=>item.route===route);assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/newsletter-action/);
+  }
+});

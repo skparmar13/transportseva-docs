@@ -30,6 +30,8 @@ export const routes: Routes = [
       { path: 'privacy-policy', loadComponent: () => import('./features/public/privacy-policy/privacy-policy.component').then((m) => m.PrivacyPolicyComponent) },
       { path: 'terms-conditions', loadComponent: () => import('./features/public/terms-conditions/terms-conditions.component').then((m) => m.TermsConditionsComponent) },
       { path: 'refund-policy', loadComponent: () => import('./features/public/refund-policy/refund-policy.component').then((m) => m.RefundPolicyComponent) },
+      { path: 'newsletter/confirm', title: 'Confirm Newsletter | TransportSeva', data: {newsletterAction:'confirm'}, loadComponent: () => import('./features/public/newsletter/newsletter-action.component').then(m=>m.NewsletterActionComponent) },
+      { path: 'newsletter/unsubscribe', title: 'Unsubscribe | TransportSeva', data: {newsletterAction:'unsubscribe'}, loadComponent: () => import('./features/public/newsletter/newsletter-action.component').then(m=>m.NewsletterActionComponent) },
     ],
   },
   {

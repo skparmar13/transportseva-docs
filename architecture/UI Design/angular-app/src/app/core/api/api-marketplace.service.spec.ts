@@ -16,6 +16,23 @@ describe('ApiMarketplaceService', () => {
 
   afterEach(() => http.verify());
 
+  it('rejects failed or malformed public feed envelopes instead of treating them as empty', () => {
+    for (const response of [{ success: false, data: [] }, { success: true, data: null }, { success: true, data: {} }]) {
+      let error: unknown;
+      service.listRecentLoads(20).subscribe({ next: () => fail('Invalid feed accepted'), error: e => error = e });
+      http.expectOne(`${API_CONFIG.baseUrl}/loads/recent?per_page=20`).flush(response);
+      expect(error).toEqual(jasmine.any(Error));
+    }
+  });
+
+  it('keeps the public preview bounded and normalizes actual freight budgets', () => {
+    let loads: unknown;
+    service.listRecentLoads(50).subscribe(value => loads = value);
+    http.expectOne(`${API_CONFIG.baseUrl}/loads/recent?per_page=20`).flush({ success: true,
+      data: [{ uuid: 'recent-1', pickup_city: 'Delhi', drop_city: 'Mumbai', status: 'open', budget: '20000.00' }] });
+    expect(loads).toEqual([jasmine.objectContaining({ uuid: 'recent-1', budget: 20000 })]);
+  });
+
   for(const [method,path] of [['listMyApplicationsPage','applications/mine'],['listTransporterReceivedApplicationsPage','account/transporter/applications'],['listReceivedApplicationsPage','account/applications']] as const) {
     it('preserves global totals and page metadata for '+path,()=>{
       let page: unknown;service[method](6).subscribe(value=>page=value);

@@ -14,7 +14,7 @@
       "status": "mixed",
       "priority": "P1",
       "anchor": "reviewFeed",
-      "note": "31/10 repair: public reviews use only the moderation-filtered API, with loading/empty/error/retry and no sample/CMS fallback even during SSR. Marketing statistics/partner names remain static, and the load preview still lacks a distinct API error/retry state. See REVIEWS_VEHICLE_DETAILS_2026-10-31.md for scoped regression evidence."
+      "note": "31/10 repair: public reviews use only the moderation-filtered API, with loading/empty/error/retry and no sample/CMS fallback even during SSR. 17/11 recent-load preview adds bounded loading with animation, explicit failure/retry, separate successful-empty/filter-miss states, clear filters and accessible translated controls. Filters apply only to the latest 20 public records; backend mode never replaces a failed load read with prototype data. Marketing statistics/partner names remain static and explicit prototype-mode load behavior is unchanged, so the page remains mixed. See REVIEWS_VEHICLE_DETAILS_2026-10-31.md and HOME_LOAD_PREVIEW_2026-11-17.md for scoped evidence."
     },
     {
       "files": ["public/about/about", "public/blog/blog", "public/blog-post/blog-post", "public/help-center/help-center", "public/privacy-policy/privacy-policy", "public/terms-conditions/terms-conditions", "public/refund-policy/refund-policy"],
@@ -36,6 +36,13 @@
       "priority": "P2",
       "anchor": "ApiContactInquiryService",
       "note": "Contact enquiries persist through a bounded anonymous API with validation, honeypot, rate limits and idempotent receipts. Success requires confirmed storage; failures retain drafts. Sample phone/address/map removed. No email delivery claim. See CONTACT_INQUIRIES_2026-10-31.md."
+    },
+    {
+      "files": ["public/newsletter/newsletter-action", "public/newsletter/newsletter-signup"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiNewsletterService",
+      "note": "17/11 public newsletter requests persist explicit pending consent with encrypted email, idempotent receipts and throttling. Confirmation/unsubscribe require private capabilities in POST bodies and explicit clicks; old confirmation links cannot restore withdrawn consent. Footer is deferred and has truthful delivery/sandbox/error states. Subscriber administration remains a separately blocked prototype. See NEWSLETTER_CONSENT_2026-11-17.md."
     },
     {
       "files": ["admin/contact-inquiries/contact-inquiries"],
@@ -292,9 +299,9 @@
     },
     {
       "file": "src/app/shared/layouts/public-shell/public-shell.component.ts",
-      "anchor": "this.newsletter.subscribe",
-      "priority": "P0",
-      "note": "Footer claims subscription success using browser localStorage only; no server subscription, consent record or delivery evidence."
+      "anchor": "NewsletterSignupComponent",
+      "priority": "P2",
+      "note": "17/11 footer now defers the real pending-consent form. Storage acknowledgement, explicit confirmation, safe unsubscribe, retries and local sandbox disclosure replace browser-local subscription claims. No sample subscriber import or real delivery claim; see NEWSLETTER_CONSENT_2026-11-17.md."
     },
     {
       "file": "src/app/core/services/communication-mock.service.ts",

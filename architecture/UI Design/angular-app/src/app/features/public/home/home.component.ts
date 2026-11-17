@@ -2,7 +2,7 @@
 import { RouterLink } from '@angular/router';
 import { computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Subject, catchError, map, of, startWith, switchMap } from 'rxjs';
+import { Subject, catchError, map, of, startWith, switchMap, timeout } from 'rxjs';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { SeoService } from '../../../core/seo/seo.service';
@@ -15,6 +15,7 @@ import { formatLoadReference } from '../../../core/utils/load-reference';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 
 type ReviewFeed = { status: 'loading' | 'ready' | 'error'; reviews: ApiMarketplaceReview[] };
+type LoadFeed = { status: 'loading' | 'ready' | 'error'; loads: ApiLoad[] };
 
 @Component({
   selector: 'app-home',
@@ -29,11 +30,17 @@ export class HomeComponent implements OnInit {
   private readonly marketplace = inject(MarketplaceMockService);
   private readonly apiMarketplace = inject(ApiMarketplaceService);
   private readonly apiReviews = inject(ApiReviewService);
-  private readonly backendLoads = toSignal(
-    API_CONFIG.useBackend
-      ? this.apiMarketplace.listRecentLoads(20).pipe(catchError(() => of([] as ApiLoad[])))
-      : of([] as ApiLoad[]),
-    { initialValue: [] as ApiLoad[] },
+  private readonly loadRefresh = new Subject<void>();
+  protected readonly loadFeed = toSignal(
+    this.loadRefresh.pipe(startWith(undefined), switchMap(() => API_CONFIG.useBackend
+      ? this.apiMarketplace.listRecentLoads(20).pipe(
+        timeout({ first: 30_000 }),
+        map((loads): LoadFeed => ({ status: 'ready', loads })),
+        startWith<LoadFeed>({ status: 'loading', loads: [] }),
+        catchError(() => of<LoadFeed>({ status: 'error', loads: [] })),
+      )
+      : of<LoadFeed>({ status: 'ready', loads: [] }))),
+    { initialValue: { status: 'loading', loads: [] } as LoadFeed },
   );
   private readonly reviewRefresh = new Subject<void>();
   protected readonly reviewFeed = toSignal(
@@ -51,7 +58,7 @@ export class HomeComponent implements OnInit {
   protected readonly vehicleTypeFilter = signal('All');
   protected readonly previewLimit = signal(10);
   protected readonly publicVehicleTypes = computed(() => [...new Set(this.publicLoads().map((load) => load.vehicleType))].sort());
-  protected readonly publicLoads = computed(() => (API_CONFIG.useBackend ? this.backendLoads().map((load) => this.mapBackendLoad(load)) : this.marketplace.loads())
+  protected readonly publicLoads = computed(() => (API_CONFIG.useBackend ? this.loadFeed().loads.map((load) => this.mapBackendLoad(load)) : this.marketplace.loads())
     .filter((load) => load.status === 'Open' || load.status === 'Applications Received')
     .sort((a, b) => this.postedMinutesAgo(a.postedAgo) - this.postedMinutesAgo(b.postedAgo)));
   protected readonly visiblePublicLoads = computed(() => {
@@ -118,6 +125,14 @@ export class HomeComponent implements OnInit {
 
   protected retryReviews(): void {
     if (this.reviewFeed().status === 'error') this.reviewRefresh.next();
+  }
+  protected retryLoads(): void {
+    if (this.loadFeed().status === 'error') this.loadRefresh.next();
+  }
+  protected clearLoadFilters(): void {
+    this.sourceQuery.set('');
+    this.destinationQuery.set('');
+    this.vehicleTypeFilter.set('All');
   }
   protected readonly partners = signal(['TATA MOTORS', 'ASHOK LEYLAND', 'mahindra', 'Castrol', 'FASTag', 'ICICI Lombard']);
 

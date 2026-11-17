@@ -1,1 +1,9 @@
 /* Homepage-specific styling lives in the public theme stylesheet. */
+.public-load-filters { min-width: 0; }
+.public-load-filters:disabled { opacity: .65; }
+.public-load-state { min-height: 120px; padding: 28px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 16px; text-align: center; }
+.public-load-state p { margin: 0; }
+.public-load-preview-note { margin-bottom: 12px; color: #596574; font-size: 14px; }
+.public-load-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: public-load-spin .8s linear infinite; }
+@keyframes public-load-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .public-load-spinner { animation: none; border-style: dotted; } }

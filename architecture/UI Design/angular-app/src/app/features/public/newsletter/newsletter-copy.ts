@@ -1,0 +1,33 @@
+const en={
+  email:'Email address',consent:'I agree to receive TransportSeva newsletter updates.',privacy:'Privacy policy',
+  subscribe:'Subscribe',busy:'Saving…',invalidEmail:'Enter a valid email address.',requiredConsent:'Please agree to receive updates.',
+  failed:'We could not confirm your request. Please retry; your details are still here.',rate:'Too many requests. Please wait before trying again.',
+  unavailable:'Newsletter signup is unavailable right now.',saved:'Your request has been saved.',
+  sent:'If confirmation is needed, check your inbox and confirm your request. Submitting this form alone does not change your subscription.',
+  sandbox:'Local test: no email was sent. Use the test confirmation link below.',
+  pending:'Confirmation email is unavailable right now. Your request is saved, but this form has not changed your subscription.',
+  sending:'Confirmation is being prepared. Submitting this form alone does not change your subscription.',
+  testLink:'Open test confirmation',another:'Use another email or request a new link',
+  confirmTitle:'Confirm newsletter subscription',confirmDescription:'Confirm that you want to receive TransportSeva newsletter updates.',confirm:'Confirm subscription',
+  unsubscribeTitle:'Unsubscribe from newsletter',unsubscribeDescription:'Choose Unsubscribe to stop TransportSeva newsletter updates.',unsubscribe:'Unsubscribe',
+  invalidLink:'This link is missing, invalid or expired. Reopen the link from your email or request a new one using the newsletter form.',
+  subscribed:'Your newsletter subscription is confirmed.',unsubscribed:'You have been unsubscribed.',
+  saveUnsubscribe:'You can use this link to unsubscribe. Keep it private.',home:'Back to home',working:'Please wait…',
+};
+const hi:typeof en={
+  email:'ईमेल पता',consent:'मैं TransportSeva न्यूज़लेटर अपडेट पाने के लिए सहमत हूँ।',privacy:'गोपनीयता नीति',
+  subscribe:'सदस्य बनें',busy:'सहेजा जा रहा है…',invalidEmail:'सही ईमेल पता दर्ज करें।',requiredConsent:'अपडेट पाने के लिए सहमति दें।',
+  failed:'अनुरोध की पुष्टि नहीं हो सकी। विवरण सुरक्षित हैं, कृपया फिर प्रयास करें।',rate:'बहुत अधिक अनुरोध। फिर प्रयास करने से पहले प्रतीक्षा करें।',
+  unavailable:'न्यूज़लेटर साइनअप अभी उपलब्ध नहीं है।',saved:'आपका अनुरोध सहेज लिया गया है।',
+  sent:'पुष्टि आवश्यक होने पर अपने इनबॉक्स में लिंक खोलें। केवल यह फ़ॉर्म जमा करने से सदस्यता नहीं बदलती।',
+  sandbox:'स्थानीय परीक्षण: कोई ईमेल नहीं भेजा गया। नीचे परीक्षण पुष्टि लिंक उपयोग करें।',
+  pending:'पुष्टि ईमेल अभी उपलब्ध नहीं है। अनुरोध सहेजा गया है, लेकिन इस फ़ॉर्म से सदस्यता नहीं बदली है।',
+  sending:'पुष्टि तैयार की जा रही है। केवल फ़ॉर्म जमा करने से सदस्यता नहीं बदलती।',
+  testLink:'परीक्षण पुष्टि खोलें',another:'दूसरा ईमेल उपयोग करें या नया लिंक माँगें',
+  confirmTitle:'न्यूज़लेटर सदस्यता की पुष्टि करें',confirmDescription:'TransportSeva न्यूज़लेटर अपडेट पाने की अपनी सहमति की पुष्टि करें।',confirm:'सदस्यता की पुष्टि करें',
+  unsubscribeTitle:'न्यूज़लेटर सदस्यता समाप्त करें',unsubscribeDescription:'TransportSeva न्यूज़लेटर अपडेट बंद करने के लिए सदस्यता समाप्त करें चुनें।',unsubscribe:'सदस्यता समाप्त करें',
+  invalidLink:'यह लिंक अधूरा, गलत या समाप्त हो गया है। ईमेल का लिंक फिर खोलें या न्यूज़लेटर फ़ॉर्म से नया लिंक माँगें।',
+  subscribed:'न्यूज़लेटर सदस्यता की पुष्टि हो गई है।',unsubscribed:'आपकी सदस्यता समाप्त हो गई है।',
+  saveUnsubscribe:'सदस्यता समाप्त करने के लिए इस निजी लिंक का उपयोग कर सकते हैं।',home:'होम पर वापस जाएँ',working:'कृपया प्रतीक्षा करें…',
+};
+export const newsletterCopy=(lang:string)=>lang==='hi'?hi:en;
