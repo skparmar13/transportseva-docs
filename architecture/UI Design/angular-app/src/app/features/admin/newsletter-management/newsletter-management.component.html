@@ -1,21 +1,28 @@
-<div class="page-toolbar">
-  <div><h1>{{ 'admin.newsletter.title' | t }}</h1><p class="desc">{{ 'admin.newsletter.desc' | t }}</p></div>
-</div>
-<div class="kpi-grid">
-  <div class="kpi-card"><div class="kpi-value">{{ subscribers().length }}</div><div class="kpi-label">{{ 'admin.newsletter.total' | t }}</div></div>
-  <div class="kpi-card"><div class="kpi-value">{{ activeCount() }}</div><div class="kpi-label">{{ 'admin.newsletter.active' | t }}</div></div>
-  <div class="kpi-card"><div class="kpi-value">{{ unsubscribedCount() }}</div><div class="kpi-label">{{ 'admin.newsletter.unsubscribed' | t }}</div></div>
-</div>
-<div class="cms-filter-toolbar">
-  <label class="cms-search"><span>{{ 'admin.newsletter.search' | t }}</span><input class="input" type="search" [placeholder]="'admin.newsletter.searchPlaceholder' | t" [ngModel]="query()" (ngModelChange)="query.set($event)" /></label>
-  <label><span>{{ 'admin.newsletter.status' | t }}</span><select class="input" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)"><option value="All">{{ 'admin.newsletter.all' | t }}</option><option value="Subscribed">{{ 'admin.newsletter.active' | t }}</option><option value="Unsubscribed">{{ 'admin.newsletter.unsubscribed' | t }}</option></select></label>
-</div>
-<div class="card"><div class="table-scroll"><table class="data-table">
-  <thead><tr><th>{{ 'admin.newsletter.email' | t }}</th><th>{{ 'admin.newsletter.date' | t }}</th><th>{{ 'admin.newsletter.source' | t }}</th><th>{{ 'admin.newsletter.status' | t }}</th><th>{{ 'admin.newsletter.actions' | t }}</th></tr></thead>
-  <tbody>@for (subscriber of filtered(); track subscriber.id) {
-    <tr><td><b>{{ subscriber.email }}</b></td><td>{{ dateTime(subscriber.subscribedAt) }}</td><td>{{ 'admin.newsletter.publicWebsite' | t }}</td>
-      <td><span class="status-pill" [class.status-delivered]="subscriber.status === 'Subscribed'" [class.status-cancelled]="subscriber.status === 'Unsubscribed'">{{ (subscriber.status === 'Subscribed' ? 'admin.newsletter.active' : 'admin.newsletter.unsubscribed') | t }}</span></td>
-      <td><div style="display:flex;gap:6px;"><button type="button" class="btn btn-outline btn-sm" (click)="toggleStatus(subscriber)">{{ (subscriber.status === 'Subscribed' ? 'admin.newsletter.unsubscribe' : 'admin.newsletter.resubscribe') | t }}</button><button type="button" class="btn btn-outline btn-sm" (click)="remove(subscriber)">{{ 'admin.newsletter.remove' | t }}</button></div></td>
-    </tr>
-  } @empty {<tr><td colspan="5">{{ subscribers().length ? ('admin.newsletter.noResults' | t) : ('admin.newsletter.empty' | t) }}</td></tr>}</tbody>
-</table></div></div>
+<div class="page-toolbar"><div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().hint }}</p></div><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load(page())">{{ copy().refresh }}</button></div>
+<p class="consent-notice">{{ copy().notice }}</p>
+<form class="consent-filters" (ngSubmit)="applyFilters()">
+  <div class="field"><label for="consent-email">{{ copy().search }}</label><input id="consent-email" class="input" name="email" type="search" maxlength="254" [ngModel]="query()" (ngModelChange)="query.set($event)" [disabled]="loading()" aria-describedby="consent-search-hint" /><small id="consent-search-hint">{{ copy().searchHint }}</small></div>
+  <div class="field"><label for="consent-status">{{ copy().status }}</label><select id="consent-status" class="input" name="status" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" [disabled]="loading()"><option value="all">{{ copy().all }}</option>@for (status of statuses; track status) {<option [value]="status">{{ copy()[status] }}</option>}</select></div>
+  <button type="submit" class="btn btn-primary" [disabled]="loading()">{{ copy().apply }}</button><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="clear()">{{ copy().clear }}</button>
+</form>
+@if (selected()) {
+  <section class="card consent-detail" aria-labelledby="consent-heading"><div class="card-head"><h2 id="consent-heading">{{ copy().details }}</h2><a class="btn btn-outline btn-sm" [routerLink]="[]" [queryParams]="{subscriber: null}">{{ copy().close }}</a></div><div class="card-body">
+    @if (detailLoading()) {<p role="status" aria-busy="true"><span class="consent-spinner" aria-hidden="true"></span>{{ copy().loading }}</p>}
+    @else if (detailError(); as detailFailure) {<p role="alert">{{ copy()[detailFailure] }}</p>@if (detailFailure === 'failed') {<button type="button" class="btn btn-outline" (click)="retryDetail()">{{ copy().retry }}</button>}}
+    @else if (detail(); as view) {
+      <dl class="consent-grid"><div><dt>{{ copy().email }}</dt><dd data-consent-email>{{ view.subscriber.email }}</dd></div><div><dt>{{ copy().status }}</dt><dd data-consent-status>{{ copy()[view.subscriber.status] }}</dd></div><div><dt>{{ copy().confirmed }}</dt><dd>{{ dateTime(view.subscriber.confirmed_at || '') }}</dd></div><div><dt>{{ copy().withdrawn }}</dt><dd>{{ dateTime(view.subscriber.unsubscribed_at || '') }}</dd></div><div><dt>{{ copy().version }}</dt><dd>{{ view.subscriber.consent_version || '—' }}</dd></div></dl>
+      <p class="desc">{{ copy().historyHint }}</p>
+      <div class="table-scroll"><table class="data-table"><thead><tr><th>{{ copy().created }}</th><th>{{ copy().delivery }}</th><th>{{ copy().version }}</th><th>{{ copy().expires }}</th><th>{{ copy().confirmed }}</th></tr></thead><tbody>@for (request of view.requests; track request.uuid) {<tr><td>{{ dateTime(request.created_at) }}</td><td>{{ copy()[request.delivery_status] }}</td><td>{{ request.consent_version }}</td><td>{{ dateTime(request.expires_at) }}</td><td>{{ dateTime(request.confirmed_at || '') }}</td></tr>} @empty {<tr><td colspan="5">{{ copy().noHistory }}</td></tr>}</tbody></table></div>
+      <div class="consent-pages"><span>{{ copy().historyTotal }}: {{ view.history.total }} · {{ copy().page }} {{ view.history.page }} / {{ view.history.last_page }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="view.history.page <= 1" (click)="loadDetail(view.history.page - 1)">{{ copy().previous }}</button><button type="button" class="btn btn-outline btn-sm" [disabled]="view.history.page >= view.history.last_page" (click)="loadDetail(view.history.page + 1)">{{ copy().next }}</button></div>
+    }
+  </div></section>
+}
+@if (loading()) {<div class="card consent-state" role="status" aria-busy="true"><span class="consent-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>}
+@else if (error(); as listFailure) {<div class="card consent-state" role="alert">{{ copy()[listFailure] }}@if (listFailure === 'failed') {<button type="button" class="btn btn-outline" (click)="retry()">{{ copy().retry }}</button>}</div>}
+@else {
+  @if (summary(); as totals) {
+    <p class="desc">{{ copy().summaryHint }}</p><div class="kpi-grid"><div class="kpi-card"><div class="kpi-value">{{ totals.total }}</div><div class="kpi-label">{{ copy().totals }}</div></div>@for (status of statuses; track status) {<div class="kpi-card"><div class="kpi-value">{{ totals[status] }}</div><div class="kpi-label">{{ copy()[status] }}</div></div>}</div>
+  }
+  <div class="card table-scroll"><table class="data-table"><thead><tr><th>{{ copy().email }}</th><th>{{ copy().status }}</th><th>{{ copy().created }}</th><th>{{ copy().confirmed }}</th><th></th></tr></thead><tbody>@for (subscriber of rows(); track subscriber.uuid) {<tr [attr.data-consent-id]="subscriber.uuid"><td>{{ subscriber.email }}</td><td>{{ copy()[subscriber.status] }}</td><td>{{ dateTime(subscriber.created_at) }}</td><td>{{ dateTime(subscriber.confirmed_at || '') }}</td><td><a class="btn btn-outline btn-sm" [routerLink]="[]" [queryParams]="{subscriber: subscriber.uuid}">{{ copy().open }}</a></td></tr>} @empty {<tr><td colspan="5">{{ copy().empty }}</td></tr>}</tbody></table></div>
+  <div class="consent-pages"><span>{{ copy().total }}: {{ total() }} · {{ copy().page }} {{ page() }} / {{ lastPage() }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="page() <= 1" (click)="load(page() - 1)">{{ copy().previous }}</button><button type="button" class="btn btn-outline btn-sm" [disabled]="page() >= lastPage()" (click)="load(page() + 1)">{{ copy().next }}</button></div>
+}

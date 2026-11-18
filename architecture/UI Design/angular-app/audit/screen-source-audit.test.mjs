@@ -102,3 +102,8 @@ test('public newsletter confirmation and withdrawal select proof-based real scre
     const row=records.find(item=>item.route===route);assert.ok(row);assert.equal(row.status,'api_connected');assert.match(row.component,/newsletter-action/);
   }
 });
+
+test('admin newsletter selects the private consent queue rather than local subscribers', () => {
+  const row = collectInventory().records.find(item => item.route === '/admin/newsletter');
+  assert.ok(row); assert.equal(row.status, 'api_connected'); assert.match(row.component, /newsletter-management/);
+});

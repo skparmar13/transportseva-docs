@@ -42,7 +42,7 @@
       "status": "api_connected",
       "priority": "P2",
       "anchor": "ApiNewsletterService",
-      "note": "17/11 public newsletter requests persist explicit pending consent with encrypted email, idempotent receipts and throttling. Confirmation/unsubscribe require private capabilities in POST bodies and explicit clicks; old confirmation links cannot restore withdrawn consent. Footer is deferred and has truthful delivery/sandbox/error states. Subscriber administration remains a separately blocked prototype. See NEWSLETTER_CONSENT_2026-11-17.md."
+      "note": "17/11 public newsletter requests persist explicit pending consent with encrypted email, idempotent receipts and throttling. Confirmation/unsubscribe require private capabilities in POST bodies and explicit clicks; old confirmation links cannot restore withdrawn consent. Footer is deferred and has truthful delivery/sandbox/error states. 18/11 subscriber administration is a separately authorized, read-only consent queue. See NEWSLETTER_CONSENT_2026-11-17.md and NEWSLETTER_ADMIN_2026-11-18.md."
     },
     {
       "files": ["admin/contact-inquiries/contact-inquiries"],
@@ -262,11 +262,18 @@
       "note": "02/11 shipper operational Reports use canonical posted loads, live applications and owned bookings. IST creation-date cohorts, current-state rollups, literal table search/paging, real full-match bounded CSV with formula neutralization, safe links/zero/errors/action feedback. No payment/GPS/revenue/on-time/duration figures. Truck Owner has a separate private operational report; Admin, Transporter and Company legacy reports remain prototypes. See SHIPPER_REPORTS_2026-11-02.md and TRUCK_OWNER_REPORTS_2026-11-04.md."
     },
     {
-      "files": ["admin/cms-management/cms-management", "admin/careers-management/careers-management", "admin/newsletter-management/newsletter-management"],
+      "files": ["admin/cms-management/cms-management", "admin/careers-management/careers-management"],
       "status": "browser_local_content",
       "priority": "P2",
       "anchor": "MockService",
       "note": "Client localStorage publishing/admin records, not shared server persistence. Blocked by strict local staff policy; require permissions and tenant/content contracts before enabling."
+    },
+    {
+      "files": ["admin/newsletter-management/newsletter-management"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiNewsletterAdminService",
+      "note": "18/11 real, read-only consent queue requires an active explicit newsletter.subscribers.view grant on a mapped Super Admin, independently of global enforcement. Global totals, exact encrypted-email digest lookup, server paging, private bounded request history, deep links, EN/HI and loading/error/denial/cancellation states replace browser-local samples and consent toggles. Local grant preparation is additive and audited; other deployments require separate grant review. See NEWSLETTER_ADMIN_2026-11-18.md."
     },
     {
       "files": ["wallet/wallet", "payments/payments"],

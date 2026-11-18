@@ -374,3 +374,14 @@ headed Chrome cases passed. Browser recovery uses real public API records;
 other explicit fixtures are browser-only. No users or business records were
 changed. The homepage remains mixed because its marketing content is separate.
 See [load preview evidence and limits](HOME_LOAD_PREVIEW_2026-11-17.md).
+
+18/11/2026 follow-up: Admin Newsletter Subscribers now reads real consent records
+through a private, read-only Super Admin API with an explicit active capability,
+global totals, exact email/status lookup, server paging and bounded request
+history. Prototype consent toggles/delete actions are removed. Local additive
+access preparation creates audit/bell records while preserving other grants and
+memberships; staging/production activation remains separately reviewed.
+The full Angular suite (440), combined isolated backend suite (51), source audit
+(16), production build and four visible Chrome cases passed. All 109 table names
+and nine checked row sets, including both consent tables and staff memberships,
+were preserved. See [newsletter admin evidence](NEWSLETTER_ADMIN_2026-11-18.md).

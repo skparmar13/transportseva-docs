@@ -7,6 +7,9 @@ describe('Staff capability navigation', () => {
     permissions: ['marketplace.reviews.view', 'admin.audit.view'], routes: ['access', 'notifications', 'reviews', 'audit'], blocked_reason: null };
   afterEach(() => localStorage.clear());
   it('requires both the enabled route and its capability', () => {
+    const newsletter = { ...access, routes: ['newsletter'], permissions: ['newsletter.subscribers.view'] };
+    expect(staffRouteAllowed(newsletter, 'newsletter')).toBeTrue();
+    expect(staffRouteAllowed({ ...newsletter, permissions: ['contact.inquiries.view'] }, 'newsletter')).toBeFalse();
     const contact = { ...access, routes: ['contact-inquiries'], permissions: ['contact.inquiries.view'] };
     expect(staffRouteAllowed(contact, 'contact-inquiries')).toBeTrue();
     expect(staffRouteAllowed({ ...contact, permissions: ['support.cases.view'] }, 'contact-inquiries')).toBeFalse();

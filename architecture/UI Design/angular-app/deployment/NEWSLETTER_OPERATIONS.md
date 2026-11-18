@@ -66,14 +66,69 @@ action page removes from the visible URL. No proof is written to localStorage.
 
 The footer has a bounded 60-second save window with duplicate locking and
 request-ID-preserving retries; confirmation/withdrawal requests remain bounded
-at 30 seconds. The local homepage API feed latency observed during testing is
-a separate performance item; longer form waits are not production performance
-sign-off.
+at 30 seconds. The local API performance fix and its restart instructions are
+documented in [Local API performance](LOCAL_API_PERFORMANCE.md).
 
-The existing Admin Newsletter Subscribers page remains a blocked prototype.
-Implement a separately authorized server queue before presenting its data as
-real administration. Do not import sample/browser-local subscribers or permit
-an administrative toggle to silently opt a withdrawn address back in.
+## Staff inspection
+
+`/admin/newsletter` now reads real consent records through private, read-only
+endpoints. It requires the active `newsletter.subscribers.view` permission on
+an active, unambiguous Super Admin mapping. This API authorization applies even
+when the broader staff-enforcement switch is off. Support, Operations, KYC,
+Finance, unmapped administrators and marketplace accounts cannot inspect this
+directory. An accidental database grant to another role does not enable it.
+
+| GET endpoint | Query |
+| --- | --- |
+| `/api/admin/newsletter/subscribers` | `page`, `per_page` (1–50, UI uses 25), optional `status`, optional exact `email` |
+| `/api/admin/newsletter/subscribers/{uuid}` | `page` for request history (25 rows) |
+
+Status is `pending`, `subscribed` or `unsubscribed`. Email lookup trims and
+lowercases the whole address, then matches its indexed keyed digest. It is not
+a substring search or a bulk decryption scan. The four summary totals cover all
+saved subscribers; list totals and pages respect filters. Both lists use stable
+creation-time/UUID ordering. Responses are private/no-store and explicitly
+allowlisted; no capability, digest, client-address hash or consent epoch is
+returned. GET reads do not write audit rows or change consent.
+
+History includes policy version, recorded delivery outcome, expiry and request
+confirmation time. A historical confirmed request does not override the current
+subscriber state. `sandbox` means no email was sent, and `sent` records handoff
+to the mail transport rather than inbox receipt. The UI uses the application's
+DD/MM/YYYY hh:mm AM/PM display and shows dashes for missing timestamps.
+
+There are no admin subscribe, unsubscribe, delete, resend, export or campaign
+actions in this implementation. Do not import sample/browser-local subscriber
+records. Re-subscription continues to require a fresh subscriber confirmation.
+
+## Local access preparation
+
+The additive `newsletter:prepare-access` command is local/testing only. It
+requires an explicitly selected existing mapped Super Admin with role-inspection
+access. Preview from the backend directory:
+
+```powershell
+php artisan newsletter:prepare-access --actor=EXISTING_SUPER_ADMIN_UUID
+```
+
+After reviewing the exact target and verifying a full backup of that database:
+
+```powershell
+php artisan newsletter:prepare-access --actor=EXISTING_SUPER_ADMIN_UUID --apply --backup=ABSOLUTE_SQL_BACKUP_PATH --backup-sha256=VERIFIED_SHA256
+```
+
+The command adds only the missing read permission and its Super Admin role
+association. It preserves other grants, passwords, memberships, consent records
+and enforcement settings. An inactive existing capability is refused. Successful
+new grants are recorded in the admin audit and produce a linked bell item for
+eligible affected administrators; a replay does not duplicate these events.
+Local activation was verified for the existing `admin@test.local` account.
+The tool refuses staging/production activation. Review production grants
+separately; no deployment-wide enforcement default was changed.
+
+To disable inspection, remove only the reviewed newsletter role grant through
+the approved access process. Do not restore the whole database or drop consent
+tables to undo a UI or permission change.
 
 ## Checks
 
@@ -83,3 +138,10 @@ tests cover saved receipts, draft/idempotency recovery, loading/cancellation,
 private proof bodies and explicit actions. The headed browser suite is
 `e2e/newsletter-consent.spec.ts`; it uses clearly labelled QA newsletter
 addresses in the main local database and sandbox links, not real mail.
+
+`AdminNewsletterTest` uses the same guarded transaction-rolled-back test
+database. It verifies authorization, private field allowlists, paging/filtering,
+unsupported writes and additive audited access preparation. The visible
+`e2e/newsletter-admin.spec.ts` reuses existing staff accounts and saved consent
+records; browser business writes are blocked. Controlled populated paging
+responses are explicitly browser-only fixtures, not new subscriber records.

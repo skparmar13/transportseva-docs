@@ -1,0 +1,10 @@
+.consent-notice { padding: 16px; background: #fff8f1; border: 1px solid #ffe0c5; border-radius: 12px; margin-bottom: 20px; }
+.consent-filters, .consent-pages { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.consent-filters .field { flex: 1; min-width: min(240px, 100%); }.consent-filters small { display: block; margin-top: 6px; }
+.consent-state { display: flex; align-items: center; gap: 12px; padding: 24px; }.consent-detail { margin-bottom: 24px; }
+.consent-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } dd { margin: 6px 0; overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; } table { min-width: 720px; }.consent-pages { margin-top: 14px; }
+.consent-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; margin-right: 8px; animation: consent-spin .8s linear infinite; }
+@keyframes consent-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .consent-spinner { animation: none; border-style: dotted; } }
+@media (max-width:640px) { .consent-grid { grid-template-columns: 1fr; } }
