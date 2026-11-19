@@ -57,7 +57,9 @@ export const routes: Routes = [
       { path: 'access', title: 'Staff Access | TransportSeva', loadComponent: () => import('./features/admin/staff-access/staff-access.component').then((m) => m.StaffAccessComponent) },
       { path: 'contact-inquiries', title: 'Contact Enquiries | TransportSeva', loadComponent: () => import('./features/admin/contact-inquiries/contact-inquiries.component').then((m) => m.ContactInquiriesComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', title: 'TransportSeva | Admin Console', loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent) },
+      { path: 'dashboard', title: 'TransportSeva | Admin Console', loadComponent: () => API_CONFIG.useBackend
+        ? import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+        : import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'companies', title: 'Company Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/company-management/company-management.component').then((m) => m.CompanyManagementComponent) },
       { path: 'users', title: 'Staff Management | Admin Console | TransportSeva', loadComponent: () => API_CONFIG.useBackend
         ? import('./features/admin/staff-access/staff-access.component').then((m) => m.StaffAccessComponent)
@@ -80,7 +82,9 @@ export const routes: Routes = [
       { path: 'financials', title: 'Payment Ledger | Admin Console | TransportSeva', loadComponent: () => import('./features/wallet/wallet.component').then((m) => m.WalletComponent) },
       { path: 'payments', title: 'Payments | Admin Console | TransportSeva', loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent) },
       { path: 'invoices', title: 'Invoice & Tax | Admin Console | TransportSeva', loadComponent: () => import('./features/payments/payments.component').then((m) => m.PaymentsComponent) },
-      { path: 'reports', title: 'Reports & Analytics | Admin Console | TransportSeva', loadComponent: () => import('./features/reports/reports.component').then((m) => m.ReportsComponent) },
+      { path: 'reports', title: 'Reports & Analytics | Admin Console | TransportSeva', loadComponent: () => API_CONFIG.useBackend
+        ? import('./features/admin/reports/admin-reports.component').then(m => m.AdminReportsComponent)
+        : import('./features/reports/reports.component').then(m => m.ReportsComponent) },
       { path: 'settings', title: 'System Settings | Admin Console | TransportSeva', loadComponent: () => import('./features/business-settings/business-settings.component').then((m) => m.BusinessSettingsComponent) },
       { path: 'audit', title: 'Audit Logs | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/audit-logs/audit-logs.component').then((m) => m.AuditLogsComponent) },
       { path: 'cms', title: 'CMS Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/cms-management/cms-management.component').then((m) => m.CmsManagementComponent) },

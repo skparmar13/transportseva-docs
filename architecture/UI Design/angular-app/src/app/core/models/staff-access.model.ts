@@ -23,7 +23,8 @@ export function staffRouteAllowed(access: StaffAccess | null | undefined, path: 
   const capability: Record<string, string> = {
     reviews: 'marketplace.reviews.view', kyc: 'marketplace.kyc.view', audit: 'admin.audit.view',
     roles: 'role.view', bookings: 'marketplace.bookings.view', 'contact-inquiries': 'contact.inquiries.view',
-    support: 'support.tickets.view', newsletter: 'newsletter.subscribers.view',
+    support: 'support.tickets.view', newsletter: 'newsletter.subscribers.view', dashboard: 'admin.dashboard.view', reports: 'admin.reports.view',
   };
-  return !!capability[path] && access.permissions.includes(capability[path]);
+  return !!capability[path] && access.permissions.includes(capability[path])
+    && (path !== 'reports' || access.permissions.includes('marketplace.bookings.view'));
 }

@@ -28,7 +28,8 @@ for (const account of accounts) {
     const loggedIn = page.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/api/auth/login'));
     await page.getByRole('button', { name: 'Sign in to staff console' }).click();
     expect((await loggedIn).status()).toBe(200);
-    await expect(page).toHaveURL(/\/admin\/access$/, { timeout: 90_000 });
+    await expect(page).toHaveURL(account.code === 'SUPER_ADMIN' ? /\/admin\/(dashboard|access)$/ : /\/admin\/access$/, { timeout: 90_000 });
+    await page.goto('/admin/access');
     await expect(page.getByRole('heading', { name: 'Staff Access', exact: true })).toBeVisible();
     await expect(page.getByText('Policy enforcement: Active', { exact: true })).toBeVisible();
     const self = (await api(page, 'GET', 'auth/me', 200)).data;

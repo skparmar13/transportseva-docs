@@ -1,0 +1,18 @@
+<div class="page-toolbar"><div><h1>{{ copy().title }}</h1><p class="desc">{{ copy().description }}</p></div><button type="button" class="btn btn-outline" [disabled]="loading()" (click)="load()">@if (loading()) {<span class="admin-dashboard-spinner" aria-hidden="true"></span>}{{ copy().refresh }}</button></div>
+@if (loading()) {
+  <div class="card dashboard-state" role="status" aria-busy="true"><span class="admin-dashboard-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>
+} @else if (error(); as failure) {
+  <div class="card dashboard-state" role="alert">{{ copy()[failure] }}@if (failure === 'failed') {<button type="button" class="btn btn-outline" (click)="load()">{{ copy().retry }}</button>}</div>
+} @else if (data(); as dashboard) {
+  <p class="desc">{{ copy().scope }}</p><p class="desc" data-generated-at>{{ copy().generated }}: {{ dateTime(dashboard.generated_at) }}</p>
+  @if (dashboard.sections.includes('marketplace')) {
+    <section aria-labelledby="marketplace-heading"><h2 id="marketplace-heading">{{ copy().marketplace }}</h2><div class="kpi-grid">@for (key of metrics; track key) {<div class="kpi-card" [attr.data-metric]="key"><div class="kpi-value">{{ dashboard.totals[key] }}</div><div class="kpi-label">{{ copy()[key] }}</div></div>}</div><p class="desc">{{ copy().deliveryHint }}</p></section>
+  }
+  @if (queues().length) {
+    <section aria-labelledby="queues-heading"><h2 id="queues-heading">{{ copy().queues }}</h2><div class="kpi-grid">@for (queue of queues(); track queue.key) {<a class="kpi-card dashboard-queue" [attr.data-metric]="queue.key" [routerLink]="['/admin', queue.path]"><div class="kpi-value">{{ dashboard.totals[queue.key] }}</div><div class="kpi-label">{{ copy()[queue.key] }}</div></a>}</div></section>
+  }
+  @if (dashboard.sections.includes('audit')) {
+    <section class="card" aria-labelledby="activity-heading"><div class="card-head"><h2 id="activity-heading">{{ copy().activity }}</h2><a routerLink="/admin/audit" class="btn btn-outline btn-sm">{{ copy().viewAudit }}</a></div><div class="card-body"><p class="desc">{{ copy().activityHint }}</p><div class="table-scroll"><table class="data-table"><thead><tr><th>{{ copy().action }}</th><th>{{ copy().category }}</th><th>{{ copy().recorded }}</th><th></th></tr></thead><tbody>@for (event of dashboard.recent_activity; track event.uuid) {<tr [attr.data-activity-id]="event.uuid"><td>{{ actionLabel(event.action) }}</td><td>{{ copy()[event.category] }}</td><td>{{ dateTime(event.created_at) }}</td><td><a routerLink="/admin/audit" [queryParams]="event.target_uuid ? {target: event.target_uuid} : {}" class="btn btn-outline btn-sm">{{ copy().viewEvent }}</a></td></tr>} @empty {<tr><td colspan="4" role="status">{{ copy().activityEmpty }}</td></tr>}</tbody></table></div></div></section>
+  }
+  @if (!dashboard.sections.length) {<p class="card dashboard-state" role="status">{{ copy().noSections }}</p>}
+}

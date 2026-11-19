@@ -48,7 +48,7 @@ async function login(page: Page, actor: Actor | typeof staff[number], isStaff = 
   const loggedIn = page.waitForResponse((response) => response.url().endsWith('/api/auth/login') && response.request().method() === 'POST');
   await page.getByRole('button', { name: isStaff ? 'Sign in to staff console' : /^log in$/i }).click();
   expect((await loggedIn).status()).toBe(200);
-  await expect(page).toHaveURL(isStaff ? /\/admin\/access$/ : new RegExp('/' + (actor as Actor).role + '/dashboard$'), { timeout: 60_000 });
+  await expect(page).toHaveURL(isStaff ? /\/admin\/(dashboard|access)$/ : new RegExp('/' + (actor as Actor).role + '/dashboard$'), { timeout: 60_000 });
 }
 async function observe(page: Page, route: string) {
   const requests: { path: string; status: number }[] = [];

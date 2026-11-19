@@ -35,7 +35,7 @@ async function submit(page: Page, status = 201) {
 async function login(page: Page, email = 'admin@test.local', password = 'password123') {
   await page.goto('/auth/login'); await page.locator('input[name=identifier]').fill(email); await page.locator('input[name=password]').fill(password);
   const [r] = await Promise.all([page.waitForResponse((r) => r.url().endsWith('/api/auth/login') && r.request().method() === 'POST'), page.getByRole('button', { name: /^log in$/i }).click()]);
-  expect(r.status()).toBe(200); await expect(page).toHaveURL(/\/admin\/access$/, { timeout: 60_000 });
+  expect(r.status()).toBe(200); await expect(page).toHaveURL(/\/admin\/(access|dashboard)$/, { timeout: 60_000 });
 }
 async function api(page: Page, path: string) {
   const token = await page.evaluate(() => localStorage.getItem('transportseva.access_token'));

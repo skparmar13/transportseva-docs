@@ -115,11 +115,18 @@
       "note": "Real private-document KYC APIs and moderation. The original 31/10 source audit was read-only. 03/11 acceptance verified a clearly labelled pending QA upload and original-byte private download; pre-existing approved records and moderation decisions were preserved. Failed reads no longer expose a new submission form. See SHIPPER_ACCEPTANCE_2026-11-03.md."
     },
     {
-      "files": ["dashboard/dashboard", "driver/dashboard/driver-dashboard"],
+      "files": ["driver/dashboard/driver-dashboard"],
       "status": "prototype",
       "priority": "P1",
       "anchor": "DashboardMockService",
-      "note": "Admin and Driver landing KPIs and recent records remain samples. Admin dashboard is blocked by current strict staff policy. Transporter now has a distinct real provider dashboard."
+      "note": "Driver landing KPIs and recent records remain samples. Admin and Transporter now have distinct backend operational dashboards."
+    },
+    {
+      "files": ["admin/dashboard/admin-dashboard"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiAdminDashboardService",
+      "note": "19/11 real global operational totals and bounded recent admin activity require an explicit active Super Admin dashboard grant. Each domain additionally requires its current capability; omitted sections never become zero counts. No participant booking visibility is widened. Refresh/loading/timeout/error/denial, EN/HI, safe exact audit links and authorized queue routes replace the backend prototype. Local activation is separately backed up and audited. See ADMIN_DASHBOARD_2026-11-19.md."
     },
     {
       "files": ["transporter/dashboard/transporter-dashboard"],
@@ -245,7 +252,14 @@
       "status": "prototype",
       "priority": "P1",
       "anchor": "ReportMockService",
-      "note": "Admin and Company legacy report tables/KPIs/CSV still use prototype datasets. Shipper, Truck Owner and Transporter use their own private operational reports; this legacy component is not their implementation."
+      "note": "Company legacy report tables/KPIs/CSV still use prototype datasets. Admin, Shipper, Truck Owner and Transporter now select separate real operational reports."
+    },
+    {
+      "files": ["admin/reports/admin-reports"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiAdminReportService",
+      "note": "19/11 real aggregate Admin Reports requires dedicated Super Admin report and current marketplace view grants. Independent IST creation cohorts for loads/applications/bookings, current statuses, full-period summary, bounded grouped paging and complete matching safe CSV replace samples without broadening participant-record access. Applied filters govern refresh/paging/export; loading, timeout/cancellation, retry, denial and EN/HI states are implemented. See ADMIN_REPORTS_2026-11-19.md."
     },
     {
       "files": ["transporter/reports/transporter-reports"],

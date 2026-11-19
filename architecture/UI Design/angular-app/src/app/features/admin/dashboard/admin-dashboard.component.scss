@@ -1,0 +1,7 @@
+.dashboard-state { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 24px; margin-bottom: 20px; }
+section { margin-bottom: 24px; } section h2 { margin-bottom: 14px; }.card-head h2 { margin-bottom: 0; }
+.dashboard-queue { color: inherit; text-decoration: none; }.dashboard-queue:focus-visible { outline: 2px solid #ff5b0a; outline-offset: 3px; }
+.activity-code { display: block; color: #596574; overflow-wrap: anywhere; margin-top: 6px; }.table-scroll { overflow-x: auto; } table { min-width: 640px; }
+.admin-dashboard-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: admin-dashboard-spin .8s linear infinite; }
+@keyframes admin-dashboard-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .admin-dashboard-spinner { animation: none; border-style: dotted; } }

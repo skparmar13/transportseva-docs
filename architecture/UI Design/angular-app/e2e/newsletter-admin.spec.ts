@@ -21,7 +21,7 @@ async function login(page: Page, email = 'admin@test.local', password = 'passwor
   await page.goto('/auth/login'); await expect(page.locator('vite-error-overlay')).toHaveCount(0); await page.locator('input[name=identifier]').fill(email);
   await page.locator('input[name=password]').fill(password);
   const [response] = await Promise.all([page.waitForResponse(r => new URL(r.url()).pathname === '/api/auth/login' && r.request().method() === 'POST'), page.getByRole('button', { name: /^Log In$/i }).click()]);
-  expect(response.status()).toBe(200); await expect(page).toHaveURL(/\/admin\/access$/);
+  expect(response.status()).toBe(200); await expect(page).toHaveURL(/\/admin\/(access|dashboard)$/);
 }
 async function api(page: Page, route: string) {
   const token = await page.evaluate(() => localStorage.getItem('transportseva.access_token'));

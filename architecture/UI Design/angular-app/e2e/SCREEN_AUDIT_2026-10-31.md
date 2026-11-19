@@ -385,3 +385,26 @@ The full Angular suite (440), combined isolated backend suite (51), source audit
 (16), production build and four visible Chrome cases passed. All 109 table names
 and nine checked row sets, including both consent tables and staff memberships,
 were preserved. See [newsletter admin evidence](NEWSLETTER_ADMIN_2026-11-18.md).
+
+19/11/2026 follow-up: Admin Dashboard now selects a dedicated real operational
+overview with global saved-row totals and ten current administrative audit
+events. An explicit Super Admin dashboard grant and independent per-domain
+capabilities govern every section; existing dispute-only booking access is
+unchanged. Real queue/audit links, animated refresh, bounded cancellation,
+error/retry/denial and EN/HI states replace backend sample cards. Local access
+was added through the backed-up audited command without changing other grants
+or memberships. The combined isolated backend suite (41), Angular regression,
+source audit (17), production build and visible browser acceptance passed.
+All 109 table names and 13 checked record sets were preserved. See
+[Admin Dashboard evidence](ADMIN_DASHBOARD_2026-11-19.md).
+
+19/11/2026 follow-up: Admin Reports now reads real global aggregate cohorts for
+loads, applications and bookings with IST creation dates, current-state totals,
+status filters, server paging and complete bounded CSV export. Both the explicit
+Super Admin reports capability and booking-read capability are required; global
+participant details remain unavailable. Visible loading/export, retry, denial,
+applied-filter tracking and EN/HI empty states replace the Admin sample report.
+Full Angular (464), combined isolated backend (48 / 515 assertions), source audit
+(18), production build and four headed Chrome cases passed. UI/API/CSV totals
+matched independent SQL counts of 39/53/26. All 109 table names and 13 checked
+record sets were preserved. See [Admin Reports evidence](ADMIN_REPORTS_2026-11-19.md).

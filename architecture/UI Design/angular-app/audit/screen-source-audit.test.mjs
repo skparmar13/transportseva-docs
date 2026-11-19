@@ -107,3 +107,14 @@ test('admin newsletter selects the private consent queue rather than local subsc
   const row = collectInventory().records.find(item => item.route === '/admin/newsletter');
   assert.ok(row); assert.equal(row.status, 'api_connected'); assert.match(row.component, /newsletter-management/);
 });
+
+test('backend admin dashboard selects the real permission-scoped operational overview', () => {
+  const row = collectInventory().records.find(item => item.route === '/admin/dashboard');
+  assert.ok(row); assert.equal(row.status, 'api_connected'); assert.match(row.component, /admin\/dashboard\/admin-dashboard/);
+});
+
+test('backend admin reports selects real aggregate reports while Company stays separate', () => {
+  const records=collectInventory().records; const admin=records.find(item=>item.route==='/admin/reports');
+  assert.ok(admin);assert.equal(admin.status,'api_connected');assert.match(admin.component,/admin\/reports\/admin-reports/);
+  const company=records.find(item=>item.route==='/company/reports');assert.equal(company.status,'prototype');
+});
