@@ -1,5 +1,13 @@
 # Marketplace end-to-end test matrix
 
+20/11/2026 follow-up: fresh signup for all three marketplace roles and all four
+supported poster/provider pairings completed in visible Chrome, with competing
+applications, both negotiation directions, tokens, assignments, loading,
+mid-trip milestone, signed POD, recorded settlement and linked notifications.
+A same-role Transporter ownership bug was fixed using a server-derived viewer
+flag. Users, credentials, records, exact results and remaining financial/UI
+limits: [fresh signup and booking matrix](BOOKING_SIGNUP_MATRIX_2026-11-20.md).
+
 The browser suite runs against the local Angular UI at `http://localhost:4300`
 and the Laravel API configured in `public/runtime-config.js`. It creates uniquely
 named test users and data; it never resets a database.

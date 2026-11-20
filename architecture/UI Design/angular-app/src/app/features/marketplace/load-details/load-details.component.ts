@@ -259,7 +259,9 @@ export class LoadDetailsComponent {
     return load.status === 'Applications Received' ? 'Open' : load.status;
   }
 
-  protected readonly isOwner = computed(() => this.load()?.postedBy === this.session.role());
+  protected readonly isOwner = computed(() => API_CONFIG.useBackend
+    ? this.backendLoad()?.viewer_is_owner === true
+    : this.load()?.postedBy === this.session.role());
   protected readonly myApplication = computed(() =>
     this.applications().find((app) => app.applicantRole === this.session.role()),
   );

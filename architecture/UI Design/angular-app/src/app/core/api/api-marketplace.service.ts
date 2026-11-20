@@ -21,6 +21,8 @@ export interface ApiLoad {
   applications_count?: number;
   /** Status of the current user's application, if they have applied to this load. */
   viewer_application_status?: string;
+  /** Server-derived ownership of this load for the authenticated account. */
+  viewer_is_owner?: boolean;
   created_at?: string;
 }
 
