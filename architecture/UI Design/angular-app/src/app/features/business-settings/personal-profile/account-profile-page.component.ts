@@ -10,10 +10,11 @@ import { SessionService } from '../../../core/services/session.service';
 import { AccountBusinessProfileComponent } from '../account-profile/account-business-profile.component';
 import { LanguageService } from '../../../core/i18n';
 import { personalProfileCopy } from './personal-profile-copy';
+import { RecipientBankSetupComponent } from '../../recipient-payments/recipient-bank-setup.component';
 
 const blank = (): ProfileDraft => ({ first_name: '', last_name: '', email: '', designation: '', address: '', city: '', pincode: '', notify_email: true, notify_sms: true });
 @Component({
-  selector: 'app-account-profile-page', standalone: true, imports: [FormsModule, AccountBusinessProfileComponent],
+  selector: 'app-account-profile-page', standalone: true, imports: [FormsModule, AccountBusinessProfileComponent, RecipientBankSetupComponent],
   changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './account-profile-page.component.html', styleUrl: './account-profile-page.component.scss',
 })
 export class AccountProfilePageComponent {

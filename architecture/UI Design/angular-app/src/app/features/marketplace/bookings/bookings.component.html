@@ -59,17 +59,21 @@
               </div>
 
               <div style="display:flex;flex-direction:column;gap:14px;">
+                @if (backendEnabled && session.role() !== 'admin') {
+                  <app-booking-direct-payments [bookingUuid]="booking.id" [revision]="booking.status + '|' + (booking.loadingConfirmedAt ?? '') + '|' + (booking.pod?.status ?? '') + '|' + booking.settlementPlan.length" (managed)="directState(booking.id, $event)" />
+                }
                 <!-- Booking Security Deposit / Escrow -->
                 <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
-                  <div style="font-weight:600;font-size:13.5px;margin-bottom:10px;">{{ 'bookings.deposit.header' | t:{ status: booking.escrowStatus } }}</div>
+                  <div style="font-weight:600;font-size:13.5px;margin-bottom:10px;">{{ backendEnabled ? ('bookings.deposit.recordedHeader' | t) : ('bookings.deposit.header' | t:{ status: booking.escrowStatus }) }}</div>
                   <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--color-border);">
                     <span>{{ booking.ownerDeposit.partyName }} ({{ booking.ownerRole }})</span>
-                    <span class="status-pill" [class]="booking.ownerDeposit.status === 'Paid' ? 'status-delivered' : 'status-pending'">{{ booking.ownerDeposit.amount }} · {{ statusKey(booking.ownerDeposit.status) | t }}</span>
+                    <span class="status-pill" [class]="booking.ownerDeposit.status === 'Paid' || booking.ownerDeposit.status === 'Refunded' ? 'status-delivered' : 'status-pending'" data-owner-token-status>{{ booking.ownerDeposit.amount }} · {{ tokenStatusKey(booking.ownerDeposit.status) | t }}</span>
                   </div>
                   <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
                     <span>{{ booking.counterpartyDeposit.partyName }} ({{ booking.counterpartyRole }})</span>
-                    <span class="status-pill" [class]="booking.counterpartyDeposit.status === 'Paid' ? 'status-delivered' : 'status-pending'">{{ booking.counterpartyDeposit.amount }} · {{ statusKey(booking.counterpartyDeposit.status) | t }}</span>
+                    <span class="status-pill" [class]="booking.counterpartyDeposit.status === 'Paid' || booking.counterpartyDeposit.status === 'Refunded' ? 'status-delivered' : 'status-pending'" data-provider-token-status>{{ booking.counterpartyDeposit.amount }} · {{ tokenStatusKey(booking.counterpartyDeposit.status) | t }}</span>
                   </div>
+                  @if (backendEnabled) { <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px;" data-token-disposition-note>{{ 'bookings.deposit.recordedNote' | t }}</p> }
 
                   @if (booking.commissionSnapshot; as commission) {
                     <div style="border-top:1px solid var(--color-border);margin-top:10px;padding-top:10px;">
@@ -199,7 +203,7 @@
                         <div style="font-size:12px;color:var(--color-text-soft);margin-top:2px;">{{ m.trigger }}</div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
                           <span class="status-pill" [class]="m.status === 'Released' ? 'status-delivered' : 'status-pending'">{{ statusKey(m.status) | t }}@if (m.releasedAt) { · {{ dateTime(m.releasedAt) }} }</span>
-                          @if (m.status === 'Pending' && mySide(booking) === 'owner' && canReleaseMilestone(booking, m.label)) {
+                          @if (!backendEnabled && m.status === 'Pending' && mySide(booking) === 'owner' && canReleaseMilestone(booking, m.label)) {
                             <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'release', m.id)" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'release', m.id)" (click)="releaseMilestone(booking.id, m.id)">
                               @if (isWorkflowActionPending(booking.id, 'release', m.id)) { <span class="button-loader" aria-hidden="true"></span><span>Releasing…</span> } @else { <span>{{ 'bookings.settlement.release' | t }}</span> }
                             </button>
@@ -302,7 +306,7 @@
                 }
 
                 <!-- Settlement -->
-                @if (booking.settlement; as s) {
+                @if (!backendEnabled) { @if (booking.settlement; as s) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                       <div style="font-weight:600;font-size:13.5px;">{{ s.status === 'settled' ? ('bookings.settlement.final.title' | t) : 'Settlement Pending' }}</div>
@@ -312,21 +316,24 @@
                     @for (milestone of releasedMilestones(booking); track milestone.id) {
                       <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--color-success);"><span>{{ milestone.label }} paid</span><strong>− {{ milestone.amount }}</strong></div>
                     }
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span style="font-weight:600;">Final freight balance</span><strong>{{ remainingFreightBalance(booking) }}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span style="font-weight:600;">Final freight balance</span><strong>{{ freightNotRecordedReleased(booking) }}</strong></div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>Shipper platform fee</span><strong>{{ s.shipperCommission || '₹0' }}</strong></div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="font-weight:600;">Final payment due from shipper</span><strong>{{ finalSettlementPayable(booking) }}</strong></div>
-                    <div style="font-size:12px;color:var(--color-text-soft);padding:4px 0;">Provider-side TransportSeva Platform fee withheld: {{ s.commissionDeducted || '₹0' }}</div>
+                    <div style="font-size:12px;color:var(--color-text-soft);padding:4px 0;">Provider-side platform fee (calculated deduction): {{ s.commissionDeducted || '₹0' }}</div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--color-border);"><span style="font-weight:600;">{{ s.status === 'settled' ? 'TransportSeva commission recorded' : 'TransportSeva commission due on final payment' }}</span><strong style="color:var(--color-success);">{{ platformCommission(booking) }}</strong></div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>Calculated provider payout</span><strong>{{ s.payoutAmount }}</strong></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px solid var(--color-border);margin-top:4px;"><span>Calculated provider net amount</span><strong>{{ s.payoutAmount }}</strong></div>
                     <div style="font-size:12px;color:var(--color-text-muted);padding:4px 0;">Settlement status does not verify that money was charged or transferred.</div>
-                    <div style="font-size:12px;color:var(--color-text-soft);padding:6px 0;">Booking security tokens: Shipper ₹1,000 + Fleet owner ₹1,000 = ₹2,000. They are held separately from freight and commission; release or refund is governed by the booking/dispute policy.</div>
-                    <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">@if (s.status === 'settled') { {{ 'bookings.settlement.footer' | t:{ date: dateTime(s.settledAt) } }} } @else { Final payout will be released after final payment is settled. }</div>
+                    <div style="font-size:12px;color:var(--color-text-soft);padding:6px 0;">{{ 'bookings.deposit.recordedNote' | t }}</div>
+                    <div style="font-size:12px;color:var(--color-text-soft);margin-top:6px;">{{ 'bookings.settlement.directRecord' | t }} @if (s.status === 'settled' && s.settledAt) { · {{ dateTime(s.settledAt) }} }</div>
                     @if (mySide(booking) === 'owner') {
                       @if (s.status !== 'settled') {
                         <button type="button" class="btn btn-primary btn-sm" style="margin-top:10px;" (click)="openOfflinePayment(booking)">Settle Final Payment</button>
                       }
                     }
                   </div>
+                }
+                } @else if (booking.settlement) {
+                  <p class="desc">Earlier recorded settlement status: {{ booking.settlement.status }}. Use Direct freight payments above for recipient-confirmed amounts and separate platform fees.</p>
                 }
                   @if (booking.dispute; as dispute) {
                     <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
@@ -378,7 +385,7 @@
 @if (offlinePaymentFor(); as booking) {
   <app-modal title="Settle Final Payment" (close)="offlinePaymentFor.set(null)">
     <p style="font-size:13px;color:var(--color-text-muted);">This records a settlement status only. It does not charge, transfer or verify receipt of money. Use it only after confirming payment outside this screen.</p>
-    <div style="font-size:13px;background:var(--color-muted-bg);border-radius:10px;padding:10px;margin-bottom:12px;">Remaining freight: <strong>{{ remainingFreightBalance(booking) }}</strong><br />Platform fee: <strong>{{ booking.settlement?.shipperCommission || '₹0' }}</strong><br /><span style="font-weight:700;">Total payable: {{ finalSettlementPayable(booking) }}</span></div>
+    <div style="font-size:13px;background:var(--color-muted-bg);border-radius:10px;padding:10px;margin-bottom:12px;">Remaining freight: <strong>{{ freightNotRecordedReleased(booking) }}</strong><br />Platform fee: <strong>{{ booking.settlement?.shipperCommission || '₹0' }}</strong><br /><span style="font-weight:700;">Total payable: {{ finalSettlementPayable(booking) }}</span></div>
     <div class="field"><label for="offline-amount">Final payment amount</label><input id="offline-amount" type="number" min="0.01" step="0.01" inputmode="decimal" class="input" [ngModel]="offlineAmount()" (ngModelChange)="offlineAmount.set($event)" name="offlineAmount" /></div>
     <div class="field"><label for="offline-reference">Receipt or reference (optional)</label><input id="offline-reference" class="input" [ngModel]="offlineReference()" (ngModelChange)="offlineReference.set($event)" name="offlineReference" /></div>
     @if (workflowActionErrorFor(booking.id, 'record-payment'); as actionError) { <div class="workflow-action-error" role="alert">{{ actionError }}</div> }

@@ -57,5 +57,6 @@
   @if (ready()) {
     <button type="button" class="btn btn-primary profile-continue" (click)="continue()">{{ copy().continue }}</button>
     @if (view.account.role !== 'driver') {<app-account-business-profile />}
+    @if (view.account.role === 'truck-owner' || view.account.role === 'transporter') {<app-recipient-bank-setup />}
   }
 }

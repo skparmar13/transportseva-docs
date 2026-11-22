@@ -1,0 +1,30 @@
+<div class="page-toolbar"><div><h1>{{ tr('Recipient bank reviews', 'प्राप्तकर्ता बैंक समीक्षा') }}</h1><p class="muted">{{ tr('Explicitly authorized Super Admin access. This queue records manual review, not independent bank verification.', 'स्पष्ट रूप से अधिकृत सुपर एडमिन पहुँच। यहाँ मैनुअल समीक्षा दर्ज होती है, स्वतंत्र बैंक सत्यापन नहीं।') }}</p></div></div>
+<section class="payment-panel" [attr.aria-busy]="busy()" data-bank-review-queue>
+  <div class="actions"><label for="bank-queue-status">{{ tr('Status', 'स्थिति') }}</label><select id="bank-queue-status" class="input" [(ngModel)]="status" (ngModelChange)="load()" [disabled]="busy()"><option value="pending">{{ tr('Pending', 'लंबित') }}</option><option value="manually_reviewed">{{ tr('Manually reviewed', 'मैनुअल समीक्षा पूरी') }}</option><option value="rejected">{{ tr('Rejected', 'अस्वीकृत') }}</option><option value="all">{{ tr('All', 'सभी') }}</option></select><button type="button" class="btn btn-outline" [disabled]="busy()" (click)="load(page())">{{ tr('Refresh queue', 'सूची रीफ़्रेश करें') }}</button></div>
+  @if (busy()) { <p role="status"><span class="spinner" aria-hidden="true"></span> {{ tr('Processing…', 'प्रक्रिया जारी…') }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (message()) { <p class="success" role="status">{{ message() }}</p> }
+  @if (loaded()) { @for (r of rows(); track r.account.uuid) { <article class="receipt"><strong>{{ r.provider.name }}</strong><p>{{ r.provider.email }} · {{ r.account.account_mask }} · {{ r.account.status }}</p><p class="muted">{{ tr('Version', 'संस्करण') }} {{ r.account.version }} · {{ dateTime(r.account.submitted_at) }}</p><button type="button" class="btn btn-outline" [disabled]="busy()" (click)="select(r)">{{ tr('Review submission', 'जमा विवरण की समीक्षा') }}</button></article> } @empty { <p>{{ tr('No bank submissions match this status.', 'इस स्थिति के कोई बैंक विवरण नहीं हैं।') }}</p> }
+    <div class="actions"><button type="button" class="btn btn-outline" [disabled]="busy() || page() <= 1" (click)="load(page() - 1)">{{ tr('Previous', 'पिछला') }}</button><span>{{ page() }} / {{ last() }}</span><button type="button" class="btn btn-outline" [disabled]="busy() || page() >= last()" (click)="load(page() + 1)">{{ tr('Next', 'अगला') }}</button></div>
+  }
+</section>
+@if (selected(); as r) {
+  <section class="payment-panel" data-selected-bank>
+    <h2>{{ r.provider.name }} · {{ r.account.account_mask }}</h2><p>{{ r.account.holder_name }} · {{ r.account.bank_name }} · {{ r.account.ifsc }}</p><p>{{ r.account.status }} · {{ tr('Version', 'संस्करण') }} {{ r.account.version }}</p>
+    @if (r.account.review_note) { <p>{{ r.account.review_note }}</p> }
+    @if (r.account.evidence_reference) { <p class="muted">{{ tr('Evidence reference', 'साक्ष्य संदर्भ') }}: {{ r.account.evidence_reference }} · {{ r.account.review_method }} · {{ dateTime(r.account.reviewed_at) }}</p> }
+    <div class="field"><label for="bank-review-password">{{ tr('Your current password', 'आपका वर्तमान पासवर्ड') }}</label><input id="bank-review-password" class="input" type="password" [(ngModel)]="password" maxlength="128" autocomplete="current-password" [disabled]="busy()" /></div>
+    <div class="field"><label for="bank-reveal-reason">{{ tr('Reason for revealing full account', 'पूरा खाता देखने का कारण') }}</label><input id="bank-reveal-reason" class="input" [(ngModel)]="reason" minlength="10" maxlength="200" [disabled]="busy()" /></div>
+    <button type="button" class="btn btn-outline" [disabled]="busy() || !password || reason.trim().length < 10" (click)="reveal()">{{ tr('Reveal account for 60 seconds', 'खाता 60 सेकंड के लिए देखें') }}</button>
+    @if (full(); as f) { <div class="secret" data-full-bank><p>{{ f.holder_name }} · {{ f.bank_name }}</p><p>{{ tr('Account number', 'खाता नंबर') }}: <b>{{ f.account_number }}</b></p><p>IFSC: {{ f.ifsc }}</p><button type="button" class="btn btn-outline" (click)="hide()">{{ tr('Hide account', 'खाता छुपाएँ') }}</button></div> }
+    @if (r.account.status === 'pending') {
+      <form (ngSubmit)="review('manually_reviewed')"><fieldset [disabled]="busy()">
+        <div class="field"><label for="bank-review-method">{{ tr('Manual review method', 'मैनुअल समीक्षा विधि') }}</label><select id="bank-review-method" class="input" name="method" [(ngModel)]="method"><option value="manual_document_review">{{ tr('Manual document review', 'दस्तावेज़ की मैनुअल समीक्षा') }}</option><option value="manual_bank_lookup">{{ tr('Manual bank lookup', 'बैंक की मैनुअल जाँच') }}</option></select></div>
+        <div class="field"><label for="bank-review-evidence">{{ tr('Evidence / case reference (no account numbers)', 'साक्ष्य / केस संदर्भ (खाता नंबर नहीं)') }}</label><input id="bank-review-evidence" class="input" name="evidence" [(ngModel)]="evidence" required minlength="10" maxlength="500" /></div>
+        <div class="field"><label for="bank-review-note">{{ tr('Review note shared with recipient', 'प्राप्तकर्ता के लिए समीक्षा नोट') }}</label><textarea id="bank-review-note" class="input" name="note" [(ngModel)]="note" required minlength="3" maxlength="500"></textarea></div>
+        <label class="checkbox"><input name="attested" type="checkbox" [(ngModel)]="attested" required />{{ tr('I completed the stated manual review and documented its evidence. This does not claim independent bank verification.', 'मैंने बताई गई मैनुअल समीक्षा पूरी की और साक्ष्य दर्ज किया। यह स्वतंत्र बैंक सत्यापन का दावा नहीं है।') }}</label>
+        <div class="actions"><button type="submit" class="btn btn-primary" [disabled]="!attested || !password">@if (busy()) {<span class="spinner" aria-hidden="true"></span>}{{ tr('Record manual approval', 'मैनुअल अनुमोदन दर्ज करें') }}</button><button type="button" class="btn btn-outline" [disabled]="!attested || !password || evidence.trim().length < 10 || note.trim().length < 3" (click)="review('rejected')">{{ tr('Reject submission', 'विवरण अस्वीकार करें') }}</button></div>
+      </fieldset></form>
+    }
+  </section>
+}

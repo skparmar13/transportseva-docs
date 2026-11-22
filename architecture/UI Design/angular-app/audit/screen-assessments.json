@@ -3,6 +3,11 @@
   "mode": "Backend-enabled local application; source wiring assessment, not production sign-off",
   "groups": [
     {
+      "files": ["recipient-payments/recipient-bank-setup", "recipient-payments/recipient-bank-review", "recipient-payments/booking-direct-payments"],
+      "status": "api_connected", "priority": "P1", "anchor": "ApiRecipientPaymentService",
+      "note": "21/11 encrypted versioned bank submissions; explicit manual admin review before party-only bank instructions; gross direct freight reports require recipient confirmation, with separate platform fees and reserved disputed amounts. No automatic transfer or independent bank-verification claim."
+    },
+    {
       "files": ["truck-owner/reports/truck-owner-reports"],
       "status": "api_connected",
       "priority": "P2",

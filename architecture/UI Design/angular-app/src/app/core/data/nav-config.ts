@@ -16,6 +16,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
     nav: [
       { items: [
         { label: 'Staff Access', labelKey: 'nav.staffAccess', icon: 'i-shield', path: 'access' },
+        { label: 'Recipient Bank Reviews', labelKey: 'nav.bankReviews', icon: 'i-shield', path: 'bank-reviews' },
         { label: 'Dashboard', labelKey: 'nav.dashboard', icon: 'i-grid', path: 'dashboard' },
       ] },
       {

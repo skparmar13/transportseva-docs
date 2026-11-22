@@ -1,0 +1,32 @@
+<section class="payment-panel" data-recipient-bank-setup aria-labelledby="recipient-bank-heading" [attr.aria-busy]="busy()">
+  <h2 id="recipient-bank-heading">{{ tr('Recipient bank account', 'प्राप्तकर्ता का बैंक खाता') }}</h2>
+  <p class="muted">{{ tr('Use the account where you receive freight directly from the shipper. Sharing requires documented admin review. Each party pays its own platform fee separately.', 'शिपर से सीधे भाड़ा प्राप्त करने वाला खाता दें। साझा करने से पहले दस्तावेज़ आधारित एडमिन समीक्षा ज़रूरी है। दोनों पक्ष अपना प्लेटफॉर्म शुल्क अलग चुकाते हैं।') }}</p>
+  @if (busy()) { <p role="status"><span class="spinner" aria-hidden="true"></span> {{ tr('Processing…', 'प्रक्रिया जारी…') }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (message()) { <p class="success" role="status">{{ message() }}</p> }
+  @if (!loaded() && !busy()) { <button class="btn btn-outline" type="button" (click)="load()">{{ tr('Retry', 'पुनः प्रयास') }}</button> }
+  @if (loaded()) {
+    @if (bank(); as b) {
+      <p><strong>{{ b.holder_name }}</strong> · {{ b.bank_name }} · {{ b.account_mask }} · {{ b.ifsc }}</p>
+      <p data-bank-review-status>{{ b.status === 'pending' ? tr('Pending admin review', 'एडमिन समीक्षा लंबित') : b.status === 'manually_reviewed' ? tr('Manually reviewed — not independently bank-verified', 'मैनुअल समीक्षा पूरी — स्वतंत्र बैंक सत्यापन नहीं') : tr('Rejected — submit corrected details', 'अस्वीकृत — सही विवरण जमा करें') }}</p>
+      @if (b.review_note) { <p class="muted">{{ b.review_note }}</p> }
+      <p class="muted">{{ tr('Version', 'संस्करण') }} {{ b.version }} · {{ dateTime(b.reviewed_at || b.submitted_at) }}</p>
+    } @else { <p>{{ tr('No recipient bank account submitted.', 'प्राप्तकर्ता का बैंक खाता जमा नहीं हुआ है।') }}</p> }
+    @if (!editing()) { <button type="button" class="btn btn-outline" [disabled]="busy()" (click)="edit()">{{ bank() ? tr('Submit new bank details', 'नया बैंक विवरण जमा करें') : tr('Add bank account', 'बैंक खाता जोड़ें') }}</button> }
+    @if (editing()) {
+      <p class="notice">{{ tr('Every change creates a new pending version. Payers must acknowledge it after review. Full account numbers are never prefilled.', 'हर बदलाव एक नया लंबित संस्करण बनाता है। समीक्षा के बाद भुगतानकर्ता को उसे स्वीकार करना होगा। पूरा खाता नंबर पहले से नहीं भरा जाता।') }}</p>
+      <form (ngSubmit)="save()"><fieldset [disabled]="busy()">
+        <div class="grid">
+          <div class="field"><label for="bank-holder">{{ tr('Account holder name', 'खाताधारक का नाम') }} *</label><input id="bank-holder" class="input" name="holder_name" [(ngModel)]="draft.holder_name" required maxlength="160" autocomplete="off" /></div>
+          <div class="field"><label for="bank-name">{{ tr('Bank name', 'बैंक का नाम') }} *</label><input id="bank-name" class="input" name="bank_name" [(ngModel)]="draft.bank_name" required maxlength="120" autocomplete="off" /></div>
+          <div class="field"><label for="bank-number">{{ tr('Account number', 'खाता नंबर') }} *</label><input id="bank-number" class="input" name="account_number" [(ngModel)]="draft.account_number" required pattern="[0-9]{6,34}" inputmode="numeric" maxlength="34" autocomplete="off" /></div>
+          <div class="field"><label for="bank-repeat">{{ tr('Re-enter account number', 'खाता नंबर फिर दर्ज करें') }} *</label><input id="bank-repeat" class="input" name="account_number_confirmation" [(ngModel)]="draft.account_number_confirmation" required pattern="[0-9]{6,34}" inputmode="numeric" maxlength="34" autocomplete="off" /></div>
+          <div class="field"><label for="bank-ifsc">IFSC *</label><input id="bank-ifsc" class="input" name="ifsc" [(ngModel)]="draft.ifsc" required pattern="[A-Za-z]{4}0[A-Za-z0-9]{6}" maxlength="11" autocomplete="off" /></div>
+          <div class="field"><label for="bank-password">{{ tr('Current password', 'वर्तमान पासवर्ड') }} *</label><input id="bank-password" class="input" type="password" name="current_password" [(ngModel)]="draft.current_password" required maxlength="128" autocomplete="current-password" /></div>
+        </div>
+        <label class="checkbox"><input type="checkbox" name="sharing_consent" [(ngModel)]="draft.sharing_consent" required />{{ tr('I authorize sharing reviewed bank instructions with the actual payer of my confirmed bookings.', 'मैं अपनी पुष्ट बुकिंग के वास्तविक भुगतानकर्ता के साथ समीक्षित बैंक निर्देश साझा करने की अनुमति देता/देती हूँ।') }}</label>
+        <div class="actions"><button type="submit" class="btn btn-primary" [disabled]="busy()">@if (busy()) {<span class="spinner" aria-hidden="true"></span>}{{ tr('Submit for review', 'समीक्षा हेतु जमा करें') }}</button><button type="button" class="btn btn-outline" (click)="cancel()">{{ tr('Cancel', 'रद्द करें') }}</button><button type="button" class="btn btn-outline" (click)="load()">{{ tr('Reload latest', 'नवीनतम लोड करें') }}</button></div>
+      </fieldset></form>
+    }
+  }
+</section>

@@ -28,7 +28,7 @@ for (const actor of actors) {
     await page.locator('input[name=identifier]').fill(actor.email);
     await page.locator('input[name=password]').fill('TransportSevaE2E@2026');
     const [login] = await Promise.all([
-      page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/auth/login'),
+      page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/auth/login', { timeout: 60_000 }),
       page.getByRole('button', { name: /^log in$/i }).click(),
     ]);
     expect(login.status()).toBe(200);
@@ -55,8 +55,8 @@ for (const actor of actors) {
     const expand = card.getByRole('button', { name: /view details/i });
     if (await expand.count()) await expand.click();
     if (booking.settlement?.status === 'settled') {
-      await expect(card.getByText('TransportSeva commission recorded', { exact: true })).toBeVisible();
-      await expect(card.getByText('₹2,183', { exact: true })).toBeVisible();
+      await expect(card).toContainText('Earlier recorded settlement status: settled');
+      await expect(card.locator('[data-direct-payments]')).toContainText('Each party pays its own TransportSeva fee separately');
     } else {
       expect(booking.workflow.pod.status).toBe('approved');
       await expect(card.getByText(/POD approved/i)).toBeVisible();
@@ -70,7 +70,7 @@ for (const actor of actors) {
   });
 }
 
-test('documents the unreleased-advance balance mismatch with a controlled settlement response', async ({ page, context }, info) => {
+test('unreleased advance does not reduce confirmed unpaid freight or unlock legacy payment recording', async ({ page, context }, info) => {
   const actor=actors[0]; const blocked=await readOnly(context);
   await page.goto('/auth/login');
   await page.locator('input[name=identifier]').fill(actor.email);
@@ -89,12 +89,43 @@ test('documents the unreleased-advance balance mismatch with a controlled settle
   await page.goto(`/shipper/bookings?booking=${actor.uuid}`);
   const card=page.locator('.card').filter({hasText:actor.reference}); await expect(card).toBeVisible();
   const expand=card.getByRole('button',{name:/view details/i}); if(await expand.count())await expand.click();
-  const actual=await card.getByText('Final freight balance',{exact:true}).locator('..').locator('strong').innerText();
-  const due=await card.getByText('Final payment due from shipper',{exact:true}).locator('..').locator('strong').innerText();
-  // Reproduction assertion documents a known defect; this is not a correctness sign-off.
-  expect(actual).toBe('₹10,800'); expect(due).toBe('₹11,862');
-  await writeFile(info.outputPath('known-balance-gap.json'),JSON.stringify({controlledSettlement:true,reference:actor.reference,
-    releasedAdvance:0,actualDisplayedFreight:10800,expectedFreight:18000,actualDisplayedDue:11862,expectedDue:19062,
-    undercount:7200,businessWrites:blocked},null,2));
-  await page.screenshot({path:info.outputPath('unreleased-advance-gap.png'),fullPage:true}); expect(blocked).toEqual([]);
+  const actual=await card.locator('[data-confirmed-unpaid]').innerText();
+  expect(actual).toBe('₹18,000.00');
+  await expect(card.locator('[data-owner-token-status]')).toContainText('Paid');
+  await expect(card.locator('[data-provider-token-status]')).toContainText('Paid');
+  await expect(card).toContainText('Booking security tokens · Recorded payment status');
+  await expect(card.getByRole('button',{name:/^Settle Final Payment$/i})).toHaveCount(0);
+  await expect(card).toContainText('Shipper platform fee: ₹1,062');
+  await writeFile(info.outputPath('corrected-balance.json'),JSON.stringify({controlledSettlement:true,reference:actor.reference,
+    releasedAdvance:0,displayedFreight:18000,separateOwnerFee:1062,legacyPaymentActionHidden:true,businessWrites:blocked},null,2));
+  await page.screenshot({path:info.outputPath('corrected-unreleased-advance.png'),fullPage:true}); expect(blocked).toEqual([]);
+});
+
+test('delivered and settled booking keeps paid tokens; pending refund and forfeiture remain distinct',async({page,context},info)=>{
+  const blocked=await readOnly(context);
+  await page.goto('/auth/login');await page.locator('input[name=identifier]').fill('qa-matrix-20261120-01-s@transportseva.test');
+  await page.locator('input[name=password]').fill('MatrixQA@2026!20');await page.getByRole('button',{name:/^log in$/i}).click();
+  await expect(page).toHaveURL('/shipper/dashboard',{timeout:60_000});
+  const reference='TS-ZQXTRJ91OQ';const uuid='563a6729-7d04-4a41-9043-74f64af1ae4c';
+  await page.goto('/shipper/bookings?booking='+uuid);const card=page.locator('.card').filter({hasText:reference});await expect(card).toBeVisible();
+  if(await card.getByRole('button',{name:/^View Details$/i}).count())await card.getByRole('button',{name:/^View Details$/i}).click();
+  await expect(card.locator('[data-owner-token-status]')).toContainText('₹1,000 · Paid');
+  await expect(card.locator('[data-provider-token-status]')).toContainText('₹1,000 · Paid');
+  await expect(card).not.toContainText('Provider Status Released');
+  await expect(card).not.toContainText('Booking token accounted for');
+  await expect(card).toContainText('The shipper pays the recipient directly');
+  await page.screenshot({path:info.outputPath('real-completed-token-states.png'),fullPage:true});
+  let statuses=['refund_pending','refunded'];
+  await page.route('**/api/marketplace-bookings?*',async route=>{const r=await route.fetch();const body=await r.json();const b=body.data.find((b:any)=>b.uuid===uuid);
+    b.owner_token_status=statuses[0];b.provider_token_status=statuses[1];b.owner_token_amount='1500.50';b.provider_token_amount='1200.00';await route.fulfill({response:r,json:body});});
+  await page.reload();if(await card.getByRole('button',{name:/^View Details$/i}).count())await card.getByRole('button',{name:/^View Details$/i}).click();
+  await expect(card.locator('[data-owner-token-status]')).toContainText('₹1,500.5 · Refund pending');
+  await expect(card.locator('[data-provider-token-status]')).toContainText('₹1,200 · Refunded');
+  statuses=['forfeiture_pending','forfeited'];await page.reload();if(await card.getByRole('button',{name:/^View Details$/i}).count())await card.getByRole('button',{name:/^View Details$/i}).click();
+  await expect(card.locator('[data-owner-token-status]')).toContainText('Forfeiture pending');
+  await expect(card.locator('[data-provider-token-status]')).toContainText('Forfeited');
+  await page.getByRole('button',{name:'Change language',exact:true}).click();
+  await expect(card.locator('[data-owner-token-status]')).toContainText('ज़ब्ती लंबित');
+  await expect(card.locator('[data-provider-token-status]')).toContainText('ज़ब्त');
+  expect(blocked).toEqual([]);
 });

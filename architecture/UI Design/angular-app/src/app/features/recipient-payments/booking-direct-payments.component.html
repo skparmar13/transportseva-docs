@@ -1,0 +1,57 @@
+<section class="payment-panel" data-direct-payments [attr.aria-busy]="busy()">
+  <h2>{{ tr('Direct freight payments', 'सीधे भाड़े का भुगतान') }}</h2>
+  @if (busy()) { <p role="status"><span class="spinner" aria-hidden="true"></span> {{ tr('Processing…', 'प्रक्रिया जारी…') }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (message()) { <p class="success" role="status">{{ message() }}</p> }
+  <button type="button" class="btn btn-outline btn-sm" [disabled]="busy()" (click)="load()">{{ tr('Refresh payments', 'भुगतान रीफ़्रेश करें') }}</button>
+  @if (loaded()) { @if (view(); as v) {
+    <p class="muted">{{ tr('The shipper pays the recipient directly. Each party pays its own TransportSeva fee separately. A payer report is not proof of receipt.', 'शिपर प्राप्तकर्ता को सीधे भुगतान करता है। दोनों पक्ष अपना TransportSeva शुल्क अलग चुकाते हैं। भुगतानकर्ता की रिपोर्ट प्राप्ति का प्रमाण नहीं है।') }}</p>
+    <div class="money"><span>{{ v.allocation === 'net' ? tr('Recipient basis (legacy net policy)', 'प्राप्तकर्ता आधार (पुरानी शुद्ध नीति)') : tr('Gross freight payable to recipient', 'प्राप्तकर्ता को देय पूरा भाड़ा') }}</span><b>{{ money(v.amounts.recipient_basis) }}</b></div>
+    <div class="money"><span>{{ tr('Confirmed received', 'प्राप्ति की पुष्टि') }}</span><b data-confirmed-received>{{ money(v.amounts.confirmed_received) }}</b></div>
+    <div class="money"><span>{{ tr('Awaiting confirmation / disputed', 'पुष्टि लंबित / विवादित') }}</span><b>{{ money(v.amounts.awaiting_or_disputed) }}</b></div>
+    <div class="money"><span>{{ tr('Unpaid by confirmed receipts', 'पुष्ट प्राप्तियों के बाद शेष') }}</span><b data-confirmed-unpaid>{{ money(v.amounts.confirmed_unpaid) }}</b></div>
+    <div class="money"><span>{{ tr('Available for a new transfer report', 'नई ट्रांसफर रिपोर्ट हेतु उपलब्ध') }}</span><b>{{ money(v.amounts.available_to_report) }}</b></div>
+    @if (v.amounts.confirmed_unpaid === 0) { <p class="success" role="status">{{ tr('The recipient has confirmed the full freight amount. Platform fees remain separate.', 'प्राप्तकर्ता ने पूरे भाड़े की प्राप्ति पुष्ट कर दी है। प्लेटफॉर्म शुल्क अलग हैं।') }}</p> }
+    <p class="muted">{{ tr('Shipper platform fee', 'शिपर प्लेटफॉर्म शुल्क') }}: {{ money(v.amounts.owner_fee) }} · {{ tr('Provider platform fee', 'प्रदाता प्लेटफॉर्म शुल्क') }}: {{ money(v.amounts.provider_fee) }}. {{ tr('Fee collection and booking security tokens are separate; these receipts do not mark either as paid or refunded.', 'शुल्क व बुकिंग सुरक्षा टोकन अलग हैं; इन रसीदों से उनका भुगतान या रिफंड दर्ज नहीं होता।') }}</p>
+    <p class="notice">{{ tr('Earlier recorded payment statuses are shown separately and have not been treated as recipient-confirmed receipts.', 'पहले दर्ज भुगतान स्थितियाँ अलग हैं और उन्हें प्राप्तकर्ता द्वारा पुष्ट रसीद नहीं माना गया है।') }}</p>
+    @if (!v.eligible) { <p>{{ tr('Bank instructions and receipt actions are locked until the booking and both security tokens are confirmed. Cancelled and disputed bookings stay locked.', 'बुकिंग व दोनों सुरक्षा टोकन पुष्ट होने तक बैंक निर्देश व रसीद कार्रवाई बंद हैं। रद्द व विवादित बुकिंग बंद रहेंगी।') }}</p> }
+    @else {
+      @if (v.allocation === 'unconfigured') { <p class="notice">{{ tr('Direct payment instructions are not available yet. Contact support.', 'सीधे भुगतान के निर्देश अभी उपलब्ध नहीं हैं। सहायता से संपर्क करें।') }}</p> }
+      @if (v.side === 'recipient') { <a class="btn btn-outline btn-sm" [routerLink]="[session.portal().basePath, 'profile']">{{ tr('Manage recipient bank account', 'प्राप्तकर्ता बैंक खाता प्रबंधित करें') }}</a> }
+      @if (v.bank; as b) {
+        <p data-booking-bank-status>{{ b.account_mask }} · {{ tr('Version', 'संस्करण') }} {{ b.version }} · {{ b.status === 'manually_reviewed' ? tr('Manually reviewed', 'मैनुअल समीक्षा पूरी') : b.status === 'rejected' ? tr('Rejected', 'अस्वीकृत') : tr('Pending admin review', 'एडमिन समीक्षा लंबित') }}</p>
+        @if (b.status === 'manually_reviewed') {
+          <p>{{ b.holder_name }} · {{ b.bank_name }} · {{ b.ifsc }}</p>
+          <p class="muted">{{ tr('Manual review is recorded; independent bank verification has not been performed. Confirm the recipient and current instructions before transferring.', 'मैनुअल समीक्षा दर्ज है; स्वतंत्र बैंक सत्यापन नहीं हुआ है। ट्रांसफर से पहले प्राप्तकर्ता व वर्तमान निर्देश जाँचें।') }}</p>
+          <div class="field"><label [for]="'payment-password-' + bookingUuid()">{{ tr('Current password to acknowledge or reveal', 'स्वीकार या देखने हेतु वर्तमान पासवर्ड') }}</label><input class="input" type="password" [id]="'payment-password-' + bookingUuid()" [(ngModel)]="password" autocomplete="current-password" maxlength="128" [disabled]="busy()" /></div>
+          <div class="actions">
+            @if (v.side === 'payer' && !v.instruction?.current) { <button type="button" class="btn btn-primary" [disabled]="busy() || !password || v.allocation === 'unconfigured'" (click)="acknowledge()">{{ tr('Acknowledge bank instructions', 'बैंक निर्देश स्वीकार करें') }}</button> }
+            @if (v.instruction?.current) { <button type="button" class="btn btn-outline" [disabled]="busy() || !password" (click)="reveal()">{{ tr('Reveal account for 60 seconds', 'खाता 60 सेकंड के लिए देखें') }}</button> }
+          </div>
+          @if (full(); as f) { <div class="secret" data-full-bank><p>{{ f.holder_name }} · {{ f.bank_name }}</p><p>{{ tr('Account number', 'खाता नंबर') }}: <b>{{ f.account_number }}</b></p><p>IFSC: {{ f.ifsc }}</p><button type="button" class="btn btn-outline btn-sm" (click)="hide()">{{ tr('Hide account', 'खाता छुपाएँ') }}</button></div> }
+          @if (v.side === 'payer' && v.instruction?.current && v.allowed_milestones.length && v.amounts.available_to_report > 0) {
+            <h3>{{ tr('Report an external transfer', 'बाहरी ट्रांसफर रिपोर्ट करें') }}</h3>
+            <p class="muted">{{ tr('Make the transfer in your bank app first, then enter its actual reference. The recipient must confirm receipt.', 'पहले अपने बैंक ऐप से ट्रांसफर करें, फिर उसका वास्तविक संदर्भ दर्ज करें। प्राप्तकर्ता को प्राप्ति पुष्ट करनी होगी।') }}</p>
+            <form (ngSubmit)="report()"><fieldset [disabled]="busy()">
+              <div class="field"><label [for]="'receipt-stage-' + bookingUuid()">{{ tr('Payment stage', 'भुगतान चरण') }}</label><select class="input" [id]="'receipt-stage-' + bookingUuid()" name="milestone" [(ngModel)]="milestone">@for (m of v.allowed_milestones; track m) { <option [value]="m">{{ m === 'final' ? tr('Final freight', 'अंतिम भाड़ा') : m === 'loading_advance' ? tr('Loading advance', 'लोडिंग अग्रिम') : tr('Mid-trip milestone', 'मध्य यात्रा चरण') }}</option> }</select></div>
+              @if (milestone === 'mid_trip') { <div class="field"><label for="receipt-mid">{{ tr('Saved milestone', 'सहेजा गया चरण') }}</label><select id="receipt-mid" class="input" name="milestone_uuid" [(ngModel)]="milestoneUuid" required><option value="">{{ tr('Select milestone', 'चरण चुनें') }}</option>@for (m of v.milestones; track m.uuid) { <option [value]="m.uuid">{{ m.trigger }} · {{ money(m.amount) }}</option> }</select></div> }
+              <div class="grid"><div class="field"><label for="receipt-amount">{{ tr('Transferred amount (₹)', 'ट्रांसफर राशि (₹)') }}</label><input id="receipt-amount" class="input" name="amount" type="number" [(ngModel)]="amount" required min="0.01" step="0.01" [max]="v.amounts.available_to_report" /></div><div class="field"><label for="receipt-date">{{ tr('Transfer date', 'ट्रांसफर तारीख') }}</label><input id="receipt-date" class="input" name="transfer_date" type="date" [(ngModel)]="transferDate" required /></div></div>
+              <div class="field"><label for="receipt-reference">{{ tr('Transfer reference / UTR', 'ट्रांसफर संदर्भ / UTR') }}</label><input id="receipt-reference" class="input" name="reference" [(ngModel)]="reference" required minlength="6" maxlength="50" autocomplete="off" /></div>
+              <div class="actions"><button type="submit" class="btn btn-primary">@if (busy()) {<span class="spinner" aria-hidden="true"></span>}{{ tr('Report transfer', 'ट्रांसफर रिपोर्ट करें') }}</button><button type="button" class="btn btn-outline" (click)="newReport()">{{ tr('Start different transfer', 'अलग ट्रांसफर शुरू करें') }}</button></div>
+            </fieldset></form>
+          }
+        }
+      } @else { <p>{{ tr('The recipient must submit bank details from their profile before instructions can be shared.', 'निर्देश साझा करने से पहले प्राप्तकर्ता को प्रोफाइल से बैंक विवरण जमा करना होगा।') }}</p> }
+    }
+    <h3>{{ tr('Transfer reports and receipt decisions', 'ट्रांसफर रिपोर्ट व प्राप्ति निर्णय') }}</h3>
+    @for (r of v.receipts; track r.uuid) {
+      <article class="receipt" [attr.data-receipt]="r.uuid"><b>{{ money(r.amount) }} · {{ receiptStatus(r.status) }}</b><p>{{ date(r.transfer_date) }} · {{ r.reference }}</p><p class="muted">{{ r.account_mask }} · {{ tr('Bank version', 'बैंक संस्करण') }} {{ r.bank_version }} · {{ dateTime(r.decided_at || r.created_at) }}</p>@if (r.decision_note) { <p>{{ r.decision_note }}</p> }
+        @if (v.eligible && v.side === 'recipient' && r.status === 'reported_by_payer') {
+          <div class="field"><label [for]="'receipt-note-' + r.uuid">{{ tr('Decision note (required for dispute)', 'निर्णय नोट (विवाद हेतु आवश्यक)') }}</label><textarea class="input" [id]="'receipt-note-' + r.uuid" [(ngModel)]="notes[r.uuid]" maxlength="500" [disabled]="busy()"></textarea></div>
+          <div class="actions"><button type="button" class="btn btn-primary" [disabled]="busy()" (click)="decision(r.uuid, 'confirmed_received')">{{ tr('Confirm money received', 'राशि प्राप्ति पुष्ट करें') }}</button><button type="button" class="btn btn-outline" [disabled]="busy()" (click)="decision(r.uuid, 'disputed')">{{ tr('Dispute receipt', 'प्राप्ति विवाद दर्ज करें') }}</button></div>
+        }
+      </article>
+    } @empty { <p>{{ tr('No direct transfer reports yet.', 'अभी कोई सीधे ट्रांसफर की रिपोर्ट नहीं है।') }}</p> }
+    @if (v.receipt_page.last_page > 1) { <div class="actions"><button class="btn btn-outline" type="button" [disabled]="busy() || v.receipt_page.current_page <= 1" (click)="load(v.receipt_page.current_page - 1)">{{ tr('Previous', 'पिछला') }}</button><span>{{ v.receipt_page.current_page }} / {{ v.receipt_page.last_page }}</span><button class="btn btn-outline" type="button" [disabled]="busy() || v.receipt_page.current_page >= v.receipt_page.last_page" (click)="load(v.receipt_page.current_page + 1)">{{ tr('Next', 'अगला') }}</button></div> }
+  } }
+</section>

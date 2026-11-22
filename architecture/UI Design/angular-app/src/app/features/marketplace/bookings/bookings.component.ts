@@ -17,6 +17,7 @@ import { formatDateTime } from '../../../core/utils/date-format';
 import { Subscription, switchMap, timeout, TimeoutError } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BookingDirectPaymentsComponent } from '../../recipient-payments/booking-direct-payments.component';
 
 /** A provider vehicle shown in the booking-assignment selector. */
 interface AssignmentVehicleOption {
@@ -38,11 +39,13 @@ interface AssignmentVehicleOption {
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe, RouterLink],
+  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe, RouterLink, BookingDirectPaymentsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookings.component.html',
 })
 export class BookingsComponent {
+  protected readonly directManaged = signal<Record<string, boolean>>({});
+  protected directState(id: string, managed: boolean) { this.directManaged.update(s => ({ ...s, [id]: managed })); }
   private readonly marketplace = inject(MarketplaceMockService);
   private readonly payments = inject(PaymentMockService);
   private readonly fleet = inject(FleetMockService);
@@ -215,7 +218,8 @@ export class BookingsComponent {
   }
 
   protected finalSettlementPayable(booking: MarketplaceBooking): string {
-    const freight = this.amountNumber(this.remainingFreightBalance(booking));
+    // Only recorded releases reduce what is owed. Planned allocations are not payments.
+    const freight = this.amountNumber(this.freightNotRecordedReleased(booking));
     const shipperFee = this.amountNumber(booking.settlement?.shipperCommission ?? '₹0');
     return this.currency(freight + shipperFee);
   }
@@ -228,6 +232,25 @@ export class BookingsComponent {
 
   protected releasedMilestones(booking: MarketplaceBooking) {
     return booking.settlementPlan.filter((milestone) => milestone.label !== 'Final Settlement' && milestone.status === 'Released');
+  }
+
+  protected tokenStatusKey(status: string): string {
+    const keys: Record<string, string> = { Pending: 'pending', Paid: 'paid', 'Refund Pending': 'refundPending',
+      Refunded: 'refunded', 'Forfeiture Pending': 'forfeiturePending', Forfeited: 'forfeited', Unknown: 'unknown' };
+    return 'bookings.tokenStatus.' + (keys[status] ?? 'unknown');
+  }
+
+  private tokenStatus(status: string | null | undefined): MarketplaceBooking['ownerDeposit']['status'] {
+    const statuses: Record<string, MarketplaceBooking['ownerDeposit']['status']> = {
+      awaiting_payment: 'Pending', paid: 'Paid', refund_pending: 'Refund Pending', refunded: 'Refunded',
+      forfeiture_pending: 'Forfeiture Pending', forfeited: 'Forfeited',
+    };
+    return status ? statuses[status] ?? 'Unknown' : 'Pending';
+  }
+
+  private tokenAmount(value: number | string | undefined): string {
+    const amount = Number(value);
+    return value === undefined || !Number.isFinite(amount) || amount < 0 ? '—' : this.currency(amount);
   }
 
   // Deposit payment modal (simulated payment)
@@ -962,9 +985,10 @@ export class BookingsComponent {
       counterpartyRole: owner ? 'transporter' : this.session.role(), counterpartyName: owner ? 'Transport provider' : this.session.user().name,
       vehicleRegNumber: workflow.vehicle_assignment?.vehicle_reg_number ?? '—', amount, status: stage,
       timeline: BOOKING_TIMELINE_STAGES.map((timelineStage, index) => ({ stage: timelineStage, completed: index <= timelineIndex, timestamp: index <= timelineIndex && timelineTimestamps[timelineStage] ? formatDateTime(timelineTimestamps[timelineStage]) : undefined })),
-      ownerDeposit: { role: owner ? this.session.role() : 'shipper', partyName: owner ? this.session.user().name : 'Shipper', amount: '₹1,000', status: booking.owner_token_status === 'paid' ? 'Paid' : 'Pending' },
-      counterpartyDeposit: { role: owner ? 'transporter' : this.session.role(), partyName: owner ? 'Transport provider' : this.session.user().name, amount: '₹1,000', status: booking.provider_token_status === 'paid' ? 'Paid' : 'Pending' },
-      escrowStatus: booking.status === 'completed' ? 'Released' : booking.status === 'confirmed' || booking.status === 'in_transit' ? 'Locked' : 'Awaiting Deposits', settlementPlan,
+      ownerDeposit: { role: owner ? this.session.role() : 'shipper', partyName: owner ? this.session.user().name : 'Shipper', amount: this.tokenAmount(booking.owner_token_amount), status: this.tokenStatus(booking.owner_token_status) },
+      counterpartyDeposit: { role: owner ? 'transporter' : this.session.role(), partyName: owner ? 'Transport provider' : this.session.user().name, amount: this.tokenAmount(booking.provider_token_amount), status: this.tokenStatus(booking.provider_token_status) },
+      // Legacy prototype field; backend UI displays individual provider-recorded token states.
+      escrowStatus: booking.owner_token_status === 'refunded' && booking.provider_token_status === 'refunded' ? 'Released' : 'Awaiting Deposits', settlementPlan,
       vehicleAssignment: workflow.vehicle_assignment ? { mode: workflow.vehicle_assignment.mode, vehicleRegNumber: workflow.vehicle_assignment.vehicle_reg_number, subcontractedTo: workflow.vehicle_assignment.subcontracted_to, assignedAt: formatDateTime(workflow.vehicle_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
       driverAssignment: workflow.driver_assignment ? { driverName: workflow.driver_assignment.driver_name, driverPhone: workflow.driver_assignment.driver_phone, assignedAt: formatDateTime(workflow.driver_assignment.assigned_at ?? booking.created_at ?? 'Just now') } : undefined,
       loadingConfirmedAt: workflow.loading_confirmed_at,
@@ -995,12 +1019,12 @@ export class BookingsComponent {
       settlement: booking.settlement ? {
         status: booking.settlement.status,
         freightAmount: amount, grossFreightAmount: amount,
-        commissionDeducted: `₹${Number(booking.provider_fee ?? 0).toLocaleString('en-IN')}`,
-        shipperCommission: `₹${Number(booking.shipper_fee ?? 0).toLocaleString('en-IN')}`,
+        commissionDeducted: `₹${Number(booking.provider_fee ?? booking.settlement.provider_fee ?? 0).toLocaleString('en-IN')}`,
+        shipperCommission: `₹${Number(booking.shipper_fee ?? booking.settlement.shipper_fee ?? 0).toLocaleString('en-IN')}`,
         shipperPayable: `₹${Number(booking.settlement.shipper_payable ?? 0).toLocaleString('en-IN')}`,
-        totalCommission: `₹${Number((booking.settlement.shipper_fee ?? 0) + (booking.settlement.provider_fee ?? 0)).toLocaleString('en-IN')}`,
+        totalCommission: `₹${(Number(booking.settlement.shipper_fee ?? 0) + Number(booking.settlement.provider_fee ?? 0)).toLocaleString('en-IN')}`,
         payoutAmount: `₹${Number(booking.settlement.provider_payout ?? 0).toLocaleString('en-IN')}`,
-        depositsReleased: true, settledAt: formatDateTime(booking.settlement.settled_at),
+        depositsReleased: booking.owner_token_status === 'refunded' && booking.provider_token_status === 'refunded', settledAt: formatDateTime(booking.settlement.settled_at),
       } : undefined,
     };
   }

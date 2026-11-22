@@ -12,6 +12,7 @@ import { PaymentMockService } from '../../../core/services/payment-mock.service'
 import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { SessionService } from '../../../core/services/session.service';
+import { MarketplaceBooking } from '../../../core/models/marketplace.model';
 
 type Harness = {
   backendBookings: WritableSignal<ApiMarketplaceBooking[]>;
@@ -25,6 +26,11 @@ type Harness = {
   confirmAssignVehicle(): void;
   retryBookings(): void;
   workflowActionErrorFor(id: string, action: string): string;
+  mapBackendBooking(booking: ApiMarketplaceBooking): MarketplaceBooking;
+  finalSettlementPayable(booking: MarketplaceBooking): string;
+  freightNotRecordedReleased(booking: MarketplaceBooking): string;
+  openOfflinePayment(booking: MarketplaceBooking): void;
+  offlineAmount(): number | null;
 };
 
 describe('Bookings request efficiency and recovery', () => {
@@ -69,6 +75,57 @@ describe('Bookings request efficiency and recovery', () => {
     fixture = TestBed.createComponent(BookingsComponent);
     return fixture.componentInstance as unknown as Harness;
   }
+
+  const settlement = { uuid: 'settlement', booking_uuid: 'booking-first', gross_freight: '17000.00',
+    shipper_fee: 1003, provider_fee: 1003, shipper_payable: 18003, provider_payout: 15997, status: 'pending' };
+  for (const [name, advance, midReleased, expected] of [
+    ['neither planned payment released', false, false, 18003],
+    ['advance released only', true, false, 11203],
+    ['mid-trip released without advance', false, true, 16003],
+    ['advance and mid-trip released', true, true, 9203],
+  ] as const) it('calculates final payment from recorded releases: ' + name, () => {
+    const state = create();
+    const booking = state.mapBackendBooking({ ...first, gross_freight: '17000.00', settlement,
+      workflow: { ...(advance ? { released_milestones: { 'Loading Advance': '2026-11-21T10:00:00Z' } } : {}),
+        mid_trip_milestones: [{ id: 'mid', amount: '2000.00', trigger: 'Checkpoint', created_at: '2026-11-21T10:00:00Z',
+          ...(midReleased ? { released_at: '2026-11-21T10:05:00Z' } : {}) }] } });
+    expect(Number(state.finalSettlementPayable(booking).replace(/[^0-9.]/g, ''))).toBe(expected);
+    state.openOfflinePayment(booking); expect(state.offlineAmount()).toBe(expected);
+  });
+
+  it('keeps pending allocations separate and handles currency cents in the actual final balance', () => {
+    const state = create();
+    const booking = state.mapBackendBooking({ ...first, gross_freight: '100.01',
+      settlement: { ...settlement, shipper_fee: 3.14 }, workflow: {
+        released_milestones: { 'Loading Advance': '2026-11-21T10:00:00Z' },
+        mid_trip_milestones: [{ id: 'mid', amount: '0.01', trigger: 'Checkpoint', created_at: '', released_at: '2026-11-21T10:00:00Z' }],
+      } });
+    expect(Number(state.finalSettlementPayable(booking).replace(/[^0-9.]/g, ''))).toBe(63.14);
+  });
+
+  for (const [raw, expected] of [['paid', 'Paid'], ['refund_pending', 'Refund Pending'], ['refunded', 'Refunded'],
+    ['forfeiture_pending', 'Forfeiture Pending'], ['forfeited', 'Forfeited'], ['unrecognized', 'Unknown']] as const)
+    it('preserves recorded token state after settlement: ' + raw, () => {
+      const state = create();
+      const booking = state.mapBackendBooking({ ...first, status: 'completed', settlement: { ...settlement, status: 'settled' },
+        owner_token_status: raw, provider_token_status: 'paid', owner_token_amount: '1500.50', provider_token_amount: '1200.00' });
+      expect(booking.ownerDeposit.status).toBe(expected); expect(booking.counterpartyDeposit.status).toBe('Paid');
+      expect(Number(booking.ownerDeposit.amount.replace(/[^0-9.]/g, ''))).toBe(1500.5);
+      expect(booking.escrowStatus).not.toBe('Released'); expect(booking.settlement!.depositsReleased).toBeFalse();
+    });
+
+  it('marks both tokens returned only from both recorded refunded statuses, independently of trip stage', () => {
+    const state = create();
+    const booking = state.mapBackendBooking({ ...first, status: 'cancelled', settlement,
+      owner_token_status: 'refunded', provider_token_status: 'refunded' });
+    expect(booking.settlement!.depositsReleased).toBeTrue(); expect(booking.ownerDeposit.status).toBe('Refunded');
+  });
+
+  it('adds decimal fee strings numerically instead of concatenating them', () => {
+    const state = create();
+    const booking = state.mapBackendBooking({ ...first, settlement: { ...settlement, shipper_fee: '1003.00', provider_fee: '1003.00' } as any });
+    expect(booking.settlement!.totalCommission).toBe('₹2,006');
+  });
 
   it('loads an exact linked booking even when it is outside the first list page', () => {
     const uuid = '12345678-1234-1234-1234-123456789012';

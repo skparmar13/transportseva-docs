@@ -118,7 +118,7 @@ export interface BookingTimelineEvent {
   timestamp?: string;
 }
 
-export type DepositPartyStatus = 'Pending' | 'Paid';
+export type DepositPartyStatus = 'Pending' | 'Paid' | 'Refund Pending' | 'Refunded' | 'Forfeiture Pending' | 'Forfeited' | 'Unknown';
 
 /** One side's booking token; the regulated provider handles the funds, while this record tracks payment state. */
 export interface BookingDeposit {

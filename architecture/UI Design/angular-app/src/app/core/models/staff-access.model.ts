@@ -17,10 +17,13 @@ export interface StaffAccessReadiness {
 
 // Display/navigation only: the API independently authorizes every request.
 export function staffRouteAllowed(access: StaffAccess | null | undefined, path: string): boolean {
+  if (path === 'bank-reviews') return !!access?.ready && access.role_code === 'SUPER_ADMIN'
+    && access.routes.includes(path) && access.permissions.includes('recipient.bank.review');
   if (!access?.enforced) return true;
   if (path === 'access' || path === 'notifications') return true;
   if (!access.ready || !access.routes.includes(path)) return false;
   const capability: Record<string, string> = {
+    'bank-reviews': 'recipient.bank.review',
     reviews: 'marketplace.reviews.view', kyc: 'marketplace.kyc.view', audit: 'admin.audit.view',
     roles: 'role.view', bookings: 'marketplace.bookings.view', 'contact-inquiries': 'contact.inquiries.view',
     support: 'support.tickets.view', newsletter: 'newsletter.subscribers.view', dashboard: 'admin.dashboard.view', reports: 'admin.reports.view',

@@ -6,6 +6,13 @@ describe('Staff capability navigation', () => {
   const access: StaffAccess = { enforced: true, ready: true, role_code: 'OPERATIONS_MANAGER', role_name: 'Operations Manager',
     permissions: ['marketplace.reviews.view', 'admin.audit.view'], routes: ['access', 'notifications', 'reviews', 'audit'], blocked_reason: null };
   afterEach(() => localStorage.clear());
+  it('requires explicit Super Admin bank-review access even when general enforcement is off', () => {
+    const bank = { ...access, enforced: false, role_code: 'SUPER_ADMIN', routes: ['bank-reviews'], permissions: ['recipient.bank.review'] };
+    expect(staffRouteAllowed(bank, 'bank-reviews')).toBeTrue();
+    expect(staffRouteAllowed({ ...bank, permissions: [] }, 'bank-reviews')).toBeFalse();
+    expect(staffRouteAllowed({ ...bank, role_code: 'KYC_OFFICER' }, 'bank-reviews')).toBeFalse();
+    expect(staffRouteAllowed(undefined, 'bank-reviews')).toBeFalse();
+  });
   it('requires both the enabled route and its capability', () => {
     const reports = { ...access, routes: ['reports'], permissions: ['admin.reports.view', 'marketplace.bookings.view'] };
     expect(staffRouteAllowed(reports, 'reports')).toBeTrue();

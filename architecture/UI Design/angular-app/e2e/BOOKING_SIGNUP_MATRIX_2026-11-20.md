@@ -1,5 +1,9 @@
 # Fresh signup and booking role matrix - 20/11/2026
 
+21/11 follow-up: the two financial display defects listed as remaining below
+are now fixed. Bank setup and recipient-confirmed receipt handling remain
+separate work. See [financial display fixes](BOOKING_FINANCIAL_FIXES_2026-11-21.md).
+
 **All four supported booking pairings completed using newly signed-up accounts
 in `transportseva`.** Five accounts passed signup, mandatory profile completion,
 sandbox email verification and real logout/login. Each fresh load received

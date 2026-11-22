@@ -182,8 +182,10 @@ export interface ApiMarketplaceBooking {
     };
     dispute_decisions?: Record<string, Omit<DisputeDecision, 'resolution'> & { booking_decision: 'continue' | 'cancel'; recorded_at: string }>;
   };
-  owner_token_status?: string;
-  provider_token_status?: string;
+  owner_token_status?: string | null;
+  provider_token_status?: string | null;
+  owner_token_amount?: number | string;
+  provider_token_amount?: number | string;
   settlement?: ApiSettlement;
   dispute?: ApiDispute | null;
   viewer_side?: 'owner' | 'provider';
@@ -194,8 +196,8 @@ export interface ApiSettlement {
   uuid: string;
   booking_uuid: string;
   gross_freight: number | string;
-  shipper_fee: number;
-  provider_fee: number;
+  shipper_fee: number | string;
+  provider_fee: number | string;
   shipper_payable: number;
   provider_payout: number;
   status: string;

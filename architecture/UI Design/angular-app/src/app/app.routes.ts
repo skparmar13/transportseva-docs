@@ -60,6 +60,7 @@ export const routes: Routes = [
       { path: 'dashboard', title: 'TransportSeva | Admin Console', loadComponent: () => API_CONFIG.useBackend
         ? import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
         : import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+      { path: 'bank-reviews', title: 'Recipient Bank Reviews | TransportSeva', loadComponent: () => import('./features/recipient-payments/recipient-bank-review.component').then(m => m.RecipientBankReviewComponent) },
       { path: 'companies', title: 'Company Management | Admin Console | TransportSeva', loadComponent: () => import('./features/admin/company-management/company-management.component').then((m) => m.CompanyManagementComponent) },
       { path: 'users', title: 'Staff Management | Admin Console | TransportSeva', loadComponent: () => API_CONFIG.useBackend
         ? import('./features/admin/staff-access/staff-access.component').then((m) => m.StaffAccessComponent)

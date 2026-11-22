@@ -1,5 +1,8 @@
 # Booking flow and financial audit - 20/11/2026
 
+21/11 follow-up: the unpaid-advance and completion-based token-release display
+defects below are now fixed. See [fixes, tests and remaining bank/receipt scope](BOOKING_FINANCIAL_FIXES_2026-11-21.md).
+
 **Result: the core authenticated booking lifecycle passes, but the entire
 booking UI is not ready for an unconditional pass.** An unreleased-advance
 balance defect and misleading token-release display remain. Historical QA
