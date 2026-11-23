@@ -417,6 +417,15 @@ test('assigned booking pauses for dispute, resumes after admin call, and cancell
 
 test('a disputed direct receipt reserves funds without claiming confirmation or admin resolution', async ({ page }) => {
   const j = await focusedBooking(page, 'receipt-dispute'); if (j.passed) return;
+  await login(page, actor(j.owner)); const persisted = await api(page, `marketplace-bookings/${j.booking.uuid}`);
+  if (persisted.status === 'completed' && persisted.workflow.pod?.status === 'approved') {
+    j.booking = persisted; const current = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`);
+    if (current.amounts.available_to_report > 0) await transfer(page, j, 'final', current.amounts.available_to_report);
+    await login(page, actor(j.owner)); j.ledger = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`);
+    expect(j.ledger.amounts.confirmed_received).toBe(j.freight - 500); expect(j.ledger.amounts.confirmed_unpaid).toBe(500);
+    expect(j.ledger.amounts.awaiting_or_disputed).toBe(500); expect(j.ledger.amounts.available_to_report).toBe(0);
+    j.final = persisted; j.passed = true; await note(j, 'Resumed after persisted POD approval; gross less disputed 500 confirmed, disputed reservation unchanged'); return;
+  }
   await focusedTokens(page, j); await focusedAssignments(page, j); let card = await openBooking(page, actor(j.winner), j);
   if (!j.booking.workflow.loading_completed_at) await workflow(page, j, () => card.getByRole('button', { name: 'Mark Loading Completed', exact: true }).click());
   await login(page, actor(j.owner)); card = await openBooking(page, actor(j.owner), j); if (!j.booking.workflow.loading_confirmed_at) await workflow(page, j, () => card.getByRole('button', { name: 'Confirm Loading', exact: true }).click());
@@ -494,4 +503,36 @@ test('each fresh booking event notifies the correct participant and declined app
     coverage.push({ key, booking: j.booking.booking_reference, ownerEvents: ownerTitles.length, providerEventTypes: providerTitles.length, confirmedReceipts: providerReports.length, declinedApplicants: 2 });
   }
   state.checks.notificationCoverage = coverage; await save();
+});
+
+test('resume the saved approved POD booking without duplicating transfers', async ({ page }) => {
+  const j = state.checks.edgeCases['pod-refresh']; expect(j).toBeTruthy();
+  await login(page, actor(j.owner)); j.booking = await api(page, `marketplace-bookings/${j.booking.uuid}`);
+  expect(j.booking.workflow.pod.status).toBe('approved');
+  await transfer(page, j, 'final', j.freight);
+  await login(page, actor(j.owner)); j.ledger = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`);
+  expect(j.ledger.amounts.confirmed_unpaid).toBe(0); j.final = j.booking; j.passed = true; await save();
+});
+
+test('fresh POD approval enables final freight reporting on the same page', async ({ page }) => {
+  // A separate retained case proves the live transition; a reload of an
+  // already approved POD cannot prove that the parent refresh binding works.
+  const j = await focusedBooking(page, 'pod-refresh-current-build'); if (j.passed) return;
+  await focusedTokens(page, j); await focusedAssignments(page, j); const provider = actor(j.winner), owner = actor(j.owner);
+  let card = await openBooking(page, provider, j); await workflow(page, j, () => card.getByRole('button', { name: 'Mark Loading Completed', exact: true }).click());
+  await login(page, owner); card = await openBooking(page, owner, j); await workflow(page, j, () => card.getByRole('button', { name: 'Confirm Loading', exact: true }).click());
+  let panel = card.locator('[data-direct-payments]'); await panel.locator('input[type=password]').fill(password);
+  await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/bank-instructions`, () => panel.getByRole('button', { name: 'Acknowledge bank instructions' }).click());
+  await login(page, provider); card = await openBooking(page, provider, j); await workflow(page, j, () => card.getByRole('button', { name: 'Start Trip', exact: true }).click());
+  await workflow(page, j, () => card.getByRole('button', { name: 'Mark Trip Completed', exact: true }).click());
+  await card.getByRole('button', { name: 'Upload POD', exact: true }).click(); await page.locator('input[name=podNumber]').fill(`QA-FRESH-POD-${run}`); await page.locator('input[name=podReceivedBy]').fill('QA synthetic consignee');
+  await page.locator('#pod-file').setInputFiles({ name: 'qa-fresh-pod.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64') });
+  j.booking = await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/pod`, () => page.getByRole('button', { name: 'Submit POD', exact: true }).click(), 201); await save();
+  await login(page, owner); card = await openBooking(page, owner, j); panel = card.locator('[data-direct-payments]');
+  await expect(panel.locator('select[name=milestone]')).toHaveCount(0);
+  await card.getByRole('button', { name: 'Approve POD', exact: true }).click();
+  j.booking = await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/pod/review`, () => page.getByRole('dialog').getByRole('button', { name: 'Approve POD', exact: true }).click()); await save();
+  await expect(panel.locator('select[name=milestone]')).toHaveValue('final');
+  await transfer(page, j, 'final', j.freight); await login(page, owner); j.ledger = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`);
+  expect(j.ledger.amounts.confirmed_unpaid).toBe(0); j.final = await api(page, `marketplace-bookings/${j.booking.uuid}`); j.passed = true; await save();
 });
