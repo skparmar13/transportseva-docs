@@ -7,11 +7,12 @@ import { ApiMarketplaceDriver, ApiMarketplaceService } from '../../../core/api/a
 import { SessionService } from '../../../core/services/session.service';
 import { LanguageService } from '../../../core/i18n';
 import { formatDate } from '../../../core/utils/date-format';
+import { AssetComplianceComponent } from '../../fleet/compliance/asset-compliance.component';
 
 type State = { status: 'loading' | 'ready' | 'not-found' | 'forbidden' | 'error'; driver?: ApiMarketplaceDriver };
 
 @Component({
-  selector: 'app-registered-driver-details', standalone: true, imports: [RouterLink],
+  selector: 'app-registered-driver-details', standalone: true, imports: [RouterLink, AssetComplianceComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './registered-driver-details.component.html',
 })

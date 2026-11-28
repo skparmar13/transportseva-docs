@@ -1,0 +1,3 @@
+.tracking-spinner { display:inline-block; width:14px; height:14px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; animation:tracking-spin .8s linear infinite; }
+@keyframes tracking-spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce) { .tracking-spinner { animation:none; } }

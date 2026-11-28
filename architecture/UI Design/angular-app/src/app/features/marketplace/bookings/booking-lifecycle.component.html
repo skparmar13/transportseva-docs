@@ -1,0 +1,36 @@
+<section data-booking-lifecycle [attr.aria-label]="tr('Operational and financial status', 'यात्रा और वित्तीय स्थिति')">
+  @if (value(); as v) {
+    <div class="status-grid">
+      <article data-life-group="trip"><h3>{{ tr('Trip progress', 'यात्रा की प्रगति') }}</h3><strong>{{ label(v.trip.status) }}</strong>
+        @if (v.trip.delivered_at) { <p>{{ date(v.trip.delivered_at) }}</p> }
+        @if (v.trip.blocked_by_dispute) { <p class="attention">{{ tr('Actions paused for dispute review', 'विवाद समीक्षा हेतु कार्रवाई रुकी है') }}</p> }
+      </article>
+      <article data-life-group="pod"><h3>{{ tr('Delivery proof', 'डिलीवरी प्रमाण') }}</h3><strong>{{ label(v.pod.status) }}</strong>@if (v.pod.reviewed_at) { <p>{{ date(v.pod.reviewed_at) }}</p> }</article>
+      <article data-life-group="freight"><h3>{{ tr('Direct freight', 'सीधा भाड़ा') }}</h3><strong>{{ label(v.freight.status) }}</strong>
+        <p>{{ tr('Recipient confirmed', 'प्राप्तकर्ता ने पुष्ट किया') }}: <b>{{ money(v.freight.confirmed) }}</b></p>
+        <p>{{ tr('Freight remaining', 'शेष भाड़ा') }}: <b>{{ money(v.freight.unpaid) }}</b></p>
+        @if (v.freight.awaiting_confirmation) { <p>{{ tr('Awaiting confirmation', 'पुष्टि लंबित') }}: {{ money(v.freight.awaiting_confirmation) }}</p> }
+        @if (v.freight.disputed) { <p class="attention">{{ tr('Receipt disputed', 'प्राप्ति विवादित') }}: {{ money(v.freight.disputed) }}</p> }
+        @if (v.freight.allocation === 'net') { <p>{{ tr('Historical net-freight instructions', 'पुराने शुद्ध भाड़े के निर्देश') }}</p> }
+      </article>
+      <article data-life-group="fees"><h3>{{ tr('Platform fees', 'प्लेटफॉर्म शुल्क') }}</h3>
+        <p>{{ tr('Load owner', 'लोड मालिक') }}: <b>{{ money(v.platform_fees.owner.amount) }}</b><br><strong>{{ label(v.platform_fees.owner.status) }}</strong></p>
+        <p>{{ tr('Provider', 'प्रदाता') }}: <b>{{ money(v.platform_fees.provider.amount) }}</b><br><strong>{{ label(v.platform_fees.provider.status) }}</strong></p>
+        @if (v.platform_fees.admin_decision) { <p>{{ label(v.platform_fees.admin_decision) }}</p> }
+      </article>
+      <article data-life-group="tokens"><h3>{{ tr('Booking tokens', 'बुकिंग टोकन') }}</h3>
+        <p>{{ tr('Load owner', 'लोड मालिक') }}: <span data-owner-token-status>{{ money(v.tokens.owner.amount) }} · <strong>{{ label(v.tokens.owner.status) }}</strong></span></p>
+        @if (v.tokens.owner.admin_decision) { <p>{{ label(v.tokens.owner.admin_decision) }}</p> }
+        <p>{{ tr('Provider', 'प्रदाता') }}: <span data-provider-token-status>{{ money(v.tokens.provider.amount) }} · <strong>{{ label(v.tokens.provider.status) }}</strong></span></p>
+        @if (v.tokens.provider.admin_decision) { <p>{{ label(v.tokens.provider.admin_decision) }}</p> }
+      </article>
+    </div>
+    <p class="explanation" data-token-disposition-note>{{ tr('Delivery, freight receipts, platform fees and token refunds are separate. An admin decision does not itself transfer or refund money.', 'डिलीवरी, भाड़े की प्राप्ति, प्लेटफॉर्म शुल्क और टोकन रिफंड अलग हैं। केवल एडमिन के निर्णय से राशि ट्रांसफर या रिफंड नहीं होती।') }}</p>
+    @if (v.legacy_settlement; as legacy) {
+      <details data-legacy-settlement><summary>{{ tr('Earlier settlement record', 'पहले का निपटान रिकॉर्ड') }}</summary>
+        <p>{{ tr('Recorded status', 'दर्ज स्थिति') }}: {{ legacy.status }}@if (legacy.recorded_at) { · {{ date(legacy.recorded_at) }} }</p>
+        <p>{{ tr('This earlier record does not establish freight received, fee collection or token refunds.', 'इस पुराने रिकॉर्ड से भाड़े की प्राप्ति, शुल्क वसूली या टोकन रिफंड प्रमाणित नहीं होता।') }}</p>
+      </details>
+    }
+  } @else { <p role="status">{{ tr('Booking status summary unavailable. Refresh the booking to retry.', 'बुकिंग स्थिति सारांश उपलब्ध नहीं है। फिर प्रयास करने हेतु बुकिंग रीफ़्रेश करें।') }}</p> }
+</section>

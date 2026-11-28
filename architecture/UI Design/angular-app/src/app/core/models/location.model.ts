@@ -8,4 +8,5 @@ export interface GeoLocation {
   longitude: number;
   source: 'geocoder';
   osmId?: string;
+  placeId?: string;
 }

@@ -4,13 +4,14 @@ import { ApiMarketplaceKycProfile, ApiMarketplaceService, MarketplaceKycStatus }
 import { apiErrorMessage } from '../../../core/api/api-error';
 import { formatDateTime } from '../../../core/utils/date-format';
 import { SessionService } from '../../../core/services/session.service';
+import { FleetComplianceReviewComponent } from '../../fleet/compliance/fleet-compliance-review.component';
 
 type KycFilter = MarketplaceKycStatus | 'all';
 
 @Component({
   selector: 'app-kyc-management',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, FleetComplianceReviewComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './kyc-management.component.html',
   styleUrl: './kyc-management.component.scss',

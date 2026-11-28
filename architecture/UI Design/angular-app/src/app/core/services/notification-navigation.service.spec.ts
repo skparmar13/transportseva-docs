@@ -18,6 +18,16 @@ describe('NotificationNavigationService', () => {
   });
   const kycUuid = '1b5ae2a3-67fa-4df0-b13c-7a20162ccf42';
 
+  it('opens the exact private fleet evidence or registered asset for the current portal', () => {
+    const session = TestBed.inject(SessionService), router = TestBed.inject(Router), service = TestBed.inject(NotificationNavigationService);
+    const notice = { id: 'fleet', category: 'System' as const, title: 'Fleet documents updated', message: '', timestamp: '', read: false,
+      data: { fleet_compliance_uuid: kycUuid, asset_uuid: kycUuid, asset_type: 'driver' } };
+    session.setRole('admin'); expect(router.serializeUrl(service.destination(notice)!)).toBe('/admin/kyc?fleet=' + kycUuid);
+    session.setRole('truck-owner'); expect(router.serializeUrl(service.destination(notice)!)).toBe('/truck-owner/drivers/' + kycUuid);
+    session.setRole('transporter'); expect(router.serializeUrl(service.destination(notice)!)).toBe('/transporter/fleet/drivers/' + kycUuid);
+    session.setRole('shipper'); expect(service.destination(notice)).toBeNull();
+  });
+
   it('opens the current account business profile for a saved-profile notification', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const service = TestBed.inject(NotificationNavigationService);

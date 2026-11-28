@@ -18,7 +18,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const router = inject(Router);
   const auth = inject(ApiAuthService);
   // Recovery is anonymous; rejected recovery proof must not refresh a session.
-  if (request.url.includes('/auth/password/') || request.url.endsWith('/public/contact-inquiries')) return next(request);
+  if (request.url.includes('/auth/password/') || request.url.endsWith('/public/contact-inquiries') || request.url.startsWith(API_CONFIG.baseUrl + '/public/maps/')) return next(request);
   const token = typeof localStorage === 'undefined' ? null : localStorage.getItem('transportseva.access_token');
   const outgoing = token ? request.clone({ setHeaders: { Authorization: 'Bearer ' + token } }) : request;
   return next(outgoing).pipe(catchError((error: unknown) => {

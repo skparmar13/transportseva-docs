@@ -16,6 +16,7 @@ export interface DirectReceipt {
   decision_note: string | null; decided_at: string | null; created_at: string; account_mask: string; bank_version: number;
 }
 export interface DirectPaymentView {
+  lifecycle?: import('../models/booking-lifecycle.model').BookingLifecycle;
   booking_uuid: string; booking_reference: string; side: 'payer' | 'recipient'; eligible: boolean;
   allocation: 'gross' | 'net' | 'unconfigured'; bank: RecipientBank | null;
   instruction: { version: number; bank_uuid: string; bank_version: number; current: boolean; acknowledged_at: string } | null;

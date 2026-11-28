@@ -6,7 +6,11 @@
 <div class="doc-tabs">
   <button class="btn btn-outline" type="button" [attr.aria-pressed]="tab() === 'pods'" (click)="tab.set('pods')">{{ copy().pods }}</button>
   <button class="btn btn-outline" type="button" [attr.aria-pressed]="tab() === 'kyc'" (click)="tab.set('kyc')">{{ copy().kyc }}</button>
+  <button class="btn btn-outline" type="button" [attr.aria-pressed]="tab() === 'consignments'" (click)="tab.set('consignments')">{{ consignmentLabel() }}</button>
+  <button class="btn btn-outline" type="button" [attr.aria-pressed]="tab() === 'trip-files'" (click)="tab.set('trip-files')">{{ tripFileLabel() }}</button>
 </div>
+@if(tab()==='consignments'){<app-consignment-list />}
+@if(tab()==='trip-files'){<app-transport-document-list />}
 @if (loading()) {
   <div class="card doc-state" role="status"><span class="doc-spinner" aria-hidden="true"></span>{{ copy().loading }}</div>
 } @else if (error()) {
@@ -35,7 +39,7 @@
         <tbody>@for (pod of view.pods; track pod.booking_uuid) {
           <tr data-document-row>
             <td><b>{{ pod.booking_reference }}</b><p>{{ pod.load_reference || copy().missing }}</p><p>{{ pod.pickup_city || copy().missing }} → {{ pod.drop_city || copy().missing }}</p></td>
-            <td><b>{{ pod.file_name || copy().missing }}</b><p>POD: {{ pod.number || copy().missing }}</p><p>{{ copy().receiver }}: {{ pod.received_by || copy().missing }}</p><p>{{ copy().uploaded }}: {{ pod.uploaded_at ? dateTime(pod.uploaded_at) : copy().missing }}</p></td>
+            <td><b>{{ pod.file_name || copy().missing }}</b><p>POD: {{ pod.number || copy().missing }}</p>@if(pod.consignment;as lr){<p data-pod-lr-reference>{{ lr.document_type }} {{ lr.number }} · v{{ lr.version }}</p>}@for(ref of pod.transport_documents??[];track ref.uuid){<p data-pod-supporting-reference>{{ documentLabel(ref.kind) }} · {{ ref.reference }} · v{{ ref.version }}</p>}<p>{{ copy().receiver }}: {{ pod.received_by || copy().missing }}</p><p>{{ copy().uploaded }}: {{ pod.uploaded_at ? dateTime(pod.uploaded_at) : copy().missing }}</p></td>
             <td><b data-document-status>{{ copy()[pod.status] }}</b><p>{{ copy().reviewed }}: {{ pod.reviewed_at ? dateTime(pod.reviewed_at) : copy().missing }}</p>@if (pod.review_note) { <p class="doc-message">{{ pod.review_note }}</p> }</td>
             <td><div class="doc-actions">
               @if (pod.download_available) {
@@ -55,7 +59,7 @@
       <span>{{ copy().page }} {{ view.page }} {{ copy().of }} {{ view.lastPage }}</span>
       <button class="btn btn-outline" type="button" [disabled]="page() >= view.lastPage || !!downloading()" (click)="load(page() + 1)">{{ copy().next }}</button>
     </div>
-  } @else {
+  } @else if(tab()==='kyc') {
     <div class="card card-body" data-document-kyc>
       <h2>{{ copy().kyc }}</h2><p class="doc-hint">{{ copy().kycHint }}</p>
       @if (view.kyc; as kyc) {

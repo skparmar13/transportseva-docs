@@ -211,6 +211,7 @@ export interface SettlementMilestone {
 }
 
 export interface MarketplaceBooking {
+  lifecycle?: import('./booking-lifecycle.model').BookingLifecycle;
   id: string;
   bookingId: string;
   loadId: string;

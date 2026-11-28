@@ -1,0 +1,68 @@
+<section class="commercial-terms" aria-label="Commercial agreement">
+  <div class="heading"><h3>Commercial agreement</h3><button type="button" class="btn btn-outline btn-sm" [disabled]="loading() || !!busy()" (click)="refresh()">Refresh terms</button></div>
+  @if (loading()) { <p role="status"><span class="button-loader" aria-hidden="true"></span> Loading commercial terms…</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p role="status" class="notice">{{ notice() }}</p> }
+  @if (data(); as agreement) {
+    @if (!agreement.required) {
+      <p>Historical commercial terms were not recorded for this booking. No retrospective acceptance is assumed.</p>
+    } @else if (agreement.current; as version) {
+      <p><strong>Version {{ version.version }}</strong> · {{ agreement.status === 'agreed' ? 'Agreed by both parties' : 'Awaiting both parties’ acceptance' }}</p>
+      @if (version.financials.route) { <p>{{ version.financials.load_reference }} · {{ version.financials.route }}<br>{{ version.financials.goods }}</p> }
+      @if (version.financials.owner_name) { <p>Load owner: {{ version.financials.owner_name }}<br>Provider: {{ version.financials.provider_name }}</p> }
+      <dl>
+        <div><dt>Gross freight, per trip</dt><dd>{{ money(version.financials.gross_freight) }}</dd></div>
+        <div><dt>Load owner platform fee (separate)</dt><dd>{{ money(version.financials.owner_platform_fee) }}</dd></div>
+        <div><dt>Provider platform fee (separate)</dt><dd>{{ money(version.financials.provider_platform_fee) }}</dd></div>
+        <div><dt>Booking token, each party (separate)</dt><dd>{{ money(version.financials.token_each) }}</dd></div>
+        <div><dt>Loading advance</dt><dd>{{ version.terms.advance_percent }}% · {{ money(version.financials.advance_amount) }}</dd></div>
+        <div><dt>Balance before mid-trip payments</dt><dd>{{ money(version.financials.balance_before_mid_trip) }}</dd></div>
+        <div><dt>Advance required before dispatch</dt><dd>{{ version.terms.advance_before_dispatch ? 'Yes, recipient must confirm receipt' : 'No' }}</dd></div>
+        <div><dt>Balance due after approved POD</dt><dd>{{ version.terms.balance_due_days }} day(s)</dd></div>
+        @if (agreement.balance_due_at) { <div><dt>Agreed balance due date</dt><dd>{{ date(agreement.balance_due_at) }}</dd></div> }
+        <div><dt>Tolls</dt><dd>{{ version.terms.tolls.replaceAll('_', ' ') }}</dd></div>
+        <div><dt>Loading / unloading</dt><dd>{{ version.terms.loading.replaceAll('_', ' ') }} / {{ version.terms.unloading.replaceAll('_', ' ') }}</dd></div>
+        <div><dt>Free time at pickup / delivery</dt><dd>{{ version.terms.pickup_free_hours }} / {{ version.terms.delivery_free_hours }} hours</dd></div>
+        <div><dt>Detention rate, subject to approval</dt><dd>{{ money(version.terms.detention_rate_amount) }} {{ version.terms.detention_rate_unit.replaceAll('_', ' ') }}</dd></div>
+        <div><dt>Cargo insurance arrangement</dt><dd>{{ version.terms.cargo_insurance.replaceAll('_', ' ') }}</dd></div>
+        <div><dt>Cancellation</dt><dd>Documented admin review</dd></div>
+      </dl>
+      <p class="disclosure">Pay gross freight directly to the provider. Each party pays its own platform fee separately. Tokens are separate from freight and fees. Extra charges require approval; detention is not charged automatically. Insurance selection is not proof of coverage.</p>
+      <p>Load owner: {{ version.owner_accepted_at ? 'Accepted ' + date(version.owner_accepted_at) : 'Not accepted' }}<br>Provider: {{ version.provider_accepted_at ? 'Accepted ' + date(version.provider_accepted_at) : 'Not accepted' }}</p>
+      @if (canAgree()) {
+        @if (editing && draft) {
+          <form #termsForm="ngForm" (ngSubmit)="termsForm.valid && submit(true)" class="terms-form">
+            <label>Loading advance (%)<input class="input" name="advance" type="number" min="0" max="100" step="1" required [(ngModel)]="draft.advance_percent"></label>
+            <label><input type="checkbox" name="dispatch" [(ngModel)]="draft.advance_before_dispatch"> Require recipient-confirmed advance before dispatch</label>
+            <label>Balance due days after approved POD<input class="input" name="due" type="number" min="0" max="90" step="1" required [(ngModel)]="draft.balance_due_days"></label>
+            <label>Tolls<select class="input" name="tolls" [(ngModel)]="draft.tolls"><option value="included">Included</option><option value="separate_with_approval">Separate, with approval</option></select></label>
+            <label>Loading<select class="input" name="loading" [(ngModel)]="draft.loading"><option value="included">Included</option><option value="shipper_arranged">Load owner arranges</option><option value="separate_with_approval">Separate, with approval</option></select></label>
+            <label>Unloading<select class="input" name="unloading" [(ngModel)]="draft.unloading"><option value="included">Included</option><option value="shipper_arranged">Load owner arranges</option><option value="separate_with_approval">Separate, with approval</option></select></label>
+            <label>Free pickup hours<input class="input" name="pickupFree" type="number" min="0" max="168" step="1" required [(ngModel)]="draft.pickup_free_hours"></label>
+            <label>Free delivery hours<input class="input" name="deliveryFree" type="number" min="0" max="168" step="1" required [(ngModel)]="draft.delivery_free_hours"></label>
+            <label>Detention rate (₹)<input class="input" name="detention" type="number" min="0" max="1000000" step="0.01" required [(ngModel)]="draft.detention_rate_amount"></label>
+            <label>Detention unit<select class="input" name="unit" [(ngModel)]="draft.detention_rate_unit"><option value="per_hour">Per hour</option><option value="per_day">Per day</option></select></label>
+            <label>Cargo insurance<select class="input" name="insurance" [(ngModel)]="draft.cargo_insurance"><option value="not_included">Not included</option><option value="shipper_arranged">Load owner arranges</option><option value="provider_arranged">Provider arranges</option></select></label>
+            <label><input type="checkbox" name="acknowledged" [(ngModel)]="acknowledged"> I accept my proposed terms and the financial snapshot above.</label>
+            <button class="btn btn-primary btn-sm" type="submit" [disabled]="!termsForm.valid || !acknowledged || !!busy()">@if (busy() === 'proposal') { <span class="button-loader" aria-hidden="true"></span> }{{ busy() === 'proposal' ? 'Sending proposal…' : 'Propose and accept new version' }}</button>
+            <button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="editing = false; acknowledged = false">Cancel editing</button>
+          </form>
+        } @else {
+          @if (!alreadyAccepted()) {
+            <label><input type="checkbox" [(ngModel)]="acknowledged"> I reviewed and accept version {{ version.version }}, including the financial snapshot.</label>
+            <button type="button" class="btn btn-primary btn-sm" [disabled]="!acknowledged || !!busy()" (click)="submit()">@if (busy() === 'accept') { <span class="button-loader" aria-hidden="true"></span> }{{ busy() === 'accept' ? 'Recording acceptance…' : 'Accept this version' }}</button>
+          } @else { <p>Your acceptance is recorded. Waiting for the other party.</p> }
+          <button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="editing = true; acknowledged = false">Propose changes</button>
+        }
+        <p>Booking token payment unlocks after both parties accept the same version.</p>
+      }
+      @if (agreement.status === 'agreed') {
+        <button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="download()">@if (busy() === 'download') { <span class="button-loader" aria-hidden="true"></span> }Download agreed confirmation</button>
+        @if (agreement.booking_status === 'awaiting_tokens' && loadPath().length) { <a class="btn btn-primary btn-sm" [routerLink]="loadPath()">Continue to booking tokens</a> }
+      }
+      @if (agreement.history.length > 1) {
+        <details><summary>Terms version history</summary>@for (item of agreement.history; track item.version) { <p>Version {{ item.version }} · {{ date(item.created_at) }} · Advance {{ item.terms.advance_percent }}% · {{ item.agreed_at ? 'Agreed' : 'Not agreed by both parties' }}</p> }</details>
+      }
+    }
+  }
+</section>

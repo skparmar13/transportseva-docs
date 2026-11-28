@@ -1,0 +1,28 @@
+<section class="compliance" data-dispatch-checks>
+  <div class="heading"><h2>{{ tr('Fleet and payload checks', 'बेड़े और भार की जाँच') }}</h2><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="load()">Refresh dispatch checks</button></div>
+  @if (busy()) { <p role="status"><span class="spinner"></span> {{ tr('Checking…', 'जाँच जारी…') }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (checks(); as c) {
+    @if (providerSide() && c.legacy_driver_link_required) { <div class="document"><h3>Link the existing driver record</h3><p>{{ c.legacy_driver_name }}: the historical assignment has no registered driver ID. Name and recorded phone must match; this action does not replace the driver.</p><label>Registered driver<select class="input" name="legacy-dispatch-driver" [(ngModel)]="legacyDriver"><option value="">Select matching driver</option>@for (d of legacyDrivers(); track d.uuid) { <option [value]="d.uuid">{{ d.name }}</option> }</select></label><label>Linking reference<textarea class="input" name="legacy-dispatch-note" [(ngModel)]="legacyNote" minlength="10" maxlength="500"></textarea></label><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy() || !legacyDriver || legacyNote.trim().length < 10" (click)="linkDriver()">Link registered driver</button></div> }
+    @if (providerSide() && c.vehicle.asset_type === 'booking_vehicle' && c.vehicle.asset_uuid && !c.trip_already_started) { <app-asset-compliance kind="booking_vehicle" [assetUuid]="c.vehicle.asset_uuid" /> }
+    @if (c.departure_record; as record) {
+      <p class="success" data-departure-record>{{ tr('Departure checks recorded', 'प्रस्थान जाँच दर्ज') }} · {{ dateTime(record.checked_at) }}<br>Vehicle v{{ record.vehicle_version }} · Driver v{{ record.driver_version }}<br>{{ record.load_weight_kg }} / {{ record.permitted_payload_kg }} kg</p>
+    } @else if (c.trip_already_started) { <p>{{ tr('This historical departure has no recorded document-check snapshot. No retrospective approval is assumed.', 'इस पुराने प्रस्थान का दस्तावेज़ जाँच रिकॉर्ड उपलब्ध नहीं है। पिछली स्वीकृति नहीं मानी गई है।') }}</p> }
+    <details [open]="!c.trip_already_started"><summary>{{ tr('Current evidence for a new departure', 'नए प्रस्थान हेतु वर्तमान प्रमाण') }}</summary>
+      <p>{{ tr('Validity checked for', 'इस तारीख हेतु वैधता जाँची') }} {{ date(c.evaluation_date) }}</p>
+      <p>{{ tr('Load weight', 'लोड का भार') }}: <strong>{{ c.load_weight_kg ?? '—' }} kg</strong><br>{{ tr('Reviewed permitted payload', 'समीक्षित अनुमत भार') }}: <strong>{{ c.permitted_payload_kg ?? '—' }} kg</strong></p>
+      <p [class.success]="c.ready" [class.error]="!c.ready" data-dispatch-ready>{{ c.ready ? tr('Document and payload checks passed', 'दस्तावेज़ और भार की जाँच पूरी') : tr('Departure requirements unresolved', 'प्रस्थान की आवश्यकताएँ अधूरी') }}</p>
+      @if (c.issues.length) { <ul>@for (issue of c.issues; track $index) { <li>{{ issue }}</li> }</ul> }
+      @if (providerSide()) {
+        @if (c.vehicle.asset_uuid && c.vehicle.asset_type === 'vehicle') { <a class="btn btn-outline btn-sm" [routerLink]="path('vehicle',c.vehicle.asset_uuid)">Vehicle documents</a> }
+        @if (c.driver.asset_uuid) { <a class="btn btn-outline btn-sm" [routerLink]="path('driver',c.driver.asset_uuid)">Driver documents</a> }
+      }
+    </details>
+    @if (canStart() && providerSide() && !c.trip_already_started) {
+      <p>{{ tr('Confirm permit coverage for this route and the actual vehicle, driver and load before departure. Manual document review does not verify government records or route authorisation automatically.', 'प्रस्थान से पहले मार्ग हेतु परमिट और वास्तविक वाहन, चालक तथा भार की पुष्टि करें। मैनुअल समीक्षा से सरकारी रिकॉर्ड या मार्ग अनुमति अपने आप सत्यापित नहीं होती।') }}</p>
+      <label><input type="checkbox" name="dispatch-operator-attested" [(ngModel)]="attested" [disabled]="!!busy() || !c.ready"> {{ tr('I checked route authorisation and matched the vehicle, driver and load to the reviewed evidence.', 'मैंने मार्ग अनुमति जाँची और वाहन, चालक तथा भार को समीक्षित प्रमाण से मिलाया है।') }}</label>
+      <label>{{ tr('Route / pre-departure check reference', 'मार्ग / प्रस्थान जाँच संदर्भ') }}<textarea class="input" name="dispatch-route-note" [(ngModel)]="routeNote" minlength="10" maxlength="500" [disabled]="!!busy() || !c.ready"></textarea></label>
+      <button type="button" class="btn btn-primary workflow-action-button" [disabled]="!!busy() || !c.ready || !attested || routeNote.trim().length < 10" (click)="start()">@if (busy() === 'start') { <span class="spinner"></span> }{{ busy() === 'start' ? tr('Starting…', 'आरंभ हो रहा…') : tr('Start Trip', 'यात्रा शुरू करें') }}</button>
+    }
+  }
+</section>

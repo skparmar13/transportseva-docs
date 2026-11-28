@@ -54,6 +54,15 @@ describe('authTokenInterceptor', () => {
     expect(localStorage.getItem('transportseva.access_token')).toBe('existing-session');
   });
 
+  it('does not attach session credentials or refresh sessions for public map requests', () => {
+    localStorage.setItem('transportseva.access_token', 'private-session');
+    httpClient.get(`${API_CONFIG.baseUrl}/public/maps/config`).subscribe();
+    const request = http.expectOne(`${API_CONFIG.baseUrl}/public/maps/config`);
+    expect(request.request.headers.has('Authorization')).toBeFalse();
+    request.flush({ success: true, data: { provider: 'openstreetmap' } });
+    http.expectNone(`${API_CONFIG.baseUrl}/auth/refresh`);
+  });
+
   it('refreshes an expired access token and retries the original request', () => {
     localStorage.setItem('transportseva.access_token', 'expired-access');
     localStorage.setItem('transportseva.refresh_token', 'refresh-1');

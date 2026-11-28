@@ -1,0 +1,40 @@
+<section class="consignment" data-transport-documents>
+  <div class="heading"><h2>{{ tr('Supporting trip documents','यात्रा के सहायक दस्तावेज़') }}</h2><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="load()">{{ tr('Refresh supporting documents','सहायक दस्तावेज़ रीफ़्रेश करें') }}</button></div>
+  <p class="hint">{{ tr('Private source files and recorded declarations. GST, e-way bill and weighbridge particulars are not independently verified. Missing files are shown as not submitted.','निजी मूल फ़ाइलें और दर्ज घोषणाएँ। GST, ई-वे बिल और धर्मकाँटा विवरण स्वतंत्र रूप से सत्यापित नहीं हैं। अनुपलब्ध फ़ाइलें जमा नहीं मानी जातीं।') }}</p>
+  @if(busy()){<p role="status"><span class="spinner"></span>{{ tr('Processing…','प्रक्रिया जारी…') }}</p>}
+  @if(error()){<p class="error" role="alert">{{ error() }}</p>}
+  @if(notice()){<p class="success" role="status">{{ notice() }}</p>}
+  @if(view();as v){
+    @for(kind of v.kinds;track kind){<article class="history" [attr.data-transport-kind]="kind"><h3>{{ label(kind) }}</h3>
+      @if(v.current[kind];as doc){<p data-transport-current><strong>{{ doc.reference }} · v{{ doc.version }}</strong> · {{ date(doc.document_date) }}<br>{{ doc.file_name }} · {{ dateTime(doc.recorded_at) }}</p>
+        @if(isWeighbridge(kind)){<p>{{ tr('Gross / tare / net','सकल / खाली / शुद्ध') }}: {{ doc.metadata.gross_kg }} / {{ doc.metadata.tare_kg }} / <strong>{{ doc.metadata.net_kg }} kg</strong><br>{{ doc.metadata.vehicle_registration }} · {{ doc.metadata.station_name }}<br>{{ dateTime(doc.metadata.measured_at) }}</p>}
+        @if(kind==='eway_bill'){<p>{{ tr('Recorded expiry','दर्ज समाप्ति समय') }}: {{ doc.metadata.expires_at?dateTime(doc.metadata.expires_at):tr('Not provided','दर्ज नहीं है') }}</p>}
+        @if(doc.metadata.recorded_after_departure){<p class="hint">{{ tr('Recorded after departure. Earlier departure evidence is unchanged.','प्रस्थान के बाद दर्ज। पहले प्रस्थान का रिकॉर्ड अपरिवर्तित है।') }}</p>}
+        @if(doc.file_available){<button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="download(doc)">{{ tr('Download file','फ़ाइल डाउनलोड करें') }}</button>}@else{<p class="error">{{ tr('Original file unavailable','मूल फ़ाइल उपलब्ध नहीं है') }}</p>}
+        <button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="showHistory(kind)">{{ tr('Version history','संस्करण इतिहास') }}</button>
+      }@else{<p>{{ tr('Not submitted','जमा नहीं किया गया') }}</p>}
+      @if(v.can_submit){<button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="begin(kind)">{{ v.current[kind]?tr('Upload replacement','नई प्रति अपलोड करें'):tr('Upload document','दस्तावेज़ अपलोड करें') }}</button>}
+    </article>}
+    @if(!v.can_submit){<p class="hint">{{ tr('Uploads are available to booking parties after confirmation and before the first POD, while no dispute is open.','पुष्टि के बाद, पहले POD से पहले और विवाद न होने पर बुकिंग पक्ष अपलोड कर सकते हैं।') }}</p>}
+    @if(editing;as kind){<form (ngSubmit)="upload()" #packForm="ngForm" data-transport-form><fieldset [disabled]="!!busy()"><h3>{{ label(kind) }}</h3><div class="grid">
+      <label>{{ tr('Document reference','दस्तावेज़ संदर्भ') }}<input class="input" name="transport-reference" [(ngModel)]="form['reference']" [maxlength]="kind==='eway_bill'?12:100" required></label>
+      <label>{{ tr('Document date','दस्तावेज़ की तारीख') }}<input class="input" type="date" name="transport-date" [(ngModel)]="form['document_date']" required></label>
+      @if(isWeighbridge(kind)){
+        <label>{{ tr('Gross weight (kg)','सकल भार (किग्रा)') }}<input class="input" name="transport-gross" type="number" min="1" max="9999999" step="1" [(ngModel)]="form['gross_kg']" required></label>
+        <label>{{ tr('Tare weight (kg)','खाली वाहन भार (किग्रा)') }}<input class="input" name="transport-tare" type="number" min="1" max="9999998" step="1" [(ngModel)]="form['tare_kg']" required></label>
+        <label>{{ tr('Weighbridge station','धर्मकाँटा केंद्र') }}<input class="input" name="transport-station" maxlength="200" [(ngModel)]="form['station_name']" required></label>
+        <label>{{ tr('Measured at (IST)','मापने का समय (IST)') }}<input class="input" name="transport-measured" type="datetime-local" [(ngModel)]="form['measured_at']" required></label>
+      }
+      @if(kind==='eway_bill'){<label>{{ tr('Expiry shown on document (IST, optional)','दस्तावेज़ पर समाप्ति समय (IST, वैकल्पिक)') }}<input class="input" name="transport-expiry" type="datetime-local" [(ngModel)]="form['expires_at']"></label>}
+    </div>
+    @if(v.current[kind]){<label>{{ tr('Replacement reason','नई प्रति का कारण') }}<textarea class="input" name="transport-reason" minlength="10" maxlength="1000" [(ngModel)]="form['amendment_reason']" required></textarea></label>}
+    <label>{{ tr('PDF, JPG or PNG, up to 5 MB','PDF, JPG या PNG, अधिकतम 5 MB') }}<input type="file" name="transport-file" accept="application/pdf,image/png,image/jpeg" (change)="choose($event)" required></label>
+    <label><input type="checkbox" name="transport-attested" [(ngModel)]="attested" required> {{ tr('I checked this file and its particulars against this booking and the assigned vehicle where applicable.','मैंने इस फ़ाइल और विवरण को बुकिंग और लागू वाहन से मिलाकर जाँचा है।') }}</label>
+    <div class="actions"><button type="button" class="btn btn-outline" (click)="editing=null">{{ tr('Cancel','रद्द करें') }}</button><button type="submit" class="btn btn-primary" [disabled]="packForm.invalid||!file||!attested">@if(busy()==='upload'){<span class="spinner"></span>}{{ busy()==='upload'?tr('Uploading…','अपलोड हो रहा…'):tr('Save supporting document','सहायक दस्तावेज़ सहेजें') }}</button></div></fieldset></form>}
+    @if(v.trip_started){<details data-departure-supporting><summary>{{ tr('Supporting documents recorded at departure','प्रस्थान पर दर्ज सहायक दस्तावेज़') }}</summary>@for(ref of v.departure_references;track ref.uuid){<p>{{ label(ref.kind) }} · {{ ref.reference }} · v{{ ref.version }}</p>}@empty{<p>{{ tr('No supporting-document references recorded for that departure.','उस प्रस्थान के सहायक दस्तावेज़ संदर्भ दर्ज नहीं हैं।') }}</p>}</details>}
+    @if(v.pod_recorded){<details data-pod-supporting><summary>{{ tr('Supporting documents linked to POD','POD से जुड़े सहायक दस्तावेज़') }}</summary>@for(ref of v.pod_references;track ref.uuid){<p>{{ label(ref.kind) }} · {{ ref.reference }} · v{{ ref.version }}</p>}@empty{<p>{{ tr('No supporting-document references recorded with this POD.','इस POD के साथ सहायक दस्तावेज़ संदर्भ दर्ज नहीं हैं।') }}</p>}</details>}
+  }
+  @if(history();as h){<div class="history" data-transport-history><h3>{{ label(h.kind) }} · {{ tr('Version history','संस्करण इतिहास') }}</h3>@for(doc of h.rows;track doc.uuid){<p>{{ doc.reference }} · v{{ doc.version }} · {{ dateTime(doc.recorded_at) }}<br>{{ doc.amendment_reason }}</p><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()||!doc.file_available" (click)="download(doc)">{{ tr('Download version','संस्करण डाउनलोड करें') }} {{ doc.version }}</button>}
+    @if(h.last_page>1){<div class="actions"><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()||h.page<=1" (click)="showHistory(h.kind,h.page-1)">{{ tr('Previous','पिछला') }}</button><span>{{ h.page }} / {{ h.last_page }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()||h.page>=h.last_page" (click)="showHistory(h.kind,h.page+1)">{{ tr('Next','अगला') }}</button></div>}
+  </div>}
+</section>

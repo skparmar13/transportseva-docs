@@ -1,0 +1,236 @@
+{
+  "date": "2026-11-28",
+  "feature": "Independent booking lifecycle statuses",
+  "status": "implemented_and_verified",
+  "database": "transportseva",
+  "behavior": {
+    "trip": "Delivery is based on booking/trip records, independently of settlement or receipt state",
+    "pod": "Upload and review states remain separate from delivery and freight",
+    "freight": "Only canonical payer-to-recipient confirmed receipts reduce unpaid freight; pending and disputed reports remain separate",
+    "platform_fees": "Each party has a separate fee amount and collection-not-recorded state; no collection ledger was invented",
+    "tokens": "Actual token payment/refund/forfeiture records remain separate from approved admin decisions",
+    "legacy": "Earlier settlement records are preserved and explicitly not treated as receipt evidence",
+    "updates": "Direct payment responses update the matching booking summary without a list reload",
+    "mid_trip_limit": "Agreed advance replaces the remaining fixed 40 percent assumption"
+  },
+  "reference_booking": {
+    "reference": "TS-EJQBWVXSPS",
+    "uuid": "d6f8701d-b9e7-494a-afa7-980b7e5e946d",
+    "load": "LD-000056",
+    "trip": "delivered",
+    "pod": "approved",
+    "freight_confirmed": 17000,
+    "freight_remaining": 0,
+    "fee_each": 1003,
+    "fee_collection": "not_recorded",
+    "token_each": 1000,
+    "token_status": "paid",
+    "created_this_run": false
+  },
+  "evidence": {
+    "backend": {
+      "tests": 64,
+      "assertions": 730,
+      "result": "passed"
+    },
+    "frontend": {
+      "tests": 528,
+      "result": "passed"
+    },
+    "visible_browser": {
+      "tests": 4,
+      "result": "passed",
+      "capture": "Safe status-summary crops only; trace/video and automatic screenshots disabled",
+      "sessions": [
+        {
+          "code": "s",
+          "role": "shipper",
+          "email": "qa-full-20261122-01-s@transportseva.test",
+          "checked": [
+            {
+              "booking": "TS-EJQBWVXSPS",
+              "uuid": "d6f8701d-b9e7-494a-afa7-980b7e5e946d",
+              "side": "owner",
+              "trip": "delivered",
+              "freight": "fully_confirmed",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                }
+              }
+            },
+            {
+              "booking": "TS-DCCNYIA2A8",
+              "uuid": "5c8dff83-e3ff-4c8f-99fd-8eecc3d2122a",
+              "side": "owner",
+              "trip": "cancelled",
+              "freight": "not_recorded",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": "refund"
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": "retain"
+                }
+              }
+            },
+            {
+              "booking": "TS-WIBYOKKON3",
+              "uuid": "515d391c-26de-4e6b-9ac6-01ae39ba2ede",
+              "side": "owner",
+              "trip": "delivered",
+              "freight": "disputed",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                }
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "code": "oa",
+          "role": "truck-owner",
+          "email": "qa-full-20261122-01-oa@transportseva.test",
+          "checked": [
+            {
+              "booking": "TS-EJQBWVXSPS",
+              "uuid": "d6f8701d-b9e7-494a-afa7-980b7e5e946d",
+              "side": "provider",
+              "trip": "delivered",
+              "freight": "fully_confirmed",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                }
+              }
+            },
+            {
+              "booking": "TS-WIBYOKKON3",
+              "uuid": "515d391c-26de-4e6b-9ac6-01ae39ba2ede",
+              "side": "provider",
+              "trip": "delivered",
+              "freight": "disputed",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                }
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "code": "ta",
+          "role": "transporter",
+          "email": "qa-full-20261122-01-ta@transportseva.test",
+          "checked": [
+            {
+              "booking": "TS-L0Y9JO1EHS",
+              "uuid": "6121d32e-2bcc-459e-9a1a-1541e2de5eb8",
+              "side": "owner",
+              "trip": "delivered",
+              "freight": "fully_confirmed",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                }
+              }
+            }
+          ],
+          "errors": []
+        },
+        {
+          "code": "tb",
+          "role": "transporter",
+          "email": "qa-full-20261122-01-tb@transportseva.test",
+          "checked": [
+            {
+              "booking": "TS-L0Y9JO1EHS",
+              "uuid": "6121d32e-2bcc-459e-9a1a-1541e2de5eb8",
+              "side": "provider",
+              "trip": "delivered",
+              "freight": "fully_confirmed",
+              "tokens": {
+                "owner": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                },
+                "provider": {
+                  "amount": 1000,
+                  "status": "paid",
+                  "admin_decision": null
+                }
+              }
+            }
+          ],
+          "errors": []
+        }
+      ]
+    },
+    "source_audit": {
+      "tests": 18,
+      "result": "passed"
+    },
+    "production_build": {
+      "result": "passed",
+      "existing_warning": "960.04 kB initial bundle exceeds the 500 kB warning budget"
+    }
+  },
+  "preservation": {
+    "schema_unchanged": true,
+    "tables": 115,
+    "audited_tables": 17,
+    "original_rows_checked": 808,
+    "changed_original_rows": [],
+    "counts_unchanged": true,
+    "user_login_metadata_excluded": true,
+    "migration_executed": false,
+    "business_data_rewrite": false,
+    "new_main_users": 0,
+    "new_main_bookings": 0
+  },
+  "limitations": "Status projection and UI separation only. No new collection, payout, refund execution or fee-waiver accounting is introduced.",
+  "next": "Vehicle and driver document validity and payload checks before dispatch"
+}

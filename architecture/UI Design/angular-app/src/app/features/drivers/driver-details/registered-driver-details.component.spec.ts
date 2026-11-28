@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { ApiFleetComplianceService } from '../../../core/api/api-fleet-compliance.service';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
@@ -16,7 +17,7 @@ describe('RegisteredDriverDetailsComponent', () => {
     params = new BehaviorSubject(convertToParamMap({ id: uuid }));
     api = jasmine.createSpyObj('ApiMarketplaceService', ['listMarketplaceDrivers']);
     api.listMarketplaceDrivers.and.returnValue(of([driver]));
-    TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { paramMap: params } }, { provide: ApiMarketplaceService, useValue: api }] });
+    TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: ApiFleetComplianceService, useValue: { get: () => of({ current: null, subject: {}, keys: ['licence'], history: [] }) } }, { provide: ActivatedRoute, useValue: { paramMap: params } }, { provide: ApiMarketplaceService, useValue: api }] });
     TestBed.inject(LanguageService).setLang('en');
   });
   it('shows only persisted fields, escaped name, zero experience and real assignment', () => {

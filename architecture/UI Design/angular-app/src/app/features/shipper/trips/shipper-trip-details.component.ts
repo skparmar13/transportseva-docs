@@ -8,6 +8,7 @@ import { ApiShipperTripService, ShipperTripDetail } from '../../../core/api/api-
 import { LanguageService } from '../../../core/i18n';
 import { formatDate, formatDateTime } from '../../../core/utils/date-format';
 import { tripCopy } from './trip-portal';
+import { transportDocumentLabel } from '../../../core/api/api-transport-document.service';
 
 @Component({
   selector: 'app-shipper-trip-details', standalone: true, imports: [RouterLink], changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,6 +20,7 @@ export class ShipperTripDetailsComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   private readonly language = inject(LanguageService);
+  protected documentLabel(kind:string){return transportDocumentLabel(kind,this.language.lang());}
   protected readonly truckOwner = this.route.snapshot?.data?.['tripPortal'] === 'truck-owner';
   protected readonly transporter = this.route.snapshot?.data?.['tripPortal'] === 'transporter';
   protected readonly basePath = this.transporter ? '/transporter' : this.truckOwner ? '/truck-owner' : '/shipper';

@@ -1,10 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { map } from 'rxjs';
 import { ApiClientService } from './api-client.service';
+import { ConsignmentReference } from './api-consignment.service';
 
 export const POD_DOCUMENT_STATUSES = ['pending_approval', 'approved', 'rejected', 'other'] as const;
 export type PodDocumentStatus = typeof POD_DOCUMENT_STATUSES[number];
 export interface ShipperPodDocument {
+  transport_documents?:import('./api-transport-document.service').TransportDocumentReference[];
+  consignment?: ConsignmentReference | null;
   booking_uuid: string; booking_reference: string; load_uuid: string | null; load_reference: string | null;
   pickup_city: string | null; drop_city: string | null; status: PodDocumentStatus; number: string | null;
   received_by: string | null; file_name: string | null; uploaded_at: string | null; reviewed_at: string | null;

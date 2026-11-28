@@ -1,4 +1,5 @@
-<div class="page-toolbar"><div><h1>Business KYC Verification</h1><p class="desc">Review business identity documents before enabling mandatory marketplace KYC.</p></div></div>
+<div class="page-toolbar"><div><h1>Business KYC Verification</h1><p class="desc">Review business identity and fleet documents.</p></div></div>
+@if (session.canStaffAction('marketplace.kyc.view')) { <app-fleet-compliance-review /> }
 <div class="page-toolbar"><div class="tab-row"><button type="button" class="tab-btn" [class.active]="filter() === 'pending'" (click)="setFilter('pending')">Pending</button><button type="button" class="tab-btn" [class.active]="filter() === 'approved'" (click)="setFilter('approved')">Approved</button><button type="button" class="tab-btn" [class.active]="filter() === 'rejected'" (click)="setFilter('rejected')">Needs changes</button><button type="button" class="tab-btn" [class.active]="filter() === 'all'" (click)="setFilter('all')">All</button></div></div>
 @if (error()) { <div class="form-error" role="alert">{{ error() }}</div> }
 @if (loading()) { <div class="page-loading-state"><div class="loading-panel"><div class="dot-loader"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><strong>Loading KYC submissions…</strong></div></div> } @else {

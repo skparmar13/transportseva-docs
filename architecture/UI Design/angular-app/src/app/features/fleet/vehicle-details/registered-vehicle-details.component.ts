@@ -7,6 +7,7 @@ import { ApiMarketplaceService, ApiMarketplaceVehicle } from '../../../core/api/
 import { SessionService } from '../../../core/services/session.service';
 import { TranslatePipe } from '../../../core/i18n';
 import { formatDateTime } from '../../../core/utils/date-format';
+import { AssetComplianceComponent } from '../compliance/asset-compliance.component';
 
 type VehicleState = {
   status: 'loading' | 'ready' | 'not-found' | 'forbidden' | 'error';
@@ -17,7 +18,7 @@ type VehicleState = {
 @Component({
   selector: 'app-registered-vehicle-details',
   standalone: true,
-  imports: [RouterLink, TranslatePipe],
+  imports: [RouterLink, TranslatePipe, AssetComplianceComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './registered-vehicle-details.component.html',
 })

@@ -18,6 +18,13 @@ import { Subscription, switchMap, timeout, TimeoutError } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BookingDirectPaymentsComponent } from '../../recipient-payments/booking-direct-payments.component';
+import { BookingCommercialTermsComponent } from './booking-commercial-terms.component';
+import { BookingLifecycleComponent } from './booking-lifecycle.component';
+import { BookingLifecycle } from '../../../core/models/booking-lifecycle.model';
+import { BookingDispatchComponent } from '../../fleet/compliance/booking-dispatch.component';
+import { BookingConsignmentComponent } from '../../consignments/booking-consignment.component';
+import { ConsignmentReference } from '../../../core/api/api-consignment.service';
+import { TransportDocumentsComponent } from '../../consignments/transport-documents.component';
 
 /** A provider vehicle shown in the booking-assignment selector. */
 interface AssignmentVehicleOption {
@@ -39,13 +46,23 @@ interface AssignmentVehicleOption {
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe, RouterLink, BookingDirectPaymentsComponent],
+  imports: [IconComponent, ModalComponent, FormsModule, TranslatePipe, RouterLink, BookingDirectPaymentsComponent, BookingCommercialTermsComponent, BookingLifecycleComponent, BookingDispatchComponent, BookingConsignmentComponent, TransportDocumentsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookings.component.html',
 })
 export class BookingsComponent {
+  protected readonly transportDocumentVersions=signal<Record<string,string|null>>({});
+  protected readonly transportDocumentRevision=signal<Partial<Record<string,number>>>({});
+  protected supportingFingerprint(id:string,value:string|null){this.transportDocumentVersions.update(v=>({...v,[id]:value}));}
+  protected supportingChanged(id:string){this.transportDocumentRevision.update(v=>({...v,[id]:(v[id]??0)+1}));}
+  protected readonly consignments = signal<Record<string, ConsignmentReference|null>>({});
+  protected consignmentReference(id:string, reference:ConsignmentReference|null) { const changed=reference&&this.consignments()[id]?.fingerprint!==reference.fingerprint; this.consignments.update(rows=>({...rows,[id]:reference})); if(changed)this.supportingChanged(id); }
   protected readonly directManaged = signal<Record<string, boolean>>({});
   protected directState(id: string, managed: boolean) { this.directManaged.update(s => ({ ...s, [id]: managed })); }
+  protected updateLifecycle(id: string, lifecycle: BookingLifecycle) {
+    this.backendBookings.update(rows => rows.map(b => b.uuid === id ? { ...b, lifecycle } : b));
+  }
+  protected dispatchStarted(booking: ApiMarketplaceBooking) { this.applyBackendBooking(booking); }
   private readonly marketplace = inject(MarketplaceMockService);
   private readonly payments = inject(PaymentMockService);
   private readonly fleet = inject(FleetMockService);
@@ -683,6 +700,9 @@ export class BookingsComponent {
     payload.set('received_by_name', this.podReceivedBy().trim());
     if (this.podRemarks().trim()) payload.set('remarks', this.podRemarks().trim());
     payload.set('file', file);
+    const consignment=this.consignments()[booking.id];
+    if(consignment){payload.set('consignment_uuid',consignment.uuid);payload.set('consignment_version',String(consignment.version));}
+    const pack=this.transportDocumentVersions()[booking.id];if(pack)payload.set('transport_documents_fingerprint',pack);
     this.apiMarketplace.uploadMarketplacePod(booking.id, payload).subscribe({
       next: (updatedBooking) => { this.applyBackendBooking(updatedBooking); this.finishWorkflowAction(actionKey); this.uploadingPodFor.set(null); },
       error: (error) => this.failWorkflowAction(actionKey, apiErrorMessage(error, 'POD could not be submitted. Please retry.')),
@@ -934,12 +954,10 @@ export class BookingsComponent {
     const disputeOutcomes: Record<string, NonNullable<MarketplaceBooking['dispute']>['outcome']> = {
       refunded: 'Refunded', forfeited: 'Forfeited', commission_waived: 'Commission Waived', commission_due: 'Commission Due', continue: 'Continue', cancel: 'Cancel',
     };
-    const stage: MarketplaceBooking['status'] = booking.status === 'completed' && booking.settlement?.status === 'settled'
-      ? 'Completed'
-      : workflow.trip_completed_at || booking.status === 'completed'
-        ? 'Settlement Pending'
-      : booking.status === 'cancelled'
+    const stage: MarketplaceBooking['status'] = booking.status === 'cancelled'
         ? 'Cancelled'
+        : workflow.trip_completed_at || booking.status === 'completed'
+          ? 'Completed'
         : booking.status === 'in_transit'
           ? 'Trip Started'
           : workflow.loading_completed_at
@@ -951,7 +969,7 @@ export class BookingsComponent {
                 : booking.status === 'confirmed' ? 'Confirmed' : 'Awaiting Deposit';
     const amount = `₹${Number(booking.gross_freight).toLocaleString('en-IN')}`;
     const freight = Number(booking.gross_freight) || 0;
-    const loadingAdvance = Math.round(freight * 0.4 * 100) / 100;
+    const loadingAdvance = booking.commercial_agreement?.advance_amount ?? Math.round(freight * 0.4 * 100) / 100;
     const releasedAt = workflow.released_milestones?.['Loading Advance'];
     const displayReleasedAt = releasedAt ? formatDateTime(releasedAt) : undefined;
     const midTripMilestones = (workflow.mid_trip_milestones ?? []).map((milestone) => ({
@@ -968,23 +986,32 @@ export class BookingsComponent {
       ...midTripMilestones,
       { id: `${booking.uuid}-final`, label: 'Final Settlement', trigger: 'Released after POD is uploaded and approved', amount: `₹${Math.max(freight - loadingAdvance - midTripTotal, 0).toLocaleString('en-IN')}`, status: 'Pending' as const },
     ];
-    const timelineIndex = BOOKING_TIMELINE_STAGES.indexOf(stage as typeof BOOKING_TIMELINE_STAGES[number]);
     const timelineTimestamps: Partial<Record<MarketplaceBooking['status'], string | undefined>> = {
       'Awaiting Deposit': booking.created_at,
-      Confirmed: booking.created_at,
+      Confirmed: undefined,
       'Vehicle Assigned': workflow.vehicle_assignment?.assigned_at,
       'Driver Assigned': workflow.driver_assignment?.assigned_at,
       'Loading Completed': workflow.loading_completed_at,
       'Trip Started': workflow.trip_started_at,
       'Settlement Pending': workflow.trip_completed_at,
-      Completed: booking.settlement?.settled_at ?? workflow.trip_completed_at,
+      Completed: workflow.trip_completed_at,
+    };
+    const tokenWasPaid = (status: string | null | undefined) => !!status && ['paid', 'refund_pending', 'refunded', 'forfeiture_pending', 'forfeited'].includes(status);
+    const recordedStages: Partial<Record<MarketplaceBooking['status'], boolean>> = {
+      'Offer Accepted': true,
+      'Awaiting Deposit': tokenWasPaid(booking.owner_token_status) && tokenWasPaid(booking.provider_token_status),
+      Confirmed: ['confirmed', 'in_transit', 'completed'].includes(booking.status) || !!workflow.trip_started_at,
+      'Vehicle Assigned': !!workflow.vehicle_assignment, 'Driver Assigned': !!workflow.driver_assignment,
+      'Loading Completed': !!workflow.loading_completed_at, 'Trip Started': !!workflow.trip_started_at,
+      Completed: booking.status === 'completed' || !!workflow.trip_completed_at,
     };
     return {
+      lifecycle: booking.lifecycle,
       id: booking.uuid, bookingId: booking.booking_reference, loadId: booking.load_uuid, applicationId: booking.application_uuid,
       route: 'Marketplace booking', material: 'General Cargo', ownerRole: owner ? this.session.role() : 'shipper', ownerName: owner ? this.session.user().name : 'Shipper',
       counterpartyRole: owner ? 'transporter' : this.session.role(), counterpartyName: owner ? 'Transport provider' : this.session.user().name,
       vehicleRegNumber: workflow.vehicle_assignment?.vehicle_reg_number ?? '—', amount, status: stage,
-      timeline: BOOKING_TIMELINE_STAGES.map((timelineStage, index) => ({ stage: timelineStage, completed: index <= timelineIndex, timestamp: index <= timelineIndex && timelineTimestamps[timelineStage] ? formatDateTime(timelineTimestamps[timelineStage]) : undefined })),
+      timeline: BOOKING_TIMELINE_STAGES.filter(s => s !== 'Settlement Pending').map(timelineStage => ({ stage: timelineStage, completed: !!recordedStages[timelineStage], timestamp: timelineTimestamps[timelineStage] ? formatDateTime(timelineTimestamps[timelineStage]) : undefined })),
       ownerDeposit: { role: owner ? this.session.role() : 'shipper', partyName: owner ? this.session.user().name : 'Shipper', amount: this.tokenAmount(booking.owner_token_amount), status: this.tokenStatus(booking.owner_token_status) },
       counterpartyDeposit: { role: owner ? 'transporter' : this.session.role(), partyName: owner ? 'Transport provider' : this.session.user().name, amount: this.tokenAmount(booking.provider_token_amount), status: this.tokenStatus(booking.provider_token_status) },
       // Legacy prototype field; backend UI displays individual provider-recorded token states.

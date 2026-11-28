@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, switchMap } from 'rxjs';
 import { ApiClientService } from './api-client.service';
+import { BookingLifecycle } from '../models/booking-lifecycle.model';
 
 /** Backend load contract used by the first marketplace integration slice. */
 export interface ApiLoad {
@@ -150,6 +151,8 @@ export interface ApiTokenOrder {
 
 export interface ApiMarketplaceBooking {
   uuid: string;
+  lifecycle?: BookingLifecycle;
+  commercial_agreement?: { required: boolean; status: 'legacy_not_recorded' | 'awaiting_acceptance' | 'agreed'; version: number | null; advance_amount: number | null };
   booking_reference: string;
   load_uuid: string;
   application_uuid: string;

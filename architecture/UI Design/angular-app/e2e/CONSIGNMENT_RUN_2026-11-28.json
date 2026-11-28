@@ -1,0 +1,323 @@
+{
+  "date": "28/11/2026",
+  "timezone": "Asia/Kolkata",
+  "database": "transportseva",
+  "feature": "Carrier LR/GR consignment documents linked to booking and exact POD version",
+  "status": "Implemented and locally verified",
+  "behavior": [
+    "Truck Owners and Transporters may issue LR or GR for their confirmed assigned booking, before the first POD and while no dispute is open.",
+    "Carrier document number/type/date are immutable; numbers are unique per carrier and Indian financial year. Both LR and GR use this same uniqueness rule.",
+    "Party addresses, optional GSTIN/invoice/e-way bill references, packages, declared goods value and carrier authority attestation are captured.",
+    "Goods, weight, route, vehicle, driver and gross freight come from the canonical booking/load and are frozen in each issued version.",
+    "Amendments require the current version and a recorded reason. Earlier versions and optional private scans are retained.",
+    "Stale versions conflict; a repeated identical request ID returns its prior issued version. Different details cannot reuse that ID.",
+    "Each version has a printable HTML download and optional PDF/JPG/PNG carrier scan. Downloads are private to the parties and existing scoped dispute reviewers.",
+    "POD freezes the exact current LR/GR version. A stale client reference fails; issuance/amendment and POD share booking row locks.",
+    "Historical PODs retain no LR/GR reference. A later document cannot be backfilled into an earlier POD.",
+    "POD replacement/review is transactional, preserving the prior file and removing a failed new upload. No freight settlement is inferred.",
+    "Shipper, Truck Owner and Transporter Documents and Trip Details show the stored POD reference; the LR/GR Documents tab links to the exact booking.",
+    "The shipper receives an issuance/amendment bell notification targeting the booking. Carrier issue controls are unavailable to the shipper.",
+    "Strict staff access requires the existing POD capability plus a disputed-booking scope; admin downloads append a transactional Review audit event."
+  ],
+  "boundaries": {
+    "documents": "Synthetic labelled QA scans and declared party particulars. No government, GST, e-way bill, signature or payment verification is claimed.",
+    "download_format": "Printable self-contained HTML; carrier-supplied scans may be PDF, JPG or PNG. Generated PDF signing is not implemented.",
+    "historical_data": "No historical LR/GR or POD links are invented. Documents recorded after departure are explicitly marked.",
+    "payments": "Existing local mock booking-token flow only. No freight receipt or platform-fee collection was created in these cases.",
+    "dispatch": "Existing document/payload and operator-route checks remain in force; LR/GR is not silently made a new requirement for every legacy booking."
+  },
+  "tests": {
+    "backend": {
+      "tool": "pest",
+      "result": "passed",
+      "tests": 113,
+      "passed": 113,
+      "assertions": 1395,
+      "duration_ms": 153431
+    },
+    "frontend": {
+      "result": "passed",
+      "tests": 554
+    },
+    "headed_chrome": {
+      "result": "passed",
+      "cases": 3,
+      "trace": "off",
+      "video": "off",
+      "automatic_screenshots": "off",
+      "coverage": "Fresh LR and GR bookings: UI load posting, issuance with scan, amendment, printable download, read-only shipper, attested departure, delivery, exact POD v2, owner approval, Documents link and foreign scan denial. Final read-only browser case verifies Documents and Trip Details for both parties."
+    },
+    "source_audit": {
+      "result": "passed",
+      "tests": 18
+    },
+    "production_build": {
+      "result": "passed",
+      "existing_initial_bundle_kb": 960.04,
+      "warning": "Existing 500 kB initial bundle budget exceeded."
+    }
+  },
+  "preservation": {
+    "original_tables": 116,
+    "current_tables": 118,
+    "added_tables": [
+      "marketplace_consignment_versions",
+      "marketplace_consignments"
+    ],
+    "removed_tables": [],
+    "audited_tables": 17,
+    "original_audited_rows": 824,
+    "changed_or_missing_audited_rows": [],
+    "additions": {
+      "users": 0,
+      "loads": 2,
+      "load_applications": 2,
+      "negotiation_offers": 2,
+      "marketplace_bookings": 2,
+      "marketplace_settlements": 0,
+      "booking_token_orders": 4,
+      "marketplace_vehicles": 2,
+      "marketplace_drivers": 2,
+      "marketplace_disputes": 0,
+      "role_user": 0,
+      "roles": 0,
+      "role_permission": 0,
+      "recipient_bank_accounts": 0,
+      "booking_bank_instructions": 0,
+      "direct_payment_receipts": 0,
+      "recipient_payment_events": 0
+    },
+    "excluded_login_metadata": [
+      "users.last_login_at",
+      "users.updated_at"
+    ],
+    "backup": {
+      "path": "C:\\laragon\\www\\ts\\transportseva-docs\\architecture\\UI Design\\angular-app\\.local-backups\\transportseva-before-consignment-2026-11-28.sql",
+      "bytes": 1719855,
+      "sha256": "113423EE4095A5BB286785D8582EECA91428C26AF75EACC1F0833CD807593983"
+    },
+    "method": "Verified full backup; two-table additive migration; fresh labelled QA records; no reset/drop/import. Row hashes cover the 17 named audited tables."
+  },
+  "cases": [
+    {
+      "type": "LR",
+      "users": {
+        "shipper": "qa-full-20261122-01-s@transportseva.test",
+        "carrier": "qa-full-20261122-01-oa@transportseva.test",
+        "synthetic_fleet_reviewer": "admin@test.local"
+      },
+      "load": {
+        "id": "LD-000059",
+        "uuid": "f696d473-eaa2-4199-972a-b289941efab4"
+      },
+      "booking": {
+        "id": "TS-J7PPLZA8IJ",
+        "uuid": "0f977c61-edd8-4d41-a7af-716e30bd7f57",
+        "status": "completed",
+        "freight": "17000.00",
+        "shipper_fee": "1003.00",
+        "provider_fee": "1003.00",
+        "lifecycle": {
+          "trip": {
+            "status": "delivered",
+            "blocked_by_dispute": false,
+            "delivered_at": "2026-11-28T15:59:31+00:00"
+          },
+          "pod": {
+            "status": "approved",
+            "reviewed_at": "2026-11-28T15:59:44+00:00"
+          },
+          "freight": {
+            "status": "not_recorded",
+            "allocation": "gross",
+            "basis": 17000,
+            "confirmed": 0,
+            "awaiting_confirmation": 0,
+            "disputed": 0,
+            "unpaid": 17000,
+            "available_to_report": 17000
+          },
+          "platform_fees": {
+            "owner": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "provider": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "admin_decision": null
+          },
+          "tokens": {
+            "owner": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            },
+            "provider": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            }
+          },
+          "legacy_settlement": null
+        }
+      },
+      "document": {
+        "number": "QA/LR/281126",
+        "consignment_uuid": "0b521e19-5702-49c7-8004-160a0f50aadf",
+        "first_version_uuid": "d81ba6d7-93b7-4db2-8f37-86b9b9e40ce3",
+        "latest_version_uuid": "f5d916c9-bced-4f73-aa08-35683a337748",
+        "version": 2,
+        "scan_available": true
+      },
+      "vehicle": {
+        "mode": "Own Fleet",
+        "vehicle_reg_number": "QACONS281126LR",
+        "subcontracted_to": "Synthetic QA partner",
+        "assigned_at": "2026-11-28T15:58:47+00:00"
+      },
+      "driver": {
+        "uuid": "d9cab610-c8d1-41b7-9a21-5014b69ebd38",
+        "name": "QA Consignment LR Driver"
+      },
+      "pod": {
+        "number": "QA-POD-LR-281126",
+        "status": "approved",
+        "reference": {
+          "uuid": "f5d916c9-bced-4f73-aa08-35683a337748",
+          "consignment_uuid": "0b521e19-5702-49c7-8004-160a0f50aadf",
+          "version": 2,
+          "number": "QA/LR/281126",
+          "document_type": "LR",
+          "fingerprint": "eafb337e4608779c2ab8947bd8e6e46c316ffbdbc08eadd60bdd52f50a301c58"
+        }
+      },
+      "checks": {
+        "printable_download": true,
+        "shipper_read_only": true,
+        "pod_exact_version": true,
+        "amendment_locked_after_pod": true,
+        "documents_exact_booking_link": true,
+        "foreign_scan_denied": true,
+        "browser_errors": [],
+        "pod_reference_in_documents_and_trip_details": true
+      },
+      "passed": true
+    },
+    {
+      "type": "GR",
+      "users": {
+        "shipper": "qa-full-20261122-01-s@transportseva.test",
+        "carrier": "qa-full-20261122-01-ta@transportseva.test",
+        "synthetic_fleet_reviewer": "admin@test.local"
+      },
+      "load": {
+        "id": "LD-000060",
+        "uuid": "b28145bf-0301-4e54-979f-6d4e2d98e395"
+      },
+      "booking": {
+        "id": "TS-CIN9DBYEMP",
+        "uuid": "b32596f9-f14b-4f70-bdba-52b7d7e6ea30",
+        "status": "completed",
+        "freight": "17000.00",
+        "shipper_fee": "1003.00",
+        "provider_fee": "1003.00",
+        "lifecycle": {
+          "trip": {
+            "status": "delivered",
+            "blocked_by_dispute": false,
+            "delivered_at": "2026-11-28T16:01:23+00:00"
+          },
+          "pod": {
+            "status": "approved",
+            "reviewed_at": "2026-11-28T16:01:38+00:00"
+          },
+          "freight": {
+            "status": "not_recorded",
+            "allocation": "gross",
+            "basis": 17000,
+            "confirmed": 0,
+            "awaiting_confirmation": 0,
+            "disputed": 0,
+            "unpaid": 17000,
+            "available_to_report": 17000
+          },
+          "platform_fees": {
+            "owner": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "provider": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "admin_decision": null
+          },
+          "tokens": {
+            "owner": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            },
+            "provider": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            }
+          },
+          "legacy_settlement": null
+        }
+      },
+      "document": {
+        "number": "QA/GR/281126",
+        "consignment_uuid": "ecd80a7c-2bfe-4314-af30-305ba534672f",
+        "first_version_uuid": "f0d2c0f2-08ce-4f04-9636-a1bcba154fc7",
+        "latest_version_uuid": "b5353dd8-d3cb-42fc-9c62-b1d896ec6b38",
+        "version": 2,
+        "scan_available": true
+      },
+      "vehicle": {
+        "mode": "Subcontracted",
+        "vehicle_reg_number": "QACONSSUB281126",
+        "subcontracted_to": "Synthetic QA partner",
+        "assigned_at": "2026-11-28T16:00:32+00:00"
+      },
+      "driver": {
+        "uuid": "fb83e430-166f-4255-95b3-2f626647ac5c",
+        "name": "QA Consignment GR Driver"
+      },
+      "pod": {
+        "number": "QA-POD-GR-281126",
+        "status": "approved",
+        "reference": {
+          "uuid": "b5353dd8-d3cb-42fc-9c62-b1d896ec6b38",
+          "consignment_uuid": "ecd80a7c-2bfe-4314-af30-305ba534672f",
+          "version": 2,
+          "number": "QA/GR/281126",
+          "document_type": "GR",
+          "fingerprint": "85183bfdce83f532fd842908debe739b3ab4ef2cbf89f13d83fe59a0e6b81b67"
+        }
+      },
+      "checks": {
+        "printable_download": true,
+        "shipper_read_only": true,
+        "pod_exact_version": true,
+        "amendment_locked_after_pod": true,
+        "documents_exact_booking_link": true,
+        "foreign_scan_denied": true,
+        "browser_errors": [],
+        "pod_reference_in_documents_and_trip_details": true
+      },
+      "passed": true
+    }
+  ],
+  "primary_reference": "https://cbic-gst.gov.in/gst-invoice-rules.html",
+  "evidence": [
+    "e2e/consignment-documents.spec.ts",
+    "src/app/features/consignments/consignment.spec.ts",
+    "Modules/Booking/Http/Controllers/BookingConsignmentController.php",
+    "Modules/Booking/Services/ConsignmentService.php",
+    "tests/Feature/BookingConsignmentTest.php"
+  ]
+}

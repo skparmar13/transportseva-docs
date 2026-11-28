@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { ApiFleetComplianceService } from '../../../core/api/api-fleet-compliance.service';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
@@ -18,7 +19,7 @@ describe('RegisteredVehicleDetailsComponent', () => {
     params = new BehaviorSubject(convertToParamMap({ id: uuid }));
     api = jasmine.createSpyObj('ApiMarketplaceService', ['getMarketplaceVehicle']);
     api.getMarketplaceVehicle.and.returnValue(of(vehicle));
-    TestBed.configureTestingModule({ providers: [provideRouter([]),
+    TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: ApiFleetComplianceService, useValue: { get: () => of({ current: null, subject: {}, keys: ['rc','insurance','fitness','permit','puc'], history: [] }) } },
       { provide: ActivatedRoute, useValue: { paramMap: params } }, { provide: ApiMarketplaceService, useValue: api }] });
     TestBed.inject(LanguageService).setLang('en');
   });

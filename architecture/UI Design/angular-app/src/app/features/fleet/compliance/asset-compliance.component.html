@@ -1,0 +1,34 @@
+<section class="compliance" data-asset-compliance>
+  <div class="heading"><div><h2>{{ tr('Dispatch documents', 'प्रस्थान दस्तावेज़') }}</h2><p>{{ tr('Private evidence for manual review. This is not government verification.', 'मैनुअल समीक्षा हेतु निजी प्रमाण। यह सरकारी सत्यापन नहीं है।') }}</p></div><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="load()">{{ tr('Refresh documents', 'दस्तावेज़ रीफ़्रेश करें') }}</button></div>
+  @if (busy()) { <p role="status"><span class="spinner"></span> {{ tr('Processing…', 'प्रक्रिया जारी…') }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p role="status" class="success">{{ notice() }}</p> }
+  @if (view(); as v) {
+    @if (v.current; as current) {
+      <p data-evidence-status><strong>{{ current.status }} · {{ tr('Version', 'संस्करण') }} {{ current.version }}</strong> · {{ dateTime(current.submitted_at) }}</p>
+      @if (current.review; as review) { <p>{{ review.note }}</p>@if (review.verified_payload_tons) { <p>{{ tr('Reviewed permitted payload', 'समीक्षित अनुमत भार') }}: <strong>{{ review.verified_payload_tons }} t</strong></p> } }
+      @if (current.revocation_note) { <p class="error">{{ current.revocation_note }}</p> }
+      <div class="doc-list">@for (key of v.keys; track key) {
+        <div><strong>{{ label(key) }}</strong><span>{{ current.review?.documents?.[key]?.exempt ? tr('Applicability exception approved', 'लागू होने का अपवाद स्वीकृत') : date(current.review?.documents?.[key]?.valid_until ?? current.documents[key]?.declared_valid_until) }}@if (expired(current.review?.documents?.[key]?.valid_until ?? current.documents[key]?.declared_valid_until)) { <b class="error"> · {{ tr('Expired', 'वैधता समाप्त') }}</b> }</span>
+          @if (current.documents[key]?.has_file) { <button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="download(current,key)">{{ tr('Download', 'डाउनलोड') }}</button> }</div>
+      }</div>
+    } @else { <p>{{ tr('No evidence submitted. Trip departure will remain blocked until documents and payload are reviewed.', 'कोई प्रमाण जमा नहीं हुआ। दस्तावेज़ और भार की समीक्षा तक प्रस्थान रुका रहेगा।') }}</p> }
+    @if (!editing) { <button type="button" class="btn btn-primary btn-sm" [disabled]="!!busy()" (click)="editing = true">{{ v.current ? tr('Submit renewed documents', 'नवीकृत दस्तावेज़ जमा करें') : tr('Submit dispatch documents', 'प्रस्थान दस्तावेज़ जमा करें') }}</button> }
+    @if (editing) {
+      <p class="notice">{{ tr('A new version needs fresh approval for future departures. Existing departure records and earlier files are retained.', 'नए संस्करण को भविष्य के प्रस्थान हेतु फिर स्वीकृति चाहिए। पुराने प्रस्थान रिकॉर्ड और फ़ाइलें सुरक्षित रहेंगे।') }}</p>
+      <form (ngSubmit)="submit()"><fieldset [disabled]="!!busy()">
+        @if (kind() === 'vehicle') { <label>{{ tr('Declared payload capacity (tons), not gross vehicle weight', 'घोषित माल क्षमता (टन), सकल वाहन भार नहीं') }}<input class="input" type="number" name="evidence-declared-capacity" [(ngModel)]="capacityDeclaration" min="0.01" max="99999.99" step="0.01" required></label> }
+        @for (key of v.keys; track key) { <div class="document" [attr.data-document-kind]="key"><h3>{{ label(key) }}</h3>
+          @if (v.current?.documents?.[key]?.has_file) { <label><input type="checkbox" [name]="key + '-reuse'" [(ngModel)]="declarations[key].reuse_previous"> {{ tr('Reuse previous file', 'पुरानी फ़ाइल उपयोग करें') }}</label> }
+          @if (!declarations[key].reuse_previous) { <label>{{ tr('PDF, JPG or PNG, up to 2 MB', 'PDF, JPG या PNG, अधिकतम 2 MB') }}<input type="file" [name]="key + '-file'" accept="application/pdf,image/png,image/jpeg" (change)="choose(key,$event)"></label> }
+          @if (key === 'permit' || key === 'puc') { <label><input type="checkbox" [name]="key + '-exception'" [(ngModel)]="declarations[key].exception_requested"> {{ tr('Request an applicability review', 'लागू होने की समीक्षा का अनुरोध') }}</label> }
+          @if (declarations[key].exception_requested) { <label>{{ tr('Reason and supporting evidence reference', 'कारण और प्रमाण संदर्भ') }}<textarea class="input" [name]="key + '-reason'" [(ngModel)]="declarations[key].reason" minlength="10" maxlength="500"></textarea></label> }
+          @else { <label>{{ tr('Valid through date shown on document', 'दस्तावेज़ पर अंकित वैधता तारीख') }}<input class="input" type="date" [name]="key + '-expiry'" [(ngModel)]="declarations[key].valid_until" required></label> }
+        </div> }
+        <button type="submit" class="btn btn-primary">@if (busy() === 'submit') { <span class="spinner"></span> }{{ tr('Submit evidence for review', 'समीक्षा हेतु प्रमाण जमा करें') }}</button>
+        <button type="button" class="btn btn-outline" (click)="editing = false">{{ tr('Cancel', 'रद्द') }}</button>
+      </fieldset></form>
+    }
+    @if (v.history.length > 1) { <details><summary>{{ tr('Earlier evidence versions', 'पुराने प्रमाण संस्करण') }}</summary>@for (old of v.history; track old.uuid) { <div><p>v{{ old.version }} · {{ old.status }} · {{ dateTime(old.submitted_at) }}</p>@for (key of v.keys; track key) { @if (old.documents[key]?.has_file) { <button class="btn btn-outline btn-sm" type="button" [disabled]="!!busy()" (click)="download(old,key)">{{ label(key) }} · v{{ old.version }}</button> } }</div> }</details> }
+  }
+</section>

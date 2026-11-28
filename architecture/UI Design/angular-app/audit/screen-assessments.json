@@ -3,6 +3,21 @@
   "mode": "Backend-enabled local application; source wiring assessment, not production sign-off",
   "groups": [
     {
+      "files": ["consignments/transport-documents", "consignments/transport-document-list"],
+      "status": "api_connected", "priority": "P1", "anchor": "ApiTransportDocumentService",
+      "note": "28/11 private booking-party source files for goods invoice, bill of supply, delivery challan, e-way bill and pickup/delivery weighbridge slips. Immutable file versions, replacement reason, request deduplication, current-version conflicts, paged history and scoped dispute-review downloads. Gross-minus-tare is server-derived; recorded net/gross overload and known e-way expiry block new departures. Higher pickup weight requires an accurate LR/GR amendment without changing freight. Departure and POD retain independent reference sets; stale pack fingerprint blocks POD upload. Source files remain declarations, not government/tax/signature verification. See TRIP_DOCUMENTS_RUN_2026-11-28.json."
+    },
+    {
+      "files": ["consignments/booking-consignment", "consignments/consignment-list"],
+      "status": "api_connected", "priority": "P1", "anchor": "ApiConsignmentService",
+      "note": "28/11 carrier-issued LR/GR records use booking-owned goods, route, weight, assignments and agreed freight; issuer numbering is unique by financial year. Issued snapshots and optional private scans are retained across reasoned amendments, with stale-version and retry protection. POD freezes the exact issued version and prevents later amendment. Both parties can read private records through booking and Documents; scoped dispute reviewers retain existing POD permissions. Historical PODs have no invented LR/GR link. Tax, e-way bill and signature verification are not claimed. See CONSIGNMENT_RUN_2026-11-28.json."
+    },
+    {
+      "files": ["fleet/compliance/asset-compliance", "fleet/compliance/fleet-compliance-review", "fleet/compliance/booking-dispatch"],
+      "status": "api_connected", "priority": "P1", "anchor": "ApiFleetComplianceService",
+      "note": "28/11 private versioned RC, insurance, fitness, permit/authorisation, PUC and driver licence submissions, documented KYC staff review, payload from RC weights, renewal and revocation. Future dispatch fails closed on missing/pending/rejected/revoked/expired evidence or overload, requires operator route declaration and freezes evidence versions at departure. Booking-specific subcontract evidence and identity-matched legacy driver linking supported. Manual review does not imply government verification. Headed QA evidence is in DISPATCH_COMPLIANCE_RUN_2026-11-28.json."
+    },
+    {
       "files": ["recipient-payments/recipient-bank-setup", "recipient-payments/recipient-bank-review", "recipient-payments/booking-direct-payments"],
       "status": "api_connected", "priority": "P1", "anchor": "ApiRecipientPaymentService",
       "note": "21/11 encrypted versioned bank submissions; explicit manual admin review before party-only bank instructions; gross direct freight reports require recipient confirmation, with separate platform fees and reserved disputed amounts. No automatic transfer or independent bank-verification claim."
@@ -169,6 +184,20 @@
       "note": "API-backed marketplace branch. The original 31/10 audit was read-only. 03/11 Shipper acceptance added real My Loads/Applications Received pagination and honest retriable failures, and verified a labelled new load, registered-fleet application, negotiation, awaiting-token booking and concurrent chat/bell navigation. 15/11 added server paging to Truck Owner/Transporter sent applications and Transporter received applications, removing the 100-row/load fanout. Payment/GPS and staff mutation coverage are separate. See SHIPPER_ACCEPTANCE_2026-11-03.md and APPLICATION_PAGINATION_2026-11-15.md."
     },
     {
+      "files": ["marketplace/bookings/booking-commercial-terms"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "ApiCommercialTermsService",
+      "note": "27/11 versioned per-trip commercial agreements before tokens: both actual booking parties accept the same fingerprint, proposals clear the other acceptance, and concurrent/stale actions are server-checked. Frozen freight/fees/tokens and future load/party snapshots, structured charges/waiting/insurance/admin cancellation terms, agreed advance cap and optional recipient-confirmed dispatch gate. Private agreed confirmation download and POD-based balance due date. Legacy records explicitly remain unrecorded; gross direct freight and each party's separate fee remain distinct. Visible QA journey retained as LD-000056 / TS-EJQBWVXSPS. See e2e/COMMERCIAL_TERMS_RUN_2026-11-27.json."
+    },
+    {
+      "files": ["marketplace/bookings/booking-lifecycle"],
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "BookingLifecycle",
+      "note": "28/11 booking overview uses one authorized server projection for independent trip, POD, confirmed direct freight, each party's platform fee and each token status. The list batches policy relations and receipt sums with a constant query count. Delivery and legacy settlement do not imply receipt, fee collection or token refunds; admin decisions remain separate from execution. Receipt responses update the matching summary without a list reload. Backend timelines omit the financial settlement stage and fabricated confirmation/settlement timestamps. The mid-trip cap now reads the agreed advance; old UI settlement-preparation and net-payout controls are absent from backend mode. Visible read-only QA checks cover Shipper, Truck Owner and both Transporter sides. See e2e/BOOKING_LIFECYCLE_RUN_2026-11-28.json."
+    },
+    {
       "files": ["fleet/vehicle-list/vehicle-list"],
       "status": "api_connected",
       "priority": "P2",
@@ -310,10 +339,10 @@
     },
     {
       "files": ["gps/live-tracking/live-tracking"],
-      "status": "deferred_guarded",
-      "priority": "DEFERRED",
-      "anchor": "this.backendEnabled ? []",
-      "note": "Backend mode deliberately suppresses demo positions. Assigned-vehicle link is not proof of a live feed. Hardware/mobile ingestion still deferred."
+      "status": "api_connected",
+      "priority": "P2",
+      "anchor": "BookingTrackingComponent",
+      "note": "26/11 booking-scoped location API and 10-second polling replace the backend empty placeholder. Both participants see assigned-vehicle positions, exact-coordinate map, bounded history, simulation banner and stale/ended/error states. Local/testing-only simulated AIS-140 ingress is off by default and cannot run in production; actual hardware authentication, device-to-vehicle binding and ingestion remain unverified. Prototype device inventory and geofences are separate."
     }
   ],
   "shared": [

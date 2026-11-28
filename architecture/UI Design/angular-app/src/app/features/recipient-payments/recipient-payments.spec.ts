@@ -6,6 +6,7 @@ import { ApiRecipientPaymentService, DirectPaymentView } from '../../core/api/ap
 import { BookingDirectPaymentsComponent } from './booking-direct-payments.component';
 import { RecipientBankSetupComponent } from './recipient-bank-setup.component';
 import { RecipientBankReviewComponent } from './recipient-bank-review.component';
+import { lifecycleFixture } from '../marketplace/bookings/booking-lifecycle.fixtures';
 
 const bank = { uuid: 'bank-1', version: 1, holder_name: 'QA Recipient', account_mask: '****9012', ifsc: 'TEST0000001', bank_name: 'QA Bank', status: 'manually_reviewed' as const, review_method: 'manual_document_review', reviewed_at: null, submitted_at: '2026-11-21T10:00:00Z' };
 const view: DirectPaymentView = { booking_uuid: 'booking-1', booking_reference: 'QA-BOOKING', side: 'payer', eligible: true, allocation: 'gross', bank, instruction: { version: 1, bank_uuid: bank.uuid, bank_version: 1, current: true, acknowledged_at: '' }, amounts: { recipient_basis: 17000, confirmed_received: 0, awaiting_or_disputed: 2000, confirmed_unpaid: 17000, available_to_report: 15000, owner_fee: 1003, provider_fee: 1003 }, allowed_milestones: ['final'], milestones: [], receipts: [], receipt_page: { current_page: 1, last_page: 1, total: 0 } };
@@ -21,6 +22,14 @@ describe('Recipient payments interaction safeguards', () => {
   it('keeps pending reports separate from confirmed received and gross unpaid', () => {
     const f = booking(); expect(f.nativeElement.querySelector('[data-confirmed-received]').textContent).toContain('₹0'); expect(f.nativeElement.querySelector('[data-confirmed-unpaid]').textContent).toContain('₹17,000');
     expect(f.nativeElement.textContent).toContain('Each party pays its own');
+  });
+  it('emits the new financial summary immediately after recipient confirmation without a page reload', () => {
+    const lifecycle = lifecycleFixture(); const response = new Subject<DirectPaymentView>(); api.decide.and.returnValue(response);
+    const f = booking({ ...view, side: 'recipient', lifecycle: { ...lifecycle, freight: { ...lifecycle.freight, status: 'awaiting_confirmation', confirmed: 0, unpaid: 17000 } } });
+    const changed = jasmine.createSpy('lifecycleChange'); f.componentInstance.lifecycleChange.subscribe(changed);
+    (f.componentInstance as any).decision('receipt-1', 'confirmed_received'); expect(changed).not.toHaveBeenCalled();
+    response.next({ ...view, side: 'recipient', lifecycle }); response.complete();
+    expect(changed).toHaveBeenCalledOnceWith(lifecycle); expect(api.view).toHaveBeenCalledTimes(1);
   });
   it('refreshes available payment stages when the parent booking workflow changes', () => {
     const f = booking({ ...view, allowed_milestones: [] });

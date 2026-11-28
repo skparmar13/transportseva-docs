@@ -9,9 +9,12 @@ import { ApiShipperDocumentService, PodDocumentStatus } from '../../../core/api/
 import { LanguageService } from '../../../core/i18n';
 import { formatDateTime } from '../../../core/utils/date-format';
 import { documentCopy } from './document-portal';
+import { ConsignmentListComponent } from '../../consignments/consignment-list.component';
+import { TransportDocumentListComponent } from '../../consignments/transport-document-list.component';
+import { transportDocumentLabel } from '../../../core/api/api-transport-document.service';
 
 @Component({
-  selector: 'app-shipper-documents', standalone: true, imports: [FormsModule, RouterLink],
+  selector: 'app-shipper-documents', standalone: true, imports: [FormsModule, RouterLink, ConsignmentListComponent, TransportDocumentListComponent],
   changeDetection: ChangeDetectionStrategy.OnPush, templateUrl: './shipper-documents.component.html',
   styleUrl: './shipper-documents.scss',
 })
@@ -20,6 +23,7 @@ export class ShipperDocumentsComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   private readonly language = inject(LanguageService);
+  protected documentLabel(kind:string){return transportDocumentLabel(kind,this.language.lang());}
   private readonly route = inject(ActivatedRoute);
   protected readonly truckOwner = this.route.snapshot.data?.['documentPortal'] === 'truck-owner';
   protected readonly transporter = this.route.snapshot.data?.['documentPortal'] === 'transporter';
@@ -32,7 +36,9 @@ export class ShipperDocumentsComponent {
   protected readonly error = signal('');
   protected readonly downloading = signal('');
   protected readonly downloadError = signal('');
-  protected readonly tab = signal<'pods' | 'kyc'>(this.route.snapshot.queryParamMap.get('tab') === 'kyc' ? 'kyc' : 'pods');
+  protected readonly tab = signal<'pods' | 'kyc' | 'consignments' | 'trip-files'>(this.route.snapshot.queryParamMap.get('tab') === 'trip-files' ? 'trip-files' : this.route.snapshot.queryParamMap.get('tab') === 'consignments' ? 'consignments' : this.route.snapshot.queryParamMap.get('tab') === 'kyc' ? 'kyc' : 'pods');
+  protected readonly tripFileLabel=computed(()=>this.language.lang()==='hi'?'यात्रा की सहायक फ़ाइलें':'Supporting trip files');
+  protected readonly consignmentLabel=computed(()=>this.language.lang()==='hi'?'LR / GR दस्तावेज़':'LR / GR documents');
   protected readonly status = signal<PodDocumentStatus | 'all'>('all');
   protected readonly search = signal('');
   protected readonly page = signal(1);

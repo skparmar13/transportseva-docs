@@ -281,18 +281,21 @@ export class LoadDetailsComponent {
     return orders[0];
   }
 
-  protected tokenPaymentState(applicationId: string): 'due' | 'paid' | 'waiting' | 'unavailable' {
+  protected tokenPaymentState(applicationId: string): 'due' | 'paid' | 'waiting' | 'unavailable' | 'agreement' {
     const booking = this.backendBookingForApplication(applicationId);
     if (!booking) return 'unavailable';
     const order = this.tokenOrderForApplication(applicationId);
     if (order?.status === 'paid' || booking.status === 'confirmed') return 'paid';
+    if (booking.commercial_agreement?.required && booking.commercial_agreement.status !== 'agreed') return 'agreement';
     if (['awaiting_tokens', 'awaiting_deposit', 'Awaiting Deposit'].includes(String(booking.status))) return 'due';
     return 'waiting';
   }
 
   protected tokenAmountForApplication(applicationId: string): string {
     const order = this.tokenOrderForApplication(applicationId);
-    return formatCurrencyAmount(order?.amount ?? 1000);
+    const booking = this.backendBookingForApplication(applicationId);
+    const amount = this.isOwner() ? booking?.owner_token_amount : booking?.provider_token_amount;
+    return formatCurrencyAmount(order?.amount ?? amount ?? 1000);
   }
 
   protected readonly tokenSubmittingApplicationId = signal<string | null>(null);

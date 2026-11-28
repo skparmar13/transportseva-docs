@@ -26,6 +26,8 @@
     }
     @case ('podLabel') {
       <section class="card"><div class="card-body"><h3>{{ copy().podLabel }}</h3><p data-trip-pod-status>{{ copy()[view.pod.status] }}</p><p class="desc">{{ copy().podHint }}</p>
+        @if(view.pod.consignment;as lr){<p data-trip-lr-reference>{{ lr.document_type }} {{ lr.number }} · v{{ lr.version }}</p>}
+        @for(ref of view.pod.transport_documents??[];track ref.uuid){<p data-trip-supporting-reference>{{ documentLabel(ref.kind) }} · {{ ref.reference }} · v{{ ref.version }}</p>}
         @if (view.pod.status === 'not_submitted') { <p>{{ copy().noPOD }}</p> }
         <dl class="trip-grid"><div><dt>{{ copy().podNumber }}</dt><dd>{{ view.pod.number || copy().notRecorded }}</dd></div><div><dt>{{ copy().receiver }}</dt><dd>{{ view.pod.received_by || copy().notRecorded }}</dd></div>
           <div><dt>{{ copy().uploaded }}</dt><dd>{{ view.pod.uploaded_at ? dateTime(view.pod.uploaded_at) : copy().notRecorded }}</dd></div><div><dt>{{ copy().reviewed }}</dt><dd>{{ view.pod.reviewed_at ? dateTime(view.pod.reviewed_at) : copy().notRecorded }}</dd></div>

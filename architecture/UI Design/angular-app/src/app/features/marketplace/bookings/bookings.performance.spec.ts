@@ -13,6 +13,7 @@ import { FleetMockService } from '../../../core/services/fleet-mock.service';
 import { DriverMockService } from '../../../core/services/driver-mock.service';
 import { SessionService } from '../../../core/services/session.service';
 import { MarketplaceBooking } from '../../../core/models/marketplace.model';
+import { lifecycleFixture } from './booking-lifecycle.fixtures';
 
 type Harness = {
   backendBookings: WritableSignal<ApiMarketplaceBooking[]>;
@@ -27,6 +28,7 @@ type Harness = {
   retryBookings(): void;
   workflowActionErrorFor(id: string, action: string): string;
   mapBackendBooking(booking: ApiMarketplaceBooking): MarketplaceBooking;
+  updateLifecycle(id: string, lifecycle: import('../../../core/models/booking-lifecycle.model').BookingLifecycle): void;
   finalSettlementPayable(booking: MarketplaceBooking): string;
   freightNotRecordedReleased(booking: MarketplaceBooking): string;
   openOfflinePayment(booking: MarketplaceBooking): void;
@@ -78,6 +80,23 @@ describe('Bookings request efficiency and recovery', () => {
 
   const settlement = { uuid: 'settlement', booking_uuid: 'booking-first', gross_freight: '17000.00',
     shipper_fee: 1003, provider_fee: 1003, shipper_payable: 18003, provider_payout: 15997, status: 'pending' };
+  it('maps a delivered trip independently from pending or absent settlement records', () => {
+    const c = create();
+    for (const previous of [undefined, settlement, { ...settlement, status: 'settled' }]) {
+      const b = c.mapBackendBooking({ ...first, status: 'completed', settlement: previous, workflow: { trip_completed_at: '2026-11-27T10:00:00Z' } });
+      expect(b.status).toBe('Completed'); expect(b.timeline.some(t => t.stage === 'Settlement Pending')).toBeFalse();
+      expect(b.timeline.find(t => t.stage === 'Completed')?.timestamp).toContain('27/11/2026');
+    }
+  });
+  it('preserves cancellation even when historical workflow has a completion timestamp', () => {
+    expect(create().mapBackendBooking({ ...first, status: 'cancelled', workflow: { trip_completed_at: '2026-11-27T10:00:00Z' } }).status).toBe('Cancelled');
+  });
+  it('updates only the matching financial summary without a list reload', () => {
+    const c = create(); const v = lifecycleFixture(); c.updateLifecycle(first.uuid, v);
+    expect(c.backendBookings().find(b => b.uuid === first.uuid)?.lifecycle).toEqual(v);
+    expect(c.backendBookings().find(b => b.uuid === other.uuid)?.lifecycle).toBeUndefined();
+    expect(api.listMarketplaceBookings).toHaveBeenCalledTimes(1);
+  });
   for (const [name, advance, midReleased, expected] of [
     ['neither planned payment released', false, false, 18003],
     ['advance released only', true, false, 11203],

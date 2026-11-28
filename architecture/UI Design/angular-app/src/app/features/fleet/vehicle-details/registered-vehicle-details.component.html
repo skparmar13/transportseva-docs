@@ -1,5 +1,5 @@
 <div class="page-toolbar">
-  <a class="btn btn-outline btn-sm" [routerLink]="[session.portal().basePath, listPath()]">{{ 'vehicleDetails.back' | t }}</a>
+  <a class="btn btn-outline btn-sm" [routerLink]="session.portal().basePath + '/' + listPath()">{{ 'vehicleDetails.back' | t }}</a>
   <button type="button" class="btn btn-outline btn-sm" [disabled]="state().status === 'loading'" [attr.aria-busy]="state().status === 'loading'" (click)="reload()">{{ (state().status === 'loading' ? 'common.loading' : 'registeredVehicle.refresh') | t }}</button>
 </div>
 @if (state().status === 'loading') {
@@ -20,7 +20,7 @@
       }
     </dl></div>
   </section>
-  <aside class="card" style="margin-top:20px;"><div class="card-body"><h3>{{ 'registeredVehicle.relatedTitle' | t }}</h3><p class="desc">{{ 'registeredVehicle.relatedUnavailable' | t }}</p></div></aside>
+  <app-asset-compliance kind="vehicle" [assetUuid]="v.uuid" (metadataChanged)="reload()" />
 } @else {
   <div class="card"><div class="card-body" [attr.role]="state().status === 'error' ? 'alert' : 'status'">
     <h1>{{ (state().status === 'not-found' ? 'vehicleDetails.notFound.title' : state().status === 'forbidden' ? 'registeredVehicle.forbidden' : 'registeredVehicle.error') | t }}</h1>

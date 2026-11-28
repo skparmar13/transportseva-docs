@@ -1,0 +1,40 @@
+<section class="consignment" data-booking-consignment>
+  <div class="heading"><h2>{{ tr('LR / GR consignment document','LR / GR माल परिवहन दस्तावेज़') }}</h2><button class="btn btn-outline btn-sm" type="button" [disabled]="!!busy()" (click)="load()">{{ tr('Refresh LR/GR','LR/GR रीफ़्रेश करें') }}</button></div>
+  @if(busy()){<p role="status"><span class="spinner"></span>{{ tr('Processing…','प्रक्रिया जारी…') }}</p>}
+  @if(error()){<p class="error" role="alert">{{ error() }}</p>}
+  @if(notice()){<p class="success" role="status">{{ notice() }}</p>}
+  @if(view();as v){
+    @if(v.current;as c){
+      <p data-consignment-current><strong>{{ c.snapshot.document_type }} {{ c.snapshot.number }} · v{{ c.version }}</strong> · {{ date(c.snapshot.issue_date) }}</p>
+      <p>{{ c.snapshot.consignor_name }} → {{ c.snapshot.consignee_name }}<br>{{ c.snapshot.origin }} → {{ c.snapshot.destination }}<br>{{ c.snapshot.vehicle_registration }} · {{ c.snapshot.weight_tons }} t · {{ c.snapshot.package_count }} {{ c.snapshot.package_unit }}</p>
+      @if(c.snapshot.issued_after_departure){<p>{{ tr('Recorded after departure.','प्रस्थान के बाद दर्ज किया गया।') }}</p>}
+      <button class="btn btn-outline btn-sm" type="button" [disabled]="!!busy()" (click)="download(c,'document')">{{ tr('Download printable LR/GR','प्रिंट योग्य LR/GR डाउनलोड करें') }}</button>
+      @if(c.scan_available){<button class="btn btn-outline btn-sm" type="button" [disabled]="!!busy()" (click)="download(c,'scan')">{{ tr('Download carrier scan','वाहक की स्कैन प्रति डाउनलोड करें') }}</button>}
+    }@else{<p>{{ tr('No LR/GR recorded for this booking.','इस बुकिंग का LR/GR दर्ज नहीं है।') }}</p>}
+    @if(v.pod_recorded){<p data-pod-consignment>@if(v.pod_reference;as p){<strong>{{ tr('POD linked to','POD इससे जुड़ा है') }} {{ p.document_type }} {{ p.number }} · v{{ p.version }}</strong>}@else{ {{ tr('No LR/GR link was recorded with this POD.','इस POD के साथ LR/GR लिंक दर्ज नहीं है।') }} }</p>}
+    @if(v.blocked_reason){<p class="hint">{{ tr('Issue or amend LR/GR after confirmation, before the first POD submission, and while no dispute is open.','पुष्टि के बाद, पहले POD से पहले और विवाद न होने पर LR/GR जारी या संशोधित करें।') }}</p>}
+    @if(!v.context.vehicle_registration||!v.context.driver_name){<p class="hint">{{ tr('Assign the vehicle and driver before issuing LR/GR.','LR/GR जारी करने से पहले वाहन और चालक असाइन करें।') }}</p>}
+    @if(v.can_issue&&!editing){<button class="btn btn-primary btn-sm" type="button" [disabled]="!!busy()" (click)="begin()">{{ v.current?tr('Amend LR/GR','LR/GR संशोधित करें'):tr('Issue LR/GR','LR/GR जारी करें') }}</button>}
+    @if(editing){<form (ngSubmit)="issue()" #lrForm="ngForm"><fieldset [disabled]="!!busy()"><div class="grid">
+      <label>{{ tr('Document type','दस्तावेज़ प्रकार') }}<select class="input" name="document_type" [(ngModel)]="form['document_type']" [disabled]="!!v.current"><option value="LR">LR</option><option value="GR">GR</option></select></label>
+      <label>{{ tr('LR/GR number','LR/GR नंबर') }}<input class="input" name="number" [(ngModel)]="form['number']" maxlength="40" required [readonly]="!!v.current"></label>
+      <label>{{ tr('Issue date','जारी करने की तारीख') }}<input class="input" type="date" name="issue_date" [(ngModel)]="form['issue_date']" required [readonly]="!!v.current"></label>
+      @for(f of fields;track f.key){<label>{{ tr(f.label,f.hi) }}<input class="input" [name]="f.key" [attr.data-lr-field]="f.key" [(ngModel)]="form[f.key]" [maxlength]="f.max" [required]="f.required"></label>}
+      <label>{{ tr('Package count','पैकेज संख्या') }}<input class="input" type="number" name="package_count" [(ngModel)]="form['package_count']" min="1" max="10000000" step="1" required></label>
+      <label>{{ tr('Package unit / packing','पैकेज इकाई / पैकिंग') }}<input class="input" name="package_unit" [(ngModel)]="form['package_unit']" maxlength="40" required></label>
+      <label>{{ tr('Declared goods value (₹, optional)','घोषित माल मूल्य (₹, वैकल्पिक)') }}<input class="input" type="number" name="declared_goods_value" [(ngModel)]="form['declared_goods_value']" min="0" max="999999999.99" step="0.01"></label>
+      <label>{{ tr('Goods invoice date (optional)','माल बिल की तारीख (वैकल्पिक)') }}<input class="input" type="date" name="invoice_date" [(ngModel)]="form['invoice_date']"></label>
+      <label>{{ tr('Declared party liable for tax','कर देय पक्ष की घोषणा') }}<select class="input" name="tax_liable_party" [(ngModel)]="form['tax_liable_party']"><option value="not_recorded">{{ tr('Not recorded','दर्ज नहीं है') }}</option><option value="consignor">{{ tr('Consignor','प्रेषक') }}</option><option value="consignee">{{ tr('Consignee','प्राप्तकर्ता') }}</option><option value="carrier">{{ tr('Carrier','वाहक') }}</option></select></label>
+    </div>
+    <p>{{ tr('Booking goods, weight, route, assigned vehicle/driver and agreed freight are saved from the booking when this version is issued.','इस संस्करण के साथ बुकिंग का माल, भार, मार्ग, वाहन/चालक और तय भाड़ा सुरक्षित होगा।') }}</p>
+    <label>{{ tr('Remarks (optional)','टिप्पणी (वैकल्पिक)') }}<textarea class="input" name="remarks" [(ngModel)]="form['remarks']" maxlength="1000"></textarea></label>
+    @if(v.current){<label>{{ tr('Amendment reason','संशोधन का कारण') }}<textarea class="input" name="amendment_reason" [(ngModel)]="form['amendment_reason']" minlength="10" maxlength="1000" required></textarea></label>}
+    @if(v.current?.scan_available){<label><input type="checkbox" name="reuse_scan" [(ngModel)]="reuseScan"> {{ tr('Reuse previous carrier scan','पिछली वाहक स्कैन प्रति इस्तेमाल करें') }}</label>}
+    @if(!reuseScan){<label>{{ tr('Carrier scan (optional PDF/JPG/PNG, up to 5 MB)','वाहक स्कैन (वैकल्पिक PDF/JPG/PNG, अधिकतम 5 MB)') }}<input type="file" name="lr-scan" accept="application/pdf,image/jpeg,image/png" (change)="choose($event)"></label>}
+    <label><input type="checkbox" name="lr-attested" [(ngModel)]="attested" required> {{ tr('I am authorised to issue this carrier document and have checked its particulars.','मैं वाहक का यह दस्तावेज़ जारी करने के लिए अधिकृत हूँ और विवरण जाँच लिए हैं।') }}</label>
+    <p class="hint">{{ tr('GST and e-way bill references are recorded declarations. This is a transport record; tax compliance, signatures and payment are not verified here.','GST और ई-वे बिल संदर्भ घोषणाएँ हैं। यह परिवहन रिकॉर्ड है; यहाँ कर अनुपालन, हस्ताक्षर या भुगतान सत्यापित नहीं होते।') }}</p>
+    <div class="actions"><button type="button" class="btn btn-outline" (click)="editing=false">{{ tr('Cancel','रद्द करें') }}</button><button type="submit" class="btn btn-primary" [disabled]="lrForm.invalid||!attested">@if(busy()==='issue'){<span class="spinner"></span>}{{ busy()==='issue'?tr('Issuing…','जारी हो रहा…'):tr('Issue document version','दस्तावेज़ संस्करण जारी करें') }}</button></div>
+    </fieldset></form>}
+    @if(v.history.length>1){<details><summary>{{ tr('Earlier LR/GR versions','पुराने LR/GR संस्करण') }}</summary>@for(old of v.history;track old.uuid){<div class="history"><strong>{{ old.snapshot.number }} · v{{ old.version }}</strong><p>{{ dateTime(old.recorded_at) }} · {{ old.amendment_reason }}</p><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="download(old,'document')">{{ tr('Download this version','यह संस्करण डाउनलोड करें') }}</button></div>}</details>}
+  }
+</section>

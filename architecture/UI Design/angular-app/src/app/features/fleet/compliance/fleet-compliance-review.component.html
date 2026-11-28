@@ -1,0 +1,39 @@
+<section class="compliance" data-fleet-review-queue>
+  <div class="heading"><div><h2>{{ tr('Fleet document review', 'बेड़े के दस्तावेज़ों की समीक्षा') }}</h2><p>{{ tr('Review identity, expiry, licence coverage and permitted payload from private evidence. Approval is a documented manual review.', 'निजी प्रमाण से पहचान, वैधता, लाइसेंस कवरेज और अनुमत भार की समीक्षा करें। स्वीकृति मैनुअल समीक्षा है।') }}</p></div><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="load()">{{ tr('Refresh fleet queue', 'बेड़ा सूची रीफ़्रेश करें') }}</button></div>
+  <label>{{ tr('Evidence status', 'प्रमाण स्थिति') }}<select class="input" name="fleet-status" [(ngModel)]="filter" (ngModelChange)="setFilter()" [disabled]="!!busy()"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Needs changes</option><option value="revoked">Revoked</option><option value="all">All</option></select></label>
+  @if (busy()) { <p role="status"><span class="spinner"></span> {{ tr('Processing…', 'प्रक्रिया जारी…') }}</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+  @for (v of rows(); track v.uuid) { <article class="document" [attr.data-evidence-version]="v.uuid"><strong>{{ v.subject['registration_number'] ?? v.subject['name'] }} · {{ v.asset_type }} · v{{ v.version }}</strong><p>{{ v.owner_name }} · {{ v.status }} · {{ dateTime(v.submitted_at) }}</p><button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="open(v)">{{ tr('Review fleet evidence', 'बेड़े के प्रमाण की समीक्षा') }}</button></article> } @empty { @if (!busy()) { <p>{{ tr('No fleet evidence in this queue.', 'इस सूची में कोई बेड़े का प्रमाण नहीं है।') }}</p> } }
+  @if (lastPage > 1) { <button type="button" class="btn btn-outline btn-sm" [disabled]="page <= 1 || !!busy()" (click)="changePage(-1)">Previous</button><span>{{ page }} / {{ lastPage }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="page >= lastPage || !!busy()" (click)="changePage(1)">Next</button> }
+  @if (selected(); as v) {
+    <section class="document" data-selected-fleet-evidence><h3>{{ v.subject['registration_number'] ?? v.subject['name'] }} · v{{ v.version }} · {{ v.status }}</h3>
+      @if (v.subject['license_number']) { <p>{{ tr('Licence number', 'लाइसेंस संख्या') }}: {{ v.subject['license_number'] }}</p> }
+      @if (v.subject['declared_capacity_tons']) { <p>{{ tr('Declared fleet capacity', 'घोषित बेड़ा क्षमता') }}: {{ v.subject['declared_capacity_tons'] }} t</p> }
+      @if (v.review) { <p>{{ v.review.note }} · {{ v.review.evidence_reference }}</p> }
+      @if (v.revocation_note) { <p class="error">{{ v.revocation_note }}</p> }
+      @for (key of keys(v); track key) { <div class="document" [attr.data-review-document]="key"><strong>{{ key.toUpperCase() }}</strong>
+        @if (v.documents[key].has_file && session.canStaffAction('marketplace.kyc.document')) { <button type="button" class="btn btn-outline btn-sm" [disabled]="!!busy()" (click)="download(key)">Download evidence</button> }
+        @if (v.status === 'pending' && session.canStaffAction('marketplace.kyc.moderate')) {
+          @if (key === 'puc' || key === 'permit') { <label><input type="checkbox" [name]="'review-' + key + '-exempt'" [(ngModel)]="reviewedDocs[key].exempt"> {{ tr('Not applicable, with documented evidence', 'प्रमाण सहित लागू नहीं') }}</label> }
+          @if (reviewedDocs[key].exempt) { <label>{{ tr('Applicability decision reason', 'लागू होने के निर्णय का कारण') }}<textarea class="input" [name]="'review-' + key + '-reason'" [(ngModel)]="reviewedDocs[key].reason" maxlength="500"></textarea></label> }
+          @else { <label>{{ tr('Reviewed valid through date', 'समीक्षित वैधता तारीख') }}<input type="date" class="input" [name]="'review-' + key + '-expiry'" [(ngModel)]="reviewedDocs[key].valid_until"></label> }
+        }
+      </div> }
+      @if (v.status === 'pending' && session.canStaffAction('marketplace.kyc.moderate')) {
+        @if (v.asset_type === 'driver') { <h3>{{ tr('Licence coverage checked for these vehicle types', 'इन वाहन प्रकारों हेतु लाइसेंस कवरेज की जाँच') }}</h3>@for (type of vehicleTypes; track type) { <label><input type="checkbox" [name]="'licence-type-' + type" [(ngModel)]="licenceTypes[type]"> {{ type }}</label> } }
+        @else { <div class="grid"><label>RC gross vehicle weight (kg)<input type="number" class="input" name="review-gvw" [(ngModel)]="gvw" min="1" step="1"></label><label>RC unladen weight (kg)<input type="number" class="input" name="review-unladen" [(ngModel)]="unladen" min="1" step="1"></label><label>Reviewed permitted payload (tons)<input type="number" class="input" name="review-payload" [(ngModel)]="payload" min="0.01" step="0.01"></label></div><p>{{ tr('Payload must fit both RC weights and the registered fleet capacity. Gross vehicle weight is not payload.', 'अनुमत भार RC भार और पंजीकृत क्षमता दोनों के भीतर हो। सकल वाहन भार माल की क्षमता नहीं है।') }}</p>
+          @if (v.asset_type === 'booking_vehicle') { <label>Reviewed vehicle type<select class="input" name="review-vehicle-type" [(ngModel)]="vehicleType">@for (t of vehicleTypes; track t) { <option [value]="t">{{ t }}</option> }</select></label> }
+        }
+      }
+      @if (session.canStaffAction('marketplace.kyc.moderate') && (v.status === 'pending' || v.status === 'approved')) {
+        <label>{{ tr('Review / revocation note', 'समीक्षा / निरस्तीकरण नोट') }}<textarea class="input" name="fleet-review-note" [(ngModel)]="note" minlength="10" maxlength="1000" [disabled]="!!busy()"></textarea></label>
+        @if (v.status === 'pending') {
+          <label>{{ tr('Review evidence reference', 'समीक्षा प्रमाण संदर्भ') }}<input class="input" name="fleet-evidence-reference" [(ngModel)]="evidenceReference" minlength="8" maxlength="300" [disabled]="!!busy()"></label>
+          <label><input type="checkbox" name="fleet-review-attested" [(ngModel)]="attested" [disabled]="!!busy()"> {{ tr('I checked the submitted identity, documents, dates and applicable payload or licence coverage; exceptions have supporting reasons.', 'मैंने पहचान, प्रमाण, तारीखें और लागू भार या लाइसेंस कवरेज की जाँच की है; अपवादों के कारण दर्ज हैं।') }}</label>
+          <button type="button" class="btn btn-primary" [disabled]="!!busy() || !attested" (click)="review('approved')">Approve fleet evidence</button><button type="button" class="btn btn-outline" [disabled]="!!busy() || !attested" (click)="review('rejected')">Request fleet document changes</button>
+        } @else { <button type="button" class="btn btn-outline" [disabled]="!!busy() || note.trim().length < 10" (click)="revoke()">Revoke fleet approval</button> }
+      }
+    </section>
+  }
+</section>

@@ -1,3 +1,4 @@
+import { prepareReviewedDispatch, attestDispatch } from './helpers/dispatch-evidence';
 import { expect, test, type Page, type Locator } from '@playwright/test';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
@@ -9,6 +10,10 @@ if (!run || !/^20261122-[a-z0-9]+$/.test(run)) throw new Error('Set a unique loc
 const root = '.local-runtime/booking-full-20261122';
 const manifestPath = `${root}/${run}.json`;
 const password = 'FullBookingQA@2026!22';
+// Opt-in tracking journey: the local API must have TS_TRACKING_TEST_MODE=true.
+// All transmitted locations are synthetic; no hardware connection is inferred.
+const trackingQa = process.env.E2E_TRACKING_QA === 'true';
+const trackingCase = 'ais140-20261126';
 type Role = 'shipper' | 'transporter' | 'truck-owner';
 type Actor = { code: string; role: Role; name: string; email: string; mobile: string; uuid?: string; ready?: boolean; vehicle?: any; driver?: any; bank?: any };
 type Journey = { owner: string; winner: string; applicants: string[]; freight: number; negotiation: 'owner' | 'applicant'; advance?: boolean; mid?: number; load?: any; apps: Record<string, any>; booking?: any; final?: any; ledger?: any; receipts?: Record<string, any>; passed?: boolean; events: string[] };
@@ -97,6 +102,18 @@ async function openBooking(page: Page, user: Actor, j: Journey): Promise<Locator
 async function workflow(page: Page, j: Journey, action: () => Promise<unknown>) {
   const b = await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/workflow`, action); j.booking = b; await save(); return b;
 }
+async function commercialAgreement(page: Page, j: Journey) {
+  for (const party of [actor(j.owner), actor(j.winner)]) {
+    await login(page, party);
+    const agreement = await api(page, `marketplace-bookings/${j.booking.uuid}/commercial-terms`);
+    if (!agreement.required || agreement.status === 'agreed') continue;
+    const accepted = party.code === j.owner ? agreement.current.owner_accepted_at : agreement.current.provider_accepted_at;
+    if (accepted) continue;
+    const card = await openBooking(page, party, j); const terms = card.locator('app-booking-commercial-terms');
+    await terms.getByRole('checkbox').check();
+    await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/commercial-terms/accept`, () => terms.getByRole('button', { name: 'Accept this version', exact: true }).click());
+  }
+}
 async function note(j: Journey, message: string) { j.events.push(message); await save(); }
 
 async function adminLogin(page: Page) {
@@ -167,6 +184,51 @@ async function testTripRecord(page: Page, user: Actor, j: Journey) {
   await expect(page.getByText(j.booking.booking_reference, { exact: false }).first()).toBeVisible({ timeout: 60_000 });
 }
 
+async function testSimulatedTracking(page: Page, j: Journey) {
+  if (state.checks.ais140Tracking?.booking_uuid === j.booking.uuid && state.checks.ais140Tracking?.automatic_polling_both_participants) return;
+  const provider = actor(j.winner), owner = actor(j.owner);
+  const context = await page.context().browser()!.newContext({ baseURL: new URL(page.url()).origin });
+  await context.route('**/*', route => ['localhost', '127.0.0.1', 'www.openstreetmap.org', 'tile.openstreetmap.org'].includes(new URL(route.request().url()).hostname) ? route.continue() : route.abort());
+  await page.context().route('https://www.openstreetmap.org/**', route => route.continue());
+  const providerPage = await context.newPage();
+  try {
+    await login(providerPage, provider); const providerCard = await openBooking(providerPage, provider, j);
+    await providerCard.getByRole('button', { name: 'Track Assigned Vehicle', exact: true }).click();
+    const ownerPanel = page.locator('[data-booking-tracking]'), providerPanel = providerPage.locator('[data-booking-tracking]');
+    for (const panel of [ownerPanel, providerPanel]) {
+      await expect(panel).toHaveAttribute('data-booking', j.booking.uuid);
+      await expect(panel).toContainText(provider.vehicle.registration_number);
+    }
+    const before = await api(providerPage, `marketplace-bookings/${j.booking.uuid}/tracking`);
+    expect(before.test_mode).toBe(true);
+    if (!before.latest) await expect(ownerPanel.locator('[data-tracking-no-signal]')).toBeVisible();
+    const samples = [];
+    for (const [i, coordinates] of [[28.6139, 77.209], [28.6200, 77.2150], [28.6300, 77.2230]].entries()) {
+      const sample = { sample_uuid: crypto.randomUUID(), latitude: coordinates[0], longitude: coordinates[1], speed_kmph: 42 + i, accuracy_m: 8, heading: 125,
+        recorded_at: new Date(Date.now() - (i === 0 ? 180_000 : 0)).toISOString() };
+      await api(page, `marketplace-bookings/${j.booking.uuid}/tracking/test-position`, 'POST', sample, 403);
+      await api(providerPage, `marketplace-bookings/${j.booking.uuid}/tracking/test-position`, 'POST', sample, 201);
+      await api(providerPage, `marketplace-bookings/${j.booking.uuid}/tracking/test-position`, 'POST', sample, 200);
+      for (const panel of [ownerPanel, providerPanel]) {
+        await expect(panel.locator('[data-tracking-coordinate]')).toHaveText(`${coordinates[0].toFixed(7)}, ${coordinates[1].toFixed(7)}`, { timeout: 30_000 });
+        await expect(panel.locator('[data-tracking-simulation]')).toContainText('not a real vehicle location');
+        await expect(panel.locator('[data-tracking-map]')).toHaveAttribute('src', new RegExp(`marker=${coordinates[0]},${coordinates[1]}`));
+        await expect(panel.locator('[data-tracking-status]')).toContainText(i === 0 ? 'Signal stale' : 'Test positions updating');
+      }
+      samples.push(sample);
+    }
+    const ledger = await api(providerPage, `marketplace-bookings/${j.booking.uuid}/tracking`);
+    expect(ledger.latest.uuid).toBe(samples[2].sample_uuid); expect(ledger.latest.simulated).toBe(true);
+    await api(page, `marketplace-bookings/${j.booking.uuid}/tracking?vehicle=NOTASSIGNED`, 'GET', undefined, 422);
+    await login(providerPage, actor(j.applicants.find(code => code !== j.winner)!));
+    await api(providerPage, `marketplace-bookings/${j.booking.uuid}/tracking`, 'GET', undefined, 403);
+    state.checks.ais140Tracking = { mode: 'simulated AIS-140 feed; hardware unverified', booking: j.booking.booking_reference, booking_uuid: j.booking.uuid,
+      load: j.load.load_id ?? j.load.load_reference, owner: owner.email, provider: provider.email, vehicle: provider.vehicle.registration_number,
+      samples, automatic_polling_both_participants: true, stale_signal: true, map_marker_both_participants: true, outsider_denied: true, payer_publish_denied: true, wrong_vehicle_denied: true };
+    await save(); await note(j, 'Both visible browser sessions received three simulated positions by polling; stale state, map marker, idempotency and access boundaries passed');
+  } finally { await context.close(); }
+}
+
 test.beforeAll(async () => {
   const before = JSON.parse(await readFile(root + '/before.json', 'utf8'));
   const backup = JSON.parse((await readFile(root + '/backup.json', 'utf8')).replace(/^\uFEFF/, ''));
@@ -184,6 +246,10 @@ test.beforeAll(async () => {
       'transporter-transporter': { owner: 'ta', winner: 'tb', applicants: ['tb', 'oa', 'ob'], freight: 20000, negotiation: 'applicant', apps: {}, events: [] },
       'no-advance': { owner: 's', winner: 'ob', applicants: ['ob', 'oa', 'tb'], freight: 19000, negotiation: 'applicant', advance: false, mid: 0, apps: {}, events: [] },
     }, checks: {} }; await save();
+  }
+  if (trackingQa && !state.journeys[trackingCase]) {
+    state.journeys[trackingCase] = { owner: 's', winner: 'oa', applicants: ['oa', 'ob', 'ta'], freight: 17000, negotiation: 'owner', apps: {}, events: [] };
+    await save();
   }
 });
 test.beforeEach(async ({ context }) => {
@@ -207,7 +273,7 @@ for (const code of ['ta', 'tb', 'oa', 'ob']) test(`private bank setup and docume
   await bankReview(page, user, 'manually_reviewed');
 });
 
-for (const key of ['shipper-owner', 'shipper-transporter', 'transporter-owner', 'transporter-transporter', 'no-advance']) test(`complete booking UI: ${key}`, async ({ page }, info) => {
+for (const key of ['shipper-owner', 'shipper-transporter', 'transporter-owner', 'transporter-transporter', 'no-advance', ...(trackingQa ? [trackingCase] : [])]) test(`complete booking UI: ${key}`, async ({ page }, info) => {
   const j = state.journeys[key]; const owner = actor(j.owner); const winner = actor(j.winner);
   if (j.passed) { await login(page, owner); const b = await api(page, `marketplace-bookings/${j.booking.uuid}`); expect(b.status).toBe('completed'); const d = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`); expect(d.amounts.confirmed_unpaid).toBe(0); return; }
   if (!j.load) await test.step('Post a fresh load through UI', async () => {
@@ -244,6 +310,7 @@ for (const key of ['shipper-owner', 'shipper-transporter', 'transporter-owner', 
     await note(j, 'Counter-offer accepted at exact amount; two competing applications rejected');
   });
   await test.step('Pay both mock booking tokens through UI', async () => {
+    await commercialAgreement(page, j);
     for (const party of [owner, winner]) {
       await login(page, party); let b = await api(page, `marketplace-bookings/${j.booking.uuid}`);
       if ((party.code === owner.code ? b.owner_token_status : b.provider_token_status) === 'paid') continue;
@@ -271,8 +338,11 @@ for (const key of ['shipper-owner', 'shipper-transporter', 'transporter-owner', 
   if (!j.booking.workflow.loading_confirmed_at) { const card = await openBooking(page, owner, j); await workflow(page, j, () => card.getByRole('button', { name: /^Confirm Loading$/i }).click()); }
   await note(j, 'Vehicle/driver selected and loading confirmed');
   if (j.advance !== false) await transfer(page, j, 'loading_advance', Math.round(j.freight * 40) / 100);
-  if (!j.booking.workflow.trip_started_at) { await login(page, winner); const card = await openBooking(page, winner, j); await workflow(page, j, () => card.getByRole('button', { name: /^Start Trip$/i }).click()); }
-  await testTrackingRoute(page, owner, j);
+  if (!j.booking.workflow.trip_started_at) { await login(page, winner); await prepareReviewedDispatch(page, j.booking.uuid, () => login(page, winner)); const card = await openBooking(page, winner, j); await attestDispatch(card); await workflow(page, j, () => card.getByRole('button', { name: /^Start Trip$/i }).click()); }
+  if (key !== trackingCase || j.booking.status !== 'completed') {
+    await testTrackingRoute(page, owner, j);
+    if (key === trackingCase) await testSimulatedTracking(page, j);
+  } else expect(state.checks.ais140Tracking?.automatic_polling_both_participants).toBe(true);
   if (j.mid !== 0) {
     await login(page, owner);
     if (!j.booking.workflow.mid_trip_milestones?.length) {
@@ -295,7 +365,6 @@ for (const key of ['shipper-owner', 'shipper-transporter', 'transporter-owner', 
     const card = await openBooking(page, owner, j); await card.getByRole('button', { name: /^Approve POD$/i }).click();
     j.booking = await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/pod/review`, () => page.getByRole('dialog').getByRole('button', { name: /^Approve POD$/i }).click()); await save();
   }
-  if (!j.booking.settlement) { const card = await openBooking(page, owner, j); await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/settle`, () => card.getByRole('button', { name: /^Prepare Settlement$/i }).click(), 201); j.booking = await api(page, `marketplace-bookings/${j.booking.uuid}`); await save(); }
   await login(page, owner); const beforeFinal = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`);
   await transfer(page, j, 'final', beforeFinal.amounts.available_to_report);
   await login(page, owner); j.booking = await api(page, `marketplace-bookings/${j.booking.uuid}`);
@@ -312,7 +381,16 @@ for (const key of ['shipper-owner', 'shipper-transporter', 'transporter-owner', 
   await testTripRecord(page, winner, j);
   const foreign = actor(j.applicants.find(c => c !== j.winner)!); await login(page, foreign); await api(page, `marketplace-bookings/${j.booking.uuid}`, 'GET', undefined, 403);
   await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`, 'GET', undefined, 403);
-  await note(j, 'Delivery, private POD approval, full gross recipient confirmation, reload, trip details and outsider denial passed'); j.passed = true; await save();
+  await note(j, 'Delivery, private POD approval, full gross recipient confirmation, reload, trip details and outsider denial passed');
+  if (key === trackingCase) {
+    await api(page, `marketplace-bookings/${j.booking.uuid}/tracking`, 'GET', undefined, 403);
+    await login(page, winner);
+    await api(page, `marketplace-bookings/${j.booking.uuid}/tracking/test-position`, 'POST', { sample_uuid: crypto.randomUUID(), latitude: 28.64, longitude: 77.23, recorded_at: new Date().toISOString() }, 422);
+    const last = await api(page, `marketplace-bookings/${j.booking.uuid}/tracking`); expect(last.status).toBe('ended'); expect(last.latest.simulated).toBe(true);
+    state.checks.ais140Tracking.completed = { pod: 'approved', confirmed_received: j.ledger.amounts.confirmed_received, confirmed_unpaid: 0, post_delivery_publish: 'denied', tracking_status: last.status };
+    await writeFile('.local-runtime/tracking-20261126/browser-result.json', JSON.stringify(state.checks.ais140Tracking, null, 2)); await save();
+  }
+  j.passed = true; await save();
 });
 test('role matrix boundaries and self-application safeguard', async ({ page }) => {
   const user = actor('ta'); await login(page, user);
@@ -347,6 +425,7 @@ async function focusedBooking(page: Page, key: string): Promise<Journey> {
   return j;
 }
 async function focusedTokens(page: Page, j: Journey) {
+  await commercialAgreement(page, j);
   for (const party of [actor(j.owner), actor(j.winner)]) {
     await login(page, party); const b = await api(page, `marketplace-bookings/${j.booking.uuid}`);
     if ((party.code === j.owner ? b.owner_token_status : b.provider_token_status) === 'paid') continue;
@@ -439,7 +518,7 @@ test('a disputed direct receipt reserves funds without claiming confirmation or 
   const item = card.locator(`[data-receipt="${receipt.uuid}"]`); await item.locator('textarea').fill('QA synthetic transfer disputed: recipient did not receive funds.');
   ledger = await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/direct-payments/${receipt.uuid}/decision`, () => item.getByRole('button', { name: 'Dispute receipt', exact: true }).click());
   expect(ledger.amounts.confirmed_received).toBe(0); expect(ledger.amounts.confirmed_unpaid).toBe(j.freight); expect(ledger.amounts.awaiting_or_disputed).toBe(500);
-  await login(page, actor(j.winner)); card = await openBooking(page, actor(j.winner), j);
+  await login(page, actor(j.winner)); await prepareReviewedDispatch(page, j.booking.uuid, () => login(page, actor(j.winner))); card = await openBooking(page, actor(j.winner), j); await attestDispatch(card);
   await workflow(page, j, () => card.getByRole('button', { name: 'Start Trip', exact: true }).click());
   await workflow(page, j, () => card.getByRole('button', { name: 'Mark Trip Completed', exact: true }).click());
   for (let revision = state.checks.edgePodRejected ? 2 : 1; revision <= 2; revision++) {
@@ -523,7 +602,7 @@ test('fresh POD approval enables final freight reporting on the same page', asyn
   await login(page, owner); card = await openBooking(page, owner, j); await workflow(page, j, () => card.getByRole('button', { name: 'Confirm Loading', exact: true }).click());
   let panel = card.locator('[data-direct-payments]'); await panel.locator('input[type=password]').fill(password);
   await submit(page, 'POST', `marketplace-bookings/${j.booking.uuid}/bank-instructions`, () => panel.getByRole('button', { name: 'Acknowledge bank instructions' }).click());
-  await login(page, provider); card = await openBooking(page, provider, j); await workflow(page, j, () => card.getByRole('button', { name: 'Start Trip', exact: true }).click());
+  await login(page, provider); await prepareReviewedDispatch(page, j.booking.uuid, () => login(page, provider)); card = await openBooking(page, provider, j); await attestDispatch(card); await workflow(page, j, () => card.getByRole('button', { name: 'Start Trip', exact: true }).click());
   await workflow(page, j, () => card.getByRole('button', { name: 'Mark Trip Completed', exact: true }).click());
   await card.getByRole('button', { name: 'Upload POD', exact: true }).click(); await page.locator('input[name=podNumber]').fill(`QA-FRESH-POD-${run}`); await page.locator('input[name=podReceivedBy]').fill('QA synthetic consignee');
   await page.locator('#pod-file').setInputFiles({ name: 'qa-fresh-pod.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64') });
@@ -535,4 +614,28 @@ test('fresh POD approval enables final freight reporting on the same page', asyn
   await expect(panel.locator('select[name=milestone]')).toHaveValue('final');
   await transfer(page, j, 'final', j.freight); await login(page, owner); j.ledger = await api(page, `marketplace-bookings/${j.booking.uuid}/direct-payments`);
   expect(j.ledger.amounts.confirmed_unpaid).toBe(0); j.final = await api(page, `marketplace-bookings/${j.booking.uuid}`); j.passed = true; await save();
+});
+
+if (trackingQa) test('completed tracking stays correctly scoped with simulated ingress disabled', async ({ page }) => {
+  const j = state.journeys[trackingCase]; expect(j.passed).toBe(true);
+  await page.context().route('https://*.openstreetmap.org/**', route => route.continue());
+  for (const user of [actor(j.owner), actor(j.winner)]) {
+    await login(page, user);
+    const data = await api(page, `marketplace-bookings/${j.booking.uuid}/tracking`);
+    expect(data.test_mode).toBe(false); expect(data.status).toBe('ended'); expect(data.latest.simulated).toBe(true);
+    await api(page, `marketplace-bookings/${j.booking.uuid}/tracking/test-position`, 'POST', {}, 404);
+    await page.goto(`/${user.role}/tracking`);
+    const row = page.getByText(j.booking.booking_reference, { exact: true }).locator('xpath=ancestor::div[2]');
+    await row.getByRole('button', { name: 'Track booking', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`booking=${j.booking.uuid}`));
+    const panel = page.locator('[data-booking-tracking]');
+    await expect(panel.locator('[data-tracking-coordinate]')).toHaveText('28.6300000, 77.2230000');
+    await expect(panel.locator('[data-tracking-status]')).toContainText('Trip ended');
+    await expect(panel.locator('[data-tracking-simulation]')).toBeVisible();
+    await expect(panel.locator('[data-tracking-recorded]')).toHaveText(/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2} (AM|PM)/);
+    await submit(page, 'GET', `marketplace-bookings/${j.booking.uuid}/tracking`, () => panel.getByRole('button', { name: 'Refresh location', exact: true }).click());
+    await expect(panel.locator('[data-tracking-coordinate]')).toHaveText('28.6300000, 77.2230000');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `.local-runtime/tracking-20261126/${user.role}-tracking.png`, fullPage: true });
+  }
 });

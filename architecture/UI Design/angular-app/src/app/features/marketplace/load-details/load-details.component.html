@@ -99,12 +99,17 @@
                             <strong>Booking token</strong>
                             @if (tokenPaymentState(app.id) === 'paid') {
                               <span class="booking-token-card__success">Token paid · booking secured</span>
+                            } @else if (tokenPaymentState(app.id) === 'agreement') {
+                              <span>Both parties must accept the commercial terms before token payment.</span>
                             } @else if (tokenPaymentState(app.id) === 'due') {
                               <span>Pay {{ tokenAmountForApplication(app.id) }} to secure this booking.</span>
                             } @else {
                               <span>Token status is being confirmed…</span>
                             }
                           </div>
+                          @if (tokenPaymentState(app.id) === 'agreement') {
+                            <a class="btn btn-primary btn-sm" [routerLink]="bookingWorkflowPath()" [queryParams]="{ booking: acceptedBooking.uuid }">Review commercial terms</a>
+                          }
                           @if (tokenPaymentState(app.id) === 'due') {
                             <button type="button" class="btn btn-primary btn-sm" [disabled]="tokenSubmittingApplicationId() !== null" (click)="payBookingToken(app.id)">
                               @if (tokenSubmittingApplicationId() === app.id) { <span class="button-loader" aria-hidden="true"></span> }
@@ -245,12 +250,17 @@
                       <strong>Booking token</strong>
                       @if (tokenPaymentState(app.id) === 'paid') {
                         <span class="booking-token-card__success">Token paid · booking secured</span>
+                      } @else if (tokenPaymentState(app.id) === 'agreement') {
+                        <span>Both parties must accept the commercial terms before token payment.</span>
                       } @else if (tokenPaymentState(app.id) === 'due') {
                         <span>Pay {{ tokenAmountForApplication(app.id) }} to secure this booking.</span>
                       } @else {
                         <span>Token status is being confirmed…</span>
                       }
                     </div>
+                    @if (tokenPaymentState(app.id) === 'agreement') {
+                      <a class="btn btn-primary btn-sm" [routerLink]="bookingWorkflowPath()" [queryParams]="{ booking: acceptedBooking.uuid }">Review commercial terms</a>
+                    }
                     @if (tokenPaymentState(app.id) === 'due') {
                       <button type="button" class="btn btn-primary btn-sm" [disabled]="tokenSubmittingApplicationId() !== null" (click)="payBookingToken(app.id)">
                         @if (tokenSubmittingApplicationId() === app.id) { <span class="button-loader" aria-hidden="true"></span> }

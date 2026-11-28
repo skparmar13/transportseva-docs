@@ -27,6 +27,7 @@
       <a class="btn btn-outline" [routerLink]="[session.portal().basePath, 'bookings']">{{ text('View Bookings', 'बुकिंग देखें') }}</a>
     </div>
   </section>
+  <app-asset-compliance kind="driver" [assetUuid]="d.uuid" />
 } @else {
   <div class="card card-body" [attr.role]="state().status === 'error' ? 'alert' : 'status'">
     @switch (state().status) {

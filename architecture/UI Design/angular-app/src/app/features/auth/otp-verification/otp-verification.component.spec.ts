@@ -12,17 +12,19 @@ import {OtpVerificationComponent} from './otp-verification.component';
 
 describe('Connected signup OTP flow',()=>{
   const config=API_CONFIG as {useBackend:boolean};let oldBackend:boolean;
+  let oldLanguage:string|null;
   let api:jasmine.SpyObj<ApiAuthService>;let mock:jasmine.SpyObj<AuthMockService>;let session:jasmine.SpyObj<SessionService>;let nav:jasmine.Spy;
   const phone='+919876543210';const pending={mobile:'9876543210',role:'truck-owner'};
   const user={uuid:'qa-user',email:'qa@example.test',full_name:'QA',role:'truck-owner'};
   beforeEach(()=>{
+    oldLanguage=localStorage.getItem('ts_lang');localStorage.setItem('ts_lang','en');
     oldBackend=config.useBackend;config.useBackend=true;sessionStorage.clear();sessionStorage.setItem('transportseva.pending_signup',JSON.stringify(pending));
     api=jasmine.createSpyObj('ApiAuthService',['verifySignupOtp','requestSignupOtp']);api.verifySignupOtp.and.returnValue(of({user,access_token:'qa-token',refresh_token:'qa-refresh',expires_in:3600}));api.requestSignupOtp.and.returnValue(of({debug_otp:'654321'}));
     mock=jasmine.createSpyObj('AuthMockService',['verifyOtp','sendOtp'],{pendingIdentifier:signal('')});session=jasmine.createSpyObj('SessionService',['setBackendUser']);
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:ActivatedRoute,useValue:{snapshot:{queryParamMap:convertToParamMap({next:'signup'})}}},{provide:ApiAuthService,useValue:api},{provide:AuthMockService,useValue:mock},{provide:SessionService,useValue:session}]});
     nav=spyOn(TestBed.inject(Router),'navigateByUrl').and.returnValue(Promise.resolve(true));
   });
-  afterEach(()=>{TestBed.resetTestingModule();config.useBackend=oldBackend;sessionStorage.clear();});
+  afterEach(()=>{TestBed.resetTestingModule();config.useBackend=oldBackend;sessionStorage.clear();if(oldLanguage===null)localStorage.removeItem('ts_lang');else localStorage.setItem('ts_lang',oldLanguage);});
   function create(){const f=TestBed.createComponent(OtpVerificationComponent);f.detectChanges();return {f,c:f.componentInstance as any};}
 
   for(const raw of ['broken','null','{}','[]',JSON.stringify({...pending,mobile:'123'}),JSON.stringify({...pending,role:'admin'})])it('rejects incomplete signup storage '+raw,()=>{

@@ -1,0 +1,340 @@
+{
+  "date": "28/11/2026",
+  "timezone": "Asia/Kolkata",
+  "feature": "Private versioned vehicle/driver documents and payload checks before departure",
+  "database": "transportseva",
+  "status": "Implemented and locally verified",
+  "behavior": [
+    "Providers submit RC, motor insurance, fitness, permit/authorisation and PUC evidence; driver licence evidence is separate.",
+    "Authorized KYC staff document approval or rejection; revocation and renewals preserve earlier versions and files.",
+    "Reviewed permitted payload must fit RC gross minus unladen weight and the registered declaration; client capacity fields do not override it.",
+    "Missing, pending, rejected, revoked, expired, unavailable or mismatched evidence and overload block future Start Trip.",
+    "Dates are inclusive in India and evaluated on today or a later pickup date. Permit/PUC applicability exceptions require documented staff decisions.",
+    "Provider route/asset/load attestation is required; successful departure freezes the exact evidence versions and payload/load figures.",
+    "Subcontracted and legacy unmapped vehicles use private booking-specific evidence. Legacy driver linking requires matching owned identity.",
+    "Admin review bells navigate to the exact evidence; provider decision bells navigate to the asset and affected booking status notices to the exact booking.",
+    "Shippers can read dispatch readiness and departure snapshots but cannot download the private documents.",
+    "Historical departures have no invented retrospective approval; later renewals cannot rewrite their snapshots."
+  ],
+  "boundaries": {
+    "review_method": "Documented manual review; not government database verification or automatic route-authorisation certification",
+    "test_documents": "Synthetic QA PNGs, explicitly labelled; do not use these records as genuine compliance evidence.",
+    "payment": "Only existing local mock booking-token flow used. These dispatch cases created no freight receipts or fee collection.",
+    "delivery": "Both test trips marked delivered to release their newly created resources; POD and final freight are not claimed complete.",
+    "production": "Local implementation and QA, not production approval. Existing staging/provider limitations remain separate."
+  },
+  "tests": {
+    "backend": {
+      "tool": "pest",
+      "result": "passed",
+      "tests": 96,
+      "passed": 96,
+      "assertions": 935,
+      "duration_ms": 132547
+    },
+    "frontend": {
+      "result": "passed",
+      "tests": 541
+    },
+    "headed_chrome": {
+      "result": "passed",
+      "cases": 3,
+      "logs": [
+        "browser.log",
+        "browser-renewal.log"
+      ],
+      "setup": "Real API preparation for fresh bookings and mock tokens; visible UI uploads, reviews, rejection, renewal, revocation, operator declaration and departure.",
+      "privacy": "Trace, video and automatic screenshots disabled."
+    },
+    "source_audit": {
+      "result": "passed",
+      "tests": 18
+    },
+    "production_build": {
+      "result": "passed",
+      "initial_bundle_kb": 960.04,
+      "warning": "Existing 500 kB initial bundle budget exceeded."
+    }
+  },
+  "preservation": {
+    "original_tables": 115,
+    "current_tables": 116,
+    "added_tables": [
+      "fleet_compliance_versions"
+    ],
+    "removed_tables": [],
+    "audited_tables": 17,
+    "original_audited_rows": 808,
+    "changed_or_missing_audited_rows": [],
+    "additions": {
+      "users": 0,
+      "loads": 2,
+      "load_applications": 2,
+      "negotiation_offers": 2,
+      "marketplace_bookings": 2,
+      "marketplace_settlements": 0,
+      "booking_token_orders": 4,
+      "marketplace_vehicles": 2,
+      "marketplace_drivers": 2,
+      "marketplace_disputes": 0,
+      "role_user": 0,
+      "roles": 0,
+      "role_permission": 0,
+      "recipient_bank_accounts": 0,
+      "booking_bank_instructions": 0,
+      "direct_payment_receipts": 0,
+      "recipient_payment_events": 0
+    },
+    "excluded_login_metadata": [
+      "users.last_login_at",
+      "users.updated_at"
+    ],
+    "backup": {
+      "path": "C:\\laragon\\www\\ts\\transportseva-docs\\architecture\\UI Design\\angular-app\\.local-backups\\transportseva-before-dispatch-compliance-2026-11-28.sql",
+      "bytes": 1637577,
+      "sha256": "6DC99435185BF6D1E3A39D755E41771BDA5ED4CA2E40232A82289B9C50061D2E"
+    },
+    "method": "Additive migration, fresh labelled QA records, no database reset/drop/import; row hashes cover the 17 explicitly audited tables."
+  },
+  "cases": [
+    {
+      "provider_code": "oa",
+      "mode": "Own Fleet",
+      "users": {
+        "shipper": "qa-full-20261122-01-s@transportseva.test",
+        "provider": "qa-full-20261122-01-oa@transportseva.test",
+        "reviewer": "admin@test.local"
+      },
+      "load": {
+        "id": "LD-000057",
+        "uuid": "2e414665-74b1-440f-ad4f-4eee806ac6b0"
+      },
+      "booking": {
+        "id": "TS-GANG2GAO5L",
+        "uuid": "f1b9f0c3-1e88-43bd-b68d-85046701f788",
+        "status": "completed",
+        "gross_freight": "17000.00",
+        "shipper_fee": "1003.00",
+        "provider_fee": "1003.00",
+        "lifecycle": {
+          "trip": {
+            "status": "delivered",
+            "blocked_by_dispute": false,
+            "delivered_at": "2026-11-28T15:22:44+00:00"
+          },
+          "pod": {
+            "status": "not_uploaded",
+            "reviewed_at": null
+          },
+          "freight": {
+            "status": "not_recorded",
+            "allocation": "gross",
+            "basis": 17000,
+            "confirmed": 0,
+            "awaiting_confirmation": 0,
+            "disputed": 0,
+            "unpaid": 17000,
+            "available_to_report": 17000
+          },
+          "platform_fees": {
+            "owner": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "provider": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "admin_decision": null
+          },
+          "tokens": {
+            "owner": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            },
+            "provider": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            }
+          },
+          "legacy_settlement": null
+        }
+      },
+      "vehicle": {
+        "uuid": "09c54018-90bf-45e7-bc87-a64264ef031e",
+        "registration": "QADISP281126OA",
+        "type": "32ft Trailer"
+      },
+      "driver": {
+        "uuid": "0b000bd8-7baf-4fee-bf42-196d90a8701d",
+        "name": "QA Dispatch 20261128 oa"
+      },
+      "departure": {
+        "checked_at": "2026-11-28T15:22:34+00:00",
+        "policy_version": 1,
+        "evaluation_date": "2026-11-28",
+        "load_weight_kg": 16000,
+        "permitted_payload_kg": 22000,
+        "vehicle_compliance_uuid": "17b94e43-3087-488c-b778-95add5643e8d",
+        "vehicle_version": 2,
+        "driver_compliance_uuid": "123d9867-d825-46d3-b94a-5f66d2556e6b",
+        "driver_version": 2,
+        "review_method": "manual_document_review",
+        "operator_uuid": "ad71cfd6-a142-46d2-b9b2-18a51d016928",
+        "operator_attested": true,
+        "route_check_note": "Synthetic QA route, permit coverage and actual vehicle/driver/load checked."
+      },
+      "checks": {
+        "missing_documents_blocked": true,
+        "rejected_driver_renewed": true,
+        "overload_and_client_tamper_blocked": true,
+        "revocation_blocks_departure": true,
+        "shipper_document_privacy": true,
+        "snapshot": {
+          "checked_at": "2026-11-28T15:22:34+00:00",
+          "policy_version": 1,
+          "evaluation_date": "2026-11-28",
+          "load_weight_kg": 16000,
+          "permitted_payload_kg": 22000,
+          "vehicle_compliance_uuid": "17b94e43-3087-488c-b778-95add5643e8d",
+          "vehicle_version": 2,
+          "driver_compliance_uuid": "123d9867-d825-46d3-b94a-5f66d2556e6b",
+          "driver_version": 2,
+          "review_method": "manual_document_review",
+          "operator_uuid": "ad71cfd6-a142-46d2-b9b2-18a51d016928",
+          "operator_attested": true,
+          "route_check_note": "Synthetic QA route, permit coverage and actual vehicle/driver/load checked."
+        },
+        "browser_errors": [],
+        "shared_fixture_renewal": {
+          "current_driver_version": 3,
+          "departure_driver_version": 2,
+          "snapshot_preserved": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "provider_code": "ta",
+      "mode": "Subcontracted",
+      "users": {
+        "shipper": "qa-full-20261122-01-s@transportseva.test",
+        "provider": "qa-full-20261122-01-ta@transportseva.test",
+        "reviewer": "admin@test.local"
+      },
+      "load": {
+        "id": "LD-000058",
+        "uuid": "6b527789-4a0a-4b95-8021-ea3bd14156f3"
+      },
+      "booking": {
+        "id": "TS-SWTLRXB8OK",
+        "uuid": "54862310-a087-4568-ae43-b4d44ab8df6d",
+        "status": "completed",
+        "gross_freight": "17000.00",
+        "shipper_fee": "1003.00",
+        "provider_fee": "1003.00",
+        "lifecycle": {
+          "trip": {
+            "status": "delivered",
+            "blocked_by_dispute": false,
+            "delivered_at": "2026-11-28T15:23:38+00:00"
+          },
+          "pod": {
+            "status": "not_uploaded",
+            "reviewed_at": null
+          },
+          "freight": {
+            "status": "not_recorded",
+            "allocation": "gross",
+            "basis": 17000,
+            "confirmed": 0,
+            "awaiting_confirmation": 0,
+            "disputed": 0,
+            "unpaid": 17000,
+            "available_to_report": 17000
+          },
+          "platform_fees": {
+            "owner": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "provider": {
+              "amount": 1003,
+              "status": "collection_not_recorded"
+            },
+            "admin_decision": null
+          },
+          "tokens": {
+            "owner": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            },
+            "provider": {
+              "amount": 1000,
+              "status": "paid",
+              "admin_decision": null
+            }
+          },
+          "legacy_settlement": null
+        }
+      },
+      "vehicle": {
+        "uuid": "8849f90a-ee94-430e-9cac-5bac3a5aba20",
+        "registration": "QASUB281126TA",
+        "type": "32ft Trailer"
+      },
+      "driver": {
+        "uuid": "c9429df7-6628-48fa-b4eb-76d2a7cc30c0",
+        "name": "QA Dispatch 20261128 ta"
+      },
+      "departure": {
+        "checked_at": "2026-11-28T15:23:28+00:00",
+        "policy_version": 1,
+        "evaluation_date": "2026-11-28",
+        "load_weight_kg": 16000,
+        "permitted_payload_kg": 22000,
+        "vehicle_compliance_uuid": "19192bcf-649c-45e0-88c1-ef0e7e7dd552",
+        "vehicle_version": 1,
+        "driver_compliance_uuid": "1c24dcdb-1700-47b5-a1ee-9378d2fa4434",
+        "driver_version": 1,
+        "review_method": "manual_document_review",
+        "operator_uuid": "2c87666c-0462-425c-955b-b98631e564dd",
+        "operator_attested": true,
+        "route_check_note": "Synthetic QA route, permit coverage and actual vehicle/driver/load checked."
+      },
+      "checks": {
+        "missing_documents_blocked": true,
+        "shipper_document_privacy": true,
+        "snapshot": {
+          "checked_at": "2026-11-28T15:23:28+00:00",
+          "policy_version": 1,
+          "evaluation_date": "2026-11-28",
+          "load_weight_kg": 16000,
+          "permitted_payload_kg": 22000,
+          "vehicle_compliance_uuid": "19192bcf-649c-45e0-88c1-ef0e7e7dd552",
+          "vehicle_version": 1,
+          "driver_compliance_uuid": "1c24dcdb-1700-47b5-a1ee-9378d2fa4434",
+          "driver_version": 1,
+          "review_method": "manual_document_review",
+          "operator_uuid": "2c87666c-0462-425c-955b-b98631e564dd",
+          "operator_attested": true,
+          "route_check_note": "Synthetic QA route, permit coverage and actual vehicle/driver/load checked."
+        },
+        "browser_errors": []
+      },
+      "passed": true
+    }
+  ],
+  "evidence_files": [
+    "e2e/dispatch-compliance.spec.ts",
+    "e2e/helpers/dispatch-evidence.ts",
+    "src/app/features/fleet/compliance/compliance.spec.ts",
+    "Modules/Booking/Services/DispatchComplianceService.php",
+    "Modules/Booking/Http/Controllers/FleetComplianceController.php",
+    "tests/Feature/DispatchComplianceTest.php"
+  ],
+  "next_recommended": "LR/GR consignment documents linked to booking, vehicle, consignor/consignee and POD."
+}

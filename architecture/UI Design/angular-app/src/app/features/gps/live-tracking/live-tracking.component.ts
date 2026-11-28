@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SafeResourceUrl } from '@angular/platform-browser';
 import { take } from 'rxjs';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { GpsMockService } from '../../../core/services/gps-mock.service';
@@ -12,6 +12,8 @@ import { SessionService } from '../../../core/services/session.service';
 import { TranslatePipe } from '../../../core/i18n';
 import { formatDateTime } from '../../../core/utils/date-format';
 import { API_CONFIG } from '../../../core/api/api-config';
+import { BookingTrackingComponent } from './booking-tracking.component';
+import { MapProviderService } from '../../../core/services/map-provider.service';
 
 const STATUS_DOT_CLASS: Record<LiveVehicle['status'], string> = {
   'On Trip': 'status-transit',
@@ -27,7 +29,7 @@ const STATUS_DOT_CLASS: Record<LiveVehicle['status'], string> = {
 @Component({
   selector: 'app-live-tracking',
   standalone: true,
-  imports: [IconComponent, TranslatePipe],
+  imports: [IconComponent, TranslatePipe, BookingTrackingComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './live-tracking.component.html',
 })
@@ -35,7 +37,7 @@ export class LiveTrackingComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   protected readonly gps = inject(GpsMockService);
   private readonly locationSearch = inject(LocationSearchService);
-  private readonly sanitizer = inject(DomSanitizer);
+  protected readonly maps = inject(MapProviderService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   protected readonly session = inject(SessionService);
@@ -55,10 +57,7 @@ export class LiveTrackingComponent implements OnInit {
   protected readonly mapFrameUrl = computed<SafeResourceUrl | null>(() => {
     const location = this.mapLocation();
     if (!location) return null;
-    const pad = 0.012;
-    const bbox = [location.longitude - pad, location.latitude - pad, location.longitude + pad, location.latitude + pad].join(',');
-    const url = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${location.latitude},${location.longitude}`;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    return this.maps.frameUrl(location.latitude, location.longitude);
   });
   protected readonly mapVehicle = computed(() => this.liveVehicles().find((vehicle) => vehicle.regNumber === this.mapVehicleReg()) ?? null);
 

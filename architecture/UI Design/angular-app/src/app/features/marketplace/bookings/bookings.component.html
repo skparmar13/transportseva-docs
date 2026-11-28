@@ -36,12 +36,13 @@
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
               @if (booking.dispute && booking.dispute.status !== 'Resolved') { <span class="status-pill status-pending">Dispute {{ booking.dispute.status }}</span> }
-              <span class="status-pill" [class]="booking.status === 'Completed' ? 'status-delivered' : booking.status === 'Cancelled' ? 'status-cancelled' : booking.status === 'Awaiting Deposit' ? 'status-pending' : 'status-transit'">{{ statusKey(booking.status) | t }}</span>
+              @if (!backendEnabled) { <span class="status-pill" [class]="booking.status === 'Completed' ? 'status-delivered' : booking.status === 'Cancelled' ? 'status-cancelled' : booking.status === 'Awaiting Deposit' ? 'status-pending' : 'status-transit'">{{ statusKey(booking.status) | t }}</span> }
               <button type="button" class="btn btn-outline btn-sm" (click)="toggle(booking.id)">{{ expandedId() === booking.id ? ('bookings.hideDetails' | t) : ('bookings.viewDetails' | t) }}</button>
               @if (backendEnabled && session.role() === 'shipper') { <a class="btn btn-outline btn-sm" [routerLink]="['/shipper/trips', booking.id]">{{ 'nav.tripHistory' | t }}</a> }
             </div>
           </div>
 
+          @if (backendEnabled) { <app-booking-lifecycle [value]="booking.lifecycle" /> }
           @if (expandedId() === booking.id) {
             <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:22px;margin-top:20px;">
               <div class="timeline">
@@ -49,7 +50,7 @@
                   <div class="timeline-item" [class.done]="event.completed">
                     <div class="timeline-dot"></div>
                     <div>
-                      <span class="timeline-title">{{ statusKey(event.stage) | t }}</span>
+                      <span class="timeline-title">@if (backendEnabled && event.stage === 'Completed') { Trip delivered } @else if (backendEnabled && event.stage === 'Offer Accepted') { Booking created } @else if (backendEnabled && event.stage === 'Awaiting Deposit') { Booking tokens } @else { {{ statusKey(event.stage) | t }} }</span>
                       @if (event.timestamp) {
                         <div class="timeline-time">{{ event.timestamp }}</div>
                       }
@@ -59,10 +60,22 @@
               </div>
 
               <div style="display:flex;flex-direction:column;gap:14px;">
+                @if (backendEnabled) {
+                  <app-booking-consignment [bookingUuid]="booking.id" [revision]="booking.status + '|' + booking.vehicleRegNumber + '|' + (booking.driverAssignment?.driverName ?? '') + '|' + (booking.pod?.status ?? '')" (reference)="consignmentReference(booking.id,$event)" />
+                  <app-transport-documents [bookingUuid]="booking.id" [revision]="booking.status + '|' + (booking.pod?.status ?? '')" (fingerprint)="supportingFingerprint(booking.id,$event)" (changed)="supportingChanged(booking.id)" />
+                }
                 @if (backendEnabled && session.role() !== 'admin') {
-                  <app-booking-direct-payments [bookingUuid]="booking.id" [revision]="booking.status + '|' + (booking.loadingConfirmedAt ?? '') + '|' + (booking.pod?.status ?? '') + '|' + booking.settlementPlan.length" (managed)="directState(booking.id, $event)" />
+                  <app-booking-commercial-terms [bookingUuid]="booking.id" [loadPath]="[session.portal().basePath, 'load-board', booking.loadId]" (changed)="retryBookings()" />
+                  <app-booking-direct-payments [bookingUuid]="booking.id" [revision]="booking.status + '|' + (booking.loadingConfirmedAt ?? '') + '|' + (booking.pod?.status ?? '') + '|' + booking.settlementPlan.length" (managed)="directState(booking.id, $event)" (lifecycleChange)="updateLifecycle(booking.id, $event)" />
+                }
+                @if (backendEnabled && booking.status === 'Trip Started' && mySide(booking) === 'owner') {
+                  <button type="button" class="btn btn-outline btn-sm" [disabled]="booking.lifecycle?.trip?.blocked_by_dispute" (click)="openAddMilestone(booking)">{{ 'bookings.settlement.addMidTrip' | t }}</button>
                 }
                 <!-- Booking Security Deposit / Escrow -->
+                @if (backendEnabled && session.role() !== 'admin') {
+                  <app-booking-dispatch [bookingUuid]="booking.id" [revision]="booking.status + '|' + booking.vehicleRegNumber + '|' + (booking.driverAssignment?.driverName ?? '') + '|' + (booking.loadingConfirmedAt ?? '') + '|' + (transportDocumentRevision()[booking.id] ?? 0)" [providerSide]="mySide(booking) === 'counterparty'" [canStart]="booking.status === 'Loading Completed' && !!booking.loadingConfirmedAt && !booking.lifecycle?.trip?.blocked_by_dispute" (started)="dispatchStarted($event)" />
+                }
+                @if (!backendEnabled) {
                 <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                   <div style="font-weight:600;font-size:13.5px;margin-bottom:10px;">{{ backendEnabled ? ('bookings.deposit.recordedHeader' | t) : ('bookings.deposit.header' | t:{ status: booking.escrowStatus }) }}</div>
                   <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--color-border);">
@@ -117,6 +130,7 @@
                   }
                 </div>
 
+                }
                 <!-- Vehicle Assignment -->
                 @if (booking.status === 'Confirmed' || booking.vehicleAssignment) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
@@ -124,7 +138,7 @@
                     @if (booking.vehicleAssignment; as va) {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ va.mode }} · {{ va.vehicleRegNumber }}@if (va.subcontractedTo) { · {{ 'bookings.vehicleAssignment.subTo' | t:{ name: va.subcontractedTo } }} }</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" (click)="openAssignVehicle(booking)"><app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.vehicleAssignment.assign' | t }}</span></button>
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="booking.lifecycle?.trip?.blocked_by_dispute" (click)="openAssignVehicle(booking)"><app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.vehicleAssignment.assign' | t }}</span></button>
                     } @else {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.vehicleAssignment.awaiting' | t:{ name: booking.counterpartyName } }}</div>
                     }
@@ -138,7 +152,7 @@
                     @if (booking.driverAssignment; as da) {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ da.driverName }}@if (da.driverPhone) { · {{ da.driverPhone }} }</div>
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" (click)="openAssignDriver(booking)"><app-icon name="i-user" [size]="15" /><span>{{ 'bookings.driverAssignment.assign' | t }}</span></button>
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="booking.lifecycle?.trip?.blocked_by_dispute" (click)="openAssignDriver(booking)"><app-icon name="i-user" [size]="15" /><span>{{ 'bookings.driverAssignment.assign' | t }}</span></button>
                     } @else {
                       <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.driverAssignment.awaiting' | t }}</div>
                     }
@@ -157,7 +171,7 @@
                         </div>
                       } @else if (mySide(booking) === 'owner') {
                         <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:10px;">{{ 'bookings.loading.confirmPrompt' | t }}</div>
-                        <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'confirm-loading')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'confirm-loading')" (click)="confirmLoading(booking.id)">
+                        <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'confirm-loading') || booking.lifecycle?.trip?.blocked_by_dispute" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'confirm-loading')" (click)="confirmLoading(booking.id)">
                           @if (isWorkflowActionPending(booking.id, 'confirm-loading')) { <span class="button-loader" aria-hidden="true"></span><span>{{ 'bookings.loading.confirming' | t }}</span> } @else { <app-icon name="i-check" [size]="15" /><span>{{ 'bookings.loading.confirm' | t }}</span> }
                         </button>
                         <div style="font-size:12px;color:var(--color-text-soft);margin-top:8px;">{{ 'bookings.loading.raiseDisputeHint' | t }}</div>
@@ -166,7 +180,7 @@
                         <div style="font-size:13px;color:var(--color-text-muted);">{{ 'bookings.loading.awaitingConfirmation' | t }}</div>
                       }
                     } @else if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isMarkingLoading(booking.id)" [attr.aria-busy]="isMarkingLoading(booking.id)" (click)="markLoadingCompleted(booking.id)">
+                      <button type="button" class="btn btn-outline btn-sm workflow-action-button" [disabled]="isMarkingLoading(booking.id) || booking.lifecycle?.trip?.blocked_by_dispute" [attr.aria-busy]="isMarkingLoading(booking.id)" (click)="markLoadingCompleted(booking.id)">
                         @if (isMarkingLoading(booking.id)) {
                           <span class="button-loader" aria-hidden="true"></span><span>Marking…</span>
                         } @else {
@@ -183,7 +197,7 @@
                 }
 
                 <!-- Settlement Plan -->
-                @if (booking.settlementPlan.length && !booking.settlement) {
+                @if (!backendEnabled && booking.settlementPlan.length && !booking.settlement) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                       <div style="font-weight:600;font-size:13.5px;">{{ 'bookings.settlement.plan.title' | t }}</div>
@@ -224,11 +238,11 @@
                 }
 
                 <!-- Trip -->
-                @if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty' && booking.loadingConfirmedAt) {
-                  <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'start-trip')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'start-trip')" (click)="startTrip(booking.id)">
+                @if (!backendEnabled && booking.status === 'Loading Completed' && mySide(booking) === 'counterparty' && booking.loadingConfirmedAt) {
+                  <button type="button" class="btn btn-primary btn-sm workflow-action-button" [disabled]="isWorkflowActionPending(booking.id, 'start-trip') || booking.lifecycle?.trip?.blocked_by_dispute" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'start-trip')" (click)="startTrip(booking.id)">
                     @if (isWorkflowActionPending(booking.id, 'start-trip')) { <span class="button-loader" aria-hidden="true"></span><span>Starting…</span> } @else { <app-icon name="i-truck" [size]="15" /><span>{{ 'bookings.trip.start' | t }}</span> }
                   </button>
-                } @else if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty') {
+                } @else if (booking.status === 'Loading Completed' && mySide(booking) === 'counterparty' && !booking.loadingConfirmedAt) {
                   <p style="font-size:12px;color:var(--color-text-muted);">{{ 'bookings.loading.awaitingConfirmation' | t }}</p>
                 }
                 @if (booking.status === 'Trip Started') {
@@ -242,7 +256,7 @@
                       </button>
                     }
                     @if (mySide(booking) === 'counterparty') {
-                      <button type="button" class="btn btn-primary btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="isWorkflowActionPending(booking.id, 'complete-trip')" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'complete-trip')" (click)="completeTrip(booking.id)">
+                      <button type="button" class="btn btn-primary btn-sm workflow-action-button" style="margin-top:8px;" [disabled]="isWorkflowActionPending(booking.id, 'complete-trip') || booking.lifecycle?.trip?.blocked_by_dispute" [attr.aria-busy]="isWorkflowActionPending(booking.id, 'complete-trip')" (click)="completeTrip(booking.id)">
                         @if (isWorkflowActionPending(booking.id, 'complete-trip')) { <span class="button-loader" aria-hidden="true"></span><span>Completing…</span> } @else { <span>{{ 'bookings.trip.complete' | t }}</span> }
                       </button>
                     }
@@ -250,7 +264,7 @@
                   </div>
                 }
 
-                @if (booking.status === 'Settlement Pending') {
+                @if (booking.status === 'Settlement Pending' || (backendEnabled && booking.status === 'Completed')) {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
                       <div style="font-weight:600;font-size:13.5px;">Proof of Delivery</div>
@@ -291,7 +305,7 @@
                   </div>
                 }
 
-                @if (booking.status === 'Settlement Pending' && !booking.settlement && mySide(booking) === 'owner') {
+                @if (!backendEnabled && booking.status === 'Settlement Pending' && !booking.settlement && mySide(booking) === 'owner') {
                   <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">
                     <div style="font-weight:600;font-size:13.5px;">Trip completed · Settlement pending</div>
                     <p style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">Create the settlement record to review the final balance.</p>
@@ -332,8 +346,6 @@
                     }
                   </div>
                 }
-                } @else if (booking.settlement) {
-                  <p class="desc">Earlier recorded settlement status: {{ booking.settlement.status }}. Use Direct freight payments above for recipient-confirmed amounts and separate platform fees.</p>
                 }
                   @if (booking.dispute; as dispute) {
                     <div style="border:1px solid var(--color-border);border-radius:12px;padding:14px;">

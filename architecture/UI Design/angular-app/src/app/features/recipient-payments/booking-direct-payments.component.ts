@@ -14,6 +14,7 @@ export class BookingDirectPaymentsComponent implements OnInit {
   readonly bookingUuid = input.required<string>();
   readonly revision = input('');
   readonly managed = output<boolean>();
+  readonly lifecycleChange = output<import('../../core/models/booking-lifecycle.model').BookingLifecycle>();
   private readonly api = inject(ApiRecipientPaymentService);
   private readonly destroy = inject(DestroyRef);
   private readonly language = inject(LanguageService);
@@ -53,6 +54,7 @@ export class BookingDirectPaymentsComponent implements OnInit {
   }
   private accept(v: DirectPaymentView) {
     this.hide(); this.view.set(v); this.loaded.set(true); this.managed.emit(!!v.instruction);
+    if (v.lifecycle) this.lifecycleChange.emit(v.lifecycle);
     if (!v.allowed_milestones.includes(this.milestone)) this.milestone = v.allowed_milestones[0] ?? 'final';
   }
   private act(call: Observable<DirectPaymentView>, message: string, loading = false) {

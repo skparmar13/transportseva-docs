@@ -1,0 +1,204 @@
+{
+  "date": "26/11/2026",
+  "result": "Passed within simulated tracking scope",
+  "tested_on": "26/11/2026",
+  "mode": "simulated AIS-140 telemetry; actual device integration unverified",
+  "database": {
+    "database": "transportseva",
+    "beforeTables": 113,
+    "afterTables": 114,
+    "addedTable": "marketplace_tracking_points",
+    "originalTableNamesPreserved": true,
+    "originalRecordSetsPreserved": 17,
+    "checks": [
+      {
+        "table": "users",
+        "original": 113,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "loads",
+        "original": 54,
+        "preserved": true,
+        "added": 1
+      },
+      {
+        "table": "load_applications",
+        "original": 85,
+        "preserved": true,
+        "added": 3
+      },
+      {
+        "table": "negotiation_offers",
+        "original": 100,
+        "preserved": true,
+        "added": 4
+      },
+      {
+        "table": "marketplace_bookings",
+        "original": 40,
+        "preserved": true,
+        "added": 1
+      },
+      {
+        "table": "marketplace_settlements",
+        "original": 11,
+        "preserved": true,
+        "added": 1
+      },
+      {
+        "table": "booking_token_orders",
+        "original": 53,
+        "preserved": true,
+        "added": 2
+      },
+      {
+        "table": "marketplace_vehicles",
+        "original": 42,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "marketplace_drivers",
+        "original": 16,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "marketplace_disputes",
+        "original": 10,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "role_user",
+        "original": 11,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "roles",
+        "original": 9,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "role_permission",
+        "original": 102,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "recipient_bank_accounts",
+        "original": 7,
+        "preserved": true,
+        "added": 0
+      },
+      {
+        "table": "booking_bank_instructions",
+        "original": 9,
+        "preserved": true,
+        "added": 1
+      },
+      {
+        "table": "direct_payment_receipts",
+        "original": 22,
+        "preserved": true,
+        "added": 3
+      },
+      {
+        "table": "recipient_payment_events",
+        "original": 78,
+        "preserved": true,
+        "added": 7
+      }
+    ],
+    "note": "User hashes exclude login/update timestamps. QA additions retained.",
+    "backup": {
+      "path": ".local-backups/transportseva-before-tracking-2026-11-26.sql",
+      "bytes": 1569113,
+      "sha256": "058D778CCE26253F3D94A916DC25D5C4CBDE6DD8520B0AE8C439034D088EA7C1"
+    },
+    "destructive_operations": "None; no drop/reset/restore/import"
+  },
+  "load": "LD-000055",
+  "booking": "TS-5HZQBHUXFO",
+  "booking_uuid": "0c97186a-f26d-43cf-be65-29d384d238e4",
+  "status": "completed",
+  "vehicle": "QAFULL6112201OA",
+  "freight": 17000,
+  "platform_fee_each": 1003,
+  "direct_receipts": {
+    "loading_advance": 6800,
+    "mid_trip": 2000,
+    "final": 8200
+  },
+  "confirmed_received": 17000,
+  "confirmed_unpaid": 0,
+  "tracking_points": 3,
+  "both_roles_automatic_polling": true,
+  "post_delivery_samples": "denied",
+  "provider": "qa-full-20261122-01-oa@transportseva.test",
+  "shipper": "qa-full-20261122-01-s@transportseva.test",
+  "simulated_ingress_enabled": false,
+  "platform_fees": "separately due; no real transfer performed",
+  "account_creation": "No new users; existing QA S and OA accounts reused. OB and TA competed on the load.",
+  "flow": [
+    "Fresh UI load post",
+    "Three registered-fleet applications",
+    "Owner counter-offer accepted by provider",
+    "One canonical booking; two applicants declined",
+    "Both mock security tokens paid",
+    "Registered vehicle and driver assigned",
+    "Loading reported and owner-confirmed",
+    "Synthetic advance reported and recipient-confirmed",
+    "Trip started",
+    "Three saved positions automatically observed in two separate visible browser sessions",
+    "Synthetic mid-trip transfer reported and recipient-confirmed",
+    "Trip delivered",
+    "Private POD uploaded and approved",
+    "Synthetic final transfer reported and recipient-confirmed",
+    "Zero confirmed unpaid freight",
+    "Post-delivery position publishing rejected",
+    "Simulated ingress disabled; both roles reopened last recorded location"
+  ],
+  "tracking": {
+    "poll_seconds": 10,
+    "stale_after_seconds": 120,
+    "history_limit": 50,
+    "mode": "Simulated coordinate feed; not AIS-140 protocol conformance testing",
+    "map_rendering": "OpenStreetMap marker rendered in retained QA screenshots",
+    "participant_scope": "Only booking owner and provider",
+    "wrong_vehicle_query": "Rejected",
+    "payer_publish": "Rejected",
+    "outsider_read": "Rejected",
+    "sample_replay": "Idempotent; no duplicate positions",
+    "late_position": "Cannot replace a newer position",
+    "production_test_ingress": "Rejected even if the test flag is enabled"
+  },
+  "tests": {
+    "fresh_visible_booking_journey": "1 passed (12.1 minutes)",
+    "archived_tracking_and_disabled_ingress": "1 passed (41.5 seconds)",
+    "backend_regressions": {
+      "passed": 24,
+      "assertions": 360
+    },
+    "angular_full": {
+      "passed": 498
+    },
+    "tracking_ui_subset": {
+      "passed": 6
+    },
+    "source_route_audit": {
+      "passed": 18
+    },
+    "production_build": "Passed; 959.99 kB initial bundle, above warning but below error budget"
+  },
+  "evidence_root": ".local-runtime/tracking-20261126/",
+  "screenshots": [
+    "shipper-tracking.png",
+    "truck-owner-tracking.png"
+  ],
+  "remaining": "Actual AIS-140 adapter, authenticated device/provider ingestion, device-to-vehicle binding and real moving-device verification remain outstanding. No real payment or platform-fee collection occurred."
+}

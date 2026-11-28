@@ -1,0 +1,36 @@
+<div class="page-toolbar"><div><h1>Vehicle tracking</h1><p class="desc">Locations for your booking’s assigned vehicle. Updates refresh every 10 seconds.</p></div>
+  @if (selected()) { <button type="button" class="btn btn-outline" (click)="choose('')">All bookings</button> }
+</div>
+@if (loading()) { <div class="card card-body" role="status">Loading vehicle tracking…</div> }
+@if (error()) { <div class="card card-body" role="alert">{{ error() }} <button type="button" class="btn btn-outline btn-sm" [disabled]="refreshing()" (click)="retry()">{{ refreshing() ? 'Retrying…' : 'Retry' }}</button></div> }
+@if (view(); as v) {
+  <section class="card" data-booking-tracking [attr.data-booking]="v.booking_uuid">
+    <div class="card-head"><div><h2>{{ v.vehicle_reg_number || 'Vehicle not assigned' }}</h2><p>{{ v.booking_reference }} · {{ v.driver_name || 'Driver not assigned' }}</p></div><button type="button" class="btn btn-outline btn-sm" data-refresh-location [disabled]="refreshing()" [attr.aria-busy]="refreshing()" (click)="retry()">@if (refreshing()) { <span class="tracking-spinner" aria-hidden="true"></span> }{{ refreshing() ? 'Refreshing…' : 'Refresh location' }}</button></div>
+    <div class="card-body">
+      <a class="btn btn-outline btn-sm" [routerLink]="bookingPath()" [queryParams]="{booking: v.booking_uuid}">Open booking</a>
+      <p role="status" data-tracking-status>{{ statusText() }}</p>
+      @if (v.latest?.simulated) { <p role="note" data-tracking-simulation><strong>TEST MODE — simulated AIS-140 positions. This is not a real vehicle location.</strong></p> }
+      @if (v.latest; as p) {
+        <p>Position recorded: <span data-tracking-recorded>{{ dateTime(p.recorded_at) }}</span></p>
+        <p>Coordinates: <strong data-tracking-coordinate>{{ p.latitude.toFixed(7) }}, {{ p.longitude.toFixed(7) }}</strong> · Speed: {{ p.speed_kmph === null ? 'Unavailable' : p.speed_kmph + ' km/h' }} · Accuracy: {{ p.accuracy_m === null ? 'Unavailable' : '±' + p.accuracy_m + ' m' }}</p>
+        @if (mapUrl(); as url) { <iframe [src]="url" title="Booked vehicle location map" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" style="width:100%;height:480px;border:0;border-radius:12px;" data-tracking-map></iframe> }
+        @else { <p role="status">{{ maps.loading() ? 'Loading map…' : maps.error() || 'Map display is unavailable.' }}</p><button type="button" class="btn btn-outline btn-sm" [disabled]="maps.loading()" (click)="maps.load()">Retry map</button> }
+        <p class="desc">{{ p.simulated ? 'Source: simulated AIS-140 test feed' : 'Source: ' + p.source }}. Map tiles require an internet connection.</p>
+        <h3>Recent positions</h3>
+        <div style="overflow:auto;"><table class="data-table"><thead><tr><th>Recorded</th><th>Latitude</th><th>Longitude</th><th>Speed</th></tr></thead><tbody>
+          @for (point of history(); track point.uuid) { <tr><td>{{ dateTime(point.recorded_at) }}</td><td>{{ point.latitude.toFixed(7) }}</td><td>{{ point.longitude.toFixed(7) }}</td><td>{{ point.speed_kmph === null ? '—' : point.speed_kmph + ' km/h' }}</td></tr> }
+        </tbody></table></div>
+      } @else { <p data-tracking-no-signal>No location has been received for this booking. Device connectivity and location permissions are not inferred from a vehicle assignment.</p> }
+    </div>
+  </section>
+} @else if (!selected()) {
+  <div class="card"><div class="card-head"><h3>Your bookings</h3></div><div class="card-body">
+    @if (listLoading()) { <p role="status">Loading bookings…</p> }
+    @else if (listError()) { <p role="alert">{{ listError() }}</p><button type="button" class="btn btn-outline btn-sm" (click)="loadPage(page())">Retry</button> }
+    @else {
+      @for (b of rows(); track b.uuid) { <div style="display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--color-border);"><div><strong>{{ b.booking_reference }}</strong><p>{{ b.vehicle || 'Vehicle not assigned' }} · {{ b.status }}</p></div><button type="button" class="btn btn-outline btn-sm" (click)="choose(b.uuid, b.vehicle)">Track booking</button></div> }
+      @empty { <p>No bookings on this page.</p> }
+      <div style="display:flex;gap:12px;margin-top:16px;"><button type="button" class="btn btn-outline btn-sm" [disabled]="page() <= 1" (click)="loadPage(page()-1)">Previous</button><span>Page {{ page() }} of {{ lastPage() }}</span><button type="button" class="btn btn-outline btn-sm" [disabled]="page() >= lastPage()" (click)="loadPage(page()+1)">Next</button></div>
+    }
+  </div></div>
+}

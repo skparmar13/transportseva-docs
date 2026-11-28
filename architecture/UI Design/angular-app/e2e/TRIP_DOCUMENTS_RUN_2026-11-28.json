@@ -1,0 +1,383 @@
+{
+  "date": "28/11/2026",
+  "timezone": "Asia/Kolkata",
+  "database": "transportseva",
+  "feature": "Private supporting transport documents linked to departure, LR/GR and POD",
+  "status": "Implemented and locally verified",
+  "behavior": [
+    "Both confirmed booking parties may record private goods invoices, bills of supply, delivery challans, e-way bills and pickup/delivery weighbridge slips before the first POD and while no dispute is open.",
+    "Each category has a current immutable version, retained original files, reasoned replacements, bounded paged history, current-version conflicts and request-key deduplication.",
+    "Original PDFs/JPGs/PNGs are private, at most 5 MB per upload. File hashes are checked before departure and download; stored paths and hashes are omitted from public API DTOs.",
+    "Weighbridge net cargo is derived on the server from gross minus positive tare. Client net weight, plate and capacity fields cannot override canonical values.",
+    "Pickup net payload or gross weight above the reviewed vehicle limits blocks departure. A lower slip cannot reduce the declared/agreed load weight.",
+    "A higher recorded pickup weight must be reflected in an amended LR/GR before departure. Its weight is server-derived; agreed per-trip freight and platform fees are unchanged.",
+    "A supplied e-way expiry that has passed blocks new departure until a current replacement is recorded. Missing expiry is explicitly not provided, with no automatic validity assumption.",
+    "Departure freezes the exact supporting references then available. Later versions and destination slips do not rewrite that departure.",
+    "POD freezes its own exact supporting set. The displayed pack fingerprint detects another party changing documents while a POD form is open.",
+    "Documents and Trip Details show the POD references, and Supporting Trip Files links to the exact booking. Historical departures/PODs retain no fabricated references.",
+    "The other party receives an in-app bell for additions/replacements. Existing scoped dispute-review POD permissions govern staff downloads and transactional Review audit events."
+  ],
+  "tests": {
+    "backend": {
+      "broad_regression": {
+        "tool": "pest",
+        "result": "passed",
+        "tests": 158,
+        "passed": 158,
+        "assertions": 1675,
+        "duration_ms": 424325
+      },
+      "final_integrity_and_document_suite": {
+        "tool": "pest",
+        "result": "passed",
+        "tests": 23,
+        "passed": 23,
+        "assertions": 141,
+        "duration_ms": 92207
+      },
+      "unique_tests": 158
+    },
+    "frontend": {
+      "result": "passed",
+      "tests": 567
+    },
+    "headed_chrome": {
+      "result": "passed",
+      "cases": 2,
+      "trace": "off",
+      "video": "off",
+      "automatic_screenshots": "off",
+      "coverage": "Fresh booking with all six document categories, expired e-way replacement, overweight pickup correction, LR weight amendment, historical file download, weighed departure, destination slip, POD freeze and approval, exact Documents link, trip references and foreign denial; final read-only check for both parties."
+    },
+    "source_audit": {
+      "result": "passed",
+      "tests": 18
+    },
+    "production_build": {
+      "result": "passed",
+      "initial_bundle_kb": 960.04,
+      "warning": "Existing 500 kB initial bundle budget exceeded."
+    }
+  },
+  "qa": {
+    "users": {
+      "shipper": "qa-full-20261122-01-s@transportseva.test",
+      "carrier": "qa-full-20261122-01-oa@transportseva.test",
+      "synthetic_fleet_reviewer": "admin@test.local"
+    },
+    "load": {
+      "id": "LD-000061",
+      "uuid": "f2fd5db0-f138-41a5-889e-f1a695a5f9b8",
+      "declared_tons": "16.00"
+    },
+    "booking": {
+      "id": "TS-X8R052UEYZ",
+      "uuid": "346a9596-09ab-4c62-a040-20a5fdfeb477",
+      "status": "completed",
+      "freight": "17000.00",
+      "shipper_fee": "1003.00",
+      "provider_fee": "1003.00",
+      "lifecycle": {
+        "trip": {
+          "status": "delivered",
+          "blocked_by_dispute": false,
+          "delivered_at": "2026-11-28T16:42:06+00:00"
+        },
+        "pod": {
+          "status": "approved",
+          "reviewed_at": "2026-11-28T16:42:19+00:00"
+        },
+        "freight": {
+          "status": "not_recorded",
+          "allocation": "gross",
+          "basis": 17000,
+          "confirmed": 0,
+          "awaiting_confirmation": 0,
+          "disputed": 0,
+          "unpaid": 17000,
+          "available_to_report": 17000
+        },
+        "platform_fees": {
+          "owner": {
+            "amount": 1003,
+            "status": "collection_not_recorded"
+          },
+          "provider": {
+            "amount": 1003,
+            "status": "collection_not_recorded"
+          },
+          "admin_decision": null
+        },
+        "tokens": {
+          "owner": {
+            "amount": 1000,
+            "status": "paid",
+            "admin_decision": null
+          },
+          "provider": {
+            "amount": 1000,
+            "status": "paid",
+            "admin_decision": null
+          }
+        },
+        "legacy_settlement": null
+      }
+    },
+    "vehicle": {
+      "uuid": "d6058c2b-942d-4d7a-803d-48872a076d8c",
+      "registration": "QAPACK281126OA"
+    },
+    "driver": {
+      "uuid": "edda7ad3-039d-4629-aa63-687766eae1c7",
+      "name": "QA Supporting Pack Driver"
+    },
+    "documents": [
+      {
+        "kind": "goods_invoice",
+        "uuid": "f7a83208-784d-4dda-b23f-89f44203f91a",
+        "version": 1,
+        "reference": "QA-PACK-GOODS_INVOICE",
+        "metadata": {
+          "attested": true,
+          "submitted_by_side": "owner",
+          "recorded_after_departure": false
+        }
+      },
+      {
+        "kind": "bill_of_supply",
+        "uuid": "37e9cd9d-6f9c-4b9c-a924-e7f6b20afc27",
+        "version": 1,
+        "reference": "QA-PACK-BILL_OF_SUPPLY",
+        "metadata": {
+          "attested": true,
+          "submitted_by_side": "owner",
+          "recorded_after_departure": false
+        }
+      },
+      {
+        "kind": "delivery_challan",
+        "uuid": "e1759bad-f718-4095-92a5-43662a0764fe",
+        "version": 1,
+        "reference": "QA-PACK-DELIVERY_CHALLAN",
+        "metadata": {
+          "attested": true,
+          "submitted_by_side": "owner",
+          "recorded_after_departure": false
+        }
+      },
+      {
+        "kind": "eway_bill",
+        "uuid": "333cb2e5-40c4-46b9-90fc-7fc8029095e9",
+        "version": 2,
+        "reference": "123456789012",
+        "metadata": {
+          "attested": true,
+          "submitted_by_side": "provider",
+          "recorded_after_departure": false,
+          "expires_at": "2026-11-29T22:11:00+05:30"
+        }
+      },
+      {
+        "kind": "pickup_weighbridge",
+        "uuid": "4a4850a3-b236-4b4d-9209-d6af7611bf56",
+        "version": 2,
+        "reference": "QA-PACK-PICKUP_WEIGHBRIDGE",
+        "metadata": {
+          "attested": true,
+          "submitted_by_side": "provider",
+          "recorded_after_departure": false,
+          "gross_kg": 30000,
+          "tare_kg": 12000,
+          "net_kg": 18000,
+          "station_name": "Synthetic QA weighbridge",
+          "measured_at": "2026-11-28T21:41:00+05:30",
+          "vehicle_registration": "QAPACK281126OA"
+        }
+      },
+      {
+        "kind": "delivery_weighbridge",
+        "uuid": "b8652230-5aa4-45b9-8be3-6059810e0acd",
+        "version": 1,
+        "reference": "QA-PACK-DELIVERY_WEIGHBRIDGE",
+        "metadata": {
+          "attested": true,
+          "submitted_by_side": "provider",
+          "recorded_after_departure": true,
+          "gross_kg": 30000,
+          "tare_kg": 12000,
+          "net_kg": 18000,
+          "station_name": "Synthetic QA destination weighbridge",
+          "measured_at": "2026-11-28T22:11:00+05:30",
+          "vehicle_registration": "QAPACK281126OA"
+        }
+      }
+    ],
+    "lr": {
+      "uuid": "dfac832c-d691-4b71-88fc-bd65ddc7d5b7",
+      "number": "QA/PACK/281126",
+      "version": 2,
+      "weight_tons": 18
+    },
+    "departure": {
+      "recorded_load_kg": 18000,
+      "permitted_kg": 22000,
+      "documents": [
+        {
+          "uuid": "f7a83208-784d-4dda-b23f-89f44203f91a",
+          "kind": "goods_invoice",
+          "version": 1,
+          "reference": "QA-PACK-GOODS_INVOICE",
+          "fingerprint": "c0f65d3426463075e1ac16c84f3a3597564cf35399262c67003d14dd4dd52cab"
+        },
+        {
+          "uuid": "37e9cd9d-6f9c-4b9c-a924-e7f6b20afc27",
+          "kind": "bill_of_supply",
+          "version": 1,
+          "reference": "QA-PACK-BILL_OF_SUPPLY",
+          "fingerprint": "3a25c6adfe89020335a10d3414713cbf5f873f7b225cd2df49526c1a41fe6964"
+        },
+        {
+          "uuid": "e1759bad-f718-4095-92a5-43662a0764fe",
+          "kind": "delivery_challan",
+          "version": 1,
+          "reference": "QA-PACK-DELIVERY_CHALLAN",
+          "fingerprint": "64fdf60665f278c08f992397c5043394012e8c5ddd14d693fd1dc78603d3e20f"
+        },
+        {
+          "uuid": "333cb2e5-40c4-46b9-90fc-7fc8029095e9",
+          "kind": "eway_bill",
+          "version": 2,
+          "reference": "123456789012",
+          "fingerprint": "6021acae00e01312e8dcdad39782583ffaf55b5dd928e6aa5823ce046ae50275"
+        },
+        {
+          "uuid": "4a4850a3-b236-4b4d-9209-d6af7611bf56",
+          "kind": "pickup_weighbridge",
+          "version": 2,
+          "reference": "QA-PACK-PICKUP_WEIGHBRIDGE",
+          "fingerprint": "db9f89b4a7aa96d87c7278df649249b5a0e1f9788010205c3e1c3ac167f7ac88"
+        }
+      ]
+    },
+    "pod": {
+      "number": "QA-PACK-POD-281126",
+      "status": "approved",
+      "documents": [
+        {
+          "uuid": "37e9cd9d-6f9c-4b9c-a924-e7f6b20afc27",
+          "kind": "bill_of_supply",
+          "version": 1,
+          "reference": "QA-PACK-BILL_OF_SUPPLY",
+          "fingerprint": "3a25c6adfe89020335a10d3414713cbf5f873f7b225cd2df49526c1a41fe6964"
+        },
+        {
+          "uuid": "e1759bad-f718-4095-92a5-43662a0764fe",
+          "kind": "delivery_challan",
+          "version": 1,
+          "reference": "QA-PACK-DELIVERY_CHALLAN",
+          "fingerprint": "64fdf60665f278c08f992397c5043394012e8c5ddd14d693fd1dc78603d3e20f"
+        },
+        {
+          "uuid": "b8652230-5aa4-45b9-8be3-6059810e0acd",
+          "kind": "delivery_weighbridge",
+          "version": 1,
+          "reference": "QA-PACK-DELIVERY_WEIGHBRIDGE",
+          "fingerprint": "ff08a922858c4325ce6aaac7428d7746a755fd42ad2d5debd17f159748f3e121"
+        },
+        {
+          "uuid": "333cb2e5-40c4-46b9-90fc-7fc8029095e9",
+          "kind": "eway_bill",
+          "version": 2,
+          "reference": "123456789012",
+          "fingerprint": "6021acae00e01312e8dcdad39782583ffaf55b5dd928e6aa5823ce046ae50275"
+        },
+        {
+          "uuid": "f7a83208-784d-4dda-b23f-89f44203f91a",
+          "kind": "goods_invoice",
+          "version": 1,
+          "reference": "QA-PACK-GOODS_INVOICE",
+          "fingerprint": "c0f65d3426463075e1ac16c84f3a3597564cf35399262c67003d14dd4dd52cab"
+        },
+        {
+          "uuid": "4a4850a3-b236-4b4d-9209-d6af7611bf56",
+          "kind": "pickup_weighbridge",
+          "version": 2,
+          "reference": "QA-PACK-PICKUP_WEIGHBRIDGE",
+          "fingerprint": "db9f89b4a7aa96d87c7278df649249b5a0e1f9788010205c3e1c3ac167f7ac88"
+        }
+      ]
+    },
+    "checks": {
+      "expired_eway_blocks_departure": true,
+      "overload_blocks_departure": true,
+      "lr_weight_corrected_without_freight_change": true,
+      "older_file_retained": true,
+      "exact_departure_and_pod_versions": true,
+      "documents_exact_booking_link": true,
+      "trip_pod_reference_visible": true,
+      "foreign_file_denied": true,
+      "browser_errors": [],
+      "documents_and_trip_references_visible_to_both_parties": true,
+      "original_download_integrity_verified": true
+    }
+  },
+  "preservation": {
+    "original_tables": 118,
+    "current_tables": 119,
+    "added_tables": [
+      "marketplace_transport_documents"
+    ],
+    "removed_tables": [],
+    "audited_tables": 17,
+    "original_audited_rows": 840,
+    "changed_or_missing_audited_rows": [],
+    "additions": {
+      "users": 0,
+      "loads": 1,
+      "load_applications": 1,
+      "negotiation_offers": 1,
+      "marketplace_bookings": 1,
+      "marketplace_settlements": 0,
+      "booking_token_orders": 2,
+      "marketplace_vehicles": 1,
+      "marketplace_drivers": 1,
+      "marketplace_disputes": 0,
+      "role_user": 0,
+      "roles": 0,
+      "role_permission": 0,
+      "recipient_bank_accounts": 0,
+      "booking_bank_instructions": 0,
+      "direct_payment_receipts": 0,
+      "recipient_payment_events": 0
+    },
+    "excluded_login_metadata": [
+      "users.last_login_at",
+      "users.updated_at"
+    ],
+    "backup": {
+      "path": "C:\\laragon\\www\\ts\\transportseva-docs\\architecture\\UI Design\\angular-app\\.local-backups\\transportseva-before-trip-documents-2026-11-28.sql",
+      "bytes": 1784194,
+      "sha256": "5FDEC92DA6A1EDD719506BAF43D2587AAE10BC5CEC5DE2CB3278BA79A41E1816"
+    },
+    "method": "Verified full backup, one additive table, fresh labelled QA booking/assets. No drop, reset or import. Row hashes cover the 17 named audited tables."
+  },
+  "boundaries": {
+    "source_verification": "These are uploaded source files and recorded declarations, not government/GST/e-way portal/signature verification.",
+    "evidence": "All QA files and weighbridge readings are synthetic and labelled. Main-database users are existing QA accounts; no new users or staff grants were created.",
+    "optionality": "Absence is not submitted, not inferred compliance or an automatic statutory exemption. A single current version is retained per category; a source PDF may contain multiple supporting pages.",
+    "freight": "Original per-trip freight and platform fees are unchanged. These QA cases used only the existing mock token flow, with no direct freight receipts or fee collections."
+  },
+  "primary_reference": "https://docs.ewaybillgst.gov.in/html/ewb_qna.html",
+  "next_recommended": "Approved extra charges and detention claims",
+  "queued_after_next": [
+    "Cancellation/re-award and replacement/transshipment history",
+    "Shortage, damage and partial-delivery POD handling"
+  ],
+  "evidence_files": [
+    "e2e/trip-supporting-documents.spec.ts",
+    "src/app/features/consignments/transport-documents.spec.ts",
+    "Modules/Booking/Services/TransportDocumentService.php",
+    "Modules/Booking/Http/Controllers/BookingTransportDocumentController.php",
+    "tests/Feature/BookingTransportDocumentTest.php"
+  ]
+}

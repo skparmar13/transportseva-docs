@@ -1,0 +1,210 @@
+{
+  "date": "2026-11-27",
+  "database": "transportseva",
+  "feature": "Commercial agreement before booking tokens",
+  "status": "implemented_and_verified",
+  "design": {
+    "freight": "Load owner pays gross freight directly to the canonical booking provider",
+    "platform_fees": "Each party owes its own separate platform fee; freight receipts do not establish fee collection",
+    "tokens": "Separate booking tokens, frozen at agreement initialization",
+    "legacy": "Existing bookings are not backfilled with invented terms or acceptance"
+  },
+  "actors": [
+    {
+      "code": "s",
+      "email": "qa-full-20261122-01-s@transportseva.test",
+      "role": "shipper",
+      "uuid": "48280850-7731-440c-905d-248ed1e1bd96",
+      "new_account": false
+    },
+    {
+      "code": "oa",
+      "email": "qa-full-20261122-01-oa@transportseva.test",
+      "role": "truck-owner",
+      "uuid": "ad71cfd6-a142-46d2-b9b2-18a51d016928",
+      "new_account": false
+    },
+    {
+      "code": "ob",
+      "email": "qa-full-20261122-01-ob@transportseva.test",
+      "role": "truck-owner",
+      "uuid": "a4e7ed91-d333-441a-bba3-333cd91bc3a1",
+      "new_account": false
+    }
+  ],
+  "load": {
+    "reference": "LD-000056",
+    "uuid": "7e621e23-9f07-4504-b86c-6c5a6716cc98",
+    "route": "Delhi → Jaipur",
+    "applicants": 2
+  },
+  "booking": {
+    "reference": "TS-EJQBWVXSPS",
+    "uuid": "d6f8701d-b9e7-494a-afa7-980b7e5e946d",
+    "trip_status": "completed",
+    "pod": "approved",
+    "terms_version": 2,
+    "terms_status": "agreed"
+  },
+  "amounts": {
+    "gross_freight": 17000,
+    "loading_advance_percent": 30,
+    "loading_advance": 5100,
+    "mid_trip": 2000,
+    "final_freight": 9900,
+    "confirmed_freight": 17000,
+    "freight_remaining": 0,
+    "owner_platform_fee": 1003,
+    "provider_platform_fee": 1003,
+    "token_each": 1000
+  },
+  "money_evidence": "Mock token statuses and synthetic transfer reports explicitly confirmed through the recipient UI. No real bank transfer or fee collection was performed.",
+  "workflow": [
+    {
+      "step": "Fresh load posted and owned QA fleet selected",
+      "result": "passed"
+    },
+    {
+      "step": "Two truck owners applied; one negotiated award, competitor rejected",
+      "result": "passed"
+    },
+    {
+      "step": "Token payment before agreement and after only one acceptance",
+      "result": "blocked_as_expected"
+    },
+    {
+      "step": "Provider proposed version 2; old acceptance cleared; stale version rejected",
+      "result": "passed"
+    },
+    {
+      "step": "Both parties accepted version 2; private confirmation downloaded",
+      "result": "passed"
+    },
+    {
+      "step": "Both mock tokens paid; vehicle/driver assigned; loading confirmed",
+      "result": "passed"
+    },
+    {
+      "step": "Advance above agreed 30% rejected; payer report alone did not allow dispatch",
+      "result": "blocked_as_expected"
+    },
+    {
+      "step": "Recipient confirmed advance; trip started; mid-trip payment confirmed",
+      "result": "passed"
+    },
+    {
+      "step": "Trip completed; POD approved; final ₹9,900 confirmed; freight remaining zero",
+      "result": "passed"
+    }
+  ],
+  "checks": {
+    "token_before_agreement_blocked": true,
+    "one_party_insufficient": true,
+    "stale_version_blocked": true,
+    "confirmation_download": true,
+    "agreed_advance_cap_enforced": true,
+    "payer_report_does_not_unlock_dispatch": true,
+    "browser_errors": []
+  },
+  "verification": {
+    "backend": {
+      "tests": 52,
+      "assertions": 646,
+      "result": "passed",
+      "includes": "All four role pairings; isolated direct receipts; three real two-process agreement races; existing workflow/concurrency/list regressions"
+    },
+    "frontend_full_suite": {
+      "tests": 516,
+      "passed": true
+    },
+    "frontend_updated_component": {
+      "tests": 7,
+      "passed": true
+    },
+    "source_audit": {
+      "tests": 18,
+      "passed": true
+    },
+    "production_build": {
+      "passed": true,
+      "existing_warning": "960.04 kB initial bundle exceeds 500 kB warning budget"
+    },
+    "visible_browser": {
+      "full_lifecycle_passed": true,
+      "read_only_smoke_passed": true,
+      "capture": "Trace/video/screenshots disabled for credential and bank-instruction screens"
+    },
+    "canonical_record": {
+      "booking_reference": "TS-EJQBWVXSPS",
+      "booking_uuid": "d6f8701d-b9e7-494a-afa7-980b7e5e946d",
+      "status": "completed",
+      "canonical_booking_count": 1,
+      "application_statuses": [
+        {
+          "uuid": "e1c6952a-bf58-4e47-93c3-34a1a7bcd4b8",
+          "provider_uuid": "ad71cfd6-a142-46d2-b9b2-18a51d016928",
+          "status": "accepted"
+        },
+        {
+          "uuid": "4a9b1b2d-433d-4d37-9a7b-d60adf83453b",
+          "provider_uuid": "a4e7ed91-d333-441a-bba3-333cd91bc3a1",
+          "status": "rejected"
+        }
+      ],
+      "terms_version": 2,
+      "agreed": true,
+      "advance": 5100,
+      "confirmed_freight": 17000,
+      "tokens": {
+        "owner": "paid",
+        "provider": "paid"
+      },
+      "passed": true
+    }
+  },
+  "preservation": {
+    "database": "transportseva",
+    "original_tables": 114,
+    "current_tables": 115,
+    "dropped": [],
+    "added": [
+      "marketplace_booking_terms_versions"
+    ],
+    "audited_tables": 17,
+    "original_rows_checked": 785,
+    "changed_original_rows": [],
+    "new_rows": {
+      "users": 0,
+      "loads": 1,
+      "load_applications": 2,
+      "negotiation_offers": 3,
+      "marketplace_bookings": 1,
+      "marketplace_settlements": 1,
+      "booking_token_orders": 2,
+      "marketplace_vehicles": 1,
+      "marketplace_drivers": 1,
+      "marketplace_disputes": 0,
+      "role_user": 0,
+      "roles": 0,
+      "role_permission": 0,
+      "recipient_bank_accounts": 0,
+      "booking_bank_instructions": 1,
+      "direct_payment_receipts": 3,
+      "recipient_payment_events": 7
+    },
+    "passed": true
+  },
+  "backup": {
+    "path": "C:\\laragon\\www\\ts\\transportseva-docs\\architecture\\UI Design\\angular-app\\.local-backups\\transportseva-before-commercial-terms-2026-11-27.sql",
+    "bytes": 1602365,
+    "sha256": "9B0D4A889DB493BAAF484D93766B59DD74D5A8A1CA3D7C1B7464DDDB2B29A5AB"
+  },
+  "next": "Separate trip progress, direct freight receipt status, platform fee status and token disposition in the booking workflow",
+  "queued_after_next": [
+    "Vehicle/driver document and payload departure checks",
+    "LR/GR, invoice/challan, applicable e-way bill and weighbridge records",
+    "Approved extra charges and detention claims",
+    "Cancellation/re-award and replacement/transshipment history",
+    "Shortage, damage and partial-delivery POD handling"
+  ]
+}
